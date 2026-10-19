@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>การสังเคราะห์ด้วยแสง – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0a1210;--panel:#111c19;--panel2:#172622;--line:#25403a;--txt:#e6f4ef;--mut:#93b3aa;--acc:#4ade80;--acc2:#fbbf24;--blue:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#14532d,#3f3a0c);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#166534;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#1d302b;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#15803d;border-color:#4ade80}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#0369a1;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#050b09;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:17px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#08100e;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{border:1px solid var(--line);padding:4px 6px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#07100d;border-radius:8px}
+#wlSw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-left:6px;vertical-align:middle}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>☀️ การสังเคราะห์ด้วยแสง (Photosynthesis)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : ปฏิกิริยาแสงและ Chemiosmosis บนเยื่อไทลาคอยด์</button>
+    <button data-mode="2">โหมด 2 : โรงงานวัฏจักรแคลวินและการสังเคราะห์น้ำตาล</button>
+    <button data-mode="3">โหมด 3 : เปรียบเทียบพืช C3 / C4 / CAM และ Photorespiration</button>
+    <button data-mode="4">โหมด 4 : ห้องทดลองปัจจัยที่มีผลต่ออัตราการสังเคราะห์ด้วยแสง</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div class="ctl"><label>ความเข้มแสง I <b id="IV"></b></label><input type="range" id="I" min="0" max="2000" step="10" value="800"></div>
+    <div class="ctl"><label>ความยาวคลื่นแสง λ <b><span id="wlV"></span><span id="wlSw"></span></b></label><input type="range" id="wl" min="400" max="700" step="1" value="660"></div>
+    <label class="chk"><input type="checkbox" id="white"> ใช้แสงขาว (ทุกความยาวคลื่น)</label>
+    <div class="ctl"><label>ความเข้มข้น CO₂ <b id="co2V"></b></label><input type="range" id="co2" min="0" max="1000" step="10" value="400"></div>
+    <div class="ctl"><label>อุณหภูมิ <b id="tempV"></b></label><input type="range" id="temp" min="0" max="50" step="1" value="25"></div>
+    <div data-m="1">
+      <div class="ctl"><label>รูปแบบการถ่ายทอดอิเล็กตรอน</label><select id="flow"><option value="non">Non-cyclic (PS II + PS I) → ATP + NADPH + O₂</option><option value="cyc">Cyclic (PS I อย่างเดียว) → ATP เท่านั้น</option></select></div>
+    </div>
+    <div data-m="2">
+      <label class="chk"><input type="checkbox" id="lightOn" checked> มีแสง (ปฏิกิริยาแสงส่ง ATP / NADPH)</label>
+      <div class="ctl"><label>อัตราการส่ง ATP <b id="atpSV"></b></label><input type="range" id="atpS" min="0" max="100" step="1" value="100"></div>
+      <div class="ctl"><label>อัตราการส่ง NADPH <b id="nadSV"></b></label><input type="range" id="nadS" min="0" max="100" step="1" value="100"></div>
+      <div class="ctl"><label>สัดส่วน G3P ที่ส่งออกไปสร้างน้ำตาล <b id="expV"></b></label><input type="range" id="exp" min="0" max="50" step="1" value="17"></div>
+      <p class="hint">ค่าที่วัฏจักรหมุนได้สมดุลคือ 1/6 (≈17%) — ทุก 6 G3P ส่งออก 1 โมเลกุล อีก 5 โมเลกุลสร้าง RuBP กลับ</p>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ประเภทพืช</label><select id="plant"><option value="C3">พืช C3 (ข้าว)</option><option value="C4">พืช C4 (อ้อย / ข้าวโพด)</option><option value="CAM">พืช CAM (สับปะรด / กระบองเพชร)</option></select></div>
+      <div class="ctl"><label>ความเข้มข้น O₂ <b id="o2V"></b></label><input type="range" id="o2" min="1" max="40" step="1" value="21"></div>
+      <div class="ctl"><label>เวลาของวัน <b id="hourV"></b></label><input type="range" id="hour" min="0" max="24" step="0.25" value="12"></div>
+      <label class="chk"><input type="checkbox" id="autoClock"> เดินนาฬิกาอัตโนมัติ (ดูการสลับกลางวัน–กลางคืน)</label>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>แกน X ของกราฟ</label><select id="xax"><option value="I">ความเข้มแสง</option><option value="C">ความเข้มข้น CO₂</option><option value="T">อุณหภูมิ</option></select></div>
+      <p class="hint">พืชทดลอง: สาหร่ายหางกระรอก (Hydrilla / Elodea) เป็นพืช C3 ในน้ำ — นับฟองก๊าซ O₂ ที่ปลายกิ่ง</p>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="step">⏭ ทีละขั้น</button><button class="btn" id="reset">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgPath" class="on">เส้นทางอิเล็กตรอน (Cyclic vs Non-cyclic)</button><button id="tgSpec">สเปกตรัมการดูดกลืนแสง</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function T(g,s,x,y,col='#e6f4ef',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px "Sarabun","Leelawadee UI",Tahoma,sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'path',stepReq:0,time:0};
+
+/* ================= SPECTRA ================= */
+const g1=(x,m,s)=>Math.exp(-0.5*((x-m)/s)**2);
+const absA=l=>0.92*g1(l,430,14)+0.78*g1(l,662,11)+0.12*g1(l,615,18)+0.06*g1(l,580,25);
+const absB=l=>0.95*g1(l,455,13)+0.5*g1(l,642,10)+0.06*g1(l,595,22);
+const absC=l=>0.5*g1(l,425,12)+0.85*g1(l,450,12)+0.8*g1(l,478,12)+0.2*g1(l,400,18);
+const actionRaw=l=>(0.55*absA(l)+0.3*absB(l)+0.22*absC(l)+0.12)*(l>685?Math.exp((685-l)/12):1);
+let AMAX=0;for(let l=400;l<=700;l++)AMAX=Math.max(AMAX,actionRaw(l));
+const action=l=>actionRaw(l)/AMAX;
+const WHITE=[430,450,470,500,530,560,590,620,650,670,690];
+function lightEff(){return $('#white').checked?WHITE.reduce((s,l)=>s+action(l),0)/WHITE.length:action(V('wl'));}
+function wlColor(l,a=1){let r=0,g=0,b=0;if(l<440){r=(440-l)/40*0.6;b=1;}else if(l<490){g=(l-440)/50;b=1;}else if(l<510){g=1;b=(510-l)/20;}else if(l<580){r=(l-510)/70;g=1;}else if(l<645){r=1;g=(645-l)/65;}else r=1;
+  const f=l<420?0.45+0.55*(l-400)/20:l>680?0.45+0.55*(700-l)/20:1;return `rgba(${Math.round(255*r*f)},${Math.round(255*g*f)},${Math.round(255*b*f)},${a})`;}
+function colorName(l){return l<450?'ม่วง–น้ำเงิน':l<495?'น้ำเงิน':l<570?'เขียว':l<590?'เหลือง':l<620?'ส้ม':'แดง';}
+
+/* ================= PHOTOSYNTHESIS MODEL ================= */
+const PL={C3:{n:'พืช C3 (ข้าว)',Pmax:55,Km:320,Topt:25,Tw:12,Kc:380,Rd:1.3},C4:{n:'พืช C4 (อ้อย/ข้าวโพด)',Pmax:50,Km:700,Topt:35,Tw:11,Kc:70,Rd:1.5},CAM:{n:'พืช CAM (สับปะรด/กระบองเพชร)',Pmax:16,Km:300,Topt:30,Tw:13,Kc:90,Rd:0.6}};
+function fTemp(T,p){if(T<=0)return 0;let f=Math.exp(-0.5*((T-p.Topt)/p.Tw)**2);if(T>44)f*=Math.max(0,(50-T)/6);if(T<4)f*=T/4;return f;}
+function photo(o){const p=PL[o.type];const Ie=o.I*o.eff;const fI=Ie/(Ie+p.Km);const ft=fTemp(o.T,p);
+  const close=clamp((o.T-30)/16,0,0.7)*(o.type==='C3'?1:0.6);let ci,cx,fC;
+  if(o.type==='C3'){ci=o.Ca*0.7*(1-close);cx=ci;fC=cx/(cx+p.Kc);}
+  else if(o.type==='C4'){ci=o.Ca*0.45*(1-close);cx=ci*12;fC=ci/(ci+p.Kc);}
+  else{ci=o.Ca*0.45;cx=1400;fC=0.8;}
+  const Sg=2625*Math.exp(-0.035*(o.T-25));const ratio=cx>0.5?o.O2*1e4/(Sg*cx):40;
+  let Vc=p.Pmax*fI*ft*fC;if(o.camCap!==undefined)Vc=Math.min(Vc,o.camCap);
+  const Vo=Vc*ratio,PR=0.5*Vo,Rd=p.Rd*Math.pow(2,(o.T-25)/10),net=Vc-PR-Rd;
+  return{Vc,Vo,PR,Rd,net,gross:Vc,ratio,ci,cx,fI,ft,fC,close,prPct:Vc>0.01?PR/Vc*100:0,ATP:3*Vc+3.5*Vo,NADPH:2*Vc+2*Vo,O2:net};}
+function inp(over){const m3=S.mode===3;const o={I:V('I'),eff:lightEff(),Ca:V('co2'),T:V('temp'),O2:m3?V('o2'):21,type:m3?$('#plant').value:'C3'};return Object.assign(o,over||{});}
+function bisect(f,a,b){let fa=f(a),fb=f(b);if(fa*fb>0)return null;for(let i=0;i<40;i++){const m=(a+b)/2,fm=f(m);if(fa*fm<=0){b=m;fb=fm;}else{a=m;fa=fm;}}return(a+b)/2;}
+function points(o){const LCP=bisect(I=>photo(Object.assign({},o,{I})).net,0,2000);const top=photo(Object.assign({},o,{I:2000})).Vc;const LSP=top>0.1?bisect(I=>photo(Object.assign({},o,{I})).Vc-0.9*top,0,2000):null;const CCP=bisect(Ca=>photo(Object.assign({},o,{Ca})).net,0,1000);return{LCP,LSP,CCP};}
+
+/* ================= MODE 1 : THYLAKOID ================= */
+const LY={mt:0.42,mb:0.58,mm:0.5,PS2:0.15,PQ:0.27,B6F:0.38,PC:0.48,PS1:0.59,FD:0.69,FNR:0.78,ATP:0.91};
+function epath(cyc){return cyc?[[LY.PS1,LY.mm],[LY.FD,LY.mt-0.035],[LY.PQ+0.02,LY.mm-0.01],[LY.B6F,LY.mm],[LY.PC,LY.mb+0.035],[LY.PS1,LY.mm]]:[[LY.PS2,LY.mm],[LY.PQ,LY.mm],[LY.B6F,LY.mm],[LY.PC,LY.mb+0.035],[LY.PS1,LY.mm],[LY.FD,LY.mt-0.035],[LY.FNR,LY.mt-0.045]];}
+let M1;
+function initM1(){M1={el:[],ph:[],hp:[],o2:[],fx:[],syn:[],lumenH:10,atp:0,nadph:0,o2n:0,eFNR:0,ePS2:0,psiExc:0,rot:0,synAcc:0,hThru:0,acc:0,t:0};}
+function absorb(tg,p,cyc){const M=M1;M.fx.push({x:p.tx,y:p.ty,t:0,ring:true,col:wlColor(p.wl)});
+  if(tg==='PS2'&&!cyc){if(M.el.filter(e=>!e.cyc&&e.seg<4).length<10){M.el.push({cyc:false,seg:0,t:0});M.ePS2++;M.hp.push({x:LY.PS2-0.035,y:LY.mb+0.05,tx:LY.PS2-0.035+(Math.random()-0.5)*0.06,ty:LY.mb+0.13+Math.random()*0.1});
+    if(M.ePS2%4===0){M.o2n++;M.o2.push({x:LY.PS2-0.05,y:LY.mb+0.07,t:0});M.fx.push({x:LY.PS2+0.04,y:LY.mb+0.27,t:0,text:'2H₂O → O₂ + 4H⁺ + 4e⁻',col:'#7dd3fc'});}}}
+  else if(tg==='PS1'){if(cyc){if(M.el.filter(e=>e.cyc).length<10)M.el.push({cyc:true,seg:0,t:0});}else M.psiExc=Math.min(M.psiExc+1,6);}}
+function stepM1(dt){const M=M1,cyc=$('#flow').value==='cyc',white=$('#white').checked;M.t+=dt;
+  M.acc+=V('I')/2000*26*dt;
+  while(M.acc>=1){M.acc--;const tg=cyc?'PS1':(Math.random()<0.5?'PS2':'PS1');const tx=LY[tg]+(Math.random()-0.5)*0.06;const wl=white?WHITE[Math.floor(Math.random()*WHITE.length)]:V('wl');M.ph.push({x:tx+(Math.random()-0.5)*0.14,y:-0.02,tx,ty:LY.mt-0.07,tg,wl,ref:false,a:1,vx:0});}
+  for(const p of M.ph){if(p.ref){p.y-=dt*0.45;p.x+=p.vx*dt;p.a-=dt*0.9;continue;}const dx=p.tx-p.x,dy=p.ty-p.y,d=Math.hypot(dx,dy),sp=0.55*dt;
+    if(d<=sp){if(Math.random()<action(p.wl)){p.dead=true;absorb(p.tg,p,cyc);}else{p.ref=true;p.vx=(Math.random()-0.5)*0.3;}}else{p.x+=dx/d*sp;p.y+=dy/d*sp;}}
+  M.ph=M.ph.filter(p=>!p.dead&&p.a>0&&p.y>-0.06);
+  for(const e of M.el){if(!e.cyc&&e.seg===4&&e.t===0&&!e.go){if(M.psiExc>0){M.psiExc--;e.go=true;}else continue;}
+    e.t+=dt*1.3;if(e.t>=1){e.t=0;e.seg++;
+      if(!e.cyc&&e.seg===2||e.cyc&&e.seg===3){for(let k=0;k<2;k++)M.hp.push({x:LY.B6F+(k-0.5)*0.02,y:LY.mt-0.09,tx:LY.B6F+(k-0.5)*0.05+(Math.random()-0.5)*0.04,ty:LY.mb+0.1+Math.random()*0.15});}
+      if(!e.cyc&&e.seg>=6){e.dead=true;M.eFNR++;if(M.eFNR%2===0){M.nadph++;M.fx.push({x:LY.FNR,y:LY.mt-0.13,t:0,text:'NADP⁺ + H⁺ → NADPH',col:'#c4b5fd'});}}
+      if(e.cyc&&e.seg>=5)e.dead=true;}}
+  M.el=M.el.filter(e=>!e.dead);
+  for(const p of M.hp){const dx=p.tx-p.x,dy=p.ty-p.y,d=Math.hypot(dx,dy),sp=0.32*dt;if(d<=sp){p.dead=true;M.lumenH++;}else{p.x+=dx/d*sp;p.y+=dy/d*sp;}}
+  M.hp=M.hp.filter(p=>!p.dead);
+  const drive=Math.max(0,M.lumenH-6);M.synAcc+=drive*0.3*dt;M.rot+=dt*(0.4+drive*0.08);
+  while(M.synAcc>=1){M.synAcc--;M.lumenH--;M.syn.push({t:0});M.hThru++;if(M.hThru%4===0){M.atp++;M.fx.push({x:LY.ATP-0.02,y:LY.mt-0.23,t:0,text:'ADP + Pᵢ → ATP',col:'#fde047'});}}
+  M.syn.forEach(s=>s.t+=dt*1.4);M.syn=M.syn.filter(s=>s.t<1);
+  M.o2.forEach(o=>{o.t+=dt;o.x-=dt*0.02;o.y+=dt*0.03;});M.o2=M.o2.filter(o=>o.t<2.5);
+  M.fx.forEach(f=>f.t+=dt);M.fx=M.fx.filter(f=>f.t<(f.text?1.8:0.6));}
+function pHlumen(){return clamp(8-2.2*Math.log10(1+M1.lumenH/6),4.5,8);}
+function blob(g,x,y,w2,h2,col,label,sub){rr(g,x-w2/2,y-h2/2,w2,h2,12);g.fillStyle=col;g.fill();g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1.5;g.stroke();T(g,label,x,y-(sub?7:0),'#fff',12,'center',true);if(sub)T(g,sub,x,y+8,'#fef3c7',10,'center');}
+function drawM1(g,w,h){const M=M1,cyc=$('#flow').value==='cyc';const mt=LY.mt*h,mb=LY.mb*h,mm=LY.mm*h,X=f=>f*w,Y=f=>f*h;
+  let gr=g.createLinearGradient(0,0,0,mt);gr.addColorStop(0,'#0a2618');gr.addColorStop(1,'#11402a');g.fillStyle=gr;g.fillRect(0,0,w,mt);
+  gr=g.createLinearGradient(0,mb,0,h);gr.addColorStop(0,'#2b2040');gr.addColorStop(1,'#17122a');g.fillStyle=gr;g.fillRect(0,mb,w,h-mb);
+  g.fillStyle='#34522a';g.fillRect(0,mt,w,mb-mt);
+  g.strokeStyle='rgba(200,230,150,.3)';g.lineWidth=1;g.beginPath();for(let x=4;x<w;x+=9){g.moveTo(x-1,mt+8);g.lineTo(x-1,mm-2);g.moveTo(x+1,mt+8);g.lineTo(x+1,mm-2);g.moveTo(x-1,mb-8);g.lineTo(x-1,mm+2);g.moveTo(x+1,mb-8);g.lineTo(x+1,mm+2);}g.stroke();
+  g.fillStyle='#a3d977';for(let x=4;x<w;x+=9){g.beginPath();g.arc(x,mt+4,3.4,0,7);g.fill();g.beginPath();g.arc(x,mb-4,3.4,0,7);g.fill();}
+  for(let i=0;i<12;i++){const x=(0.05+hash(i+300)*0.9)*w,y=(0.08+hash(i+320)*0.22)*h;g.fillStyle='rgba(251,146,60,.7)';g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+  const nH=Math.min(M.lumenH,110);for(let i=0;i<nH;i++){const x=(0.03+hash(i)*0.94)*w+Math.sin(S.time*2+i)*3,y=mb+16+hash(i+77)*(h-mb-44)+Math.cos(S.time*1.7+i)*3;g.fillStyle='#f87171';g.beginPath();g.arc(x,y,3.2,0,7);g.fill();}
+  T(g,'สโตรมา (Stroma)  pH ≈ 8.0',10,14,'#bbf7d0',12,'left',true);
+  T(g,`ลูเมนไทลาคอยด์ (Thylakoid lumen)  pH ≈ ${pHlumen().toFixed(1)}   ● H⁺ = ${M.lumenH}`,10,h-12,'#e9d5ff',12,'left',true);
+  T(g,'เยื่อไทลาคอยด์',6,mm,'#e8ffd0',10);
+  for(let k=0;k<7;k++){const a=k/7*Math.PI*2;g.fillStyle='rgba(74,222,128,.75)';g.beginPath();g.arc(X(LY.PS2)+Math.cos(a)*44,mt-26+Math.sin(a)*12,6,0,7);g.fill();g.beginPath();g.arc(X(LY.PS1)+Math.cos(a)*44,mt-26+Math.sin(a)*12,6,0,7);g.fill();}
+  T(g,'แอนเทนนา (คลอโรฟิลล์ + แคโรทีนอยด์)',X(LY.PS2),mt-50,'#86efac',10,'center');
+  blob(g,X(LY.PS2),mm,70,mb-mt+52,'#15803d','PS II','P680');
+  blob(g,X(LY.B6F),mm,52,mb-mt+36,'#b45309','Cyt','b6f');
+  blob(g,X(LY.PS1),mm,70,mb-mt+52,'#1d4ed8','PS I','P700');
+  g.fillStyle='#facc15';g.beginPath();g.ellipse(X(LY.PQ),mm,15,8,0,0,7);g.fill();T(g,'PQ',X(LY.PQ),mm,'#1c1917',10,'center',true);
+  g.fillStyle='#38bdf8';g.beginPath();g.arc(X(LY.PC),mb+16,11,0,7);g.fill();T(g,'PC',X(LY.PC),mb+16,'#082f49',10,'center',true);
+  g.fillStyle='#f97316';g.beginPath();g.arc(X(LY.FD),mt-16,11,0,7);g.fill();T(g,'Fd',X(LY.FD),mt-16,'#431407',10,'center',true);
+  if(!cyc){blob(g,X(LY.FNR),mt-24,46,26,'#7c3aed','FNR');}
+  else{T(g,'(Cyclic: ไม่สร้าง NADPH)',X(LY.FNR),mt-24,'#a78bfa',10,'center');}
+  if(!cyc){T(g,'2H₂O',X(LY.PS2)-46,mb+30,'#7dd3fc',12,'center',true);arrow(g,X(LY.PS2)-30,mb+30,X(LY.PS2)-14,mb+18,'#7dd3fc',1.5);}
+  const ax=X(LY.ATP);g.fillStyle='#64748b';rr(g,ax-17,mt-4,34,mb-mt+8,8);g.fill();g.fillStyle='#94a3b8';g.fillRect(ax-4,mt-26,8,24);
+  g.save();g.translate(ax,mt-46);g.fillStyle='#cbd5e1';g.beginPath();g.arc(0,0,24,0,7);g.fill();g.rotate(M.rot);g.strokeStyle='#334155';g.lineWidth=3;for(let k=0;k<3;k++){g.rotate(Math.PI*2/3);g.beginPath();g.moveTo(0,0);g.lineTo(0,-20);g.stroke();}g.restore();
+  T(g,'ATP synthase',ax,mt-80,'#e2e8f0',11,'center',true);
+  M.syn.forEach(s=>{const y=lerp(mb+18,mt-30,s.t);g.fillStyle='#f87171';g.beginPath();g.arc(ax+Math.sin(s.t*9)*5,y,3.4,0,7);g.fill();});
+  if(S.toggle==='path'){const draw=(c,col)=>{const pts=epath(c);g.setLineDash([6,5]);g.strokeStyle=col;g.lineWidth=2;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.stroke();g.setLineDash([]);const a=pts[pts.length-2],b=pts[pts.length-1];arrow(g,X(lerp(a[0],b[0],0.5)),Y(lerp(a[1],b[1],0.5)),X(lerp(a[0],b[0],0.62)),Y(lerp(a[1],b[1],0.62)),col,2);};
+    draw(cyc,cyc?'#c084fc':'#fbbf24');T(g,cyc?'━ เส้นทาง Cyclic: PS I → Fd → PQ → Cyt b6f → PC → PS I':'━ เส้นทาง Non-cyclic: H₂O → PS II → PQ → Cyt b6f → PC → PS I → Fd → FNR → NADP⁺',w-8,mb+48,cyc?'#d8b4fe':'#fde68a',11,'right');}
+  else{const x0=w*0.28,x1=w*0.66,y0=24,y1=Math.max(y0+60,mt-92);g.fillStyle='rgba(5,12,9,.85)';rr(g,x0-6,y0-8,x1-x0+12,y1-y0+22,8);g.fill();
+    for(let l=400;l<700;l+=3){g.fillStyle=wlColor(l,0.85);g.fillRect(x0+(l-400)/300*(x1-x0),y1+4,(x1-x0)/100+1,5);}
+    [[absA,'#4ade80'],[absB,'#a3e635'],[absC,'#fb923c'],[action,'#f8fafc']].forEach(([f,c],k)=>{g.strokeStyle=c;g.lineWidth=k===3?1.5:2;g.setLineDash(k===3?[4,3]:[]);g.beginPath();for(let l=400;l<=700;l+=3){const x=x0+(l-400)/300*(x1-x0),y=y1-f(l)*(y1-y0)*(k===3?1:1);l===400?g.moveTo(x,y):g.lineTo(x,y);}g.stroke();g.setLineDash([]);});
+    if(!$('#white').checked){const xm=x0+(V('wl')-400)/300*(x1-x0);g.strokeStyle='#fff';g.beginPath();g.moveTo(xm,y0);g.lineTo(xm,y1+9);g.stroke();}
+    T(g,'สเปกตรัมการดูดกลืนแสง',x0,y0,'#e2e8f0',10);}
+  for(const p of M.ph){const x=X(p.x),y=Y(p.y);g.strokeStyle=wlColor(p.wl,p.a);g.lineWidth=2;g.beginPath();for(let k=0;k<=14;k++){const yy=y+(p.ref?k*2:-k*2),xx=x+Math.sin(k*1.2+S.time*20)*3;k?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.stroke();g.fillStyle=wlColor(p.wl,p.a);g.beginPath();g.arc(x,y,2.5,0,7);g.fill();}
+  for(const e of M.el){const pts=epath(e.cyc),a=pts[Math.min(e.seg,pts.length-2)],b=pts[Math.min(e.seg+1,pts.length-1)];const x=X(lerp(a[0],b[0],e.t)),y=Y(lerp(a[1],b[1],e.t));g.fillStyle='rgba(253,224,71,.3)';g.beginPath();g.arc(x,y,9,0,7);g.fill();g.fillStyle='#fde047';g.beginPath();g.arc(x,y,5,0,7);g.fill();T(g,'e⁻',x,y-12,'#fef08a',10,'center',true);}
+  for(const p of M.hp){g.fillStyle='#fb7185';g.beginPath();g.arc(X(p.x),Y(p.y),4,0,7);g.fill();T(g,'H⁺',X(p.x)+8,Y(p.y),'#fecdd3',9);}
+  for(const o of M.o2){const a=1-o.t/2.5;g.strokeStyle=`rgba(125,211,252,${a})`;g.lineWidth=2;g.beginPath();g.arc(X(o.x),Y(o.y),8,0,7);g.stroke();T(g,'O₂',X(o.x),Y(o.y),`rgba(186,230,253,${a})`,10,'center',true);}
+  for(const f of M.fx){if(f.ring){g.strokeStyle=f.col;g.lineWidth=2;g.beginPath();g.arc(X(f.x),Y(f.y),6+f.t*50,0,7);g.stroke();}else{g.globalAlpha=Math.max(0,1-f.t/1.8);T(g,f.text,X(f.x),Y(f.y)-f.t*22,f.col,12,'center',true);g.globalAlpha=1;}}
+  g.fillStyle='rgba(5,12,9,.8)';rr(g,6,26,150,74,8);g.fill();
+  T(g,`ATP : ${M.atp}`,16,40,'#fde047',12,'left',true);T(g,`NADPH : ${M.nadph}`,16,58,'#c4b5fd',12,'left',true);T(g,`O₂ : ${M.o2n}`,16,76,'#7dd3fc',12,'left',true);T(g,`e⁻ รอที่ P700 : ${M.el.filter(e=>!e.cyc&&e.seg===4&&!e.go).length}`,16,92,'#fef08a',10);}
+
+/* ================= MODE 2 : CALVIN ================= */
+let CV;
+function initM2(){CV={RuBP:90,PGA:40,G3P:30,ATP:90,NADPH:90,sugar:0,co2:0,atpU:0,nadU:0,hist:[],ht:0,tok:[[],[],[],[]],acc:[0,0,0,0],fx:[],v1:0,v2:0,Jr:0,Je:0};}
+function stepM2(dt){const C=CV,on=$('#lightOn').checked,aS=V('atpS')/100,nS=V('nadS')/100,ex=V('exp')/100,Ca=V('co2'),ft=fTemp(V('temp'),PL.C3);
+  const v1=14*ft*C.RuBP/(C.RuBP+40)*Ca/(Ca+250);
+  const v2=26*ft*C.PGA/(C.PGA+30)*C.ATP/(C.ATP+15)*C.NADPH/(C.NADPH+15);
+  const J=26*ft*C.G3P/(C.G3P+25);const af=C.ATP/(C.ATP+15);const Jr=(1-ex)*J*af,Je=ex*J;
+  const sA=on?42*aS*Math.max(0,1-C.ATP/160):0,sN=on?28*nS*Math.max(0,1-C.NADPH/160):0;
+  C.RuBP=clamp(C.RuBP+(0.6*Jr-v1)*dt,0,300);C.PGA=Math.max(0,C.PGA+(2*v1-v2)*dt);C.G3P=Math.max(0,C.G3P+(v2-Jr-Je)*dt);
+  C.ATP=Math.max(0,C.ATP+(sA-v2-0.6*Jr)*dt);C.NADPH=Math.max(0,C.NADPH+(sN-v2)*dt);
+  C.sugar+=Je/2*dt;C.co2+=v1*dt;C.atpU+=(v2+0.6*Jr)*dt;C.nadU+=v2*dt;Object.assign(C,{v1,v2,Jr,Je});
+  const rates=[2*v1,v2,0.6*Jr,Je];for(let k=0;k<4;k++){C.acc[k]+=rates[k]*dt*0.12;while(C.acc[k]>=1){C.acc[k]--;C.tok[k].push({t:0});if(k===0)C.fx.push({t:0});}}
+  C.tok.forEach(a=>{a.forEach(o=>o.t+=dt*0.32);});C.tok=C.tok.map(a=>a.filter(o=>o.t<1));C.fx.forEach(f=>f.t+=dt);C.fx=C.fx.filter(f=>f.t<1);
+  C.ht+=dt;if(C.ht>=0.25){C.ht=0;C.hist.push([C.RuBP,C.PGA,C.G3P,C.ATP,C.NADPH]);if(C.hist.length>240)C.hist.shift();}}
+function chain(g,x,y,n,col,label){const s=8;const x0=x-(n-1)*s/2;g.strokeStyle='#cbd5e1';g.lineWidth=1.5;g.beginPath();g.moveTo(x0,y);g.lineTo(x0+(n-1)*s,y);g.stroke();for(let i=0;i<n;i++){g.fillStyle=col;g.beginPath();g.arc(x0+i*s,y,3.8,0,7);g.fill();}if(label)T(g,label,x,y-11,'#e2e8f0',9,'center');}
+function drawM2(g,w,h){const C=CV,cx=w*0.42,cy=h*0.48,r=Math.min(w*0.27,h*0.33);g.fillStyle='#0b1f17';g.fillRect(0,0,w,h);
+  T(g,'สโตรมา (Stroma) ของคลอโรพลาสต์',10,14,'#86efac',12,'left',true);
+  const ang=[-Math.PI/2,Math.PI/6,Math.PI*5/6];const P=a=>[cx+Math.cos(a)*r,cy+Math.sin(a)*r];
+  const arcs=[[ang[0],ang[1],'#22c55e'],[ang[1],ang[2],'#eab308'],[ang[2],ang[0]+Math.PI*2,'#60a5fa']];
+  arcs.forEach(([a0,a1,c])=>{g.strokeStyle=c;g.lineWidth=7;g.globalAlpha=0.55;g.beginPath();g.arc(cx,cy,r,a0+0.32,a1-0.32);g.stroke();g.globalAlpha=1;const ae=a1-0.32;const [x2,y2]=[cx+Math.cos(ae)*r,cy+Math.sin(ae)*r];arrow(g,cx+Math.cos(ae-0.06)*r,cy+Math.sin(ae-0.06)*r,x2,y2,c,3);});
+  const names=[['① Carboxylation','RuBisCO'],['② Reduction','ใช้ ATP + NADPH'],['③ Regeneration','ใช้ ATP']];const cols=['#166534','#854d0e','#1e3a8a'];
+  ang.forEach((a,i)=>{const [x,y]=P(a);g.fillStyle=cols[i];g.beginPath();g.arc(x,y,36,0,7);g.fill();g.strokeStyle='#fff3';g.lineWidth=2;g.stroke();T(g,names[i][0],x,y-6,'#fff',11,'center',true);T(g,names[i][1],x,y+9,'#fde68a',10,'center');});
+  const tokCol=['#22c55e','#eab308','#60a5fa'];const tokN=[3,3,5];const tokL=['3-PGA','G3P','RuBP'];
+  for(let k=0;k<3;k++){const [a0,a1]=arcs[k];C.tok[k].forEach(o=>{const a=lerp(a0+0.35,a1-0.35,o.t);chain(g,cx+Math.cos(a)*r,cy+Math.sin(a)*r,tokN[k],tokCol[k],o.t<0.5?tokL[k]:'');});}
+  const [ax,ay]=P(ang[0]);C.fx.forEach(f=>{const a=1-f.t;g.globalAlpha=a;chain(g,ax+78,ay+4-f.t*10,6,'#f472b6','6C (ไม่เสถียร)');g.globalAlpha=1;});
+  arrow(g,ax-130,ay-4,ax-40,ay-2,'#cbd5e1',2.5);T(g,'CO₂ (จากปากใบ)',ax-130,ay-16,'#e2e8f0',11,'left',true);T(g,'3 CO₂ + 3 RuBP (5C) → 6 × 3-PGA (3C)',ax,ay-48,'#bbf7d0',11,'center');
+  const lx=w*0.84,ly=h*0.2;g.fillStyle=$('#lightOn').checked?'#3f6212':'#262626';rr(g,lx-62,ly-28,124,56,10);g.fill();T(g,'ปฏิกิริยาแสง',lx,ly-12,'#fff',11,'center',true);T(g,'(เยื่อไทลาคอยด์)',lx,ly+3,'#d9f99d',10,'center');T(g,$('#lightOn').checked?'☀ มีแสง':'🌙 ไม่มีแสง',lx,ly+17,'#fde68a',10,'center');
+  const [bx,by]=P(ang[1]);arrow(g,lx-30,ly+30,bx+30,by-22,'#fde047',2.5);T(g,'6 ATP + 6 NADPH',(lx+bx)/2+18,(ly+by)/2-4,'#fde047',11,'left',true);
+  arrow(g,bx+38,by+4,lx+10,ly+32,'#a3a3a3',1.5);T(g,'ADP, Pᵢ, NADP⁺',(lx+bx)/2+40,(ly+by)/2+22,'#a3a3a3',10,'left');
+  const [rx,ry]=P(ang[2]);arrow(g,lx-62,ly,rx+38,ry-12,'#fde04788',1.5);T(g,'3 ATP',rx+24,ry-34,'#fde047',11,'left',true);
+  T(g,'5 G3P (3C) → 3 RuBP (5C)',rx,ry+50,'#bfdbfe',11,'center');
+  const sx=w*0.84,sy=h*0.78;arrow(g,(bx+rx)/2+r*0.5,cy+r+4,sx-60,sy,'#f472b6',2.5);C.tok[3].forEach(o=>{const x=lerp((bx+rx)/2+r*0.5,sx-60,o.t),y=lerp(cy+r+4,sy,o.t);chain(g,x,y,3,'#f472b6');});
+  T(g,'1 G3P ส่งออก',(bx+rx)/2+r*0.5+4,cy+r+20,'#fbcfe8',11,'left',true);
+  g.fillStyle='#4a044e';rr(g,sx-60,sy-30,120,60,10);g.fill();T(g,'กลูโคส / ซูโครส / แป้ง',sx,sy-12,'#fff',11,'center',true);T(g,`กลูโคส ${C.sugar.toFixed(1)} หน่วย`,sx,sy+8,'#f9a8d4',12,'center',true);
+  const pools=[['RuBP',C.RuBP,'#60a5fa'],['3-PGA',C.PGA,'#22c55e'],['G3P',C.G3P,'#eab308'],['ATP',C.ATP,'#fde047'],['NADPH',C.NADPH,'#c4b5fd']];
+  pools.forEach(([n,v,c],i)=>{const x=10,y=h-96+i*18;T(g,n,x,y,'#cbd5e1',10);g.fillStyle='#1f2937';g.fillRect(x+48,y-5,110,10);g.fillStyle=c;g.fillRect(x+48,y-5,Math.min(110,v/160*110),10);T(g,v.toFixed(0),x+164,y,'#e5e7eb',10);});
+  T(g,`ใช้ไปแล้ว: CO₂ ${C.co2.toFixed(0)} · ATP ${C.atpU.toFixed(0)} · NADPH ${C.nadU.toFixed(0)}`,10,34,'#a7f3d0',11);}
+
+/* ================= MODE 3 : C3 / C4 / CAM ================= */
+let M3;const CAM={mal:40};
+function initM3(){M3={mol:[],acc:0,fx:[],c:0,o:0,leaf:[],lacc:0,c4:[],c4acc:0};CAM.mal=40;}
+const isDay=h=>h>=6&&h<18;
+function m3calc(){const type=$('#plant').value,hr=V('hour'),day=isDay(hr);const base=inp({I:day?V('I'):0});const p=PL[type];
+  if(type!=='CAM'){const r=photo(base);return Object.assign(r,{day,type,uptake:r.net,calvin:r.Vc,pepc:type==='C4'?r.Vc:0});}
+  const ft=fTemp(base.T,p),Rd=p.Rd*Math.pow(2,(base.T-25)/10);
+  if(!day){const up=12*base.Ca/(base.Ca+90)*ft*Math.max(0,1-CAM.mal/160);return{day,type,uptake:up-Rd,net:up-Rd,calvin:0,Vc:0,Vo:0,PR:0,Rd,prPct:0,ATP:0,NADPH:0,pepc:up,ratio:0,close:0};}
+  const r=photo(Object.assign(base,{camCap:CAM.mal>3?99:CAM.mal*3}));return Object.assign(r,{day,type,uptake:-0.1*Rd,calvin:r.Vc,pepc:0,net:-0.1*Rd});}
+function stepM3(dt){if($('#autoClock').checked){let hr=V('hour')+dt*1.5;if(hr>24)hr-=24;$('#hour').value=hr;$('#hourV').textContent=fmtHour(hr);}
+  const r=m3calc();if(r.type==='CAM'){if(!r.day)CAM.mal=Math.min(160,CAM.mal+r.pepc*dt*1.6);else CAM.mal=Math.max(0,CAM.mal-r.Vc*dt*1.6);}
+  M3.acc+=(r.Vc+r.Vo)*dt*0.3;while(M3.acc>=1){M3.acc--;const isO=Math.random()<r.Vo/Math.max(1e-6,r.Vc+r.Vo);M3.mol.push({o:isO,t:0,a:Math.random()*Math.PI*2});}
+  M3.mol.forEach(m=>m.t+=dt*0.8);M3.mol.filter(m=>m.t>=1&&!m.done).forEach(m=>{m.done=true;if(m.o)M3.o++;else M3.c++;M3.fx.push({o:m.o,t:0});});M3.mol=M3.mol.filter(m=>!m.done);
+  M3.fx.forEach(f=>f.t+=dt);M3.fx=M3.fx.filter(f=>f.t<1.2);
+  const open=r.type==='CAM'?!r.day:(1-r.close)>0.35;M3.lacc+=(open?Math.max(0.6,(r.pepc||r.Vc)*0.08):0)*dt*3;while(M3.lacc>=1){M3.lacc--;M3.leaf.push({t:0,s:Math.random()});}
+  M3.leaf.forEach(p=>p.t+=dt*0.35);M3.leaf=M3.leaf.filter(p=>p.t<1);
+  if(r.type==='C4'){M3.c4acc+=r.Vc*dt*0.08;while(M3.c4acc>=1){M3.c4acc--;M3.c4.push({t:0,a:Math.random()*Math.PI*2});}}
+  M3.c4.forEach(p=>p.t+=dt*0.3);M3.c4=M3.c4.filter(p=>p.t<1);}
+const fmtHour=hr=>{const H=Math.floor(hr)%24,m=Math.round((hr-Math.floor(hr))*60);return String(H).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+' น. '+(isDay(hr)?'☀️ กลางวัน':'🌙 กลางคืน');};
+function cell(g,x,y,rw,rh,fill,chl,n,seed){g.fillStyle=fill;g.strokeStyle='#14532d';g.lineWidth=1.2;g.beginPath();g.ellipse(x,y,rw,rh,0,0,7);g.fill();g.stroke();for(let i=0;i<n;i++){const a=hash(seed+i)*6.28,rad=0.55+0.35*hash(seed+i+40);g.fillStyle=chl;g.beginPath();g.ellipse(x+Math.cos(a)*rw*rad*0.8,y+Math.sin(a)*rh*rad*0.8,3.2,2,a,0,7);g.fill();}}
+function stoma(g,x,y,open){g.fillStyle='#4d7c0f';const o=open?6:1;g.beginPath();g.ellipse(x-o-6,y,7,5,0,0,7);g.fill();g.beginPath();g.ellipse(x+o+6,y,7,5,0,0,7);g.fill();T(g,open?'ปากใบเปิด':'ปากใบปิด',x,y+15,open?'#bef264':'#fca5a5',10,'center');}
+function drawM3(g,w,h){const r=m3calc(),type=r.type,LW=w*0.62;
+  const sky=r.day?'#1e3a5f':'#0b1026';g.fillStyle=sky;g.fillRect(0,0,LW,36);T(g,fmtHour(V('hour')),10,18,'#fff',12,'left',true);if(r.day){g.fillStyle='#fde047';g.beginPath();g.arc(LW-24,18,11,0,7);g.fill();}else{g.fillStyle='#e5e7eb';g.beginPath();g.arc(LW-24,18,10,0,7);g.fill();g.fillStyle=sky;g.beginPath();g.arc(LW-19,15,9,0,7);g.fill();}
+  g.fillStyle='#0f2418';g.fillRect(0,36,LW,h-36);const top=48,bot=h-40;
+  for(let x=6;x<LW;x+=22){g.fillStyle='#a7f3d0';rr(g,x,top,20,12,3);g.fill();rr(g,x,bot,20,12,3);g.fill();}
+  T(g,'Epidermis',LW-6,top-6,'#a7f3d0',9,'right');
+  const stX=LW*0.22;stoma(g,stX,bot+6,type==='CAM'?!r.day:(1-r.close)>0.35);
+  if(type==='C3'){for(let x=10;x<LW-10;x+=19)cell(g,x+8,top+52,8,36,'#166534','#4ade80',8,x);T(g,'Palisade mesophyll',LW-8,top+20,'#bbf7d0',10,'right');
+    for(let i=0;i<26;i++){const x=12+hash(i+5)*(LW-24),y=top+110+hash(i+9)*(bot-top-150);if(Math.abs(x-LW*0.55)<46&&Math.abs(y-(top+bot)/2-20)<46)continue;cell(g,x,y,14,11,'#15803d','#86efac',5,i*7);}
+    const vx=LW*0.55,vy=(top+bot)/2+20;for(let k=0;k<9;k++){const a=k/9*6.28;cell(g,vx+Math.cos(a)*30,vy+Math.sin(a)*30,10,10,'#3f6212','#a3e635',1,k);}g.fillStyle='#1e3a8a';g.beginPath();g.arc(vx,vy-6,10,0,7);g.fill();g.fillStyle='#7c2d12';g.beginPath();g.arc(vx,vy+10,8,0,7);g.fill();
+    T(g,'Bundle sheath (คลอโรพลาสต์น้อย)',vx,vy+52,'#d9f99d',10,'center');T(g,'Calvin cycle เกิดในเซลล์มีโซฟิลล์',LW/2,top+30,'#fde68a',11,'center',true);}
+  else if(type==='C4'){const vx=LW*0.5,vy=(top+bot)/2;for(let k=0;k<18;k++){const a=k/18*6.28;cell(g,vx+Math.cos(a)*100,vy+Math.sin(a)*82,17,13,'#16a34a','#bbf7d0',4,k+50);}
+    for(let k=0;k<11;k++){const a=k/11*6.28;cell(g,vx+Math.cos(a)*52,vy+Math.sin(a)*46,17,15,'#14532d','#22c55e',9,k+90);}
+    g.fillStyle='#1e3a8a';g.beginPath();g.arc(vx-8,vy-6,13,0,7);g.fill();g.fillStyle='#7c2d12';g.beginPath();g.arc(vx+10,vy+8,10,0,7);g.fill();T(g,'มัดท่อลำเลียง',vx,vy+28,'#e5e7eb',9,'center');
+    T(g,'Kranz anatomy: Mesophyll (วงนอก) ล้อม Bundle sheath (วงใน, คลอโรพลาสต์มาก)',LW/2,top+24,'#fde68a',10,'center',true);
+    for(const p of M3.c4){const a=p.a,t=p.t;let rad,lab,col;if(t<0.35){rad=lerp(125,100,t/0.35);lab='CO₂';col='#cbd5e1';}else if(t<0.7){rad=lerp(100,52,(t-0.35)/0.35);lab=t<0.5?'OAA 4C':'Malate 4C';col='#fb923c';}else{rad=lerp(52,20,(t-0.7)/0.3);lab='CO₂→Calvin';col='#e2e8f0';}
+      const x=vx+Math.cos(a)*rad,y=vy+Math.sin(a)*rad*0.84;g.fillStyle=col;g.beginPath();g.arc(x,y,4,0,7);g.fill();if(hash(Math.floor(a*100))<0.35)T(g,lab,x+6,y-6,col,9);}
+    T(g,'PEP carboxylase ที่ Mesophyll: CO₂ + PEP → OAA (4C) → Malate',8,bot-14,'#fdba74',10);T(g,'Bundle sheath: Malate → CO₂ + Pyruvate → Calvin cycle (RuBisCO)',8,bot-28,'#bbf7d0',10);}
+  else{for(let k=0;k<4;k++){const x=LW*(0.16+k*0.22),y=(top+bot)/2-10;const cw=LW*0.1,ch=(bot-top)*0.36;g.fillStyle='#166534';g.beginPath();g.ellipse(x,y,cw,ch,0,0,7);g.fill();g.strokeStyle='#052e16';g.stroke();
+    const vr=0.72,lvl=CAM.mal/160;g.fillStyle='#0c4a6e';g.beginPath();g.ellipse(x,y,cw*vr,ch*vr,0,0,7);g.fill();g.save();g.beginPath();g.ellipse(x,y,cw*vr,ch*vr,0,0,7);g.clip();g.fillStyle='rgba(251,146,60,.85)';const yy=y+ch*vr-2*ch*vr*lvl;g.fillRect(x-cw,yy,cw*2,ch*2);g.restore();
+    for(let i=0;i<10;i++){const a=i/10*6.28;g.fillStyle='#4ade80';g.beginPath();g.ellipse(x+Math.cos(a)*cw*0.86,y+Math.sin(a)*ch*0.86,3.4,2,a,0,7);g.fill();}}
+    T(g,`แวคิวโอลสะสมกรดมาลิก: ${Math.round(CAM.mal/160*100)}%`,LW/2,top+26,'#fdba74',12,'center',true);
+    T(g,r.day?'กลางวัน: ปากใบปิด → สลายกรดมาลิก ปล่อย CO₂ → Calvin cycle':'กลางคืน: ปากใบเปิด → PEP carboxylase ตรึง CO₂ → กรดมาลิกเก็บในแวคิวโอล',LW/2,bot-14,'#fde68a',11,'center',true);}
+  for(const p of M3.leaf){const x=stX+(p.s-0.5)*60*p.t,y=lerp(bot,top+120,p.t);g.fillStyle='#cbd5e1';g.beginPath();g.arc(x,y,3,0,7);g.fill();if(p.t<0.15)T(g,'CO₂',x+6,y,'#e2e8f0',9);}
+  const RX=LW+(w-LW)/2,RY=h*0.3;g.fillStyle='#0a1614';g.fillRect(LW,0,w-LW,h);T(g,'ซูมแหล่งเร่ง RuBisCO',RX,16,'#86efac',12,'center',true);
+  g.fillStyle='#365314';g.beginPath();g.arc(RX,RY,42,0,7);g.fill();g.fillStyle='#0a1614';g.beginPath();g.arc(RX,RY-42,13,0,7);g.fill();T(g,'RuBisCO',RX,RY+8,'#ecfccb',12,'center',true);
+  for(const m of M3.mol){const d=lerp(110,44,m.t),x=RX+Math.cos(m.a)*d*0.7,y=RY-42-Math.abs(Math.sin(m.a))*d*0.7+ (1-m.t)*10;if(m.o){g.fillStyle='#ef4444';g.beginPath();g.arc(x-4,y,4.5,0,7);g.arc(x+4,y,4.5,0,7);g.fill();}else{g.fillStyle='#ef4444';g.beginPath();g.arc(x-8,y,4,0,7);g.arc(x+8,y,4,0,7);g.fill();g.fillStyle='#374151';g.beginPath();g.arc(x,y,5,0,7);g.fill();}}
+  M3.fx.forEach(f=>{const a=1-f.t/1.2;T(g,f.o?'✗ จับ O₂ → Glycolate (เสีย CO₂)':'✓ จับ CO₂ → 2 × 3-PGA',RX,RY+60+f.t*14,f.o?`rgba(248,113,113,${a})`:`rgba(134,239,172,${a})`,11,'center',true);});
+  T(g,'● CO₂   ● O₂',RX,RY+100,'#cbd5e1',10,'center');
+  const tot=M3.c+M3.o;T(g,`Carboxylation ${M3.c}  |  Oxygenation ${M3.o}`,RX,RY+122,'#e5e7eb',11,'center');T(g,`vo/vc ≈ ${r.ratio.toFixed(2)}  (สัดส่วนจริงที่นับได้ ${tot?(M3.o/tot*100).toFixed(0):0}% เป็น O₂)`,RX,RY+140,'#fca5a5',10,'center');
+  const bars=[['CO₂ ที่รับจากอากาศ',r.uptake,40,'#38bdf8'],['อัตราวัฏจักรแคลวิน',r.calvin,40,'#4ade80'],['Photorespiration (%)',r.prPct,60,'#f87171']];
+  bars.forEach(([n,v,mx,c],i)=>{const y=h*0.68+i*34;T(g,n,LW+12,y,'#cbd5e1',11);g.fillStyle='#1f2937';g.fillRect(LW+12,y+8,w-LW-24,10);g.fillStyle=c;g.fillRect(LW+12,y+8,clamp(v/mx,0,1)*(w-LW-24),10);T(g,v.toFixed(1),w-12,y,c,11,'right',true);});}
+
+/* ================= MODE 4 : ELODEA ================= */
+let M4;function initM4(){M4={bub:[],times:[],gas:0,acc:0,t:0};}
+function stepM4(dt){const r=photo(inp());M4.t+=dt;M4.acc+=Math.max(0,r.net)*0.12*dt;while(M4.acc>=1){M4.acc--;M4.bub.push({x:(Math.random()-0.5)*6,y:0,s:2+Math.random()*2.5});M4.times.push(M4.t);M4.gas+=0.04;}
+  M4.bub.forEach(b=>{b.y+=dt*(50+b.s*10);b.x+=Math.sin(M4.t*5+b.s)*0.3;});M4.bub=M4.bub.filter(b=>!b.done&&b.y<1e4);M4.times=M4.times.filter(t=>M4.t-t<=60);}
+function drawM4(g,w,h){const r=photo(inp()),I=V('I'),white=$('#white').checked;g.fillStyle='#0b1214';g.fillRect(0,0,w,h);
+  const bx0=w*0.4,bx1=w*0.72,by0=h*0.2,by1=h*0.92;const lx=w*0.1,ly=h*0.52;
+  const beam=g.createLinearGradient(lx,0,bx0,0);const col=white?'rgba(255,250,220,':wlColor(V('wl'),1).replace('rgba','rgba').replace(/,1\)$/,',');const a=0.05+0.4*I/2000;beam.addColorStop(0,col+a+')');beam.addColorStop(1,col+(a*0.4)+')');g.fillStyle=beam;g.beginPath();g.moveTo(lx+20,ly-14);g.lineTo(bx0,by0+40);g.lineTo(bx0,by1-30);g.lineTo(lx+20,ly+14);g.closePath();g.fill();
+  g.fillStyle='#475569';rr(g,lx-30,ly-22,50,44,8);g.fill();g.fillStyle=white?'#fffbeb':wlColor(V('wl'));g.globalAlpha=0.3+0.7*I/2000;g.beginPath();g.arc(lx+20,ly,14,0,7);g.fill();g.globalAlpha=1;g.fillStyle='#334155';g.fillRect(lx-12,ly+22,8,h-ly-40);
+  T(g,`โคมไฟ ${I} μmol/m²/s`,lx-30,ly-34,'#fde68a',11,'left',true);T(g,white?'แสงขาว':`λ = ${V('wl')} nm (${colorName(V('wl'))})`,lx-30,ly+40,'#e2e8f0',10);
+  const wg=g.createLinearGradient(0,by0,0,by1);wg.addColorStop(0,'rgba(56,189,248,.25)');wg.addColorStop(1,'rgba(14,116,144,.45)');g.fillStyle=wg;g.fillRect(bx0,by0+18,bx1-bx0,by1-by0-18);g.strokeStyle='#cbd5e1';g.lineWidth=2.5;g.beginPath();g.moveTo(bx0,by0);g.lineTo(bx0,by1);g.lineTo(bx1,by1);g.lineTo(bx1,by0);g.stroke();
+  T(g,`น้ำ + NaHCO₃ (CO₂ ≈ ${V('co2')} ppm)`,(bx0+bx1)/2,by1+14,'#7dd3fc',11,'center');
+  const mx=(bx0+bx1)/2,cutY=h*0.44;g.strokeStyle='#3f6212';g.lineWidth=4;g.beginPath();g.moveTo(mx,by1-14);g.quadraticCurveTo(mx+18,(cutY+by1)/2,mx,cutY);g.stroke();
+  for(let k=0;k<9;k++){const t=k/8,y=lerp(by1-24,cutY+10,t),x=mx+Math.sin(t*3.1)*12;for(let j=0;j<4;j++){const a=j/4*6.28+k;g.fillStyle=r.net>0?'#4ade80':'#65a30d';g.beginPath();g.ellipse(x+Math.cos(a)*10,y+Math.sin(a)*3,9,3,a,0,7);g.fill();}}
+  g.fillStyle='#94a3b8';g.fillRect(mx-6,by1-14,12,8);T(g,'ที่ถ่วง',mx+10,by1-10,'#cbd5e1',9);
+  const tx0=mx-16,tx1=mx+16,ty0=h*0.06,ty1=cutY-8;g.fillStyle='rgba(56,189,248,.25)';g.fillRect(tx0,ty0,tx1-tx0,ty1-ty0);const gasH=Math.min(ty1-ty0-4,M4.gas*6);g.fillStyle='rgba(226,232,240,.55)';g.fillRect(tx0,ty0,tx1-tx0,gasH);g.strokeStyle='#e2e8f0';g.lineWidth=2;g.beginPath();g.moveTo(tx0,ty1);g.lineTo(tx0,ty0);g.lineTo(tx1,ty0);g.lineTo(tx1,ty1);g.stroke();
+  T(g,`ก๊าซ O₂ ${M4.gas.toFixed(2)} mL`,tx1+6,ty0+10,'#e2e8f0',11);
+  for(const b of M4.bub){const y=cutY-b.y;if(y<ty0+gasH){b.done=true;continue;}g.strokeStyle='rgba(224,242,254,.9)';g.lineWidth=1.3;g.beginPath();g.arc(mx+b.x,y,b.s,0,7);g.stroke();}
+  const thx=bx1+26;g.fillStyle='#e5e7eb';rr(g,thx-5,by0+20,10,by1-by0-60,5);g.fill();const tf=V('temp')/50;g.fillStyle='#ef4444';g.fillRect(thx-3,lerp(by1-44,by0+24,tf),6,lerp(by1-44,by0+24,0)-lerp(by1-44,by0+24,tf)+4);g.beginPath();g.arc(thx,by1-38,8,0,7);g.fill();T(g,V('temp')+' °C',thx+12,by0+30,'#fca5a5',11);
+  const n=M4.times.length,span=Math.min(60,M4.t);const per=span>3?n/span*60:0;g.fillStyle='rgba(15,23,42,.85)';rr(g,w-172,10,162,96,10);g.fill();
+  T(g,'⏱ ตัวนับฟองก๊าซ',w-162,26,'#7dd3fc',12,'left',true);T(g,`${n} ฟอง / ${span.toFixed(0)} วินาที`,w-162,46,'#e2e8f0',12);T(g,`≈ ${per.toFixed(0)} ฟอง/นาที`,w-162,66,'#fde047',15,'left',true);T(g,r.net>0?'ปล่อย O₂ สุทธิ':'ไม่มีฟอง: หายใจ ≥ สังเคราะห์',w-162,88,r.net>0?'#86efac':'#fca5a5',10);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#1f3a33';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fmtN(v),L-4,Y(v),'#93b3aa',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fmtN(v),X(v),h-B+10,'#93b3aa',10,'center');}
+  g.strokeStyle='#3b5f55';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#93b3aa',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#93b3aa',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=120;i++){const x=x0+(x1-x0)*i/120,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#d1fae5',10);});}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const A=axes(g,w,h,400,700,0,1,'ความยาวคลื่น (nm)','การดูดกลืน / ประสิทธิภาพ (สัมพัทธ์)',6,4);for(let l=400;l<700;l+=2){g.fillStyle=wlColor(l,0.9);g.fillRect(A.X(l),h-A.B+1,A.X(l+2)-A.X(l)+1,4);}
+    plot(g,A,absA,400,700,'#4ade80');plot(g,A,absB,400,700,'#a3e635');plot(g,A,absC,400,700,'#fb923c');plot(g,A,action,400,700,'#f8fafc',1.8,[5,4]);
+    if(!$('#white').checked){const x=A.X(V('wl'));g.strokeStyle='#fff';g.setLineDash([2,3]);g.beginPath();g.moveTo(x,A.Tm);g.lineTo(x,h-A.B);g.stroke();g.setLineDash([]);}
+    legend(g,[['Chlorophyll a','#4ade80'],['Chlorophyll b','#a3e635'],['Carotenoids','#fb923c'],['Action spectrum','#f8fafc']],w-118,18);}
+  else if(m===2){const H=CV.hist;const A=axes(g,w,h,0,60,0,200,'เวลา (วินาที, ล่าสุด)','ปริมาณในสโตรมา (หน่วยสัมพัทธ์)',6,4);const cols=['#60a5fa','#22c55e','#eab308','#fde047','#c4b5fd'];
+    for(let k=0;k<5;k++){g.strokeStyle=cols[k];g.lineWidth=2;g.beginPath();H.forEach((v,i)=>{const x=A.X(60-(H.length-1-i)*0.25),y=A.Y(Math.min(200,v[k]));i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();}
+    legend(g,[['RuBP','#60a5fa'],['3-PGA','#22c55e'],['G3P','#eab308'],['ATP','#fde047'],['NADPH','#c4b5fd']],w-70,18);}
+  else if(m===3){const base=inp({I:V('I')});const A=axes(g,w,h,0,50,-5,35,'อุณหภูมิ (°C)','อัตราสุทธิ (μmol CO₂/m²/s)',5,4);g.strokeStyle='#64748b';g.beginPath();g.moveTo(A.X(0),A.Y(0));g.lineTo(A.X(50),A.Y(0));g.stroke();
+    const cols={C3:'#38bdf8',C4:'#4ade80',CAM:'#f472b6'};for(const t of ['C3','C4','CAM'])plot(g,A,T_=>photo(Object.assign({},base,{type:t,T:T_})).net,0,50,cols[t],t===$('#plant').value?3:1.5);
+    const cur=photo(Object.assign({},base,{type:$('#plant').value}));g.fillStyle='#fff';g.beginPath();g.arc(A.X(base.T),A.Y(clamp(cur.net,-5,35)),5,0,7);g.fill();
+    legend(g,[['C3 (ข้าว)','#38bdf8'],['C4 (ข้าวโพด)','#4ade80'],['CAM (Calvin กลางวัน)','#f472b6']],w-130,18);}
+  else{const ax=$('#xax').value,o=inp();let A,f,x0,x1,xl,cur;
+    if(ax==='I'){x0=0;x1=2000;xl='ความเข้มแสง (μmol/m²/s)';f=x=>photo(Object.assign({},o,{I:x}));cur=o.I;}else if(ax==='C'){x0=0;x1=1000;xl='ความเข้มข้น CO₂ (ppm)';f=x=>photo(Object.assign({},o,{Ca:x}));cur=o.Ca;}else{x0=0;x1=50;xl='อุณหภูมิ (°C)';f=x=>photo(Object.assign({},o,{T:x}));cur=o.T;}
+    A=axes(g,w,h,x0,x1,-5,35,xl,'อัตรา (μmol/m²/s)',5,4);g.strokeStyle='#64748b';g.beginPath();g.moveTo(A.X(x0),A.Y(0));g.lineTo(A.X(x1),A.Y(0));g.stroke();
+    plot(g,A,x=>clamp(f(x).Vc,-5,35),x0,x1,'#fbbf24',1.5,[5,4]);plot(g,A,x=>clamp(f(x).net,-5,35),x0,x1,'#4ade80',2.5);
+    const pts=points(o);if(ax==='I'){if(pts.LCP!=null){g.strokeStyle='#f87171';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(pts.LCP),A.Tm);g.lineTo(A.X(pts.LCP),h-A.B);g.stroke();T(g,'LCP',A.X(pts.LCP)+3,A.Tm+8,'#f87171',10);}if(pts.LSP!=null){g.strokeStyle='#a78bfa';g.beginPath();g.moveTo(A.X(pts.LSP),A.Tm);g.lineTo(A.X(pts.LSP),h-A.B);g.stroke();T(g,'LSP',A.X(pts.LSP)+3,A.Tm+22,'#a78bfa',10);}g.setLineDash([]);}
+    if(ax==='C'&&pts.CCP!=null){g.strokeStyle='#f87171';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(pts.CCP),A.Tm);g.lineTo(A.X(pts.CCP),h-A.B);g.stroke();g.setLineDash([]);T(g,'CO₂ comp.',A.X(pts.CCP)+3,A.Tm+8,'#f87171',10);}
+    g.fillStyle='#fff';g.beginPath();g.arc(A.X(cur),A.Y(clamp(f(cur).net,-5,35)),5,0,7);g.fill();legend(g,[['Net rate','#4ade80'],['Gross (Vc)','#fbbf24']],w-90,18);}}
+
+/* ================= TEXT ================= */
+const OVERALL='6CO₂ + 12H₂O ──(แสง, คลอโรฟิลล์)──▶ C₆H₁₂O₆ + 6O₂ + 6H₂O';
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const C34TABLE='<table><tr><th>ลักษณะ</th><th>C3</th><th>C4</th><th>CAM</th></tr><tr><td>ตัวอย่าง</td><td>ข้าว ข้าวสาลี ถั่ว</td><td>อ้อย ข้าวโพด ข้าวฟ่าง</td><td>สับปะรด กระบองเพชร ว่านหางจระเข้</td></tr><tr><td>สารตัวแรก</td><td>3-PGA (3C)</td><td>OAA (4C)</td><td>OAA (4C)</td></tr><tr><td>เอนไซม์ตรึงครั้งแรก</td><td>RuBisCO</td><td>PEP carboxylase</td><td>PEP carboxylase</td></tr><tr><td>การแยก</td><td>—</td><td>ตามพื้นที่ (Spatial)</td><td>ตามเวลา (Temporal)</td></tr><tr><td>Kranz anatomy</td><td>ไม่มี</td><td>มี</td><td>ไม่มี</td></tr><tr><td>Calvin cycle</td><td>มี (มีโซฟิลล์)</td><td>มี (Bundle sheath)</td><td>มี (กลางวัน)</td></tr><tr><td>Photorespiration</td><td>สูงเมื่อร้อน</td><td>ต่ำมาก</td><td>ต่ำ</td></tr><tr><td>อุณหภูมิเหมาะสม</td><td>15–25 °C</td><td>30–40 °C</td><td>≈ 30 °C</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const r=photo(inp()),cyc=$('#flow').value==='cyc',eff=lightEff(),wl=V('wl'),white=$('#white').checked;
+    st=[['Net photosynthetic rate',r.net.toFixed(1)+' μmol/m²/s'],['ATP / NADPH (สะสมในจำลอง)',M1.atp+' / '+M1.nadph],['Photorespiration loss',r.prPct.toFixed(1)+' %'],['O₂ (โมเลกุลในจำลอง)',M1.o2n+' · pH ลูเมน '+pHlumen().toFixed(1)]];
+    eq=OVERALL+'\nPhotolysis: 2H₂O → O₂ + 4H⁺ + 4e⁻  (ที่ PS II ฝั่งลูเมน)\n'+(cyc?'Cyclic: PS I → Fd → PQ → Cyt b6f → PC → PS I   ได้ ATP อย่างเดียว ไม่มี O₂ และ NADPH':'Non-cyclic: 2H₂O + 2NADP⁺ + 3ADP + 3Pᵢ ──แสง──▶ O₂ + 2NADPH + 2H⁺ + 3ATP')+'\nChemiosmosis: H⁺ (ลูเมน) ──ATP synthase──▶ H⁺ (สโตรมา) ; ADP + Pᵢ → ATP';
+    an=`<p><b>แสงที่ใช้:</b> ${white?'แสงขาว':wl+' nm ('+colorName(wl)+')'} → ประสิทธิภาพการดูดกลืน/ใช้งาน ≈ <b>${(eff*100).toFixed(0)}%</b> ${eff<0.35?'<span class="tag no">ดูดกลืนได้น้อย</span> ส่วนใหญ่สะท้อน/ทะลุผ่าน':eff>0.7?'<span class="tag ok">ดูดกลืนได้ดี</span>':'<span class="tag mid">ปานกลาง</span>'}</p>`;
+    an+=cyc?'<p>Cyclic: อิเล็กตรอนจาก PS I วนกลับผ่าน Cyt b6f สูบ H⁺ เข้าลูเมน ได้ <b>ATP เพิ่ม</b> เพื่อให้สัดส่วน ATP:NADPH พอสำหรับวัฏจักรแคลวิน (ต้องใช้ 3:2)</p>':`<p>Non-cyclic: น้ำแตกตัวให้อิเล็กตรอนแก่ P680 · ทุก 4 e⁻ ได้ O₂ 1 โมเลกุล · ทุก 2 e⁻ ที่ถึง FNR ได้ NADPH 1 โมเลกุล · H⁺ ในลูเมน ${M1.lumenH} ตัว (pH ≈ ${pHlumen().toFixed(1)}) ขับ ATP synthase</p>`;
+    an+=`<p>ประสิทธิภาพสุทธิ (Net/Gross) = ${r.Vc>0.01?(r.net/r.Vc*100).toFixed(0):0}%</p>`;
+    mis=eff<0.35?'<p><b>❌ "ใบไม้ดูดกลืนแสงสีเขียวได้ดีที่สุด เพราะเห็นเป็นสีเขียว"</b></p><p>✅ เราเห็นใบเป็นสีเขียวเพราะคลอโรฟิลล์ <b>สะท้อน</b>แสงสีเขียวเข้าตา แต่ดูดกลืนแสง <b>สีน้ำเงิน (≈430–450 nm) และสีแดง (≈660 nm)</b> ได้ดีที่สุด — สังเกตโฟตอนที่เด้งกลับในจอจำลอง</p>'
+      :cyc?'<p><b>❌ "การถ่ายทอดอิเล็กตรอนทุกแบบปล่อย O₂"</b></p><p>✅ แบบ Cyclic ใช้เฉพาะ PS I ไม่มีการแตกตัวของน้ำ จึง <b>ไม่เกิด O₂ และไม่เกิด NADPH</b> ได้เพียง ATP</p>'
+      :'<p><b>❌ "O₂ ที่พืชปล่อยออกมาเกิดจากการสลาย CO₂"</b></p><p>✅ O₂ เกิดจาก <b>การแตกตัวของน้ำ (Photolysis)</b> ที่ PS II ในปฏิกิริยาแสง (ยืนยันด้วยการทดลองใช้ ¹⁸O ติดฉลากในน้ำ) ส่วนออกซิเจนของ CO₂ ไปอยู่ในน้ำตาลและน้ำ</p><p><b>❌ "ใบดูดแสงสีเขียวดีที่สุด"</b> ✅ ลองปรับ λ เป็น 550 nm แล้วสังเกต</p>';
+    tb='<table><tr><th>องค์ประกอบ</th><th>บทบาท</th></tr><tr><td>PS II (P680)</td><td>รับแสง, แตกน้ำ, ส่ง e⁻ ให้ PQ</td></tr><tr><td>PQ (Plastoquinone)</td><td>นำ e⁻ ในเยื่อ + รับ H⁺ จากสโตรมา</td></tr><tr><td>Cyt b6f</td><td>สูบ H⁺ เข้าลูเมน</td></tr><tr><td>PC (Plastocyanin)</td><td>นำ e⁻ ฝั่งลูเมนไปยัง PS I</td></tr><tr><td>PS I (P700)</td><td>รับแสงครั้งที่ 2 ยก e⁻ ขึ้นพลังงานสูง</td></tr><tr><td>Fd → FNR</td><td>NADP⁺ + H⁺ + 2e⁻ → NADPH</td></tr><tr><td>ATP synthase</td><td>H⁺ ไหลกลับสโตรมา → ATP</td></tr></table>';}
+  else if(m===2){const C=CV,ex=V('exp')/100;st=[['อัตราการตรึง CO₂ (v₁)',C.v1.toFixed(1)+' หน่วย/วินาที'],['ATP / NADPH ต่อ CO₂',C.co2>1?(C.atpU/C.co2).toFixed(1)+' / '+(C.nadU/C.co2).toFixed(1):'—'],['กลูโคสที่สร้าง',C.sugar.toFixed(1)+' หน่วย'],['RuBP คงเหลือ',C.RuBP.toFixed(0)]];
+    eq='3 CO₂ + 9 ATP + 6 NADPH ──▶ 1 G3P + 9 ADP + 8 Pᵢ + 6 NADP⁺\n① Carboxylation: 3 RuBP (5C) + 3 CO₂ ──RuBisCO──▶ [3 × 6C] ──▶ 6 × 3-PGA (3C)\n② Reduction: 6 × 3-PGA + 6 ATP + 6 NADPH ──▶ 6 × G3P (PGAL)\n③ Regeneration: 5 G3P + 3 ATP ──▶ 3 RuBP   |  ส่งออก 1 G3P\nกลูโคส 1 โมเลกุล = 6 รอบ = 18 ATP + 12 NADPH';
+    const bal=Math.abs(ex-1/6)<0.02;an=`<p>${!$('#lightOn').checked?'<span class="tag no">ไม่มีแสง</span> ATP และ NADPH หมด → Reduction หยุด → 3-PGA สะสม และ RuBP หมด วัฏจักรแคลวินจึงหยุดตาม':bal?'<span class="tag ok">วัฏจักรสมดุล</span> ส่งออก G3P 1 ใน 6 โมเลกุล RuBP คงที่':ex>1/6?'<span class="tag no">ส่งออก G3P มากเกินไป</span> สร้าง RuBP กลับไม่ทัน → RuBP ลดลง → วัฏจักรช้าลง':'<span class="tag mid">ส่งออกน้อย</span> RuBP สะสม แต่ได้น้ำตาลน้อย'}</p><p>ATP ต่อ NADPH ที่ใช้ ≈ 3 : 2 — ปฏิกิริยาแสงแบบ Non-cyclic อย่างเดียวให้ ATP ไม่พอ จึงต้องมี Cyclic เสริม</p>`;
+    mis=!$('#lightOn').checked?'<p><b>❌ "ปฏิกิริยาไม่ใช้แสง (Calvin cycle) เกิดเฉพาะเวลากลางคืน"</b></p><p>✅ ปิดแสงแล้วจะเห็นว่าวัฏจักร<b>หยุด</b>ภายในไม่กี่วินาที เพราะต้องใช้ ATP และ NADPH จากปฏิกิริยาแสงตลอดเวลา Calvin cycle จึงเกิด<b>ในเวลากลางวันเป็นหลัก</b> (ยกเว้นการตรึง CO₂ ขั้นแรกของพืช CAM ที่เกิดตอนกลางคืน)</p>':'<p><b>❌ "Calvin cycle เกิดเฉพาะกลางคืน เพราะเรียกว่าปฏิกิริยาไม่ใช้แสง"</b></p><p>✅ "ไม่ใช้แสง" หมายถึงไม่ใช้แสงโดยตรง แต่ต้องใช้ ATP และ NADPH จากปฏิกิริยาแสง — ลองยกเลิก "มีแสง" แล้วสังเกต</p><p><b>❌ "G3P ทั้งหมดถูกนำไปสร้างกลูโคส"</b> ✅ 5 ใน 6 ต้องกลับไปสร้าง RuBP</p>';
+    tb='<table><tr><th>ขั้นตอน (ต่อ 3 CO₂)</th><th>เข้า</th><th>ออก</th></tr><tr><td>Carboxylation</td><td>3 RuBP + 3 CO₂</td><td>6 × 3-PGA</td></tr><tr><td>Reduction</td><td>6 ATP + 6 NADPH</td><td>6 G3P</td></tr><tr><td>Regeneration</td><td>5 G3P + 3 ATP</td><td>3 RuBP</td></tr><tr><td>สุทธิ</td><td>9 ATP + 6 NADPH</td><td>1 G3P</td></tr></table>';}
+  else if(m===3){const r=m3calc(),type=r.type;st=[['CO₂ ที่รับจากอากาศ (Net)',r.uptake.toFixed(1)+' μmol/m²/s'],['ATP / NADPH ที่ใช้',r.ATP.toFixed(0)+' / '+r.NADPH.toFixed(0)],['Photorespiration loss',r.prPct.toFixed(1)+' %'],['อัตราผลิต O₂',Math.max(0,r.calvin-r.PR).toFixed(1)+' μmol/m²/s']];
+    eq='RuBisCO + CO₂ (Carboxylation): RuBP + CO₂ → 2 × 3-PGA  ✓\nRuBisCO + O₂ (Oxygenation): RuBP + O₂ → 3-PGA + Phosphoglycolate → (Photorespiration) สูญเสีย CO₂ + ATP\n'+(type==='C4'?'C4: CO₂ + PEP ──PEP carboxylase──▶ OAA (4C) → Malate ⟶ Bundle sheath: Malate → CO₂ + Pyruvate → Calvin':type==='CAM'?'CAM กลางคืน: CO₂ + PEP → OAA → Malic acid (แวคิวโอล) ⟶ กลางวัน: Malic acid → CO₂ → Calvin':'C3: CO₂ เข้าวัฏจักรแคลวินโดยตรงด้วย RuBisCO')+`\nO₂/CO₂ = ${V('o2')}% / ${V('co2')} ppm   vo/vc ≈ ${r.ratio.toFixed(2)}`;
+    an=`<p><b>${PL[type].n}</b> ที่ ${V('temp')} °C, ${r.day?'กลางวัน':'กลางคืน'}: ${type==='C3'&&r.prPct>25?'<span class="tag no">Photorespiration สูง</span> อากาศร้อน ปากใบปิด CO₂ ภายในใบต่ำ RuBisCO จึงจับ O₂ บ่อยขึ้น':type==='C4'?'<span class="tag ok">Photorespiration ต่ำ</span> PEP carboxylase ไม่จับ O₂ และปั๊ม CO₂ ไปเข้มข้นใน Bundle sheath':type==='CAM'?(r.day?'ปากใบปิดเพื่อประหยัดน้ำ ใช้ CO₂ จากกรดมาลิกที่สะสมไว้':'ปากใบเปิดตอนกลางคืน (อากาศเย็น เสียน้ำน้อย) ตรึง CO₂ เก็บเป็นกรดมาลิก'):'<span class="tag mid">ปกติ</span>'}</p><p>${type==='CAM'&&r.day&&CAM.mal<5?'<span class="tag no">กรดมาลิกหมด</span> Calvin cycle หยุด ต้องรอกลางคืน':''}</p>`;
+    mis='<p><b>❌ "พืช C4 และ CAM ไม่มีวัฏจักรแคลวิน"</b></p><p>✅ พืช<b>ทุกชนิด</b>ใช้ Calvin cycle สร้างน้ำตาล พืช C4 และ CAM แค่<b>เพิ่ม</b>การตรึง CO₂ รอบแรกด้วย PEP carboxylase ก่อนส่งเข้า Calvin cycle (C4 แยกตามพื้นที่ / CAM แยกตามเวลา)</p><p><b>❌ "Photorespiration ให้พลังงานเหมือนการหายใจ"</b> ✅ ไม่ได้ ATP แต่<b>สูญเสีย</b> CO₂ และพลังงาน</p>';
+    tb=C34TABLE;}
+  else{const o=inp(),r=photo(o),pts=points(o);const per=M4.times.length&&M4.t>3?M4.times.length/Math.min(60,M4.t)*60:0;
+    st=[['Net photosynthetic rate',r.net.toFixed(1)+' μmol/m²/s'],['ATP / NADPH (ต้องการ)',r.ATP.toFixed(0)+' / '+r.NADPH.toFixed(0)],['Photorespiration loss',r.prPct.toFixed(1)+' %'],['อัตราผลิต O₂',Math.max(0,r.net).toFixed(1)+' μmol/m²/s · '+per.toFixed(0)+' ฟอง/นาที']];
+    eq=OVERALL+`\nNet Rate = Gross − (Respiration + Photorespiration) = ${r.Vc.toFixed(1)} − (${r.Rd.toFixed(1)} + ${r.PR.toFixed(1)}) = ${r.net.toFixed(1)}\nGross = Pmax·(I/(I+Km))·f(T)·f(CO₂) = 55 × ${r.fI.toFixed(2)} × ${r.ft.toFixed(2)} × ${r.fC.toFixed(2)} = ${r.Vc.toFixed(1)} μmol/m²/s`;
+    const tests=[['ความเข้มแสง',photo(Object.assign({},o,{I:Math.min(2000,o.I*1.25+20)})).net],['CO₂',photo(Object.assign({},o,{Ca:Math.min(1000,o.Ca*1.25+20)})).net],['อุณหภูมิ',photo(Object.assign({},o,{T:o.T<25?o.T+3:o.T-3})).net]];const lim=tests.sort((a,b)=>b[1]-a[1])[0];
+    const lcp=pts.LCP;an=`<p><b>จุดชดเชยแสง (LCP):</b> ${lcp!=null?lcp.toFixed(0)+' μmol/m²/s':'—'} ${lcp!=null&&o.I<lcp?'<span class="tag no">ต่ำกว่า LCP</span> หายใจ > สังเคราะห์ด้วยแสง ปล่อย CO₂ สุทธิ':lcp!=null?'<span class="tag ok">สูงกว่า LCP</span> สังเคราะห์ > หายใจ ปล่อย O₂ สุทธิ':''}</p><p><b>จุดอิ่มตัวแสง (LSP):</b> ${pts.LSP!=null?pts.LSP.toFixed(0)+' μmol/m²/s':'—'} ${pts.LSP!=null&&o.I>pts.LSP?'— เพิ่มแสงต่อไปแทบไม่ช่วย':''}</p><p><b>ปัจจัยจำกัด (Limiting factor):</b> ${lim[1]-r.net>0.3?'<span class="tag mid">'+lim[0]+'</span>':'<span class="tag mid">ใกล้ค่าสูงสุดแล้ว</span>'}</p><p>ประสิทธิภาพสุทธิ = ${r.Vc>0.01?(r.net/r.Vc*100).toFixed(0):0}% ของ Gross · จุดชดเชย CO₂ ≈ ${pts.CCP!=null?pts.CCP.toFixed(0)+' ppm':'—'}</p>`;
+    mis=o.I<(lcp||0)?'<p><b>❌ "พืชหายใจเฉพาะกลางคืน กลางวันสังเคราะห์ด้วยแสงอย่างเดียว"</b></p><p>✅ พืชหายใจ<b>ตลอดเวลา</b> เมื่อแสงน้อยกว่าจุดชดเชยแสง การหายใจมากกว่าการสังเคราะห์ จึงไม่เห็นฟอง O₂</p>':'<p><b>❌ "ฟองก๊าซ O₂ มาจากการสลาย CO₂ ที่ละลายในน้ำ"</b></p><p>✅ O₂ มาจาก<b>การแตกตัวของน้ำ</b> ส่วน NaHCO₃ ให้ CO₂ เป็นวัตถุดิบในวัฏจักรแคลวิน</p><p><b>❌ "เพิ่มแสงเท่าไรอัตราก็เพิ่มตลอด"</b> ✅ เมื่อถึงจุดอิ่มตัว ปัจจัยอื่น (CO₂ อุณหภูมิ) จะจำกัดแทน</p>';
+    tb=`<table><tr><th>ปัจจัย</th><th>ค่าปัจจุบัน</th><th>ผล</th></tr><tr><td>แสง</td><td>${o.I}</td><td>f(I) = ${r.fI.toFixed(2)}</td></tr><tr><td>CO₂</td><td>${o.Ca} ppm</td><td>f(CO₂) = ${r.fC.toFixed(2)}</td></tr><tr><td>อุณหภูมิ</td><td>${o.T} °C</td><td>f(T) = ${r.ft.toFixed(2)}</td></tr><tr><td>ความยาวคลื่น</td><td>${$('#white').checked?'แสงขาว':V('wl')+' nm'}</td><td>${(lightEff()*100).toFixed(0)}%</td></tr><tr><td>Mg, N</td><td colspan="2">องค์ประกอบของคลอโรฟิลล์ ขาดแล้วใบเหลือง (Chlorosis)</td></tr></table>`;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','เยื่อไทลาคอยด์: ปฏิกิริยาแสงและ Chemiosmosis','วัฏจักรแคลวิน (Calvin Cycle) ในสโตรมา','ภาคตัดขวางใบ: การตรึงคาร์บอนของพืช '+$('#plant').value,'ชุดทดลองสาหร่ายหางกระรอกในบีกเกอร์'][m];
+  $('#chartTitle').textContent=['','สเปกตรัมการดูดกลืนแสง vs Action spectrum','ปริมาณสารในวัฏจักรแคลวินตามเวลา','อัตราการสังเคราะห์สุทธิ vs อุณหภูมิ (C3 / C4 / CAM)','กราฟปัจจัยจำกัดอัตราการสังเคราะห์ด้วยแสง'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();};
+bind('I',v=>v+' μmol/m²/s');bind('wl',v=>v+' nm · '+colorName(v));bind('co2',v=>v+' ppm');bind('temp',v=>v+' °C');bind('atpS',v=>v+' %');bind('nadS',v=>v+' %');bind('exp',v=>v+' %'+(Math.abs(v-17)<=1?' (≈1/6)':''));bind('o2',v=>v+' %');bind('hour',fmtHour);
+const sw=()=>{$('#wlSw').style.background=wlColor(V('wl'));};$('#wl').addEventListener('input',sw);sw();
+['white','flow','lightOn','plant','autoClock','xax'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='plant')setMode(S.mode);updateText();}));
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;$('#step').onclick=()=>{S.running=false;S.stepReq=0.4;};
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+$('#tgPath').onclick=()=>{S.toggle='path';$('#tgPath').classList.add('on');$('#tgSpec').classList.remove('on');};
+$('#tgSpec').onclick=()=>{S.toggle='spec';$('#tgSpec').classList.add('on');$('#tgPath').classList.remove('on');};
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;let sdt=S.running?dt:0;if(S.stepReq>0){sdt=S.stepReq;S.stepReq=0;}S.time+=sdt;
+  const n=Math.max(1,Math.ceil(sdt/0.05)),h=sdt/n,stepF=[null,stepM1,stepM2,stepM3,stepM4][S.mode];if(sdt>0)for(let i=0;i<n;i++)stepF(h);
+  if(S.mode!==2&&sdt>0)stepM2(sdt);
+  const {g,w,h:H}=fit($('#main'));g.clearRect(0,0,w,H);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,H);drawChart();
+  accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

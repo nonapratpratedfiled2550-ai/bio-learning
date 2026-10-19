@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบหายใจและการแลกเปลี่ยนแก๊ส – Interactive Biology Lab</title>
+<style>
+:root{--bg:#081018;--panel:#0f1a24;--panel2:#15232f;--line:#24394a;--txt:#e6f1fa;--mut:#93abc0;--acc:#7dd3fc;--acc2:#fbbf24;--blue:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#0c4a6e,#3b0764);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#075985;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}input[type=range]:disabled{opacity:.4}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#1a2c3a;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#0369a1;border-color:#7dd3fc}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#7c3aed;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#050b11;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#060d14;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#060d14;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🫁 ระบบหายใจและการแลกเปลี่ยนแก๊ส (Respiratory System &amp; Gas Exchange)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : เปรียบเทียบอวัยวะแลกเปลี่ยนแก๊สของสัตว์</button>
+    <button data-mode="2">โหมด 2 : กลไกการหายใจและสไปโรมิเตอร์</button>
+    <button data-mode="3">โหมด 3 : การลำเลียง O₂ / CO₂ ในเลือด (Bohr effect)</button>
+    <button data-mode="4">โหมด 4 : การควบคุมการหายใจ</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="org"><option value="amoeba">อะมีบา – แพร่ผ่านเยื่อหุ้มเซลล์</option><option value="earthworm">ไส้เดือนดิน – ผิวหนัง</option><option value="insect">แมลง – ระบบท่อลม (Tracheal system)</option><option value="fish" selected>ปลา – เหงือก (Countercurrent)</option><option value="bird">นก – ปอด + ถุงลม (Air sacs)</option><option value="human">มนุษย์ – ปอด + Alveoli</option></select></div>
+      <p class="hint">ปลา: ใช้ปุ่ม Toggle ด้านล่างสลับการไหลแบบสวนทาง / ทางเดียวกัน</p>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>อัตราการหายใจ (RR) <b id="rrV"></b></label><input type="range" id="rr" min="6" max="40" step="1" value="12"></div>
+      <div class="ctl"><label>ปริมาตรอากาศหายใจปกติ (TV) <b id="tvV"></b></label><input type="range" id="tv" min="300" max="2000" step="50" value="500"></div>
+      <div class="btns"><button class="btn" id="mIn">หายใจเข้าลึกสุด (IRV)</button><button class="btn" id="mOut">หายใจออกแรงสุด (ERV)</button><button class="btn" id="mVC" style="grid-column:1/-1">วัดความจุปอด (VC)</button></div>
+      <label class="chk"><input type="checkbox" id="ptx"> ภาวะลมรั่วในช่องเยื่อหุ้มปอด (Pneumothorax)</label>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ตำแหน่ง</label><select id="loc"><option value="lung">ปอด (Alveolar capillary)</option><option value="tissue">เนื้อเยื่อ (Tissue capillary)</option></select></div>
+      <div class="ctl"><label>PO₂ <b id="po2V"></b></label><input type="range" id="po2" min="0" max="160" step="1" value="100"></div>
+      <div class="ctl"><label>PCO₂ <b id="pco2V"></b></label><input type="range" id="pco2" min="0" max="80" step="1" value="40"></div>
+      <label class="chk"><input type="checkbox" id="autoPH" checked> คำนวณ pH จาก PCO₂ (HCO₃⁻ = 24 mM)</label>
+      <div class="ctl"><label>pH เลือด <b id="phV"></b></label><input type="range" id="ph" min="7.0" max="7.8" step="0.01" value="7.4"></div>
+      <div class="ctl"><label>อุณหภูมิ <b id="tcV"></b></label><input type="range" id="tc" min="30" max="43" step="0.5" value="37"></div>
+      <label class="chk"><input type="checkbox" id="hbf"> แสดงฮีโมโกลบินทารกในครรภ์ (HbF)</label>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>สภาวะกิจกรรม</label><select id="act"><option value="rest">พัก (Rest)</option><option value="ex">ออกกำลังกาย (Exercise)</option><option value="alt">ที่สูง ~4,500 m (High altitude)</option></select></div>
+      <label class="chk"><input type="checkbox" id="hv"> หายใจเร็วและลึกโดยตั้งใจ (Hyperventilation)</label>
+      <label class="chk"><input type="checkbox" id="hold"> กลั้นหายใจ (Breath-holding)</label>
+      <p class="hint">PO₂ / PCO₂ / pH ในโหมดนี้คำนวณจากการระบายอากาศอัตโนมัติ</p>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgCounter" class="on">สวนทาง (Countercurrent)</button><button id="tgCon">ทางเดียวกัน (Concurrent)</button><button id="tgCA">ปฏิกิริยา CA</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#e6f1fa',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'counter',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#1a2c3a';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#cfe3f2',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t)];}
+function flow(g,P,n,speed,col,r=3,label,off=0){for(let j=0;j<n;j++){const s=(S.time*speed+j/n+off)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();if(label){T(g,label,x+4,y-6,col,8);}}}
+const hill=(P,P50,n=2.8)=>P<=0?0:Math.pow(P,n)/(Math.pow(P,n)+Math.pow(P50,n));
+const P50f=(pH,T,pco2=40)=>26.8*Math.pow(10,0.48*(7.4-pH))*Math.pow(10,0.024*(T-37))*Math.pow(Math.max(1,pco2)/40,0.06);
+const hhPH=pco2=>6.1+Math.log10(24/(0.03*Math.max(1,pco2)));
+function caInset(g,x,y,w,h,dir){g.fillStyle='rgba(30,16,60,.92)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle='#a78bfa';g.lineWidth=1;g.stroke();T(g,'Carbonic anhydrase (ในเซลล์เม็ดเลือดแดง)',x+10,y+14,'#c4b5fd',11,'left',true);
+  const items=['CO₂ + H₂O','H₂CO₃','H⁺ + HCO₃⁻'];const xs=[x+w*0.15,x+w*0.5,x+w*0.84];items.forEach((s,i)=>T(g,s,xs[i],y+h*0.55,'#e9d5ff',12,'center',true));
+  for(let i=0;i<2;i++){const a=xs[i]+w*0.1,b=xs[i+1]-w*0.1;if(dir>0)arrow(g,a,y+h*0.55,b,y+h*0.55,'#a78bfa',2);else arrow(g,b,y+h*0.55,a,y+h*0.55,'#a78bfa',2);}T(g,'CA',(xs[0]+xs[1])/2,y+h*0.55-12,'#fde047',10,'center',true);
+  T(g,dir>0?'เนื้อเยื่อ: ปฏิกิริยาไปทางขวา → HCO₃⁻ ออกสู่พลาสมา (Cl⁻ เข้า)':'ปอด: ปฏิกิริยาย้อนกลับ → CO₂ แพร่ออกสู่ถุงลม',x+10,y+h-12,'#cbd5e1',10);}
+
+/* ================= MODE 1 ================= */
+const ORG={amoeba:{n:'อะมีบา',surf:'เยื่อหุ้มเซลล์',trans:'แพร่โดยตรง (ไม่มีระบบลำเลียง)',mech:'การแพร่ (Diffusion)',eff:'—'},
+  earthworm:{n:'ไส้เดือนดิน',surf:'ผิวหนังที่ชุ่มชื้น',trans:'เลือด (ฮีโมโกลบินในพลาสมา)',mech:'แพร่ผ่านผิว → เส้นเลือดฝอย',eff:'—'},
+  insect:{n:'แมลง',surf:'ท่อลมฝอย (Tracheole)',trans:'ท่อลมส่ง O₂ ถึงเซลล์โดยตรง',mech:'รูหายใจ (Spiracle) + ท่อลม',eff:'—'},
+  fish:{n:'ปลา',surf:'แผ่นเหงือก (Gill lamellae)',trans:'เลือด (ฮีโมโกลบินใน RBC)',mech:'น้ำไหลทางเดียวผ่านเหงือก',eff:''},
+  bird:{n:'นก',surf:'Parabronchi ในปอด',trans:'เลือด (ฮีโมโกลบินใน RBC)',mech:'อากาศไหลทางเดียวด้วยถุงลม',eff:'สูง (Cross-current)'},
+  human:{n:'มนุษย์',surf:'ถุงลม (Alveoli) ~70 m²',trans:'เลือด (ฮีโมโกลบินใน RBC)',mech:'ไหลเข้า–ออกทางเดิม (Tidal)',eff:'≈ 25% (ลมหายใจออกยังมี O₂ ~16%)'}};
+const NTU=6;
+function gill(x,counter){const Pw=150,Pb=40,D=Pw-Pb;if(counter){const pw=Pw-D*NTU/(1+NTU)*x;return{pw,pb:pw-D/(1+NTU),eff:NTU/(1+NTU)};}const m=(Pw+Pb)/2,e=Math.exp(-2*NTU*x)*D/2;return{pw:m+e,pb:m-e,eff:(1-Math.exp(-2*NTU))/2};}
+const poCol=p=>{const t=clamp((p-30)/120,0,1);return`rgb(${Math.round(lerp(70,239,t))},${Math.round(lerp(90,68,t))},${Math.round(lerp(200,68,t))})`;};
+let M1;function initM1(){M1={t:0};}
+function stepM1(dt){M1.t+=dt;}
+function drawM1(g,w,h){const k=$('#org').value,o=ORG[k];g.fillStyle='#050b11';g.fillRect(0,0,w,h);const UW=w*0.62,X=f=>10+f*UW,Y=f=>f*h;const O2='#38bdf8',CO2='#a8a29e';
+  if(k==='amoeba'){const cx=X(0.5),cy=Y(0.5),R=Math.min(UW*0.25,h*0.3);g.fillStyle='rgba(56,189,248,.12)';g.strokeStyle='#7dd3fc';g.lineWidth=2;g.beginPath();for(let i=0;i<=72;i++){const a=i/72*6.283,r=R*(1+0.06*Math.sin(a*4+M1.t));i?g.lineTo(cx+Math.cos(a)*r*1.15,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r*1.15,cy+Math.sin(a)*r);}g.closePath();g.fill();g.stroke();
+    g.fillStyle='#1e3a8a';g.beginPath();g.ellipse(cx+R*0.3,cy-R*0.2,20,14,0,0,7);g.fill();
+    for(let i=0;i<12;i++){const a=i/12*6.283;flow(g,[[cx+Math.cos(a)*R*2.0,cy+Math.sin(a)*R*1.6],[cx+Math.cos(a)*R*0.4,cy+Math.sin(a)*R*0.35]],1,0.25,O2,3,null,hash(i));}
+    for(let i=0;i<8;i++){const a=i/8*6.283+0.3;flow(g,[[cx+Math.cos(a)*R*0.4,cy+Math.sin(a)*R*0.35],[cx+Math.cos(a)*R*2.0,cy+Math.sin(a)*R*1.6]],1,0.22,CO2,3,null,hash(i+30));}
+    T(g,'O₂ แพร่เข้า (ความเข้มข้นสูง → ต่ำ)',X(0.02),Y(0.06),O2,11);T(g,'CO₂ แพร่ออก',X(0.02),Y(0.11),CO2,11);T(g,'อัตราส่วนพื้นที่ผิว / ปริมาตร สูง → แพร่ได้เพียงพอ',X(0.02),Y(0.95),'#cbd5e1',11);}
+  else if(k==='earthworm'){const cx=X(0.45),cy=Y(0.5),R=Math.min(UW*0.3,h*0.36);g.fillStyle='rgba(125,211,252,.25)';g.beginPath();g.arc(cx,cy,R+10,0,7);g.fill();g.fillStyle='#c2410c';g.beginPath();g.arc(cx,cy,R,0,7);g.fill();g.fillStyle='#7c2d12';g.beginPath();g.arc(cx,cy,R-14,0,7);g.fill();
+    g.strokeStyle='#ef4444';g.lineWidth=3;g.beginPath();g.arc(cx,cy,R-8,0,7);g.stroke();g.fillStyle='#dc2626';g.beginPath();g.arc(cx,cy-R*0.55,9,0,7);g.fill();g.fillStyle='#fde68a';g.beginPath();g.arc(cx,cy,R*0.3,0,7);g.fill();T(g,'ลำไส้',cx,cy,'#78350f',10,'center',true);T(g,'เส้นเลือดด้านหลัง',cx+14,cy-R*0.55,'#fecaca',10);
+    for(let i=0;i<10;i++){const a=i/10*6.283;flow(g,[[cx+Math.cos(a)*(R+40),cy+Math.sin(a)*(R+40)],[cx+Math.cos(a)*(R-8),cy+Math.sin(a)*(R-8)],[cx+Math.cos(a+0.6)*(R-8),cy+Math.sin(a+0.6)*(R-8)]],1,0.2,O2,3,null,hash(i));}
+    T(g,'ชั้นเมือก (ผิวต้องชุ่มชื้น)',cx+R+14,cy-R*0.8,'#7dd3fc',11);T(g,'ผิวหนังบาง + เส้นเลือดฝอยใต้ผิว',cx+R+14,cy-R*0.6,'#fca5a5',11);T(g,'ภาพตัดขวางลำตัว',X(0.02),Y(0.05),'#cbd5e1',11,'left',true);}
+  else if(k==='insect'){const cy=Y(0.5);g.fillStyle='#78350f';g.beginPath();g.ellipse(X(0.15),cy,UW*0.08,h*0.1,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.33),cy,UW*0.11,h*0.14,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.68),cy,UW*0.26,h*0.18,0,0,7);g.fill();
+    T(g,'หัว',X(0.15),cy-h*0.13,'#fed7aa',10,'center');T(g,'อก',X(0.33),cy-h*0.17,'#fed7aa',10,'center');T(g,'ท้อง',X(0.68),cy-h*0.21,'#fed7aa',10,'center');
+    const sp=[0.3,0.48,0.58,0.68,0.78,0.88];g.strokeStyle='#e2e8f0';g.lineWidth=3;g.beginPath();g.moveTo(X(0.22),cy);g.lineTo(X(0.9),cy);g.stroke();
+    sp.forEach((sx,i)=>{const top=cy-(sx<0.4?h*0.13:h*0.17*Math.sqrt(1-((sx-0.68)/0.27)**2));g.fillStyle='#0f172a';g.beginPath();g.arc(X(sx),top,4,0,7);g.fill();g.strokeStyle='#e2e8f0';g.lineWidth=2.5;g.beginPath();g.moveTo(X(sx),top);g.lineTo(X(sx),cy);g.stroke();
+      for(let b=-1;b<=1;b+=2){g.lineWidth=1;g.beginPath();g.moveTo(X(sx),cy);g.lineTo(X(sx)+b*14,cy+h*0.08);g.lineTo(X(sx)+b*20,cy+h*0.12);g.stroke();g.fillStyle='#f87171';g.beginPath();g.arc(X(sx)+b*20,cy+h*0.12+5,5,0,7);g.fill();}
+      flow(g,[[X(sx),top-30],[X(sx),top],[X(sx),cy],[X(sx)+14,cy+h*0.08],[X(sx)+20,cy+h*0.12]],2,0.3,O2,2.5,null,i*0.13);});
+    T(g,'● รูหายใจ (Spiracle)',X(0.02),Y(0.06),'#e2e8f0',11);T(g,'— ท่อลม (Trachea) → ท่อลมฝอย (Tracheole)',X(0.02),Y(0.11),'#e2e8f0',11);T(g,'● เซลล์กล้ามเนื้อ: รับ O₂ จากท่อลมฝอยโดยตรง',X(0.02),Y(0.16),'#f87171',11);T(g,'Hemolymph (เลือดแมลง) ไม่ได้ลำเลียง O₂',X(0.02),Y(0.94),'#fde68a',11,'left',true);}
+  else if(k==='fish'){const counter=S.toggle!=='con';const x0=X(0.04),x1=X(0.96),wy=Y(0.3),by=Y(0.62),ch=h*0.14;
+    for(let i=0;i<60;i++){const f=i/60,x=lerp(x0,x1,f),gl=gill(f+1/120,counter);g.fillStyle=poCol(gl.pw);g.fillRect(x,wy,(x1-x0)/60+1,ch);g.fillStyle=poCol(gl.pb);g.fillRect(x,by,(x1-x0)/60+1,ch);}
+    g.fillStyle='#1e293b';g.fillRect(x0,wy+ch,x1-x0,by-wy-ch);T(g,'เยื่อบางของแผ่นเหงือก (Lamella)',(x0+x1)/2,(wy+ch+by)/2,'#94a3b8',11,'center');
+    arrow(g,x0,wy-16,x0+90,wy-16,'#38bdf8',2.5);T(g,'น้ำ (O₂ สูง) ไหล →',x0+96,wy-16,'#7dd3fc',11);if(counter){arrow(g,x1,by+ch+16,x1-90,by+ch+16,'#f87171',2.5);T(g,'← เลือดไหลสวนทาง',x1-96,by+ch+16,'#fca5a5',11,'right');}else{arrow(g,x0,by+ch+16,x0+90,by+ch+16,'#f87171',2.5);T(g,'เลือดไหลทางเดียวกัน →',x0+96,by+ch+16,'#fca5a5',11);}
+    for(let i=0;i<14;i++){const f=hash(i);const s=(S.time*0.6+hash(i+3))%1;const x=lerp(x0,x1,f);g.fillStyle='#38bdf8';g.beginPath();g.arc(x,lerp(wy+ch-4,by+4,s),2.5,0,7);g.fill();}
+    for(let i=0;i<=4;i++){const f=i/4,gl=gill(f,counter),x=lerp(x0,x1,f);T(g,gl.pw.toFixed(0),x,wy+ch/2,'#fff',11,'center',true);T(g,gl.pb.toFixed(0),x,by+ch/2,'#fff',11,'center',true);}
+    const e=gill(0,counter).eff;T(g,`ดึง O₂ ออกจากน้ำได้ ${(e*100).toFixed(0)}%`,X(0.5),Y(0.9),counter?'#86efac':'#fca5a5',15,'center',true);T(g,'ตัวเลข = PO₂ (mmHg)',X(0.04),Y(0.08),'#cbd5e1',10);
+    T(g,counter?'ความต่าง PO₂ คงที่ตลอดแผ่นเหงือก → แพร่ได้ตลอด':'ความต่าง PO₂ ลดลงจนเท่ากันกลางทาง → หยุดแพร่',X(0.5),Y(0.96),'#cbd5e1',11,'center');}
+  else if(k==='bird'){const ph=(M1.t%8)/8,ins=(ph%0.5)<0.25;const sacS=ins?1+0.25*Math.sin(((ph%0.5)/0.25)*Math.PI/2):1.25-0.25*Math.sin((((ph%0.5)-0.25)/0.25)*Math.PI/2);
+    g.fillStyle='rgba(125,211,252,.18)';g.strokeStyle='#7dd3fc';g.lineWidth=1.5;g.beginPath();g.ellipse(X(0.18),Y(0.6),UW*0.11*sacS,h*0.13*sacS,0,0,7);g.fill();g.stroke();g.beginPath();g.ellipse(X(0.78),Y(0.68),UW*0.14*sacS,h*0.16*sacS,0,0,7);g.fill();g.stroke();
+    g.fillStyle='#be185d';rr(g,X(0.3),Y(0.35),UW*0.36,h*0.16,20);g.fill();g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;for(let i=0;i<7;i++){const y=Y(0.37)+i*h*0.02;g.beginPath();g.moveTo(X(0.32),y);g.lineTo(X(0.64),y);g.stroke();}
+    g.strokeStyle='#e2e8f0';g.lineWidth=7;g.beginPath();g.moveTo(X(0.35),0);g.lineTo(X(0.35),Y(0.34));g.stroke();
+    T(g,'ถุงลมหน้า (Anterior)',X(0.18),Y(0.6)+h*0.17,'#7dd3fc',10,'center');T(g,'ถุงลมหลัง (Posterior)',X(0.78),Y(0.68)+h*0.2,'#7dd3fc',10,'center');T(g,'ปอด (Parabronchi)',X(0.48),Y(0.31),'#f9a8d4',10,'center');T(g,'หลอดลม',X(0.35)+8,Y(0.08),'#e2e8f0',10);
+    for(let i=0;i<4;i++)arrow(g,X(0.62)-i*UW*0.08,Y(0.43),X(0.58)-i*UW*0.08,Y(0.43),'#fde047',1.5);T(g,'อากาศในปอดไหลทางเดียวเสมอ',X(0.48),Y(0.54),'#fde047',10,'center');
+    const P=[[[0.35,0.03],[0.35,0.32],[0.5,0.56],[0.78,0.68]],[[0.78,0.68],[0.63,0.43],[0.33,0.43]],[[0.33,0.43],[0.18,0.6]],[[0.18,0.6],[0.33,0.36],[0.35,0.03]]];
+    [[0,'#fde047','ลมหายใจที่ 1'],[0.5,'#f472b6','ลมหายใจที่ 2']].forEach(([off,c,n])=>{const q=(ph+off)%1,seg=Math.floor(q*4),s=(q*4)%1;const pts=P[seg].map(([a,b])=>[X(a),Y(b)]);const [x,y]=along(pts,s);g.fillStyle=c;g.beginPath();g.arc(x,y,9,0,7);g.fill();T(g,n,x+12,y,c,10,'left',true);});
+    T(g,ins?'จังหวะ: หายใจเข้า (ถุงลมขยาย)':'จังหวะ: หายใจออก (ถุงลมหด)',X(0.02),Y(0.96),'#e2e8f0',12,'left',true);}
+  else{const ins=Math.sin(M1.t*1.3)>0;const sc=1+0.06*Math.sin(M1.t*1.3);const lx=X(0.2),ly=Y(0.55);
+    g.strokeStyle='#e2e8f0';g.lineWidth=6;g.beginPath();g.moveTo(lx,Y(0.05));g.lineTo(lx,Y(0.32));g.stroke();g.fillStyle='rgba(244,114,182,.35)';[-1,1].forEach(s=>{g.beginPath();g.ellipse(lx+s*UW*0.1*sc,ly,UW*0.085*sc,h*0.25*sc,0,0,7);g.fill();});
+    g.strokeStyle='#f9a8d4';g.lineWidth=2;const br=(x,y,a,l,d)=>{if(d>4)return;const x2=x+Math.sin(a)*l,y2=y+Math.cos(a)*l;g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();if(d===4){g.fillStyle='#fbcfe8';g.beginPath();g.arc(x2,y2,3,0,7);g.fill();}br(x2,y2,a-0.45,l*0.72,d+1);br(x2,y2,a+0.45,l*0.72,d+1);};br(lx,Y(0.32),-0.7,h*0.1,0);br(lx,Y(0.32),0.7,h*0.1,0);
+    arrow(g,lx+12,ins?Y(0.03):Y(0.18),lx+12,ins?Y(0.18):Y(0.03),ins?'#38bdf8':'#a8a29e',2.5);T(g,ins?'หายใจเข้า: O₂ 21%':'หายใจออก: O₂ ~16%, CO₂ ~4%',lx+20,Y(0.1),ins?'#7dd3fc':'#d6d3d1',11);
+    const ax=X(0.68),ay=Y(0.48),AR=Math.min(UW*0.2,h*0.24);g.fillStyle='rgba(125,211,252,.15)';g.strokeStyle='#7dd3fc';g.lineWidth=2;g.beginPath();g.arc(ax,ay,AR*sc,0,7);g.fill();g.stroke();
+    g.strokeStyle='#ef4444';g.lineWidth=9;g.beginPath();g.arc(ax,ay,AR*sc+9,Math.PI*0.75,Math.PI*2.25);g.stroke();T(g,'ภาพขยายถุงลม (Alveolus)',ax,ay-AR-30,'#e2e8f0',11,'center',true);T(g,'เส้นเลือดฝอย',ax+AR+14,ay+AR*0.6,'#fca5a5',10);
+    for(let i=0;i<8;i++){const a=Math.PI*0.8+i/8*Math.PI*1.4;flow(g,[[ax+Math.cos(a)*AR*0.3,ay+Math.sin(a)*AR*0.3],[ax+Math.cos(a)*(AR+9),ay+Math.sin(a)*(AR+9)]],1,0.35,O2,2.5,null,hash(i));flow(g,[[ax+Math.cos(a+0.15)*(AR+9),ay+Math.sin(a+0.15)*(AR+9)],[ax+Math.cos(a+0.15)*AR*0.3,ay+Math.sin(a+0.15)*AR*0.3]],1,0.3,CO2,2.5,null,hash(i+9));}
+    T(g,'ผนังถุงลม + ผนังเส้นเลือดฝอย หนา ~0.5 µm',ax,ay+AR+30,'#cbd5e1',10,'center');}
+  if(S.toggle==='ca'&&k!=='fish')caInset(g,10,h-86,UW-10,76,1);
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(10,20,30,.92)';rr(g,px,10,pw,h-20,10);g.fill();T(g,o.n,px+10,28,'#7dd3fc',15,'left',true);let y=50;
+  [['พื้นผิวแลกเปลี่ยนแก๊ส',o.surf],['การลำเลียง O₂',o.trans],['กลไก',o.mech],['ประสิทธิภาพดึง O₂',k==='fish'?(S.toggle==='con'?'≈ 50% (Concurrent)':'≈ 80–90% (Countercurrent)'):o.eff]].forEach(([a,b])=>{T(g,a,px+10,y,'#93abc0',10.5);y=wrap(g,b,px+10,y+15,pw-20,14,'#e6f1fa',11.5,true)+8;});
+  y+=4;wrap(g,'ลักษณะร่วมของพื้นผิวแลกเปลี่ยนแก๊ส: บาง · ชุ่มชื้น · พื้นที่ผิวมาก · มีเส้นเลือดมาก (ยกเว้นแมลง)',px+10,y,pw-20,14,'#fde68a',10.5);}
+
+/* ================= MODE 2 ================= */
+const RV=1200,ERV=1100,IC=3500;
+let M2;function initM2(){M2={v:RV+ERV,q:[],cur:null,t:0,hist:[],lastH:0,flow:0};}
+const FRC=()=>RV+ERV;
+function pushBreath(){const tv=V('tv'),per=60/V('rr');M2.q.push({to:FRC()+tv,dur:per*0.4},{to:FRC(),dur:per*0.6});}
+function maneuver(type){M2.q=[];M2.cur=null;const tlc=RV+ERV+IC;if(type==='in')M2.q.push({to:tlc,dur:2.2},{to:FRC(),dur:2});else if(type==='out')M2.q.push({to:RV,dur:2.5},{to:FRC(),dur:2});else M2.q.push({to:tlc,dur:2.2},{to:RV,dur:3.2},{to:FRC(),dur:2});}
+function stepM2(dt){M2.t+=dt;if(!M2.cur){if(!M2.q.length)pushBreath();const s=M2.q.shift();M2.cur={from:M2.v,to:s.to,dur:s.dur,e:0};}const c=M2.cur;c.e+=dt;const f=clamp(c.e/c.dur,0,1);const nv=lerp(c.from,c.to,(1-Math.cos(f*Math.PI))/2);M2.flow=(nv-M2.v)/dt;M2.v=nv;if(f>=1)M2.cur=null;
+  if(M2.t-M2.lastH>0.05){M2.lastH=M2.t;M2.hist.push([M2.t,M2.v]);while(M2.hist.length&&M2.t-M2.hist[0][0]>30)M2.hist.shift();}}
+function press(){const ptx=$('#ptx').checked;const palv=-M2.flow*0.002;const pip=ptx?0:-5-(M2.v-FRC())/200+palv;return{palv,pip,ptx};}
+function drawM2(g,w,h){g.fillStyle='#050b11';g.fillRect(0,0,w,h);const pr=press(),UW=w*0.62;const cx=10+UW*0.5,cy=h*0.5;const fr=(M2.v-RV)/(IC+ERV);const ex=fr;
+  const chestW=UW*0.34*(1+0.08*ex),chestH=h*0.34*(1+0.05*ex);const dy=cy+chestH*0.8,dome=h*0.1*(1-0.7*ex);
+  g.fillStyle=pr.ptx?'rgba(250,204,21,.18)':'rgba(56,189,248,.12)';g.beginPath();g.ellipse(cx,cy,chestW*1.02,chestH*0.98,0,0,7);g.fill();
+  [-1,1].forEach(s=>{const col=pr.ptx&&s===1;const lw=chestW*0.4*(col?0.5:(0.82+0.15*ex)),lh=chestH*0.62*(col?0.5:(0.85+0.15*ex));const ly=dy-dome*0.85-lh;g.fillStyle=col?'#9d174d':'#f472b6';g.beginPath();g.ellipse(cx+s*chestW*0.47,ly+(col?lh*0.6:0),lw,lh,0,0,7);g.fill();});
+  g.strokeStyle='#f97316';g.lineWidth=5;g.beginPath();g.moveTo(cx-chestW*1.0,dy+8);g.quadraticCurveTo(cx,dy-dome*2,cx+chestW*1.0,dy+8);g.stroke();T(g,'กะบังลม (Diaphragm)',cx+chestW*0.9,dy+26,'#fdba74',11,'center');
+  g.strokeStyle='rgba(226,232,240,.8)';g.lineWidth=3;for(let i=0;i<6;i++){const y=cy-chestH*0.7+i*chestH*0.26-ex*6*(1-i/8);const rw=chestW*(0.92+0.03*i);g.beginPath();g.ellipse(cx,y,rw,14,0,Math.PI*0.62,Math.PI*1.38);g.stroke();g.beginPath();g.ellipse(cx,y,rw,14,0,-Math.PI*0.38,Math.PI*0.38);g.stroke();}
+  g.strokeStyle='#e2e8f0';g.lineWidth=7;g.lineJoin='round';g.beginPath();g.moveTo(cx,cy-chestH*1.25);g.lineTo(cx,cy-chestH*0.3);g.stroke();g.lineWidth=5;g.beginPath();g.moveTo(cx-chestW*0.35,cy-chestH*0.05);g.lineTo(cx,cy-chestH*0.3);g.lineTo(cx+chestW*0.35,cy-chestH*0.05);g.stroke();
+  const fl=M2.flow;if(Math.abs(fl)>30){const up=fl<0;const L=clamp(Math.abs(fl)/30,10,60);arrow(g,cx+16,up?cy-chestH*0.7:cy-chestH*1.25-L+30,cx+16,up?cy-chestH*0.7-L:cy-chestH*0.7,up?'#a8a29e':'#38bdf8',3);T(g,up?'อากาศออก':'อากาศเข้า',cx+24,cy-chestH*1.1,up?'#d6d3d1':'#7dd3fc',12,'left',true);}
+  T(g,'ช่องเยื่อหุ้มปอด (Pleural cavity)',cx-chestW,cy-chestH*1.05,'#7dd3fc',10,'center');if(pr.ptx)T(g,'อากาศรั่วเข้า → ปอดขวาแฟบ',cx+chestW*0.5,cy+chestH*1.1,'#fde047',11,'center',true);
+  T(g,fl>30?'กล้ามเนื้อกะบังลม + Intercostal ภายนอกหดตัว → ทรวงอกขยาย':fl<-30?'กล้ามเนื้อคลายตัว → ทรวงอกเล็กลง':'',10+UW*0.5,h-14,'#cbd5e1',11,'center');
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(10,20,30,.92)';rr(g,px,10,pw,h-20,10);g.fill();let y=30;T(g,'ความดัน (เทียบบรรยากาศ, cmH₂O)',px+10,y,'#7dd3fc',12,'left',true);y+=24;
+  const gauge=(n,v,lo,hi,col)=>{T(g,n,px+10,y,'#cfe3f2',10.5);T(g,(v>0?'+':'')+v.toFixed(1),px+pw-10,y,col,12,'right',true);y+=12;g.fillStyle='#1a2c3a';rr(g,px+10,y,pw-20,8,4);g.fill();const z=px+10+(0-lo)/(hi-lo)*(pw-20);g.fillStyle='#64748b';g.fillRect(z-1,y-2,2,12);const xv=px+10+(clamp(v,lo,hi)-lo)/(hi-lo)*(pw-20);g.fillStyle=col;g.beginPath();g.arc(xv,y+4,6,0,7);g.fill();y+=26;};
+  gauge('P บรรยากาศ',0,-30,5,'#94a3b8');gauge('P ในถุงลม (Alveolar)',pr.palv,-3,3,'#38bdf8');gauge('P ในช่องเยื่อหุ้มปอด (Intrapleural)',pr.pip,-30,5,'#f472b6');
+  y+=4;T(g,'ปริมาตรปอด',px+10,y,'#7dd3fc',12,'left',true);y+=14;const bx=px+20,bw=40,bh=h-y-60,tlc=RV+ERV+IC;const seg=[[RV,'#475569','RV'],[ERV,'#0e7490','ERV'],[V('tv'),'#16a34a','TV'],[IC-V('tv'),'#7c3aed','IRV']];let acc=0;seg.forEach(([v,c,n])=>{const y0=y+bh-(acc+v)/tlc*bh;g.fillStyle=c;g.fillRect(bx,y0,bw,v/tlc*bh);T(g,`${n} ${v} mL`,bx+bw+8,y0+v/tlc*bh/2,'#e2e8f0',10);acc+=v;});
+  const yv=y+bh-M2.v/tlc*bh;g.strokeStyle='#fde047';g.lineWidth=2;g.beginPath();g.moveTo(bx-8,yv);g.lineTo(bx+bw+4,yv);g.stroke();T(g,`${Math.round(M2.v)} mL`,bx-10,yv,'#fde047',10,'right',true);
+  T(g,`VC = ${IC+ERV} mL · TLC = ${tlc} mL`,px+10,h-32,'#fde68a',11,'left',true);
+  if(S.toggle==='ca')caInset(g,10,10,UW-10,70,-1);}
+
+/* ================= MODE 3 ================= */
+let M3;function initM3(){M3={t:0};}
+function stepM3(dt){M3.t+=dt;}
+function bloodState(){const po2=V('po2'),pco2=V('pco2'),T=V('tc');const pH=$('#autoPH').checked?clamp(hhPH(pco2),6.8,7.9):V('ph');const p50=P50f(pH,T,pco2);const s=hill(po2,p50);const ct=1.34*15*s+0.003*po2;return{po2,pco2,T,pH,p50,s,ct,pf50:p50*0.72};}
+function drawM3(g,w,h){g.fillStyle='#050b11';g.fillRect(0,0,w,h);const b=bloodState(),loc=$('#loc').value,UW=w*0.6;const lung=loc==='lung';
+  if(lung){g.fillStyle='rgba(125,211,252,.12)';rr(g,10,14,UW-10,h*0.3,20);g.fill();T(g,'ถุงลม (Alveolus) – PO₂ 100, PCO₂ 40',20,30,'#7dd3fc',11,'left',true);}else{for(let i=0;i<5;i++){g.fillStyle='rgba(251,146,60,.18)';rr(g,14+i*(UW-20)/5,14,(UW-20)/5-8,h*0.3,12);g.fill();}T(g,'เซลล์เนื้อเยื่อ – PO₂ 40, PCO₂ 46',20,30,'#fdba74',11,'left',true);}
+  const ty=h*0.42,th=h*0.2;g.fillStyle='#3f0d12';rr(g,10,ty,UW-10,th,th/2);g.fill();g.strokeStyle='#fca5a5';g.lineWidth=2;g.stroke();T(g,'เส้นเลือดฝอย → ทิศการไหล',20,ty+th+14,'#fca5a5',10);
+  for(let i=0;i<7;i++){const x=10+((S.time*40+i*(UW/7))%(UW-30))+15,y=ty+th/2+Math.sin(i*2)*th*0.15;const f=(x-10)/(UW-10);const sat=lung?lerp(0.75,b.s,clamp(f*2,0,1)):lerp(0.97,b.s,clamp(f*2,0,1));g.fillStyle=`rgb(${Math.round(lerp(120,230,sat))},${Math.round(lerp(40,30,sat))},${Math.round(lerp(140,40,sat))})`;g.beginPath();g.ellipse(x,y,16,10,0,0,7);g.fill();g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(x,y,7,4,0,0,7);g.fill();}
+  for(let i=0;i<10;i++){const x=20+hash(i)*(UW-40);const s=(S.time*0.5+hash(i+4))%1;g.fillStyle='#38bdf8';const y=lung?lerp(h*0.3,ty+10,s):lerp(ty+10,h*0.3,s);g.beginPath();g.arc(x,y,2.8,0,7);g.fill();g.fillStyle='#a8a29e';const y2=lung?lerp(ty+10,h*0.3,s):lerp(h*0.3,ty+10,s);g.beginPath();g.arc(x+10,y2,2.8,0,7);g.fill();}
+  T(g,lung?'O₂ ↓ เข้าเลือด · CO₂ ↑ ออกสู่ถุงลม':'O₂ ↑ ออกสู่เนื้อเยื่อ · CO₂ ↓ เข้าเลือด',20,h*0.36,'#e2e8f0',11);
+  const lx=20,ly=h*0.72;T(g,`PO₂ ${b.po2} mmHg · PCO₂ ${b.pco2} mmHg · pH ${b.pH.toFixed(2)} · ${b.T} °C`,lx,ly,'#e2e8f0',12,'left',true);T(g,`P50 = ${b.p50.toFixed(1)} mmHg ${b.p50>28?'(เส้นโค้งเลื่อนขวา → ปล่อย O₂ ง่าย)':b.p50<25.5?'(เลื่อนซ้าย → จับ O₂ แน่น)':'(ปกติ ≈ 26.8)'}`,lx,ly+20,b.p50>28?'#fca5a5':b.p50<25.5?'#93c5fd':'#cbd5e1',11);
+  bar(g,lx,ly+50,UW-40,12,b.s,'#ef4444','ความอิ่มตัวของ Hb กับ O₂ (SO₂)',(b.s*100).toFixed(1)+'%');T(g,`O₂ content ≈ ${b.ct.toFixed(1)} mL O₂/dL เลือด`,lx,ly+82,'#fde68a',11);
+  const rx=w*0.62,rw=w*0.36,rcx=rx+rw/2,rcy=h*0.5,R=Math.min(rw*0.46,h*0.42);g.fillStyle='rgba(220,38,38,.22)';g.strokeStyle='#f87171';g.lineWidth=2;g.beginPath();g.arc(rcx,rcy,R,0,7);g.fill();g.stroke();T(g,'ภาพขยายเซลล์เม็ดเลือดแดง',rcx,rcy-R-10<12?16:rcy-R-10,'#fecaca',11,'center',true);
+  if(S.toggle==='ca'){const dir=lung?-1:1;const ys=[rcy-R*0.55,rcy-R*0.15,rcy+R*0.25,rcy+R*0.6];T(g,'CO₂ + H₂O',rcx-R*0.45,ys[0],'#e9d5ff',12,'center',true);T(g,'H₂CO₃',rcx-R*0.45,ys[1],'#e9d5ff',12,'center',true);T(g,'H⁺ + HCO₃⁻',rcx-R*0.45,ys[2],'#e9d5ff',12,'center',true);
+    for(let i=0;i<2;i++){if(dir>0)arrow(g,rcx-R*0.45,ys[i]+9,rcx-R*0.45,ys[i+1]-9,'#a78bfa',2);else arrow(g,rcx-R*0.45,ys[i+1]-9,rcx-R*0.45,ys[i]+9,'#a78bfa',2);}T(g,'CA',rcx-R*0.45+10,(ys[0]+ys[1])/2,'#fde047',10,'left',true);
+    const bxx=rcx+R*0.98;g.fillStyle='#22d3ee';g.fillRect(bxx-5,rcy+R*0.05,10,22);T(g,'Band 3',bxx-8,rcy+R*0.05-8,'#67e8f9',9,'right');
+    for(let j=0;j<3;j++){const s=(S.time*0.4+j/3)%1;const a=dir>0?s:1-s;T(g,'HCO₃⁻',lerp(rcx,bxx+30,a),rcy+R*0.12-4,'#fde047',9,'center',true);T(g,'Cl⁻',lerp(bxx+30,rcx,a),rcy+R*0.12+12,'#86efac',9,'center',true);}
+    T(g,dir>0?'Chloride shift: HCO₃⁻ ออก / Cl⁻ เข้า':'Reverse chloride shift',rcx,rcy+R*0.45,'#cbd5e1',10,'center');T(g,dir>0?'H⁺ + HbO₂ → HHb + O₂ (Bohr effect)':'HHb + O₂ → HbO₂ + H⁺',rcx,rcy+R*0.75,'#fca5a5',10.5,'center',true);}
+  else{const n=24,filled=Math.round(b.s*n);for(let i=0;i<6;i++){const hx=rcx+(i%3-1)*R*0.55,hy=rcy+(Math.floor(i/3)-0.5)*R*0.75;g.fillStyle='rgba(255,255,255,.08)';g.beginPath();g.arc(hx,hy,R*0.24,0,7);g.fill();for(let k=0;k<4;k++){const idx=i*4+k,sx=hx+(k%2-0.5)*R*0.22,sy=hy+(Math.floor(k/2)-0.5)*R*0.22;g.fillStyle=idx<filled?'#dc2626':'#6b21a8';g.beginPath();g.arc(sx,sy,R*0.08,0,7);g.fill();if(idx<filled){g.fillStyle='#38bdf8';g.beginPath();g.arc(sx+R*0.06,sy-R*0.06,R*0.035,0,7);g.fill();}}}
+    T(g,'Hb + 4O₂ ⇌ Hb(O₂)₄',rcx,rcy+R*0.75,'#fecaca',12,'center',true);T(g,`จับ O₂ ${filled}/24 ตำแหน่ง (Heme)`,rcx,rcy-R*0.72,'#e2e8f0',10.5,'center');}}
+
+/* ================= MODE 4 ================= */
+let M4;function initM4(){M4={VE:6,PaCO2:40,PaO2:95,t:0,hist:[],lastH:-9,breath:0,drive:6};}
+function ctrl(){const act=$('#act').value;const VCO2=act==='ex'?1000:200,Patm=act==='alt'?430:760,PiO2=0.21*(Patm-47);const TV=clamp(0.5+0.035*(M4.VE-6),0.45,2.5),RR=M4.VE>0.3?M4.VE/TV:0;const pH=hhPH(M4.PaCO2),S=hill(M4.PaO2,P50f(pH,37,M4.PaCO2));return{act,VCO2,Patm,PiO2,TV,RR,pH,S};}
+function stepM4(dt){const c=ctrl();M4.t+=dt;const VA=Math.max(0.1,M4.VE-0.15*c.RR);const tC=clamp(0.863*c.VCO2/VA,10,120);M4.PaCO2+=(tC-M4.PaCO2)*Math.min(1,dt*0.35);const tO=clamp(c.PiO2-M4.PaCO2/0.8-5,15,140);M4.PaO2+=(tO-M4.PaO2)*Math.min(1,dt*($('#hold').checked?0.12:0.35));
+  const pk=M4.PaO2<100?((100-M4.PaO2)/40)**2:0;const ff=c.act==='ex'?18:0;M4.drive=6+2*(M4.PaCO2-40)+8*pk+ff;let tgt=clamp(M4.drive,2,120);if($('#hv').checked)tgt=30;if($('#hold').checked)tgt=0;M4.VE+=(tgt-M4.VE)*Math.min(1,dt*0.8);M4.breath+=dt*c.RR/60;
+  if(M4.t-M4.lastH>=0.5){M4.lastH=M4.t;M4.hist.push([M4.t,M4.PaO2,M4.PaCO2,M4.VE]);while(M4.hist.length&&M4.t-M4.hist[0][0]>90)M4.hist.shift();}}
+function pulses(g,P,rate,col){const n=clamp(Math.round(rate),0,8);for(let j=0;j<n;j++){const s=(S.time*0.6+j/n)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,3.5,0,7);g.fill();}}
+function drawM4(g,w,h){g.fillStyle='#050b11';g.fillRect(0,0,w,h);const c=ctrl(),UW=w*0.62,X=f=>10+f*UW,Y=f=>f*h;
+  g.fillStyle='rgba(148,163,184,.12)';g.beginPath();g.ellipse(X(0.22),Y(0.2),UW*0.17,h*0.17,0,0,7);g.fill();g.fillStyle='#be185d';g.beginPath();g.ellipse(X(0.27),Y(0.27),UW*0.045,h*0.03,0,0,7);g.fill();g.fillStyle='#9d174d';rr(g,X(0.26),Y(0.3),UW*0.04,h*0.09,6);g.fill();
+  T(g,'Pons (ปรับจังหวะ)',X(0.33),Y(0.25),'#f9a8d4',10);T(g,'Medulla oblongata (ศูนย์ควบคุมการหายใจ)',X(0.32),Y(0.34),'#f9a8d4',10);g.fillStyle='#a78bfa';g.beginPath();g.arc(X(0.255),Y(0.37),6,0,7);g.fill();T(g,'Central chemoreceptor (ไว H⁺ จาก CO₂)',X(0.03),Y(0.44),'#c4b5fd',10);
+  g.fillStyle='#fbbf24';g.beginPath();g.arc(X(0.42),Y(0.5),6,0,7);g.fill();T(g,'Carotid body',X(0.45),Y(0.5),'#fde68a',10);g.beginPath();g.arc(X(0.46),Y(0.6),6,0,7);g.fill();T(g,'Aortic body',X(0.49),Y(0.6),'#fde68a',10);
+  const sc=1+0.12*c.TV*(1-Math.cos(M4.breath*6.283))/2;const lx=X(0.3),ly=Y(0.72);g.fillStyle='rgba(244,114,182,.5)';[-1,1].forEach(s=>{g.beginPath();g.ellipse(lx+s*UW*0.08*sc,ly,UW*0.07*sc,h*0.12*sc,0,0,7);g.fill();});
+  const dy=ly+h*0.13*sc;g.strokeStyle='#f97316';g.lineWidth=4;g.beginPath();g.moveTo(lx-UW*0.17,dy+6);g.quadraticCurveTo(lx,dy-h*0.06*(2-sc),lx+UW*0.17,dy+6);g.stroke();T(g,'กะบังลม + Intercostal',lx,dy+18,'#fdba74',10,'center');
+  g.strokeStyle='rgba(203,213,225,.35)';g.lineWidth=1.5;const ner=[[[X(0.255),Y(0.37)],[X(0.27),Y(0.36)]],[[X(0.42),Y(0.5)],[X(0.33),Y(0.42)],[X(0.29),Y(0.37)]],[[X(0.46),Y(0.6)],[X(0.36),Y(0.48)],[X(0.29),Y(0.38)]],[[X(0.28),Y(0.39)],[X(0.2),Y(0.55)],[lx-UW*0.1,dy]]];ner.forEach(P=>{g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();});
+  const pk=M4.PaO2<100?((100-M4.PaO2)/40)**2:0;pulses(g,ner[1],pk*3+Math.max(0,M4.PaCO2-40)*0.1,'#fbbf24');pulses(g,ner[2],pk*2,'#fbbf24');pulses(g,ner[3],M4.VE/5,'#f472b6');T(g,'Phrenic nerve',X(0.12),Y(0.53),'#f9a8d4',10);
+  const ch=Math.max(0,M4.PaCO2-32)/4;for(let i=0;i<clamp(Math.round(ch),0,8);i++){const a=i*0.8+S.time;T(g,'H⁺',X(0.255)+Math.cos(a)*16,Y(0.37)+Math.sin(a)*10,'#c4b5fd',8,'center',true);}
+  T(g,c.act==='ex'?'🏃 ออกกำลังกาย: กล้ามเนื้อผลิต CO₂ เพิ่ม 5 เท่า':c.act==='alt'?`🏔️ ที่สูง: P บรรยากาศ ${c.Patm} mmHg → PO₂ อากาศหายใจ ${c.PiO2.toFixed(0)} mmHg`:'😌 พัก',X(0.02),Y(0.96),'#e2e8f0',11,'left',true);
+  if(S.toggle==='ca')caInset(g,X(0.5),Y(0.7),UW*0.5,76,1);
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(10,20,30,.92)';rr(g,px,10,pw,h-20,10);g.fill();let y=34;
+  [['PaO₂',M4.PaO2,140,'mmHg','#38bdf8'],['PaCO₂',M4.PaCO2,80,'mmHg','#a8a29e'],['pH เลือด',(c.pH-7)/0.8,1,'','#a78bfa'],['Minute ventilation',M4.VE,60,'L/min','#22c55e'],['แรงกระตุ้นการหายใจ (Drive)',M4.drive,60,'','#f472b6']].forEach(([n,v,mx,u,col])=>{const txt=n==='pH เลือด'?c.pH.toFixed(2):v.toFixed(n==='Minute ventilation'?1:0)+' '+u;bar(g,px+10,y,pw-20,9,v/mx,col,n,txt);y+=32;});
+  y+=4;T(g,`RR ${c.RR.toFixed(0)} ครั้ง/นาที · TV ${(c.TV*1000).toFixed(0)} mL`,px+10,y,'#e2e8f0',11.5,'left',true);y+=20;T(g,`SpO₂ ${(c.S*100).toFixed(0)}%`,px+10,y,c.S<0.9?'#fca5a5':'#86efac',14,'left',true);y+=26;
+  const st=status4(c);wrap(g,st[1],px+10,y,pw-20,15,st[2],11,true);}
+function status4(c){const pH=c.pH,pa=M4.PaO2,pc=M4.PaCO2;if(pa<60)return['Hypoxia','⚠ Hypoxia: PaO₂ < 60 → Peripheral chemoreceptor กระตุ้นการหายใจอย่างแรง','#fca5a5'];if(pH<7.35)return['Acidosis','⚠ Respiratory acidosis: CO₂ คั่ง → H⁺ ↑ → Central chemoreceptor กระตุ้นการหายใจ','#fca5a5'];if(pc<35||pH>7.45)return['Hyperventilation','⚠ Hyperventilation: CO₂ ถูกขับออกมาก → pH ↑ (Alkalosis) อาจเวียนศีรษะ มือชา','#fde68a'];return['Normal','✓ ปกติ: PaCO₂ ≈ 40, pH ≈ 7.4','#86efac'];}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#1c3142';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fmtN(v),L-4,Y(v),'#93abc0',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#93abc0',10,'center');}
+  g.strokeStyle='#36556c';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#93abc0',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#93abc0',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=150;i++){const x=x0+(x1-x0)*i/150,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#e6f1fa',10);});}
+function hl(g,A,y,w,col,lab){g.strokeStyle=col;g.setLineDash([3,3]);g.lineWidth=1;g.beginPath();g.moveTo(A.L,A.Y(y));g.lineTo(w-A.Rm,A.Y(y));g.stroke();g.setLineDash([]);if(lab)T(g,lab,A.L+4,A.Y(y)-7,col,9.5);}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const A=axes(g,w,h,0,1,0,160,'ตำแหน่งตามแผ่นเหงือก (ทิศทางน้ำ →)','PO₂ (mmHg)',4,4,v=>v===0?'น้ำเข้า':v===1?'น้ำออก':'');[true,false].forEach(cc=>{plot(g,A,x=>gill(x,cc).pw,0,1,cc?'#38bdf8':'#7dd3fc',cc?2.6:1.4,cc?null:[5,4]);plot(g,A,x=>gill(x,cc).pb,0,1,cc?'#ef4444':'#fca5a5',cc?2.6:1.4,cc?null:[5,4]);});
+    legend(g,[['น้ำ (สวนทาง)','#38bdf8'],['เลือด (สวนทาง)','#ef4444'],['น้ำ (ทางเดียวกัน)','#7dd3fc'],['เลือด (ทางเดียวกัน)','#fca5a5']],w-128,18);}
+  else if(m===2){const H=M2.hist,t1=Math.max(30,M2.t),t0=t1-30;const A=axes(g,w,h,t0,t1,0,6500,'เวลา (วินาที)','ปริมาตรปอด (mL)',5,5,v=>Math.round(v-t0)+'');
+    hl(g,A,RV,w,'#64748b','RV');hl(g,A,FRC(),w,'#0e7490','FRC');hl(g,A,FRC()+V('tv'),w,'#16a34a','');hl(g,A,RV+ERV+IC,w,'#7c3aed','TLC');
+    g.strokeStyle='#fde047';g.lineWidth=2.2;g.beginPath();H.forEach(([t,v],i)=>{i?g.lineTo(A.X(t),A.Y(v)):g.moveTo(A.X(t),A.Y(v));});g.stroke();
+    const bx=w-A.Rm-4;const br=(a,b,lab,col,dx)=>{g.strokeStyle=col;g.lineWidth=1.5;g.beginPath();g.moveTo(bx-dx,A.Y(a));g.lineTo(bx-dx-4,A.Y(a));g.lineTo(bx-dx-4,A.Y(b));g.lineTo(bx-dx,A.Y(b));g.stroke();T(g,lab,bx-dx-7,(A.Y(a)+A.Y(b))/2,col,9.5,'right',true);};
+    br(FRC(),FRC()+V('tv'),'TV','#4ade80',0);br(FRC()+V('tv'),RV+ERV+IC,'IRV','#a78bfa',0);br(RV,FRC(),'ERV','#22d3ee',0);br(0,RV,'RV','#94a3b8',0);br(RV,RV+ERV+IC,'VC','#fde68a',34);br(0,RV+ERV+IC,'TLC','#f9a8d4',62);}
+  else if(m===3){const b=bloodState();const A=axes(g,w,h,0,160,0,100,'PO₂ (mmHg)','ความอิ่มตัว SO₂ (%)',8,4);plot(g,A,p=>hill(p,26.8)*100,0,160,'#64748b',1.5,[5,4]);plot(g,A,p=>hill(p,b.p50)*100,0,160,'#ef4444',2.8);if($('#hbf').checked)plot(g,A,p=>hill(p,19.5)*100,0,160,'#f472b6',2,[3,3]);
+    [[40,'เนื้อเยื่อ'],[100,'ปอด']].forEach(([p,n])=>{g.strokeStyle='#334155';g.setLineDash([2,3]);g.beginPath();g.moveTo(A.X(p),A.Tm);g.lineTo(A.X(p),h-A.B);g.stroke();g.setLineDash([]);T(g,n,A.X(p)+3,A.Tm+8,'#93abc0',9.5);});
+    g.fillStyle='#fde047';g.beginPath();g.arc(A.X(b.po2),A.Y(b.s*100),5,0,7);g.fill();hl(g,A,50,w,'#475569','50%');legend(g,[['ปกติ (pH 7.4, 37 °C)','#64748b'],['สภาวะปัจจุบัน','#ef4444']].concat($('#hbf').checked?[['HbF (ทารก)','#f472b6']]:[]),w-130,h-90);}
+  else{const H=M4.hist,t1=Math.max(60,M4.t),t0=Math.max(0,t1-90);const A=axes(g,w,h,t0,t1,0,140,'เวลา (วินาที)','mmHg / L·min⁻¹',4,4);[[1,'#38bdf8'],[2,'#a8a29e'],[3,'#22c55e']].forEach(([i,c])=>{g.strokeStyle=c;g.lineWidth=2;g.beginPath();let f=1;H.forEach(r=>{if(r[0]<t0)return;f?g.moveTo(A.X(r[0]),A.Y(clamp(r[i],0,140))):g.lineTo(A.X(r[0]),A.Y(clamp(r[i],0,140)));f=0;});g.stroke();});
+    hl(g,A,60,w,'#f87171','PaO₂ 60 (Hypoxia)');legend(g,[['PaO₂','#38bdf8'],['PaCO₂','#a8a29e'],['Minute ventilation','#22c55e']],w-120,18);}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const T1='<table><tr><th>สัตว์</th><th>อวัยวะ</th><th>การลำเลียง O₂</th><th>จุดเด่น</th></tr><tr><td>อะมีบา</td><td>เยื่อหุ้มเซลล์</td><td>แพร่</td><td>SA/V สูง</td></tr><tr><td>ไส้เดือนดิน</td><td>ผิวหนัง</td><td>เลือด</td><td>ผิวต้องชุ่มชื้น</td></tr><tr><td>แมลง</td><td>ท่อลม</td><td>ท่อลมถึงเซลล์</td><td>เลือดไม่ขน O₂</td></tr><tr><td>ปลา</td><td>เหงือก</td><td>เลือด</td><td>Countercurrent 80–90%</td></tr><tr><td>นก</td><td>ปอด + ถุงลม</td><td>เลือด</td><td>อากาศไหลทางเดียว</td></tr><tr><td>มนุษย์</td><td>ปอด (Alveoli)</td><td>เลือด</td><td>Tidal, ~300 ล้านถุงลม</td></tr></table>';
+const T2='<table><tr><th>ปริมาตร</th><th>ค่า (mL)</th><th>ความหมาย</th></tr><tr><td>TV</td><td>500</td><td>หายใจปกติต่อครั้ง</td></tr><tr><td>IRV</td><td>3000</td><td>หายใจเข้าเพิ่มได้อีกสูงสุด</td></tr><tr><td>ERV</td><td>1100</td><td>หายใจออกเพิ่มได้อีกสูงสุด</td></tr><tr><td>RV</td><td>1200</td><td>ค้างในปอดเสมอ</td></tr><tr><td>VC = TV+IRV+ERV</td><td>4600</td><td>ความจุที่หายใจได้</td></tr><tr><td>TLC = VC+RV</td><td>5800</td><td>ความจุปอดทั้งหมด</td></tr></table>';
+const T3='<table><tr><th>รูปแบบการลำเลียง</th><th>สัดส่วน</th></tr><tr><td>O₂ จับกับ Hb (HbO₂)</td><td>~98.5%</td></tr><tr><td>O₂ ละลายในพลาสมา</td><td>~1.5%</td></tr><tr><td>CO₂ เป็น HCO₃⁻ ในพลาสมา</td><td>~70%</td></tr><tr><td>CO₂ จับ Hb (Carbaminohemoglobin)</td><td>~23%</td></tr><tr><td>CO₂ ละลายในพลาสมา</td><td>~7%</td></tr></table><p class="hint">เลื่อนขวา (Bohr): PCO₂ ↑, H⁺ ↑ (pH ↓), อุณหภูมิ ↑, 2,3-BPG ↑</p>';
+const T4='<table><tr><th>ส่วน</th><th>ตำแหน่ง</th><th>ตอบสนองต่อ</th></tr><tr><td>ศูนย์หายใจ</td><td>Medulla oblongata</td><td>กำหนดจังหวะการหายใจ</td></tr><tr><td>Pneumotaxic / Apneustic</td><td>Pons</td><td>ปรับความเร็ว–ความลึก</td></tr><tr><td>Central chemoreceptor</td><td>ผิว Medulla</td><td>H⁺ ในน้ำไขสันหลัง (จาก CO₂) — สำคัญที่สุด</td></tr><tr><td>Peripheral chemoreceptor</td><td>Carotid & Aortic body</td><td>PO₂ < 60 mmHg, H⁺, CO₂</td></tr><tr><td>Cerebral cortex</td><td>สมองส่วนหน้า</td><td>ควบคุมภายใต้อำนาจจิตใจ เช่น กลั้นหายใจ พูด ร้องเพลง (ชั่วคราว)</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#org').value,o=ORG[k];const cc=S.toggle!=='con';st=[['พื้นผิวแลกเปลี่ยนแก๊ส',o.surf],['การลำเลียง O₂',o.trans],['ประสิทธิภาพดึง O₂',k==='fish'?(gill(0,cc).eff*100).toFixed(0)+' %':o.eff],['กลไก',o.mech]];
+    eq='กฎการแพร่ของ Fick: อัตราการแพร่ ∝ (พื้นที่ผิว × ความต่างความดันย่อย) / ความหนาของเยื่อ\n'+(k==='fish'?`Countercurrent: E = NTU/(1+NTU) = ${(gill(0,true).eff*100).toFixed(0)}%   ·   Concurrent: E = (1 − e^(−2·NTU))/2 = ${(gill(0,false).eff*100).toFixed(0)}%   (NTU = ${NTU})`:k==='human'?'ทางเดินหายใจ: รูจมูก → โพรงจมูก → คอหอย → กล่องเสียง (Epiglottis) → ท่อลม → หลอดลม → หลอดลมฝอย → ถุงลม\nอากาศหายใจเข้า O₂ 21% → หายใจออก O₂ ~16% (ใช้ไปเพียง ~1/4)':k==='bird'?'หายใจ 2 รอบต่ออากาศ 1 ก้อน: เข้า→ถุงลมหลัง | ออก→ปอด | เข้า→ถุงลมหน้า | ออก→ออกนอกตัว':'O₂ (สูง ภายนอก) → แพร่ → O₂ (ต่ำ ภายใน)');
+    an={amoeba:'<p>สิ่งมีชีวิตเล็กมาก <b>SA/V สูง</b> การแพร่ผ่านเยื่อหุ้มเซลล์จึงเพียงพอ ไม่ต้องมีอวัยวะหายใจ</p>',earthworm:'<p>ไส้เดือนแลกเปลี่ยนแก๊สผ่าน<b>ผิวหนังที่ต้องชุ่มชื้น</b> ถ้าผิวแห้ง O₂ ละลายไม่ได้ จะขาดอากาศ (จึงขึ้นมาบนดินเมื่อฝนตกน้ำท่วมรู)</p>',insect:'<p>แมลงใช้<b>ท่อลม</b>ส่ง O₂ ถึงเซลล์โดยตรง ระบบเลือดเปิดจึงไม่ต้องลำเลียง O₂ — ข้อจำกัดนี้ทำให้แมลงตัวไม่ใหญ่มาก</p>',fish:`<p>${cc?'<span class="tag ok">Countercurrent</span> ความต่าง PO₂ ระหว่างน้ำกับเลือด<b>คงที่ตลอดแผ่นเหงือก</b> → ดึง O₂ ได้ ~86%':'<span class="tag no">Concurrent</span> PO₂ ของน้ำและเลือดเข้าใกล้กันจน<b>เท่ากันที่ ~95 mmHg</b> → ดึง O₂ ได้เพียง ~50%'}</p><p>น้ำมี O₂ น้อยกว่าอากาศ ~30 เท่า ปลาจึงต้องมีกลไกที่มีประสิทธิภาพสูง</p>`,bird:'<p>ถุงลมทำหน้าที่เป็น<b>เครื่องสูบลม</b> (ไม่แลกเปลี่ยนแก๊ส) ทำให้อากาศไหลผ่าน Parabronchi <b>ทางเดียวตลอดทั้งหายใจเข้าและออก</b> — เหมาะกับการบินที่ใช้ O₂ สูง</p>',human:'<p>ปอดมนุษย์เป็นแบบ<b>ไหลเข้า–ออกทางเดิม (Tidal)</b> มีอากาศค้าง (RV) ผสมกับอากาศใหม่ จึงดึง O₂ ได้ไม่หมด ลมหายใจออกยังมี O₂ ~16%</p><p>ผนังถุงลมเป็นเซลล์บุผิวแบนชั้นเดียว (Simple squamous epithelium) และมีสาร <b>Surfactant</b> ลดแรงตึงผิว ป้องกันถุงลมแฟบ (ทารกคลอดก่อนกำหนดที่ขาด Surfactant จะหายใจลำบาก)</p>'}[k];
+    mis=k==='insect'?'<p><b>❌ "แมลงลำเลียง O₂ ด้วยเลือดเหมือนคน"</b></p><p>✅ แมลงใช้<b>ระบบท่อลม</b>ส่ง O₂ ถึงเซลล์โดยตรง Hemolymph ไม่มีฮีโมโกลบินและไม่ได้ขน O₂</p>':k==='human'?'<p><b>❌ "ลมหายใจออกไม่มี O₂ เหลือ มีแต่ CO₂"</b></p><p>✅ ลมหายใจออกยังมี <b>O₂ ~16%</b> (CO₂ ~4%) จึงใช้ช่วยหายใจแบบปากต่อปาก (CPR) ได้</p>':k==='fish'?'<p><b>❌ "ปลาหายใจด้วยออกซิเจนจากโมเลกุลน้ำ H₂O"</b></p><p>✅ ปลาใช้ <b>O₂ ที่ละลายอยู่ในน้ำ</b> ไม่ได้แยก O จากโมเลกุลน้ำ</p><p><b>❌ "ทิศการไหลของเลือดในเหงือกไม่สำคัญ"</b> ✅ ลองสลับเป็น Concurrent ประสิทธิภาพลดเหลือ ~50%</p>':'<p><b>❌ "สัตว์ทุกชนิดต้องมีปอดหรือเหงือก"</b></p><p>✅ สัตว์ขนาดเล็กหรือแบนใช้<b>การแพร่ผ่านผิว</b>ได้ ขอเพียงผิวบาง ชุ่มชื้น และ SA/V สูง</p><p><b>❌ "แมลงลำเลียง O₂ ด้วยเลือด"</b> ✅ ลองเลือกแมลง</p>';tb=T1;}
+  else if(m===2){const pr=press(),tv=V('tv'),rrv=V('rr'),MV=tv/1000*rrv;st=[['อัตราการหายใจ (RR)',rrv+' ครั้ง/นาที'],['Minute ventilation',MV.toFixed(1)+' L/min'],['ปริมาตรปอดขณะนี้',Math.round(M2.v)+' mL'],['P ในช่องเยื่อหุ้มปอด',pr.pip.toFixed(1)+' cmH₂O']];
+    eq=`VC = TV + IRV + ERV = ${tv} + ${IC-tv} + ${ERV} = ${IC+ERV} mL\nTLC = VC + RV = ${IC+ERV} + ${RV} = ${IC+ERV+RV} mL\nMinute Ventilation (L/min) = Tidal Volume (L) × Respiratory Rate = ${(tv/1000).toFixed(2)} × ${rrv} = ${MV.toFixed(2)} L/min\nAlveolar ventilation = (TV − Dead space 150 mL) × RR = ${(Math.max(0,tv-150)/1000*rrv).toFixed(2)} L/min`;
+    an=(pr.ptx?'<p><span class="tag no">Pneumothorax</span> อากาศเข้าช่องเยื่อหุ้มปอด → ความดันในช่องเยื่อหุ้มปอด = ความดันบรรยากาศ (0) → <b>ปอดแฟบ</b> แม้ทรวงอกยังขยาย</p>':'<p>หายใจเข้า: กะบังลมหดตัว (เลื่อนลง) + Intercostal ภายนอกหดตัว (ซี่โครงยกขึ้น) → ปริมาตรทรวงอก ↑ → ความดันในปอด<b>ต่ำกว่าบรรยากาศ</b> → อากาศไหลเข้า</p>')+(MV>12?'<p>Minute ventilation สูง (เช่น ขณะออกกำลังกาย)</p>':'')+(tv<=300?'<p>หายใจตื้น: อากาศส่วนใหญ่ค้างอยู่ใน Dead space ไม่ถึงถุงลม</p>':'');
+    mis='<p><b>❌ "ปอดขยายเพราะอากาศไหลเข้าไปดันให้พอง"</b></p><p>✅ ทรวงอกขยายก่อน → ความดันในปอด<b>ลดลง</b>ต่ำกว่าบรรยากาศ → อากาศจึงไหลเข้า (ปอดไม่มีกล้ามเนื้อขยายตัวเอง) — ลองเปิด Pneumothorax</p><p><b>❌ "หายใจออกแรงสุดแล้วปอดว่างเปล่า"</b> ✅ ยังเหลือ <b>RV ~1200 mL</b> เสมอ</p><p><b>❌ "ลมหายใจออกไม่มี O₂"</b> ✅ ยังมี O₂ ~16%</p>';tb=T2;}
+  else if(m===3){const b=bloodState();const MV=6;st=[['SpO₂',(b.s*100).toFixed(1)+' %'],['P50',b.p50.toFixed(1)+' mmHg'],['O₂ content',b.ct.toFixed(1)+' mL/dL'],['pH เลือด',b.pH.toFixed(2)]];
+    eq=`Hill: S = Pⁿ/(Pⁿ + P50ⁿ), n ≈ 2.8 → S = ${b.po2}^2.8 / (${b.po2}^2.8 + ${b.p50.toFixed(1)}^2.8) = ${(b.s*100).toFixed(1)}%\nHenderson–Hasselbalch: pH = pKa + log([HCO₃⁻]/(0.03·PCO₂)) = 6.1 + log(24 / (0.03 × ${b.pco2})) = ${hhPH(b.pco2).toFixed(2)}\nCO₂ + H₂O ⇌(CA) H₂CO₃ ⇌ H⁺ + HCO₃⁻   ·   H⁺ + HbO₂ ⇌ HHb⁺ + O₂ (Bohr effect)`;
+    const flags=[];if(b.po2<60)flags.push('<span class="tag no">Hypoxia</span>');if(b.pH<7.35)flags.push('<span class="tag no">Acidosis</span>');if(b.pH>7.45||b.pco2<35)flags.push('<span class="tag mid">Hyperventilation / Alkalosis</span>');if(!flags.length)flags.push('<span class="tag ok">Normal</span>');
+    an=`<p>${flags.join(' ')}</p><p>${b.p50>28?'เส้นโค้ง<b>เลื่อนไปทางขวา</b> (Bohr effect) Hb ปล่อย O₂ ให้เนื้อเยื่อง่ายขึ้น เกิดในกล้ามเนื้อที่ทำงานหนัก (CO₂ ↑ H⁺ ↑ อุณหภูมิ ↑)':b.p50<25.5?'เส้นโค้ง<b>เลื่อนไปทางซ้าย</b> Hb จับ O₂ แน่น เหมาะกับการรับ O₂ ที่ปอด':'เส้นโค้งอยู่ตำแหน่งปกติ'}</p>`+($('#hbf').checked?'<p>HbF มีสัมพรรคภาพต่อ O₂ สูงกว่า HbA → ทารกดึง O₂ จากเลือดแม่ผ่านรกได้</p>':'')+(b.po2>=60&&b.po2<=100?'<p>ช่วงบนของกราฟแบนราบ: PO₂ ลดจาก 100 → 60 mmHg ความอิ่มตัวลดลงเพียงเล็กน้อย (ปลอดภัย)</p>':'');
+    mis='<p><b>❌ "CO₂ ส่วนใหญ่ลำเลียงโดยจับกับฮีโมโกลบิน"</b></p><p>✅ CO₂ ~70% ลำเลียงในรูป <b>HCO₃⁻ ในพลาสมา</b> ผ่านปฏิกิริยาของ Carbonic anhydrase ในเม็ดเลือดแดง (เปิดโหมด "ปฏิกิริยา CA")</p><p><b>❌ "เลือดดำไม่มี O₂ เลย"</b> ✅ เลือดจากเนื้อเยื่อขณะพักยังอิ่มตัว ~75% (PO₂ 40)</p>';tb=T3;}
+  else{const c=ctrl(),s4=status4(c);st=[['อัตราการหายใจ (RR)',c.RR.toFixed(0)+' ครั้ง/นาที'],['Minute ventilation',M4.VE.toFixed(1)+' L/min'],['SpO₂',(c.S*100).toFixed(0)+' %'],['pH เลือด',c.pH.toFixed(2)]];
+    eq=`MV = TV × RR = ${c.TV.toFixed(2)} L × ${c.RR.toFixed(0)} = ${M4.VE.toFixed(1)} L/min\nPaCO₂ ≈ 0.863 × V̇CO₂ / V̇A = 0.863 × ${c.VCO2} / ${Math.max(0.1,M4.VE-0.15*c.RR).toFixed(1)} → ${M4.PaCO2.toFixed(0)} mmHg\npH = 6.1 + log(24 / (0.03 × ${M4.PaCO2.toFixed(0)})) = ${c.pH.toFixed(2)}   ·   S = PaO₂ⁿ/(PaO₂ⁿ + P50ⁿ) = ${(c.S*100).toFixed(0)}%`;
+    an=`<p><span class="tag ${s4[0]==='Normal'?'ok':s4[0]==='Hyperventilation'?'mid':'no'}">${s4[0]}</span> ${s4[1].replace(/^[⚠✓] /,'')}</p>`+($('#hold').checked?'<p>กลั้นหายใจ: Cerebral cortex สั่งการได้ชั่วคราว (Voluntary control) แต่เมื่อ PaCO₂ สูงพอ Medulla oblongata จะบังคับให้หายใจ · PaCO₂ ↑ เร็วกว่า PaO₂ ↓ — ความรู้สึก "ต้องหายใจ" มาจาก <b>CO₂/H⁺</b> เป็นหลัก</p>':'')+(c.act==='alt'?'<p>ที่สูง PO₂ ต่ำ → Peripheral chemoreceptor กระตุ้นการหายใจ → ขับ CO₂ ออกมาก (pH สูงขึ้น) ระยะยาวร่างกายสร้างเม็ดเลือดแดงเพิ่ม (EPO)</p>':'')+(c.act==='ex'?'<p>ออกกำลังกาย: การหายใจเพิ่มทันทีจากสัญญาณประสาท (Feed-forward) และ CO₂ ที่เพิ่ม ทำให้ PaCO₂ คงที่ใกล้ 40</p>':'');
+    mis='<p><b>❌ "การขาด O₂ เป็นตัวกระตุ้นหลักให้หายใจ"</b></p><p>✅ ในคนปกติ <b>CO₂ / H⁺</b> ที่ Central chemoreceptor เป็นตัวกระตุ้นหลัก O₂ มีผลเมื่อ PaO₂ ต่ำกว่า ~60 mmHg (เช่น ที่สูง)</p><p><b>❌ "หายใจเร็วก่อนดำน้ำช่วยเพิ่ม O₂ สะสม"</b> ✅ Hyperventilation ลด CO₂ ทำให้กลั้นหายใจได้นานจนหมดสติจากขาด O₂ โดยไม่รู้ตัว (อันตราย)</p>';tb=T4;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','อวัยวะแลกเปลี่ยนแก๊สของสัตว์','กลไกการหายใจเข้า–ออก','การลำเลียงแก๊สในเส้นเลือดฝอยและเซลล์เม็ดเลือดแดง','ศูนย์ควบคุมการหายใจและตัวรับสารเคมี'][m];
+  $('#chartTitle').textContent=['','PO₂ ตามแผ่นเหงือก: Countercurrent vs Concurrent','Spirogram (สไปโรแกรม)','Oxygen–Hemoglobin Dissociation Curve','PaO₂ / PaCO₂ / การระบายอากาศตามเวลา'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('rr',v=>v+' /นาที');bind('tv',v=>v+' mL');const fpo2=bind('po2',v=>v+' mmHg');const fpco2=bind('pco2',v=>v+' mmHg');const fph=bind('ph',v=>v.toFixed(2));bind('tc',v=>v+' °C');
+function syncPH(){const on=$('#autoPH').checked;$('#ph').disabled=on;if(on){$('#ph').value=clamp(hhPH(V('pco2')),7,7.8).toFixed(2);fph();}}
+$('#pco2').addEventListener('input',syncPH);$('#autoPH').addEventListener('change',()=>{syncPH();updateText();});
+$('#loc').addEventListener('change',()=>{const lung=$('#loc').value==='lung';$('#po2').value=lung?100:40;$('#pco2').value=lung?40:46;fpo2();fpco2();syncPH();updateText();});
+['org','hbf','act','hv','hold','ptx'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='hv'&&$('#hv').checked)$('#hold').checked=false;if(id==='hold'&&$('#hold').checked)$('#hv').checked=false;updateText();}));
+$('#rr').addEventListener('input',()=>{M2.q=[];});$('#tv').addEventListener('input',()=>{M2.q=[];});
+$('#mIn').onclick=()=>maneuver('in');$('#mOut').onclick=()=>maneuver('out');$('#mVC').onclick=()=>maneuver('vc');
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgCounter:'counter',tgCon:'con',tgCA:'ca'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();syncPH();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบหมุนเวียนเลือดและระบบน้ำเหลือง – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0f0a0c;--panel:#1a1014;--panel2:#24161c;--line:#3d2630;--txt:#f7e9ee;--mut:#c4a3b0;--acc:#fb7185;--acc2:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#7f1d1d,#1e3a8a);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#9f1239;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#2e1b23;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#be123c;border-color:#fda4af}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#7c3aed;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#0a0608;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#0b0709;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#0b0709;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>❤️ ระบบหมุนเวียนเลือดและระบบน้ำเหลือง (Circulatory &amp; Lymphatic System)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : เปรียบเทียบระบบหมุนเวียนเลือดของสัตว์</button>
+    <button data-mode="2">โหมด 2 : วัฏจักรการเต้นของหัวใจและ ECG</button>
+    <button data-mode="3">โหมด 3 : การแข็งตัวของเลือดและหมู่เลือด</button>
+    <button data-mode="4">โหมด 4 : การแลกเปลี่ยนที่เส้นเลือดฝอยและน้ำเหลือง</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="org"><option value="amoeba">อะมีบา / ไฮดรา – ไม่มีระบบหมุนเวียนเลือด</option><option value="insect">แมลง – ระบบเปิด</option><option value="earthworm">ไส้เดือนดิน – ระบบปิด</option><option value="fish">ปลา – หัวใจ 2 ห้อง</option><option value="amphibian">สัตว์สะเทินน้ำสะเทินบก – หัวใจ 3 ห้อง</option><option value="reptile">สัตว์เลื้อยคลาน – 3 ห้อง (ผนังกั้นไม่สมบูรณ์)</option><option value="human" selected>มนุษย์ – หัวใจ 4 ห้อง</option></select></div>
+      <p class="hint">สีของจุด: แดง = เลือดมี O₂ มาก · น้ำเงิน = เลือดมี O₂ น้อย · ม่วง = เลือดผสม</p>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>อัตราการเต้นของหัวใจ (HR) <b id="hrV"></b></label><input type="range" id="hr" min="30" max="200" step="1" value="72"></div>
+      <div class="ctl"><label>ปริมาตรเลือดที่บีบออกต่อครั้ง (SV) <b id="svV"></b></label><input type="range" id="sv" min="30" max="150" step="1" value="70"></div>
+      <div class="ctl"><label>จังหวะการเต้น</label><select id="rhy"><option value="normal">ปกติ (Normal sinus rhythm)</option><option value="av1">AV block ระดับ 1 (PR interval ยาว)</option><option value="afib">หัวใจห้องบนสั่นพลิ้ว (Atrial fibrillation)</option></select></div>
+      <div class="ctl"><label>ระบบประสาทอัตโนมัติ (สั่งการจาก Medulla oblongata)</label><select id="ans"><option value="none">ปกติ (พัก)</option><option value="sym">Sympathetic ทำงานเด่น (ตื่นเต้น / ออกกำลังกาย)</option><option value="para">Parasympathetic ทำงานเด่น (Vagus nerve)</option></select></div>
+    </div>
+    <div data-m="2 4">
+      <div class="ctl"><label>ความต้านทานของหลอดเลือด (Peripheral resistance)</label><select id="res"><option value="low">ต่ำ (Low)</option><option value="norm" selected>ปกติ (Normal)</option><option value="high">สูง (High)</option></select></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>การทดลอง</label><select id="sub3"><option value="clot">การแข็งตัวของเลือด (Blood clotting)</option><option value="type">การตรวจหมู่เลือด ABO / Rh</option></select></div>
+      <div id="clotBox">
+        <label class="chk"><input type="checkbox" id="ca" checked> มีแคลเซียมไอออน (Ca²⁺)</label>
+        <label class="chk"><input type="checkbox" id="vitk" checked> วิตามิน K เพียงพอ</label>
+        <label class="chk"><input type="checkbox" id="hemo"> โรคฮีโมฟีเลีย (ขาด Clotting factor)</label>
+        <div class="btns"><button class="btn pri" id="cut" style="grid-column:1/-1">🩸 ทำให้เกิดบาดแผล</button></div>
+      </div>
+      <div id="typeBox">
+        <div class="ctl"><label>หมู่เลือดผู้ให้ (Donor)</label><select id="donor"></select></div>
+        <div class="ctl"><label>หมู่เลือดผู้รับ (Recipient)</label><select id="recip"></select></div>
+        <p class="hint">สมมติว่าผู้รับ Rh⁻ เคยได้รับเลือด Rh⁺ มาก่อน จึงมี anti-D แล้ว</p>
+      </div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>ความดันเลือดปลายเส้นเลือดแดง (Pc) <b id="paV"></b></label><input type="range" id="pa" min="20" max="60" step="1" value="35"></div>
+      <div class="ctl"><label>โปรตีนแอลบูมินในพลาสมา (Albumin)</label><select id="alb"><option value="def">ขาด (Deficit)</option><option value="norm" selected>ปกติ (Normal)</option><option value="high">สูง (High)</option></select></div>
+      <label class="chk"><input type="checkbox" id="lob"> ท่อน้ำเหลืองอุดตัน (เช่น โรคเท้าช้าง)</label>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgCond" class="on">ระบบนำไฟฟ้าหัวใจ</button><button id="tgStar">ตัวชี้วัด Pc / πc</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#f7e9ee',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'cond',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#2e1b23';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#f0d9e2',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t),lerp(P[i-1][2]||0,P[i][2]||0,t)];}
+function pline(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+const o2Col=v=>{v=clamp(v,0,1);const a=v<0.5?[[59,130,246],[147,51,234],v*2]:[[147,51,234],[220,38,38],(v-0.5)*2];const [p,q,t]=a;return`rgb(${Math.round(lerp(p[0],q[0],t))},${Math.round(lerp(p[1],q[1],t))},${Math.round(lerp(p[2],q[2],t))})`;};
+const gauss=(t,c,s)=>Math.exp(-0.5*((t-c)/s)**2);
+const smooth=u=>{u=clamp(u,0,1);return u*u*(3-2*u);};
+
+/* ================= MODE 1 ================= */
+const ORG={
+  amoeba:{n:'อะมีบา / ไฮดรา',type:'ไม่มีระบบหมุนเวียนเลือด',ch:'—',circ:'อาศัยการแพร่ระหว่างเซลล์',mix:'—',note:'ไฮดรามีช่องแกสโตรวาสคิวลาร์ (Gastrovascular cavity) ทำหน้าที่ทั้งย่อยอาหารและกระจายสารไปยังเซลล์ทุกเซลล์ที่อยู่ไม่ไกลจากช่องนี้',sat:null,p:null},
+  insect:{n:'แมลง',type:'ระบบเปิด (Open circulatory system)',ch:'หัวใจรูปท่อยาวด้านหลัง มีรูเปิด (Ostia)',circ:'Hemolymph ไหลออกจากหลอดเลือดสู่ช่องว่างลำตัว (Hemocoel) แล้วกลับเข้าหัวใจทางรู Ostia',mix:'Hemolymph ไม่ลำเลียง O₂ (ใช้ระบบท่อลม)',note:'ระบบเปิดมีความดันต่ำ ไหลช้า แต่แมลงไม่ต้องพึ่งเลือดในการส่ง O₂',sat:null,p:5},
+  earthworm:{n:'ไส้เดือนดิน',type:'ระบบปิด (Closed circulatory system)',ch:'หัวใจเทียม (Aortic arches) 5 คู่',circ:'เส้นเลือดด้านหลัง (Dorsal) ไหลไปทางหัว → หัวใจเทียม → เส้นเลือดด้านท้อง (Ventral) ไหลไปทางท้าย',mix:'เลือดอยู่ในหลอดเลือดตลอด',note:'มีฮีโมโกลบินละลายในพลาสมา (ไม่มีเซลล์เม็ดเลือดแดง)',sat:null,p:15},
+  fish:{n:'ปลา',type:'ระบบปิด – วงจรเดี่ยว (Single circulation)',ch:'2 ห้อง: Atrium 1 + Ventricle 1',circ:'หัวใจ → เหงือก → ร่างกาย → หัวใจ (ผ่านหัวใจ 1 ครั้งต่อรอบ)',mix:'ไม่ผสม (หัวใจมีแต่เลือดที่มี O₂ น้อย)',note:'ความดันลดลงมากหลังผ่านเส้นเลือดฝอยที่เหงือก เลือดจึงไปเลี้ยงร่างกายด้วยความดันต่ำ',sat:95,p:25},
+  amphibian:{n:'กบ (สัตว์สะเทินน้ำสะเทินบก)',type:'ระบบปิด – วงจรคู่ไม่สมบูรณ์',ch:'3 ห้อง: Atrium 2 + Ventricle 1',circ:'Pulmocutaneous (ปอด+ผิวหนัง) และ Systemic (ร่างกาย)',mix:'เลือดผสมกันใน Ventricle (มี Spiral valve ช่วยแยกบางส่วน)',note:'แลกเปลี่ยนแก๊สทางผิวหนังได้ด้วย จึงชดเชยการผสมของเลือด',sat:70,p:35},
+  reptile:{n:'สัตว์เลื้อยคลาน',type:'ระบบปิด – วงจรคู่',ch:'3 ห้อง: Ventricle มีผนังกั้นไม่สมบูรณ์ (จระเข้ 4 ห้องสมบูรณ์ แต่มีช่อง Foramen of Panizza เชื่อม Aorta ซ้าย–ขวา)',circ:'Pulmonary และ Systemic',mix:'ผสมกันเพียงเล็กน้อย',note:'การผสมเลือดช่วยให้เลี่ยงปอดได้ขณะดำน้ำหรือกลั้นหายใจ',sat:85,p:50},
+  human:{n:'มนุษย์ (สัตว์เลี้ยงลูกด้วยน้ำนม / นก)',type:'ระบบปิด – วงจรคู่สมบูรณ์ (Double circulation)',ch:'4 ห้อง: Atrium 2 + Ventricle 2',circ:'Pulmonary: RV → ปอด → LA · Systemic: LV → ร่างกาย → RA',mix:'ไม่ผสมกันเลย',note:'แยกความดัน: ปอดความดันต่ำ (~15 mmHg) ร่างกายความดันสูง (~93 mmHg) รองรับเมแทบอลิซึมสูง',sat:97,p:93}};
+const L1={
+  fish:{ch:[{x:.15,y:.62,o:0,w:.14,l:'Atrium'},{x:.32,y:.62,o:0,w:.15,l:'Ventricle'}],beds:[{x:.62,y:.11,l:'เหงือก (Gill capillaries)'},{x:.62,y:.9,l:'ร่างกาย (Body capillaries)'}],
+    loops:[[[.32,.62,0],[.45,.62,0],[.45,.11,0],[.54,.11,0],[.7,.11,1],[.92,.11,1],[.92,.9,1],[.7,.9,1],[.54,.9,0],[.05,.9,0],[.05,.62,0],[.15,.62,0],[.32,.62,0]]],
+    lab:[['Ventral aorta',.47,.38],['Dorsal aorta',.94,.5],['Vein (เลือดกลับหัวใจ)',.07,.78]]},
+  amphibian:{ch:[{x:.36,y:.48,o:0,l:'RA'},{x:.64,y:.48,o:1,l:'LA'},{x:.5,y:.66,o:.5,w:.22,l:'Ventricle (ห้องเดียว)'}],beds:[{x:.5,y:.1,l:'ปอด + ผิวหนัง'},{x:.5,y:.91,l:'ร่างกาย'}],
+    loops:[[[.44,.66,.5],[.2,.66,.5],[.2,.1,.5],[.42,.1,.5],[.58,.1,1],[.8,.1,1],[.8,.48,1],[.64,.48,1],[.56,.66,.5]],[[.56,.66,.5],[.86,.66,.5],[.86,.91,.5],[.58,.91,.5],[.42,.91,0],[.12,.91,0],[.12,.48,0],[.36,.48,0],[.44,.66,.5]]],
+    lab:[['Pulmocutaneous artery',.22,.3],['Pulmonary vein',.82,.3],['Aorta (เลือดผสม)',.88,.78],['Vena cava',.14,.7]]},
+  reptile:{ch:[{x:.36,y:.48,o:0,l:'RA'},{x:.64,y:.48,o:1,l:'LA'},{x:.5,y:.66,o:[.2,.85],w:.22,l:'Ventricle',sep:1}],beds:[{x:.5,y:.1,l:'ปอด'},{x:.5,y:.91,l:'ร่างกาย'}],
+    loops:[[[.44,.66,.2],[.2,.66,.2],[.2,.1,.2],[.42,.1,.2],[.58,.1,1],[.8,.1,1],[.8,.48,1],[.64,.48,1],[.56,.66,.85]],[[.56,.66,.85],[.86,.66,.85],[.86,.91,.85],[.58,.91,.85],[.42,.91,0],[.12,.91,0],[.12,.48,0],[.36,.48,0],[.44,.66,.2]]],
+    lab:[['Pulmonary artery',.22,.3],['Pulmonary vein',.82,.3],['Aorta',.88,.78],['Vena cava',.14,.7]]},
+  human:{ch:[{x:.36,y:.5,o:0,l:'RA'},{x:.36,y:.66,o:0,l:'RV'},{x:.64,y:.5,o:1,l:'LA'},{x:.64,y:.66,o:1,l:'LV'}],beds:[{x:.5,y:.1,l:'ปอด (Pulmonary capillaries)'},{x:.5,y:.91,l:'ร่างกาย (Systemic capillaries)'}],
+    loops:[[[.36,.66,0],[.2,.66,0],[.2,.1,0],[.42,.1,0],[.58,.1,1],[.8,.1,1],[.8,.5,1],[.64,.5,1],[.64,.66,1],[.86,.66,1],[.86,.91,1],[.58,.91,1],[.42,.91,0],[.12,.91,0],[.12,.5,0],[.36,.5,0],[.36,.66,0]]],
+    lab:[['Pulmonary artery (O₂ น้อย)',.22,.3],['Pulmonary vein (O₂ มาก)',.82,.3],['Aorta',.88,.78],['Vena cava',.14,.7]]}};
+let M1;function initM1(){M1={t:0};}
+function stepM1(dt){M1.t+=dt;}
+function bed(g,x,y,w,h,l){g.fillStyle='rgba(244,114,182,.1)';rr(g,x-w/2,y-h/2,w,h,10);g.fill();g.strokeStyle='rgba(244,114,182,.5)';g.lineWidth=1;for(let i=0;i<4;i++){g.beginPath();for(let k=0;k<=20;k++){const xx=x-w/2+6+k*(w-12)/20,yy=y-h/2+h*(i+0.5)/4+Math.sin(k*1.3+i)*3;k?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.stroke();}T(g,l,x,y-h/2-9,'#f9a8d4',10.5,'center',true);}
+function drawM1(g,w,h){const k=$('#org').value,o=ORG[k];g.fillStyle='#0a0608';g.fillRect(0,0,w,h);const UW=w*0.62,X=f=>10+f*UW,Y=f=>f*h;const beat=Math.max(0,Math.sin(M1.t*7.5));
+  if(L1[k]){const L=L1[k];L.beds.forEach(b=>bed(g,X(b.x),Y(b.y),UW*0.3,h*0.1,b.l));
+    L.loops.forEach(P=>{for(let i=1;i<P.length;i++){g.strokeStyle=o2Col((P[i-1][2]+P[i][2])/2);g.globalAlpha=0.45;g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(X(P[i-1][0]),Y(P[i-1][1]));g.lineTo(X(P[i][0]),Y(P[i][1]));g.stroke();g.globalAlpha=1;}});
+    L.ch.forEach(c=>{const sc=1+0.07*beat,cw=UW*(c.w||0.11)*sc,chh=h*0.11*sc,cx=X(c.x),cy=Y(c.y);if(Array.isArray(c.o)){const gr=g.createLinearGradient(cx-cw/2,0,cx+cw/2,0);gr.addColorStop(0,o2Col(c.o[0]));gr.addColorStop(1,o2Col(c.o[1]));g.fillStyle=gr;}else g.fillStyle=o2Col(c.o);rr(g,cx-cw/2,cy-chh/2,cw,chh,10);g.fill();g.strokeStyle='#fecdd3';g.lineWidth=1.5;g.stroke();
+      if(c.sep){g.strokeStyle='#fecdd3';g.lineWidth=3;g.beginPath();g.moveTo(cx,cy+chh/2);g.lineTo(cx,cy-chh*0.05);g.stroke();T(g,'ผนังกั้นไม่สมบูรณ์',cx,cy+chh/2+10,'#fecdd3',9.5,'center');}T(g,c.l,cx,cy,'#fff',11,'center',true);});
+    L.loops.forEach((P,li)=>{const pts=P.map(([a,b,c])=>[X(a),Y(b),c]);const n=k==='human'?34:20;for(let j=0;j<n;j++){const s=(M1.t*(k==='fish'?0.05:0.06)+j/n+li*0.5/n)%1;const [x,y,v]=along(pts,s);g.fillStyle=o2Col(v);g.beginPath();g.arc(x,y,4,0,7);g.fill();}});
+    L.lab.forEach(([s,a,b])=>a>0.75?T(g,s,X(a)-8,Y(b),'#e2e8f0',10,'right'):T(g,s,X(a),Y(b),'#e2e8f0',10));}
+  else if(k==='insect'){const cy=Y(0.5);g.fillStyle='rgba(120,53,15,.55)';g.beginPath();g.ellipse(X(0.12),cy,UW*0.08,h*0.12,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.3),cy,UW*0.1,h*0.16,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.66),cy,UW*0.28,h*0.22,0,0,7);g.fill();
+    T(g,'หัว',X(0.12),cy+h*0.16,'#fed7aa',10,'center');T(g,'อก',X(0.3),cy+h*0.2,'#fed7aa',10,'center');T(g,'ท้อง',X(0.66),cy+h*0.26,'#fed7aa',10,'center');
+    const ty=cy-h*0.12;g.strokeStyle='#4d7c0f';g.lineWidth=10;g.lineCap='round';g.beginPath();g.moveTo(X(0.9),ty);g.lineTo(X(0.12),ty);g.stroke();
+    for(let i=0;i<6;i++){const x=X(0.45+i*0.08);const sq=1+0.5*Math.max(0,Math.sin(M1.t*6-i*0.9));g.fillStyle='#65a30d';g.beginPath();g.ellipse(x,ty,UW*0.03,6*sq,0,0,7);g.fill();g.fillStyle='#0a0608';g.beginPath();g.arc(x+UW*0.02,ty+5,2.5,0,7);g.fill();}
+    T(g,'หัวใจรูปท่อ (Dorsal heart) + รู Ostia ●',X(0.45),ty-18,'#bef264',10.5,'left',true);T(g,'Aorta',X(0.18),ty-14,'#bef264',10);
+    const P=[[.9,.38],[.14,.38],[.06,.5],[.2,.62],[.5,.66],[.82,.6],[.88,.48],[.9,.4]].map(([a,b])=>[X(a),Y(b)]);
+    for(let j=0;j<40;j++){const s=(M1.t*0.035+j/40)%1;let [x,y]=along(P,s);if(s>0.32){x+=(hash(j)-0.5)*UW*0.06;y+=(hash(j+7)-0.5)*h*0.14;}g.fillStyle='#a3e635';g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+    arrow(g,X(0.55),Y(0.7),X(0.75),Y(0.66),'#d9f99d',1.5);T(g,'Hemolymph ไหลอิสระในช่องว่างลำตัว (Hemocoel) แช่อวัยวะโดยตรง',X(0.02),Y(0.86),'#d9f99d',11);
+    T(g,'ไม่มีเส้นเลือดฝอย · ความดันต่ำ · Hemolymph ไม่ขน O₂',X(0.02),Y(0.93),'#fde68a',11,'left',true);}
+  else if(k==='earthworm'){const top=Y(0.32),bot=Y(0.68);g.fillStyle='rgba(194,65,12,.35)';rr(g,X(0.03),Y(0.2),UW*0.94,h*0.6,h*0.3);g.fill();for(let i=1;i<16;i++){g.strokeStyle='rgba(254,215,170,.18)';g.lineWidth=1;g.beginPath();g.moveTo(X(0.03+i*0.058),Y(0.21));g.lineTo(X(0.03+i*0.058),Y(0.79));g.stroke();}
+    pline(g,[[X(0.06),top],[X(0.95),top]],'#dc2626',7);pline(g,[[X(0.06),bot],[X(0.95),bot]],'#dc2626',7);const AX=[0.16,0.22,0.28,0.34,0.4];
+    AX.forEach((a,i)=>{const sq=1+0.6*Math.max(0,Math.sin(M1.t*6-i*0.7));pline(g,[[X(a),top],[X(a),bot]],'#ef4444',4*sq);});
+    for(let i=0;i<6;i++){const x=X(0.55+i*0.07);g.strokeStyle='rgba(239,68,68,.6)';g.lineWidth=1.5;g.beginPath();g.moveTo(x,top);g.bezierCurveTo(x+20,top+40,x-20,bot-40,x,bot);g.stroke();}
+    for(let j=0;j<36;j++){const a=AX[j%5];const P=[[X(0.93),top,1],[X(a),top,1],[X(a),bot,0.9],[X(0.93),bot,0.6],[X(0.96),Y(0.5),0.8],[X(0.93),top,1]];const s=(M1.t*0.05+j/36)%1;const [x,y,v]=along(P,s);g.fillStyle=o2Col(0.55+v*0.45);g.beginPath();g.arc(x,y,3.5,0,7);g.fill();}
+    T(g,'เส้นเลือดด้านหลัง (Dorsal vessel) ไหล → หัว',X(0.45),top-14,'#fecaca',10.5);T(g,'เส้นเลือดด้านท้อง (Ventral vessel) ไหล → ท้าย',X(0.45),bot+14,'#fecaca',10.5);T(g,'หัวใจเทียม 5 คู่',X(0.28),Y(0.5),'#fde68a',11,'center',true);T(g,'หัว',X(0.05),Y(0.15),'#fed7aa',11);T(g,'เส้นเลือดฝอยที่ผิวหนัง',X(0.72),Y(0.5),'#fca5a5',10,'center');
+    T(g,'ระบบปิด: เลือดอยู่ในหลอดเลือดตลอดเวลา',X(0.02),Y(0.92),'#fde68a',11,'left',true);}
+  else{const cx=X(0.25),cy=Y(0.5),R=Math.min(UW*0.16,h*0.22);g.fillStyle='rgba(125,211,252,.12)';g.strokeStyle='#7dd3fc';g.lineWidth=2;g.beginPath();for(let i=0;i<=72;i++){const a=i/72*6.283,r=R*(1+0.07*Math.sin(a*4+M1.t));i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);}g.closePath();g.fill();g.stroke();
+    for(let i=0;i<10;i++){const a=i/10*6.283,s=(M1.t*0.3+hash(i))%1;g.fillStyle='#38bdf8';g.beginPath();g.arc(cx+Math.cos(a)*lerp(R*1.8,R*0.3,s),cy+Math.sin(a)*lerp(R*1.8,R*0.3,s),2.8,0,7);g.fill();}
+    T(g,'อะมีบา: สารแพร่ผ่านเยื่อหุ้มเซลล์โดยตรง',cx,cy+R*1.8+10,'#7dd3fc',10.5,'center');
+    const hx=X(0.72),ht=Y(0.2),hb=Y(0.82),hw=UW*0.09;g.fillStyle='rgba(74,222,128,.25)';g.strokeStyle='#4ade80';g.lineWidth=2;rr(g,hx-hw,ht,hw*2,hb-ht,hw);g.fill();g.stroke();
+    for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(hx+i*hw*0.4,ht+4);g.quadraticCurveTo(hx+i*hw*1.2,ht-h*0.12+Math.sin(M1.t*2+i)*8,hx+i*hw*1.6,ht-h*0.04);g.stroke();}
+    g.fillStyle='rgba(250,204,21,.18)';rr(g,hx-hw*0.5,ht+14,hw,hb-ht-28,hw*0.5);g.fill();
+    const P=[[hx-hw*0.25,ht+20],[hx-hw*0.25,hb-20],[hx+hw*0.25,hb-20],[hx+hw*0.25,ht+20],[hx-hw*0.25,ht+20]];for(let j=0;j<14;j++){const [x,y]=along(P,(M1.t*0.08+j/14)%1);g.fillStyle='#facc15';g.beginPath();g.arc(x,y,2.6,0,7);g.fill();}
+    T(g,'ไฮดรา: ช่องแกสโตรวาสคิวลาร์',hx,hb+16,'#86efac',10.5,'center');T(g,'(ย่อย + กระจายสาร)',hx,hb+31,'#86efac',10,'center');
+    T(g,'เซลล์ทุกเซลล์อยู่ใกล้สิ่งแวดล้อม/ช่องว่าง → การแพร่เพียงพอ',X(0.02),Y(0.05),'#fde68a',11,'left',true);}
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(26,16,20,.94)';rr(g,px,10,pw,h-20,10);g.fill();T(g,o.n,px+10,28,'#fb7185',14,'left',true);let y=50;
+  [['ชนิดของระบบ',o.type],['หัวใจ',o.ch],['เส้นทางเลือด',o.circ],['การผสมของเลือด',o.mix]].forEach(([a,b])=>{T(g,a,px+10,y,'#c4a3b0',10.5);y=wrap(g,b,px+10,y+15,pw-20,14,'#f7e9ee',11.5,true)+8;});
+  y=wrap(g,o.note,px+10,y+2,pw-20,14,'#fde68a',10.5)+10;
+  if(L1[k])wrap(g,k==='fish'?'วงจรเดี่ยว: เลือดผ่านหัวใจ 1 ครั้งต่อการไหลเวียน 1 รอบ':k==='human'?'วงจรคู่: เลือดผ่านหัวใจ 2 ครั้งต่อการไหลเวียน 1 รอบ':'วงจรคู่ไม่สมบูรณ์: เลือดผสมกันในหัวใจ',px+10,y,pw-20,14,'#86efac',11,true);}
+
+/* ================= MODE 2 ================= */
+let M2;function initM2(){M2={tb:0,Tc:60/72,beat:0,T:0,buf:[],lub:-9,dub:-9,lastS:-1};}
+const TPR={low:0.7,norm:1,high:1.5};
+const ANS={none:{hr:1,sv:1,tpr:1},sym:{hr:1.3,sv:1.1,tpr:0.9},para:{hr:0.7,sv:1,tpr:1}};
+const ans=()=>ANS[$('#ans').value];
+const HRe=()=>Math.round(clamp(V('hr')*ans().hr,30,220));
+function hemo(){const HR=HRe(),rhy=$('#rhy').value,SV=Math.round(V('sv')*ans().sv);const SVe=rhy==='afib'?SV*0.8:SV;const CO=HR*SVe/1000;const tf=TPR[$('#res').value]*(S.mode===2?ans().tpr:1);const MAP=clamp(19*CO*tf,25,200);const PP=SVe*0.57*(tf>1?1.15:tf<1?0.9:1);const SBP=MAP+PP*2/3,DBP=MAP-PP/3;return{HR,rhy,SV,SVe,CO,MAP,PP,SBP,DBP,tf};}
+function tim(){const HR=HRe(),rhy=$('#rhy').value,Tc=M2.Tc;const kk=clamp(60/HR/0.8,0.5,1);const PR=(rhy==='av1'?0.3:0.16)*kk;const Ts=Math.max(0.08,Math.min(clamp(0.33-0.0012*(HR-70),0.2,0.4),Tc-PR-0.12));const sysS=PR+0.03,ejS=sysS+Math.min(0.05,Ts*0.3),ejE=sysS+Ts;return{HR,rhy,kk,PR,sysS,ejS,ejE,ivrE:ejE+0.07,Tc,aE:Math.min(sysS,0.08*kk+0.1)};}
+function pAo(tb,q,c){if(tb>=c.ejS&&tb<=c.ejE){const u=(tb-c.ejS)/(c.ejE-c.ejS);return q.DBP+q.PP*Math.sin(Math.PI*0.85*u);}const pe=q.DBP+q.PP*Math.sin(Math.PI*0.85);const d=tb>c.ejE?tb-c.ejE:tb+c.Tc-c.ejE;const tau=Math.max(0.05,(c.Tc-c.ejE+c.ejS)/2.6);return q.DBP+(pe-q.DBP)*Math.exp(-d/tau)-4*gauss(d,0.015,0.008)+3*gauss(d,0.045,0.015);}
+function pLV(tb,q,c){const af=c.rhy==='afib';if(tb<c.sysS)return 5+(af?0:5*gauss(tb,(0.08*c.kk+c.sysS)/2,0.035));if(tb<c.ejS)return lerp(9,q.DBP,(tb-c.sysS)/(c.ejS-c.sysS));if(tb<=c.ejE){const u=(tb-c.ejS)/(c.ejE-c.ejS);return pAo(tb,q,c)+3*Math.sin(Math.PI*u);}if(tb<c.ivrE)return lerp(pAo(c.ejE,q,c),5,smooth((tb-c.ejE)/(c.ivrE-c.ejE)));return 4+1.5*Math.exp(-(tb-c.ivrE)/0.1);}
+function pLA(tb,q,c){const af=c.rhy==='afib';return 6+(af?0.6*Math.sin(tb*44):4*gauss(tb,(0.08*c.kk+c.sysS)/2,0.03))+2*gauss(tb,c.sysS+0.02,0.015)+6*gauss(tb,c.ejE,0.05);}
+function vLV(tb,q,c){const ESV=50,SV=q.SVe,kick=c.rhy==='afib'?0:0.22,pre=ESV+SV*(1-kick);const a0=0.08*c.kk;if(tb<a0)return pre;if(tb<c.sysS)return pre+SV*kick*smooth((tb-a0)/(c.sysS-a0));if(tb<c.ejS)return ESV+SV*(1-kick)+SV*kick;if(tb<=c.ejE)return ESV+SV*(1-smooth((tb-c.ejS)/(c.ejE-c.ejS)));if(tb<c.ivrE)return ESV;return ESV+SV*(1-kick)*(1-Math.exp(-(tb-c.ivrE)/0.07));}
+function ecg(tb,c){const af=c.rhy==='afib';let v=af?0.04*Math.sin(tb*44)+0.03*Math.sin(tb*71+1):0.15*gauss(tb,0.045*c.kk,0.02*c.kk);const q=c.PR;v+=-0.12*gauss(tb,q+0.01,0.008)+1.0*gauss(tb,q+0.035,0.011)-0.25*gauss(tb,q+0.06,0.01)+0.3*gauss(tb,c.ejE-0.04,0.04*Math.max(0.6,c.kk));return v;}
+function phase(tb,c){if(c.rhy!=='afib'&&tb>=0.08*c.kk&&tb<c.sysS)return['หัวใจห้องบนบีบตัว (Atrial systole)','#c084fc'];if(tb>=c.sysS&&tb<c.ejS)return['บีบตัวปริมาตรคงที่ (Isovolumetric contraction)','#fb923c'];if(tb>=c.ejS&&tb<=c.ejE)return['ขับเลือดออก (Ventricular ejection)','#ef4444'];if(tb>c.ejE&&tb<c.ivrE)return['คลายตัวปริมาตรคงที่ (Isovolumetric relaxation)','#38bdf8'];return['เลือดไหลเข้าห้องล่าง (Ventricular filling)','#4ade80'];}
+function stepM2(dt){M2.tb+=dt;M2.T+=dt;let c=tim();const prev=M2.tb-dt;if(prev<c.sysS&&M2.tb>=c.sysS)M2.lub=S.time;if(prev<c.ejE&&M2.tb>=c.ejE)M2.dub=S.time;
+  if(M2.tb>=M2.Tc){M2.tb-=M2.Tc;M2.beat++;const base=60/HRe();M2.Tc=$('#rhy').value==='afib'?Math.max(0.3,base*(0.6+0.8*Math.random())):base;c=tim();}
+  M2.buf.push([M2.T,ecg(M2.tb,c)]);while(M2.buf.length&&M2.T-M2.buf[0][0]>3.2)M2.buf.shift();}
+function drawHeart(g,hx,hy,H,c,q){const tb=M2.tb,af=c.rhy==='afib';const a0=0.08*c.kk;const ca=!af&&tb>=a0&&tb<c.sysS?1-0.12*Math.sin(Math.PI*(tb-a0)/(c.sysS-a0)):1;const cv=tb>=c.sysS&&tb<c.ivrE?1-0.1*Math.sin(Math.PI*(tb-c.sysS)/(c.ivrE-c.sysS)):1;
+  const avOpen=!(tb>=c.sysS&&tb<c.ivrE),slOpen=tb>=c.ejS&&tb<=c.ejE;
+  pline(g,[[hx-0.3*H,hy-0.15*H],[hx-0.22*H,hy-0.95*H],[hx-0.75*H,hy-1.02*H]],'#3b82f6',12);pline(g,[[hx+0.18*H,hy-0.15*H],[hx+0.08*H,hy-1.05*H],[hx+0.55*H,hy-1.12*H],[hx+0.78*H,hy-0.85*H]],'#dc2626',14);
+  pline(g,[[hx-1.15*H,hy-0.62*H],[hx-0.7*H,hy-0.5*H]],'#2563eb',11);pline(g,[[hx+0.98*H,hy-0.5*H],[hx+0.6*H,hy-0.45*H]],'#ef4444',8);
+  T(g,'Pulmonary artery',hx-0.78*H,hy-1.02*H-12,'#93c5fd',9.5,'center');T(g,'Aorta',hx+0.8*H,hy-0.82*H,'#fca5a5',10);T(g,'Vena cava',hx-1.1*H,hy-0.45*H,'#93c5fd',9.5,'center');T(g,'Pulmonary vein',hx+1.0*H,hy-0.5*H-12,'#fca5a5',9.5,'center');
+  [[-1,'#3b5bdb','RA'],[1,'#c92a2a','LA']].forEach(([s,col,l])=>{g.fillStyle=col;g.beginPath();g.ellipse(hx+s*0.42*H,hy-0.42*H,0.34*H*ca,0.26*H*ca,0,0,7);g.fill();T(g,l,hx+s*0.42*H,hy-0.5*H,'#fff',12,'center',true);});
+  g.save();g.translate(hx,hy-0.15*H);g.scale(cv,cv);g.fillStyle='#3b5bdb';g.beginPath();g.moveTo(-0.85*H,0);g.lineTo(-0.03*H,0);g.lineTo(0.08*H,0.95*H);g.quadraticCurveTo(-0.85*H,0.75*H,-0.85*H,0);g.fill();
+  g.fillStyle='#c92a2a';g.strokeStyle='#7f1d1d';g.lineWidth=5;g.beginPath();g.moveTo(0.03*H,0);g.lineTo(0.9*H,0);g.quadraticCurveTo(0.95*H,0.7*H,0.12*H,1.0*H);g.closePath();g.fill();g.stroke();
+  T(g,'RV',-0.42*H,0.35*H,'#fff',13,'center',true);T(g,'LV',0.5*H,0.35*H,'#fff',13,'center',true);g.restore();
+  g.strokeStyle='#fff';g.lineWidth=2.5;[[-0.42,1],[0.46,1]].forEach(([dx])=>{const x=hx+dx*H,y=hy-0.15*H,r=0.12*H;g.beginPath();if(avOpen){g.moveTo(x-r,y);g.lineTo(x-r*0.45,y+r);g.moveTo(x+r,y);g.lineTo(x+r*0.45,y+r);}else{g.moveTo(x-r,y);g.lineTo(x,y+r*0.15);g.lineTo(x+r,y);}g.stroke();});
+  [[-0.27],[0.15]].forEach(([dx])=>{const x=hx+dx*H,y=hy-0.3*H,r=0.06*H;g.beginPath();if(slOpen){g.moveTo(x-r,y);g.lineTo(x-r,y-r*1.4);g.moveTo(x+r,y);g.lineTo(x+r,y-r*1.4);}else{g.moveTo(x-r,y-r);g.lineTo(x,y);g.lineTo(x+r,y-r);}g.stroke();});
+  if(S.toggle==='cond'){const SA=[hx-0.62*H,hy-0.6*H],AV=[hx-0.1*H,hy-0.2*H];const his=[[AV[0],AV[1]],[hx-0.02*H,hy-0.05*H],[hx+0.04*H,hy+0.35*H]];const rb=[[hx+0.04*H,hy+0.35*H],[hx+0.06*H,hy+0.75*H],[hx-0.4*H,hy+0.62*H],[hx-0.62*H,hy+0.2*H]];const lb=[[hx+0.04*H,hy+0.35*H],[hx+0.1*H,hy+0.78*H],[hx+0.5*H,hy+0.62*H],[hx+0.74*H,hy+0.2*H]];
+    [his,rb,lb].forEach(P=>pline(g,P,'rgba(253,224,71,.35)',3));pline(g,[SA,[hx-0.4*H,hy-0.35*H],AV],'rgba(253,224,71,.25)',2);
+    const P0=c.PR,lit=(P,t0,t1)=>{if(tb>=t0&&tb<=t1){const u=(tb-t0)/(t1-t0);for(let i=0;i<=8;i++){const [x,y]=along(P,u*i/8);g.fillStyle='rgba(253,224,71,'+(0.25+0.75*i/8)+')';g.beginPath();g.arc(x,y,3+i*0.3,0,7);g.fill();}}};
+    if(af){for(let i=0;i<10;i++){const s=hash(i+Math.floor(S.time*12)*13);const sd=s>0.5?-1:1;g.fillStyle='rgba(253,224,71,.8)';g.beginPath();g.arc(hx+sd*(0.25+0.35*hash(i*3+Math.floor(S.time*12)))*H,hy-0.42*H+(hash(i*7+Math.floor(S.time*12))-0.5)*0.4*H,3,0,7);g.fill();}}
+    else{if(tb<0.08*c.kk){const r=tb/(0.08*c.kk)*0.9*H;g.strokeStyle='rgba(253,224,71,.7)';g.lineWidth=3;g.beginPath();g.arc(SA[0],SA[1],r,0,7);g.stroke();}}
+    const avOn=tb>=0.06*c.kk&&tb<P0;lit(his,P0,P0+0.02);lit(rb,P0+0.02,P0+0.06);lit(lb,P0+0.02,P0+0.06);
+    g.fillStyle=tb<0.02||af?'#fde047':'#a16207';g.beginPath();g.arc(SA[0],SA[1],7,0,7);g.fill();g.fillStyle=avOn?'#fde047':'#a16207';g.beginPath();g.arc(AV[0],AV[1],7,0,7);g.fill();
+    T(g,'SA node',SA[0]-10,SA[1]-14,'#fde68a',10,'right',true);T(g,'AV node'+(avOn?' (หน่วง ~0.1 s)':''),AV[0]+12,AV[1]-2,'#fde68a',10,'left',true);T(g,'Bundle of His',hx-0.06*H,hy+0.12*H,'#fde68a',9.5,'right');T(g,'Purkinje fibers',hx+0.62*H,hy+0.72*H,'#fde68a',9.5);}
+  else{const pv=[[pLV(tb,q,c),hx+0.5*H,hy+0.4*H],[pAo(tb,q,c),hx+0.3*H,hy-0.85*H],[pLA(tb,q,c),hx+0.42*H,hy-0.33*H]];pv.forEach(([v,x,y])=>{g.fillStyle='rgba(0,0,0,.55)';rr(g,x-28,y-9,56,18,6);g.fill();T(g,v.toFixed(0)+' mmHg',x,y,'#fde68a',10,'center',true);});}
+  if(S.time-M2.lub<0.18)T(g,'LUB (S1)',hx-0.95*H,hy+0.35*H,'#fde047',16,'center',true);if(S.time-M2.dub<0.18)T(g,'DUB (S2)',hx-0.95*H,hy+0.6*H,'#7dd3fc',16,'center',true);return{avOpen,slOpen};}
+function drawM2(g,w,h){g.fillStyle='#0a0608';g.fillRect(0,0,w,h);const c=tim(),q=hemo(),UW=w*0.62;const H=Math.min(UW*0.27,h*0.27);const hx=10+UW*0.47,hy=h*0.42;const vs=drawHeart(g,hx,hy,H,c,q);
+  const ey=h*0.76,eh=h*0.21;g.fillStyle='#1a0d10';rr(g,10,ey,UW-10,eh,8);g.fill();g.strokeStyle='rgba(251,113,133,.12)';g.lineWidth=1;for(let x=10;x<UW;x+=16){g.beginPath();g.moveTo(x,ey);g.lineTo(x,ey+eh);g.stroke();}for(let y=ey;y<ey+eh;y+=16){g.beginPath();g.moveTo(10,y);g.lineTo(UW,y);g.stroke();}
+  g.strokeStyle='#4ade80';g.lineWidth=2;g.beginPath();M2.buf.forEach(([t,v],i)=>{const x=UW-(M2.T-t)/3.2*(UW-14),y=ey+eh*0.68-v*eh*0.55;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();T(g,'ECG (Lead II)',18,ey+10,'#86efac',10,'left',true);
+  if(c.rhy!=='afib')T(g,'P',UW-30,ey+10,'#86efac',9);
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(26,16,20,.94)';rr(g,px,10,pw,h-20,10);g.fill();const ph=phase(M2.tb,c);let y=28;T(g,'ระยะของวัฏจักรหัวใจ',px+10,y,'#c4a3b0',10.5);y=wrap(g,ph[0],px+10,y+16,pw-20,15,ph[1],12,true)+6;
+  T(g,'ลิ้น AV (Tricuspid / Mitral): '+(vs.avOpen?'เปิด':'ปิด'),px+10,y,vs.avOpen?'#86efac':'#fca5a5',11);y+=17;T(g,'ลิ้นเซมิลูนาร์ (Pulmonary / Aortic): '+(vs.slOpen?'เปิด':'ปิด'),px+10,y,vs.slOpen?'#86efac':'#fca5a5',11);y+=26;
+  [['ความดันใน LV',pLV(M2.tb,q,c),'#ef4444'],['ความดันใน Aorta',pAo(M2.tb,q,c),'#fbbf24'],['ความดันใน LA',pLA(M2.tb,q,c),'#a78bfa']].forEach(([n,v,col])=>{bar(g,px+10,y,pw-20,8,v/180,col,n,v.toFixed(0)+' mmHg');y+=30;});
+  bar(g,px+10,y,pw-20,8,vLV(M2.tb,q,c)/220,'#38bdf8','ปริมาตรเลือดใน LV',vLV(M2.tb,q,c).toFixed(0)+' mL');y+=28;
+  T(g,`BP ${q.SBP.toFixed(0)}/${q.DBP.toFixed(0)} mmHg · MAP ${q.MAP.toFixed(0)}`,px+10,y,'#fde68a',12,'left',true);y+=18;T(g,`CO ${q.CO.toFixed(2)} L/min · HR ${q.HR} ครั้ง/นาที`,px+10,y,'#fde68a',12,'left',true);y+=22;
+  const ar=arrh(q,c);wrap(g,ar[1],px+10,y,pw-20,14,ar[2],10.5,true);}
+function arrh(q,c){if(c.rhy==='afib')return['Arrhythmia','⚠ Atrial fibrillation: ไม่มีคลื่น P จังหวะไม่สม่ำเสมอ ห้องบนไม่บีบตัว → SV ลดลง ~20%','#fca5a5'];if(c.rhy==='av1')return['Arrhythmia','⚠ AV block ระดับ 1: AV node นำไฟฟ้าช้า PR interval > 0.2 s','#fde68a'];if(q.HR<60)return['Bradycardia','⚠ หัวใจเต้นช้า (Bradycardia) HR < 60','#fde68a'];if(q.HR>100)return['Tachycardia','⚠ หัวใจเต้นเร็ว (Tachycardia) HR > 100 · ช่วงคลายตัวสั้นลง เลือดเข้าหัวใจได้น้อยลง','#fde68a'];return['Normal','✓ จังหวะปกติ (Normal sinus rhythm) จาก SA node','#86efac'];}
+
+/* ================= MODE 3 ================= */
+const BT=['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+const ag=t=>({A:t.startsWith('A'),B:t.includes('B'),D:t.endsWith('+')});
+const tname=t=>t.replace('+','  Rh⁺').replace('-','  Rh⁻');
+const compat=(d,r)=>{const a=ag(d),b=ag(r);return!((a.A&&!b.A)||(a.B&&!b.B)||(a.D&&!b.D));};
+let M3;function initM3(){M3={t:0,wound:0,plug:0,thr:0,fib:0,tpl:0,clotT:null,lost:0,hist:[],lastH:-1,tt:0,leak:[]};}
+function stepM3(dt){M3.tt+=dt;if(!M3.wound)return;M3.t+=dt;const ca=$('#ca').checked,vk=$('#vitk').checked,hm=$('#hemo').checked;M3.plug+=dt*0.35*(1-M3.plug);M3.tpl=Math.min(1,M3.t/1.5)*(hm?0.2:1);
+  const rate=0.28*(ca?1:0)*(vk?1:0.08);M3.thr+=dt*rate*M3.tpl*(1-M3.thr);M3.fib+=dt*0.6*M3.thr*(1-M3.fib);const bleed=clamp(1-0.4*M3.plug-0.6*M3.fib/0.9,0,1);M3.lost+=bleed*dt*8;if(M3.fib>0.9&&M3.clotT===null)M3.clotT=M3.t;
+  if(Math.random()<bleed*dt*25)M3.leak.push({x:(Math.random()-0.5)*30,y:0,vx:(Math.random()-0.5)*20,vy:-30-Math.random()*30,a:1});M3.leak.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=10*dt;p.a-=dt*0.35;});M3.leak=M3.leak.filter(p=>p.a>0);
+  if(M3.t-M3.lastH>=0.25){M3.lastH=M3.t;M3.hist.push([M3.t,M3.thr,M3.fib,M3.plug]);if(M3.hist.length>400)M3.hist.shift();}}
+function drawClot(g,w,h){const UW=w*0.6,vt=h*0.42,vb=h*0.66,WX=10+UW*0.5,gap=44;g.fillStyle='#1c0a0d';g.fillRect(10,vt,UW-10,vb-vt);
+  g.fillStyle='#be7c8c';g.fillRect(10,vt-10,WX-gap/2-10,10);g.fillRect(WX+gap/2,vt-10,UW-WX-gap/2,10);g.fillRect(10,vb,UW-10,10);if(!M3.wound)g.fillRect(WX-gap/2,vt-10,gap,10);
+  T(g,'ผนังหลอดเลือด',16,vb+22,'#f9a8d4',10);T(g,'ทิศการไหลของเลือด →',UW-8,vb+22,'#fca5a5',10,'right');
+  const sp=M3.wound?lerp(60,25,M3.fib):60;for(let i=0;i<22;i++){const x=10+((S.time*sp+hash(i)*UW)%(UW-24))+6,y=lerp(vt+12,vb-12,hash(i+5));g.fillStyle='#dc2626';g.beginPath();g.ellipse(x,y,9,6,0,0,7);g.fill();g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(x,y,4,2.5,0,0,7);g.fill();}
+  for(let i=0;i<14;i++){const x=10+((S.time*sp*1.1+hash(i+40)*UW)%(UW-24))+6,y=lerp(vt+8,vb-8,hash(i+50));g.fillStyle='#c084fc';g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+  if(M3.wound){const np=Math.round(M3.plug*34);for(let i=0;i<np;i++){const a=hash(i+70)*Math.PI,r=8+hash(i+80)*26;g.fillStyle='#a855f7';g.beginPath();g.arc(WX+Math.cos(a)*r*0.9,vt-6+Math.sin(a)*r*0.6,3.5,0,7);g.fill();}
+    const nf=Math.round(M3.fib*34);g.strokeStyle='rgba(253,230,138,.85)';g.lineWidth=1.3;for(let i=0;i<nf;i++){const x1=WX-40+hash(i+100)*80,y1=vt-24+hash(i+110)*44,x2=WX-40+hash(i+120)*80,y2=vt-24+hash(i+130)*44;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();}
+    if(M3.fib>0.3)for(let i=0;i<Math.round(M3.fib*8);i++){g.fillStyle='#b91c1c';g.beginPath();g.ellipse(WX-28+hash(i+150)*56,vt-14+hash(i+160)*26,8,5,hash(i)*3,0,7);g.fill();}
+    M3.leak.forEach(p=>{g.fillStyle=`rgba(220,38,38,${p.a})`;g.beginPath();g.ellipse(WX+p.x,vt-10+p.y,7,5,0,0,7);g.fill();});
+    T(g,M3.clotT!==null?'✓ ลิ่มเลือดปิดบาดแผลแล้ว':M3.fib<0.1&&M3.t>6?'⚠ เลือดไม่แข็งตัว – เลือดยังไหลออก':'กำลังเกิดลิ่มเลือด...',WX,h*0.16,M3.clotT!==null?'#86efac':M3.fib<0.1&&M3.t>6?'#fca5a5':'#fde68a',13,'center',true);
+    T(g,'● เกล็ดเลือด (Platelet plug)',16,h*0.8,'#c084fc',10.5);T(g,'— เส้นใยไฟบริน (Fibrin)',16,h*0.85,'#fde68a',10.5);T(g,`เวลา ${M3.t.toFixed(1)} นาที · เสียเลือด ${M3.lost.toFixed(0)} mL`,16,h*0.9,'#e2e8f0',11,'left',true);}
+  else T(g,'กดปุ่ม "ทำให้เกิดบาดแผล" เพื่อเริ่ม',WX,h*0.2,'#fde68a',13,'center',true);
+  const px=w*0.625,pw=w*0.36;g.fillStyle='rgba(26,16,20,.94)';rr(g,px,10,pw,h-20,10);g.fill();T(g,'ขั้นตอนการแข็งตัวของเลือด',px+10,26,'#fb7185',12.5,'left',true);
+  const ca=$('#ca').checked,vk=$('#vitk').checked,hm=$('#hemo').checked;const nodes=[['เนื้อเยื่อ / เกล็ดเลือดที่เสียหาย',M3.wound?1:0,'#f472b6'],['Thromboplastin'+(hm?' (ขาด factor → ต่ำ)':''),M3.tpl,'#c084fc'],['Prothrombin → Thrombin',M3.thr,'#fb923c'],['Fibrinogen → Fibrin',M3.fib,'#fde047'],['ลิ่มเลือด (Blood clot)',M3.clotT!==null?1:M3.fib*0.8,'#86efac']];
+  const bh=Math.min(46,(h-110)/5-14);let y=44;nodes.forEach(([n,v,col],i)=>{g.fillStyle='rgba(255,255,255,.05)';rr(g,px+10,y,pw-20,bh,8);g.fill();g.fillStyle=col;g.globalAlpha=0.15+0.6*v;rr(g,px+10,y,(pw-20)*clamp(v,0,1),bh,8);g.fill();g.globalAlpha=1;g.strokeStyle=col;g.lineWidth=1;rr(g,px+10,y,pw-20,bh,8);g.stroke();T(g,n,px+18,y+bh/2,'#fff',11,'left',true);T(g,Math.round(v*100)+'%',px+pw-16,y+bh/2,'#fde68a',10.5,'right',true);
+    if(i<4){arrow(g,px+pw*0.3,y+bh+2,px+pw*0.3,y+bh+12,'#94a3b8',1.5);if(i===1){T(g,'Ca²⁺ '+(ca?'✓':'✗'),px+pw*0.36,y+bh+7,ca?'#86efac':'#fca5a5',10,'left',true);T(g,'Vit K '+(vk?'✓':'✗ (ตับสร้าง Prothrombin ไม่ได้)'),px+pw*0.52,y+bh+7,vk?'#86efac':'#fca5a5',10,'left',true);}if(i===2)T(g,'เอนไซม์ Thrombin เร่ง',px+pw*0.36,y+bh+7,'#fdba74',10);}y+=bh+14;});}
+function drawType(g,w,h){const UW=w*0.6,d=$('#donor').value,r=$('#recip').value,A=ag(d),ok=compat(d,r);const cl=smooth(M3.tt/2.2);
+  T(g,`ตรวจหมู่เลือดผู้ให้ (${tname(d)}) ด้วยแอนติซีรัม`,16,22,'#fb7185',12,'left',true);
+  const wells=[['Anti-A','#60a5fa',A.A],['Anti-B','#facc15',A.B],['Anti-D (Rh)','#e5e7eb',A.D]];const R=Math.min(UW*0.13,h*0.15);
+  wells.forEach(([n,col,agg],i)=>{const cx=10+UW*(0.18+i*0.32),cy=h*0.26;g.fillStyle='#f1e4e8';g.beginPath();g.arc(cx,cy,R+6,0,7);g.fill();g.fillStyle='rgba(254,226,226,.9)';g.beginPath();g.arc(cx,cy,R,0,7);g.fill();
+    for(let k=0;k<26;k++){const a1=hash(k+i*50)*6.283,r1=Math.sqrt(hash(k+i*50+7))*R*0.8;const cc=k%4,a2=cc*1.57+0.6,r2=R*0.42;const dx=Math.cos(a1)*r1,dy=Math.sin(a1)*r1;const tx=Math.cos(a2)*r2+(hash(k+3)-0.5)*R*0.22,ty=Math.sin(a2)*r2+(hash(k+9)-0.5)*R*0.22;const f=agg?cl:0;g.fillStyle='#b91c1c';g.beginPath();g.arc(cx+lerp(dx,tx,f),cy+lerp(dy,ty,f),3.4,0,7);g.fill();}
+    T(g,n,cx,cy-R-16,col,11,'center',true);T(g,agg?'ตกตะกอน (+)':'ไม่ตกตะกอน (−)',cx,cy+R+18,agg?'#fca5a5':'#86efac',11,'center',true);});
+  T(g,`สรุป: แอนติเจนบนเม็ดเลือดแดง = ${[A.A?'A':'',A.B?'B':'',A.D?'D':''].filter(Boolean).join(', ')||'ไม่มี'} → หมู่ ${tname(d)}`,16,h*0.5,'#fde68a',12,'left',true);
+  const vy=h*0.62,vh=h*0.22;g.fillStyle='#1c0a0d';rr(g,10,vy,UW-10,vh,vh/2);g.fill();g.strokeStyle='#be7c8c';g.lineWidth=2;g.stroke();T(g,`ให้เลือด ${tname(d)} → ผู้รับ ${tname(r)}`,16,vy-12,'#f9a8d4',11.5,'left',true);
+  const B=ag(r);const abs=[!B.A?'anti-A':'',!B.B?'anti-B':'',!B.D?'anti-D':''].filter(Boolean);
+  for(let k=0;k<18;k++){const bx=10+((S.time*30+hash(k)*UW)%(UW-30))+15,by=vy+vh*0.2+hash(k+4)*vh*0.6;const cc=Math.floor(k/4.5);const tx=10+UW*(0.2+cc*0.2),ty=vy+vh/2;const f=ok?0:cl;const x=lerp(bx,tx+(hash(k+8)-0.5)*26,f),y=lerp(by,ty+(hash(k+9)-0.5)*20,f);g.fillStyle='#dc2626';g.beginPath();g.ellipse(x,y,8,5.5,0,0,7);g.fill();}
+  abs.forEach((a,i)=>{for(let k=0;k<4;k++){const x=10+((S.time*24+hash(k+i*9+200)*UW)%(UW-30))+15,y=vy+vh*0.15+hash(k+i*9+210)*vh*0.7;g.strokeStyle=a==='anti-A'?'#60a5fa':a==='anti-B'?'#facc15':'#e5e7eb';g.lineWidth=1.6;g.beginPath();g.moveTo(x,y+5);g.lineTo(x,y);g.lineTo(x-4,y-5);g.moveTo(x,y);g.lineTo(x+4,y-5);g.stroke();}});
+  T(g,ok?'✓ เข้ากันได้ – ไม่เกิดการตกตะกอน':'✗ ไม่เข้ากัน – แอนติบอดีของผู้รับจับแอนติเจนของผู้ให้ → เม็ดเลือดเกาะกลุ่ม (Agglutination)',16,vy+vh+18,ok?'#86efac':'#fca5a5',11.5,'left',true);
+  const px=w*0.625,pw=w*0.36;g.fillStyle='rgba(26,16,20,.94)';rr(g,px,10,pw,h-20,10);g.fill();let y=28;T(g,'ผลการให้เลือด',px+10,y,'#fb7185',13,'left',true);y+=24;
+  [['แอนติเจนบนเม็ดเลือดแดงผู้ให้',[A.A?'A':'',A.B?'B':'',A.D?'D (Rh)':''].filter(Boolean).join(', ')||'ไม่มี'],['แอนติบอดีในพลาสมาผู้รับ',abs.join(', ')||'ไม่มี'],['ผล',ok?'ให้ได้ (Compatible)':'ห้ามให้ (Incompatible)']].forEach(([a,b])=>{T(g,a,px+10,y,'#c4a3b0',10.5);y=wrap(g,b,px+10,y+16,pw-20,15,a==='ผล'?(ok?'#86efac':'#fca5a5'):'#f7e9ee',12.5,true)+10;});
+  wrap(g,'หลักการ: ดูว่าแอนติบอดีของผู้รับจะไปจับแอนติเจนบนเม็ดเลือดแดงของผู้ให้หรือไม่ (แอนติบอดีของผู้ให้ถูกเจือจางในเลือดผู้รับ)',px+10,y+4,pw-20,14,'#fde68a',10.5);}
+function drawM3(g,w,h){g.fillStyle='#0a0608';g.fillRect(0,0,w,h);if($('#sub3').value==='clot')drawClot(g,w,h);else drawType(g,w,h);}
+
+/* ================= MODE 4 ================= */
+const PI_I=1,PIi=3,SIG=0.9;
+let M4;function initM4(){M4={IF:0,t:0,hist:[],lastH:-1};}
+function cap(){const tf=TPR[$('#res').value];const rf=tf>1?0.8:tf<1?1.15:1;const Pa=V('pa')*rf,Pv=Math.max(5,Pa-20);const pic={def:15,norm:25,high:32}[$('#alb').value];const nfp=x=>(lerp(Pa,Pv,x)-PI_I)-SIG*(pic-PIi);const net=((Pa+Pv)/2-PI_I)-SIG*(pic-PIi);const filt=net*0.48;const capL=$('#lob').checked?0.6:5;const lymph=Math.max(0,Math.min(capL,Math.max(0,filt)+0.6*M4.IF));return{Pa,Pv,pic,nfp,net,filt,capL,lymph,rf};}
+function stepM4(dt){M4.t+=dt;const c=cap();M4.IF=Math.max(0,M4.IF+(c.filt-c.lymph)*dt*0.8);if(M4.t-M4.lastH>=0.3){M4.lastH=M4.t;M4.hist.push([M4.t,M4.IF,c.lymph]);if(M4.hist.length>300)M4.hist.shift();}}
+function drawM4(g,w,h){g.fillStyle='#0a0608';g.fillRect(0,0,w,h);const c=cap(),UW=w*0.62,X=f=>10+f*UW;const e=clamp(M4.IF/30,0,1);const cy=h*0.56,ch=h*0.1,x0=X(0.04),x1=X(0.96);
+  g.fillStyle=`rgba(56,189,248,${0.05+0.3*e})`;g.fillRect(10,h*0.3,UW-10,h*0.66);
+  for(let i=0;i<7;i++)[-1,1].forEach(s=>{const cw=UW*0.1,cx=X(0.07+i*0.14),off=ch/2+16+e*22;const y=s<0?cy-off-h*0.12:cy+off;g.fillStyle='rgba(251,146,60,.28)';rr(g,cx-cw/2,y,cw,h*0.12,10);g.fill();g.fillStyle='rgba(194,65,12,.6)';g.beginPath();g.arc(cx,y+h*0.06,5,0,7);g.fill();});
+  const gr=g.createLinearGradient(x0,0,x1,0);gr.addColorStop(0,'#dc2626');gr.addColorStop(1,'#2563eb');g.fillStyle=gr;rr(g,x0,cy-ch/2,x1-x0,ch,ch/2);g.fill();g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;for(let i=1;i<10;i++){const x=lerp(x0,x1,i/10);g.beginPath();g.moveTo(x,cy-ch/2);g.lineTo(x,cy-ch/2+4);g.moveTo(x,cy+ch/2);g.lineTo(x,cy+ch/2-4);g.stroke();}
+  for(let i=0;i<10;i++){const x=x0+((S.time*50+hash(i)*(x1-x0))%(x1-x0)),y=cy+(hash(i+3)-0.5)*ch*0.5;g.fillStyle='rgba(254,202,202,.8)';g.beginPath();g.ellipse(x,y,7,4.5,0,0,7);g.fill();}
+  T(g,'ปลายเส้นเลือดแดงเล็ก (Arteriole end)',x0,cy+ch/2+h*0.2,'#fca5a5',10);T(g,'ปลายเส้นเลือดดำเล็ก (Venule end)',x1,cy+ch/2+h*0.2,'#93c5fd',10,'right');
+  for(let i=0;i<9;i++){const f=(i+0.5)/9,x=lerp(x0,x1,f),n=c.nfp(f),L=clamp(Math.abs(n)*1.5,0,30);if(L<2)continue;const col=n>0?'#38bdf8':'#fbbf24';[-1,1].forEach(s=>{const a=cy+s*ch/2,b=a+s*L;n>0?arrow(g,x,a+s*2,x,b+s*4,col,2):arrow(g,x,b+s*4,x,a+s*2,col,2);});}
+  for(let j=0;j<24;j++){const f=hash(j+30),n=c.nfp(f);const s=(S.time*0.5+hash(j+40))%1,sd=hash(j+50)>0.5?1:-1,x=lerp(x0,x1,f);const d=n>0?s:1-s;if(Math.abs(n)<1)continue;g.fillStyle='rgba(125,211,252,.85)';g.beginPath();g.arc(x+(hash(j)-0.5)*10,cy+sd*(ch/2+d*(24+e*20)),2.3,0,7);g.fill();}
+  const ly=h*0.14,lh=h*0.075,lx0=X(0.3),lx1=X(0.98);g.fillStyle='rgba(74,222,128,.28)';g.strokeStyle='#4ade80';g.lineWidth=2;rr(g,lx0,ly-lh/2,lx1-lx0,lh,lh/2);g.fill();g.stroke();for(let i=0;i<8;i++){const x=lerp(lx0+20,lx1-30,i/7);g.beginPath();g.moveTo(x,ly+lh/2);g.lineTo(x+8,ly+lh/2-6);g.stroke();}
+  const nl=Math.round(clamp(c.lymph,0,6)*3);for(let j=0;j<nl;j++){const s=(S.time*0.12+j/nl)%1;g.fillStyle='#bbf7d0';g.beginPath();g.arc(lerp(lx0+10,lx1-8,s),ly+(hash(j)-0.5)*lh*0.5,2.5,0,7);g.fill();}
+  for(let j=0;j<Math.round(clamp(c.lymph,0,6)*1.5);j++){const s=(S.time*0.4+hash(j+90))%1,x=lerp(lx0+30,lx1-40,hash(j+91));g.fillStyle='rgba(187,247,208,.9)';g.beginPath();g.arc(x,lerp(h*0.3,ly+lh/2,s),2.2,0,7);g.fill();}
+  T(g,'หลอดน้ำเหลืองฝอย (Lymphatic capillary) – ปลายตัน',lx0,ly-lh/2-10,'#86efac',10.5,'left',true);T(g,'→ ต่อมน้ำเหลือง → หลอดเลือดดำใต้ไหปลาร้า',lx1,ly+lh/2+12,'#bbf7d0',9.5,'right');
+  if($('#lob').checked){g.strokeStyle='#ef4444';g.lineWidth=4;g.beginPath();g.moveTo(lx1-30,ly-14);g.lineTo(lx1-10,ly+14);g.moveTo(lx1-10,ly-14);g.lineTo(lx1-30,ly+14);g.stroke();}
+  T(g,'ของเหลวระหว่างเซลล์ (Interstitial fluid)',14,h*0.33,'#7dd3fc',10);
+  if(S.toggle==='star'){for(let i=0;i<5;i++){const f=i/4,x=lerp(x0+24,x1-24,f),Pc=lerp(c.Pa,c.Pv,f),yb=cy+ch/2+h*0.07;g.fillStyle='rgba(0,0,0,.6)';rr(g,x-30,yb-12,60,40,6);g.fill();T(g,'Pc '+Pc.toFixed(0),x,yb-2,'#7dd3fc',10,'center',true);T(g,'πc '+c.pic,x,yb+12,'#fde047',10,'center',true);T(g,(c.nfp(f)>0?'+':'')+c.nfp(f).toFixed(1),x,yb+24,c.nfp(f)>0?'#38bdf8':'#fbbf24',9,'center',true);}}
+  if(e>0.15)T(g,'⚠ บวมน้ำ (Edema): ของเหลวคั่งระหว่างเซลล์',X(0.5),h*0.97,'#fca5a5',12,'center',true);
+  const px=w*0.645,pw=w*0.34;g.fillStyle='rgba(26,16,20,.94)';rr(g,px,10,pw,h-20,10);g.fill();let y=30;T(g,'แรงสตาร์ลิง (Starling forces)',px+10,y,'#fb7185',12.5,'left',true);y+=24;
+  [['Pc ปลายเส้นเลือดแดง',c.Pa.toFixed(0)+' mmHg','#7dd3fc'],['Pc ปลายเส้นเลือดดำ',c.Pv.toFixed(0)+' mmHg','#7dd3fc'],['πc (แรงดันออสโมติกจากโปรตีน)',c.pic+' mmHg','#fde047'],['NFP ปลายแดง',(c.nfp(0)>0?'+':'')+c.nfp(0).toFixed(1)+(c.nfp(0)>0?' (กรองออก)':' (ดูดกลับ)'),c.nfp(0)>0?'#38bdf8':'#fbbf24'],['NFP ปลายดำ',(c.nfp(1)>0?'+':'')+c.nfp(1).toFixed(1)+(c.nfp(1)>0?' (กรองออก)':' (ดูดกลับ)'),c.nfp(1)>0?'#38bdf8':'#fbbf24']].forEach(([a,b,col])=>{T(g,a,px+10,y,'#c4a3b0',10.5);T(g,b,px+pw-10,y,col,11,'right',true);y+=20;});
+  y+=10;bar(g,px+10,y,pw-20,9,Math.max(0,c.filt)/10,'#38bdf8','ของเหลวที่กรองออกสุทธิ',Math.max(0,c.filt).toFixed(1)+' mL/min');y+=32;bar(g,px+10,y,pw-20,9,c.lymph/10,'#4ade80','การไหลของน้ำเหลือง',c.lymph.toFixed(1)+' mL/min');y+=32;bar(g,px+10,y,pw-20,9,e,e>0.15?'#ef4444':'#7dd3fc','ของเหลวคั่งระหว่างเซลล์',e>0.15?'บวมน้ำ':'ปกติ');y+=28;
+  wrap(g,c.filt>c.capL?'ของเหลวถูกกรองออกมากกว่าที่ระบบน้ำเหลืองระบายได้ → ค่อย ๆ บวม':c.net<0?'แรงดึงกลับมากกว่า → ของเหลวถูกดูดกลับเข้าเส้นเลือดฝอย':'ระบบน้ำเหลืองนำของเหลวส่วนเกินกลับสู่กระแสเลือดได้ทัน',px+10,y,pw-20,14,'#fde68a',10.5);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#33202a';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fmtN(v),L-4,Y(v),'#c4a3b0',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#c4a3b0',10,'center');}
+  g.strokeStyle='#5c3a48';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#c4a3b0',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#c4a3b0',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(2)).toString();
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#f7e9ee',10);});}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const ks=['fish','amphibian','reptile','human'],cur=$('#org').value;const L=44,B=34,Tm=16,bw=(w-L-10)/ks.length;const A=axes(g,w,h,0,1,0,130,'','% / mmHg',1,4,()=>'');
+    ks.forEach((k,i)=>{const o=ORG[k],x=L+i*bw+bw*0.15,ww=bw*0.32;[[o.sat,'#ef4444'],[o.p,'#fbbf24']].forEach(([v,col],j)=>{const yv=A.Y(Math.min(100,v));g.fillStyle=col;g.globalAlpha=k===cur?1:0.45;g.fillRect(x+j*ww,yv,ww-3,h-A.B-yv);g.globalAlpha=1;T(g,String(v),x+j*ww+ww/2-1,yv-7,'#fde68a',9,'center');});T(g,['ปลา','กบ','สัตว์เลื้อยคลาน','มนุษย์'][i],L+i*bw+bw/2,h-A.B+11,k===cur?'#fb7185':'#c4a3b0',10,'center',k===cur);});
+    legend(g,[['O₂ saturation ของเลือดที่ไปเลี้ยงร่างกาย (%)','#ef4444'],['ความดันเลือดเข้าร่างกาย (mmHg, โดยประมาณ)','#fbbf24']],A.L+6,Tm+2);}
+  else if(m===2){const c=tim(),q=hemo();const A=axes(g,w,h,0,c.Tc,0,170,'เวลาใน 1 รอบการเต้น (วินาที)','mmHg / mL×0.7',4,5,v=>v.toFixed(2));
+    [[c.sysS,c.ejS,'rgba(251,146,60,.12)'],[c.ejS,c.ejE,'rgba(239,68,68,.1)'],[c.ejE,c.ivrE,'rgba(56,189,248,.12)']].forEach(([a,b,col])=>{g.fillStyle=col;g.fillRect(A.X(a),A.Tm,A.X(b)-A.X(a),h-A.B-A.Tm);});
+    plot(g,A,t=>clamp(pAo(t,q,c),0,170),0,c.Tc,'#fbbf24',2);plot(g,A,t=>clamp(pLV(t,q,c),0,170),0,c.Tc,'#ef4444',2.4);plot(g,A,t=>pLA(t,q,c),0,c.Tc,'#a78bfa',1.6);plot(g,A,t=>clamp(vLV(t,q,c)*0.7,0,170),0,c.Tc,'#38bdf8',1.6,[4,3]);plot(g,A,t=>150+ecg(t,c)*16,0,c.Tc,'#4ade80',1.4);
+    [[c.sysS,'S1'],[c.ejE,'S2']].forEach(([t,s])=>{T(g,s,A.X(t),h-A.B-8,'#fde047',10,'center',true);});g.strokeStyle='#fff';g.lineWidth=1;g.beginPath();g.moveTo(A.X(M2.tb),A.Tm);g.lineTo(A.X(M2.tb),h-A.B);g.stroke();
+    legend(g,[['Aortic P','#fbbf24'],['LV P','#ef4444'],['LA P','#a78bfa'],['LV volume','#38bdf8'],['ECG','#4ade80']],w-92,A.Tm+34);}
+  else if(m===3){if($('#sub3').value==='clot'){const H=M3.hist,t1=Math.max(30,M3.t);const A=axes(g,w,h,0,t1,0,100,'เวลาหลังเกิดบาดแผล (นาที)','ระดับ (%)',5,4);[[1,'#fb923c'],[2,'#fde047'],[3,'#c084fc']].forEach(([i,col])=>{g.strokeStyle=col;g.lineWidth=2;g.beginPath();H.forEach((r,k)=>{const x=A.X(r[0]),y=A.Y(r[i]*100);k?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
+      if(M3.clotT!==null){g.strokeStyle='#86efac';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(M3.clotT),A.Tm);g.lineTo(A.X(M3.clotT),h-A.B);g.stroke();g.setLineDash([]);T(g,'Clotting time '+M3.clotT.toFixed(1)+' นาที',A.X(M3.clotT)+4,A.Tm+60,'#86efac',10);}legend(g,[['Thrombin','#fb923c'],['Fibrin','#fde047'],['Platelet plug','#c084fc']],w-104,A.Tm+70);}
+    else{const d=$('#donor').value,r=$('#recip').value;const L=50,Tp=24,cs=Math.min((w-L-10)/8,(h-Tp-10)/8);T(g,'ผู้ให้ →',4,Tp-6,'#c4a3b0',9.5);BT.forEach((t,i)=>{T(g,t,L+i*cs+cs/2,Tp-6,t===d?'#fb7185':'#c4a3b0',10,'center',t===d);T(g,t,L-6,Tp+i*cs+cs/2,t===r?'#fb7185':'#c4a3b0',10,'right',t===r);});
+      BT.forEach((rt,i)=>BT.forEach((dt,j)=>{const ok=compat(dt,rt);g.fillStyle=ok?'#166534':'#7f1d1d';g.fillRect(L+j*cs+1,Tp+i*cs+1,cs-2,cs-2);T(g,ok?'✓':'✗',L+j*cs+cs/2,Tp+i*cs+cs/2,ok?'#bbf7d0':'#fecaca',10,'center');if(dt===d&&rt===r){g.strokeStyle='#fde047';g.lineWidth=2.5;g.strokeRect(L+j*cs,Tp+i*cs,cs,cs);}}));
+      g.save();g.translate(12,Tp+cs*4);g.rotate(-Math.PI/2);T(g,'ผู้รับ',0,0,'#c4a3b0',10,'center');g.restore();}}
+  else{const c=cap();const A=axes(g,w,h,0,1,0,65,'ตำแหน่งตามเส้นเลือดฝอย','mmHg',4,5,v=>v===0?'ปลายแดง':v===1?'ปลายดำ':'');const th=PI_I+SIG*(c.pic-PIi);
+    for(let i=0;i<120;i++){const x=i/120,x2=(i+1)/120,p=lerp(c.Pa,c.Pv,x);g.fillStyle=p>th?'rgba(56,189,248,.25)':'rgba(251,191,36,.25)';const ya=A.Y(clamp(p,0,65)),yb=A.Y(clamp(th,0,65));g.fillRect(A.X(x),Math.min(ya,yb),A.X(x2)-A.X(x)+0.5,Math.abs(ya-yb));}
+    plot(g,A,x=>lerp(c.Pa,c.Pv,x),0,1,'#38bdf8',2.6);plot(g,A,()=>th,0,1,'#fbbf24',2.2,[6,4]);
+    legend(g,[['Pc (ความดันเลือด ดันออก)','#38bdf8'],['Pi + σ(πc − πi) (แรงดึงกลับ)','#fbbf24']],w-170,A.Tm+8);T(g,'กรองออก',A.X(0.08),A.Y((c.Pa+th)/2),'#7dd3fc',10);if(c.Pv<th)T(g,'ดูดกลับ',A.X(0.82),A.Y((c.Pv+th)/2),'#fde68a',10);}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const T1='<table><tr><th>สัตว์</th><th>ระบบ</th><th>หัวใจ</th><th>วงจร</th></tr><tr><td>อะมีบา/ไฮดรา</td><td>ไม่มี</td><td>—</td><td>แพร่</td></tr><tr><td>แมลง</td><td>เปิด</td><td>ท่อ + Ostia</td><td>Hemocoel</td></tr><tr><td>ไส้เดือนดิน</td><td>ปิด</td><td>Aortic arch 5 คู่</td><td>—</td></tr><tr><td>ปลา</td><td>ปิด</td><td>2 ห้อง</td><td>เดี่ยว</td></tr><tr><td>กบ</td><td>ปิด</td><td>3 ห้อง</td><td>คู่ (ผสม)</td></tr><tr><td>สัตว์เลื้อยคลาน</td><td>ปิด</td><td>3 ห้อง*</td><td>คู่ (ผสมน้อย)</td></tr><tr><td>นก / มนุษย์</td><td>ปิด</td><td>4 ห้อง</td><td>คู่สมบูรณ์</td></tr></table><p class="hint">* จระเข้มีหัวใจ 4 ห้องสมบูรณ์ และมีช่อง Foramen of Panizza ระหว่าง Aorta ซ้ายและขวา · ระบบเปิดพบในแมลง กุ้ง กั้ง หอยส่วนใหญ่ · ระบบปิดพบในไส้เดือนดิน หมึก และสัตว์มีกระดูกสันหลัง</p>';
+const T2='<table><tr><th>ระยะ</th><th>ลิ้น AV</th><th>ลิ้นเซมิลูนาร์</th><th>ECG / เสียง</th></tr><tr><td>Atrial systole</td><td>เปิด</td><td>ปิด</td><td>หลังคลื่น P</td></tr><tr><td>Isovolumetric contraction</td><td>ปิด</td><td>ปิด</td><td>หลัง QRS · LUB (S1)</td></tr><tr><td>Ejection</td><td>ปิด</td><td>เปิด</td><td>ช่วง ST</td></tr><tr><td>Isovolumetric relaxation</td><td>ปิด</td><td>ปิด</td><td>หลังคลื่น T · DUB (S2)</td></tr><tr><td>Ventricular filling</td><td>เปิด</td><td>ปิด</td><td>—</td></tr></table><p class="hint">SA node → ห้องบน → AV node (หน่วง) → Bundle of His → Bundle branches → Purkinje fibers</p>';
+const T3='<table><tr><th>หมู่</th><th>แอนติเจน (RBC)</th><th>แอนติบอดี (พลาสมา)</th><th>ให้ได้แก่</th><th>รับจาก</th></tr><tr><td>A</td><td>A</td><td>anti-B</td><td>A, AB</td><td>A, O</td></tr><tr><td>B</td><td>B</td><td>anti-A</td><td>B, AB</td><td>B, O</td></tr><tr><td>AB</td><td>A, B</td><td>ไม่มี</td><td>AB</td><td>ทุกหมู่</td></tr><tr><td>O</td><td>ไม่มี</td><td>anti-A, anti-B</td><td>ทุกหมู่</td><td>O</td></tr><tr><td>Rh⁺</td><td>D</td><td>ไม่มี</td><td>Rh⁺</td><td>Rh⁺, Rh⁻</td></tr><tr><td>Rh⁻</td><td>ไม่มี</td><td>anti-D เมื่อถูกกระตุ้น</td><td>Rh⁺, Rh⁻</td><td>Rh⁻</td></tr></table>';
+const T3B='<table><tr><th>ส่วนประกอบ</th><th>ลักษณะ / หน้าที่</th></tr><tr><td>พลาสมา (~55%)</td><td>น้ำ ~90% · โปรตีน Albumin (แรงดันออสโมติก), Globulin (แอนติบอดี), Fibrinogen (การแข็งตัว) · สารอาหาร ไอออน ฮอร์โมน</td></tr><tr><td>เม็ดเลือดแดง (RBC)</td><td>ไม่มีนิวเคลียส (มนุษย์) มี Hemoglobin ขน O₂ · อายุ ~120 วัน ถูกทำลายที่ตับและม้าม</td></tr><tr><td>เม็ดเลือดขาว – Granulocyte</td><td>Neutrophil (จับกินเชื้อโรค), Eosinophil (ปรสิต/ภูมิแพ้), Basophil (หลั่ง Histamine)</td></tr><tr><td>เม็ดเลือดขาว – Agranulocyte</td><td>Monocyte (→ Macrophage), Lymphocyte (B cell สร้างแอนติบอดี / T cell)</td></tr><tr><td>เกล็ดเลือด (Platelet)</td><td>ชิ้นส่วนไซโทพลาซึมของ Megakaryocyte · ปล่อย Thromboplastin เมื่อเกิดบาดแผล</td></tr></table>';
+const T4='<table><tr><th>ลักษณะ</th><th>Artery</th><th>Capillary</th><th>Vein</th></tr><tr><td>ผนัง</td><td>หนา ยืดหยุ่น กล้ามเนื้อเรียบมาก</td><td>เซลล์ชั้นเดียว (Endothelium)</td><td>บางกว่า Artery</td></tr><tr><td>การไหลกลับ</td><td>แรงบีบของหัวใจ</td><td>—</td><td>ลิ้น + การหดตัวของกล้ามเนื้อโครงร่างช่วยบีบดัน</td></tr><tr><td>ช่องกลาง</td><td>แคบ</td><td>เล็กมาก (~8 µm)</td><td>กว้าง</td></tr><tr><td>ลิ้นกั้น</td><td>ไม่มี</td><td>ไม่มี</td><td>มี (กันไหลย้อน)</td></tr><tr><td>ความดัน</td><td>สูง</td><td>ปานกลาง → ต่ำ</td><td>ต่ำ</td></tr><tr><td>หน้าที่</td><td>นำเลือดออกจากหัวใจ</td><td>แลกเปลี่ยนสาร</td><td>นำเลือดกลับหัวใจ</td></tr></table><table style="margin-top:8px"><tr><th>อวัยวะระบบน้ำเหลือง</th><th>หน้าที่</th></tr><tr><td>ท่อน้ำเหลือง (มีลิ้น)</td><td>นำของเหลวระหว่างเซลล์กลับสู่ Subclavian vein</td></tr><tr><td>ต่อมน้ำเหลือง (Lymph node)</td><td>กรองเชื้อโรค/สิ่งแปลกปลอม มี Lymphocyte</td></tr><tr><td>ม้าม (Spleen)</td><td>กรองเลือด ทำลาย RBC อายุมาก สร้าง Lymphocyte</td></tr><tr><td>ต่อมไทมัส (Thymus)</td><td>แหล่งเจริญของ T cell</td></tr><tr><td>Lacteal ในวิลลัส</td><td>ดูดซึมไขมัน (Chylomicron) จากลำไส้เล็ก</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#org').value,o=ORG[k];st=[['ชนิดระบบ',o.type.split(' –')[0].split(' (')[0]],['หัวใจ',o.ch.split(':')[0]],['วงจร',k==='fish'?'เดี่ยว':['amphibian','reptile','human'].includes(k)?'คู่':'—'],['การผสมของเลือด',k==='amphibian'?'ผสมมาก':k==='reptile'?'ผสมน้อย':k==='human'||k==='fish'?'ไม่ผสม':'—']];
+    eq={fish:'หัวใจ (Atrium → Ventricle) → เหงือก → ร่างกาย → หัวใจ   (วงจรเดี่ยว)',amphibian:'Ventricle (ผสม) → ปอด+ผิวหนัง → LA → Ventricle\nVentricle (ผสม) → ร่างกาย → RA → Ventricle   (วงจรคู่ไม่สมบูรณ์)',reptile:'Ventricle (ผนังกั้นไม่สมบูรณ์) → ปอด → LA / → ร่างกาย → RA',human:'Pulmonary circulation: RA → RV → Pulmonary artery → ปอด → Pulmonary vein → LA\nSystemic circulation:  LA → LV → Aorta → ร่างกาย → Vena cava → RA\nCO = HR × SV ≈ 72 × 70 mL ≈ 5 L/min (เท่ากันทั้งสองวงจร)',insect:'หัวใจรูปท่อ → Aorta → Hemocoel (แช่อวัยวะ) → Ostia → หัวใจ   (ระบบเปิด)',earthworm:'Dorsal vessel → Aortic arches (5 คู่) → Ventral vessel → เส้นเลือดฝอย → Dorsal vessel   (ระบบปิด)',amoeba:'ไม่มีระบบหมุนเวียน: อัตราการแพร่ ∝ พื้นที่ผิว / ระยะทาง'}[k];
+    an={amoeba:'<p>สิ่งมีชีวิตขนาดเล็กหรือมีโครงสร้างบาง ทุกเซลล์อยู่ใกล้สิ่งแวดล้อม <b>การแพร่จึงเพียงพอ</b> ไม่ต้องมีระบบหมุนเวียนเลือด</p>',insect:'<p><span class="tag mid">ระบบเปิด</span> Hemolymph ออกจากหลอดเลือดไปแช่อวัยวะโดยตรง ความดันต่ำ — เพียงพอเพราะแมลงใช้<b>ท่อลม</b>ส่ง O₂</p>',earthworm:'<p><span class="tag ok">ระบบปิด</span> เลือดอยู่ในหลอดเลือดตลอด ไหลเร็วและควบคุมทิศทางได้ หัวใจเทียม 5 คู่ช่วยสูบเลือด</p>',fish:'<p><span class="tag mid">วงจรเดี่ยว</span> เลือดผ่านเส้นเลือดฝอยที่เหงือกแล้วความดันลดลงมาก เลือดไปเลี้ยงร่างกายด้วยความดันต่ำ</p>',amphibian:'<p><span class="tag mid">หัวใจ 3 ห้อง</span> เลือดที่มี O₂ มากและน้อยผสมกันใน Ventricle — กบชดเชยด้วยการหายใจทางผิวหนัง</p>',reptile:'<p><span class="tag mid">ผนังกั้นไม่สมบูรณ์</span> ผสมกันน้อยกว่ากบ และยังเลี่ยงปอดได้ขณะดำน้ำ</p>',human:'<p><span class="tag ok">วงจรคู่สมบูรณ์</span> แยกเลือดมี O₂ มาก–น้อยได้ 100% และแยกความดัน: ปอดต่ำ / ร่างกายสูง รองรับสัตว์เลือดอุ่นที่ใช้พลังงานมาก</p>'}[k];
+    mis=(k==='insect'?'<p><b>❌ "ระบบเปิดไม่มีหัวใจและหลอดเลือด"</b></p><p>✅ ระบบเปิด<b>มีหัวใจและหลอดเลือด</b> เพียงแต่เลือดไหลออกจากหลอดเลือดไปสู่ช่องว่างลำตัว (Hemocoel) ก่อนกลับเข้าหัวใจ</p>':'')+(k==='human'||k==='reptile'||k==='amphibian'?'<p><b>❌ "หลอดเลือดแดง (Artery) มีเลือดแดง (O₂ มาก) เสมอ"</b></p><p>✅ <b>Pulmonary artery นำเลือดที่มี O₂ น้อย</b> ไปปอด และ <b>Pulmonary vein นำเลือดที่มี O₂ มาก</b> กลับหัวใจ — Artery/Vein แบ่งตาม<b>ทิศทาง</b> (ออกจาก/เข้าสู่หัวใจ) ไม่ใช่ปริมาณ O₂</p>':'')+(k==='fish'?'<p><b>❌ "หัวใจปลามีเลือดที่มี O₂ มาก"</b></p><p>✅ หัวใจปลารับแต่เลือดจากร่างกาย (O₂ น้อย) แล้วสูบไปเหงือก</p>':'')+(k==='amoeba'||k==='earthworm'?'<p><b>❌ "ระบบเปิดไม่มีหัวใจ"</b> ✅ ลองเลือกแมลง: มีหัวใจรูปท่อ</p><p><b>❌ "Artery มีเลือดแดงเสมอ"</b> ✅ ลองเลือกมนุษย์ ดู Pulmonary artery</p>':'');tb=T1;}
+  else if(m===2){const q=hemo(),c=tim(),a=arrh(q,c);st=[['Cardiac output (CO)',q.CO.toFixed(2)+' L/min'],['ความดันเลือด (BP)',q.SBP.toFixed(0)+'/'+q.DBP.toFixed(0)+' mmHg'],['ความดันเฉลี่ย (MAP)',q.MAP.toFixed(0)+' mmHg'],['HR / PR interval',q.HR+' · '+(c.rhy==='afib'?'—':c.PR.toFixed(2)+' s')]];
+    eq=`CO = HR × SV = ${q.HR} × ${q.SVe.toFixed(0)} mL = ${q.CO.toFixed(2)} L/min\nMAP ≈ DBP + (SBP − DBP)/3 = ${q.DBP.toFixed(0)} + (${q.SBP.toFixed(0)} − ${q.DBP.toFixed(0)})/3 = ${q.MAP.toFixed(0)} mmHg\nMAP = CO × TPR  (Peripheral resistance: ${{low:'ต่ำ',norm:'ปกติ',high:'สูง'}[$('#res').value]})`+($('#ans').value!=='none'?`\nระบบประสาทอัตโนมัติ: HR ${V('hr')} → ${q.HR} ครั้ง/นาที · SV ${V('sv')} → ${q.SV} mL`:'');
+    const ht=q.SBP>=140||q.DBP>=90,lo=q.SBP<90;an=`<p><span class="tag ${a[0]==='Normal'?'ok':a[0]==='Arrhythmia'?'no':'mid'}">${a[0]}</span> ${a[1].replace(/^[⚠✓] /,'')}</p><p><span class="tag ${ht?'no':lo?'mid':'ok'}">${ht?($('#ans').value==='sym'?'BP ↑':'Hypertension'):lo?'Hypotension':'BP ปกติ'}</span> ${ht?($('#ans').value==='sym'?'ความดันสูงขึ้นชั่วคราวจากการตอบสนองแบบ Fight-or-flight / ออกกำลังกาย (ไม่ใช่โรค) — ถ้าสูงค้างขณะพักจึงเป็นโรคความดันโลหิตสูง':'ความดันโลหิตสูง (≥ 140/90) — ความต้านทานหลอดเลือดสูงหรือ CO สูง หัวใจทำงานหนัก เสี่ยงหลอดเลือดสมอง/หัวใจ'):lo?'ความดันต่ำ — เลือดอาจไปเลี้ยงสมองไม่พอ':'ความดันอยู่ในเกณฑ์ปกติ (~120/80)'}</p>`+({sym:'<p><span class="tag mid">Sympathetic</span> หลั่ง Norepinephrine กระตุ้น SA node → HR ↑ และกล้ามเนื้อหัวใจบีบแรงขึ้น → SV ↑ → CO ↑</p>',para:'<p><span class="tag ok">Parasympathetic</span> Vagus nerve หลั่ง Acetylcholine ที่ SA node → HR ↓ (เช่น ขณะพักผ่อน/นอนหลับ)</p>',none:''}[$('#ans').value])+(q.HR>150?'<p>HR สูงมาก: ช่วงคลายตัว (Diastole) สั้นจนเลือดเติมห้องล่างไม่ทัน ในความเป็นจริง SV จะลดลง</p>':'');
+    mis='<p><b>❌ "เสียงหัวใจ LUB–DUB เกิดจากกล้ามเนื้อหัวใจบีบตัว"</b></p><p>✅ เกิดจาก<b>การปิดของลิ้นหัวใจ</b>: LUB = ลิ้น AV ปิด, DUB = ลิ้นเซมิลูนาร์ปิด</p><p><b>❌ "Pulmonary artery มีเลือดแดง"</b> ✅ Pulmonary artery นำเลือดที่มี O₂ น้อยออกจาก RV ไปปอด</p><p><b>❌ "สมองสั่งให้หัวใจเต้นทุกครั้ง"</b> ✅ <b>SA node</b> สร้างสัญญาณเอง (Myogenic) ระบบประสาทเพียงปรับอัตรา</p>';tb=T2;}
+  else if(m===3){if($('#sub3').value==='clot'){const ca=$('#ca').checked,vk=$('#vitk').checked,hm=$('#hemo').checked;st=[['Thrombin',Math.round(M3.thr*100)+' %'],['Fibrin',Math.round(M3.fib*100)+' %'],['Clotting time',M3.clotT!==null?M3.clotT.toFixed(1)+' นาที':M3.wound?'กำลังวัด...':'—'],['เสียเลือด',M3.lost.toFixed(0)+' mL']];
+      eq='เนื้อเยื่อ/เกล็ดเลือดเสียหาย → Thromboplastin\nProthrombin ──(Thromboplastin + Ca²⁺)──→ Thrombin      [ตับสร้าง Prothrombin โดยใช้วิตามิน K]\nFibrinogen ──(Thrombin)──→ Fibrin (เส้นใยร่างแห ดักเม็ดเลือด → ลิ่มเลือด)';
+      an=(!ca?'<p><span class="tag no">ขาด Ca²⁺</span> Prothrombin ไม่เปลี่ยนเป็น Thrombin → <b>เลือดไม่แข็งตัว</b> (หลักการของสารกันเลือดแข็ง เช่น Citrate/EDTA ที่จับ Ca²⁺)</p>':'')+(!vk?'<p><span class="tag no">ขาดวิตามิน K</span> ตับสร้าง Prothrombin ได้น้อย → เลือดแข็งตัวช้ามาก</p>':'')+(hm?'<p><span class="tag no">ฮีโมฟีเลีย</span> ขาด Clotting factor (VIII/IX) ซึ่งเป็นโรคทางพันธุกรรมบนโครโมโซม X → Thromboplastin เกิดน้อย เลือดหยุดยาก</p>':'')+(ca&&vk&&!hm?'<p><span class="tag ok">ปกติ</span> เกล็ดเลือดเกาะกลุ่มอุดแผลชั่วคราว (Platelet plug) จากนั้นเส้นใยไฟบรินสานเป็นร่างแหทำให้<b>ลิ่มเลือดแข็งแรง</b> เวลาปกติ ~5–10 นาที</p>':'');
+      tb=T3B;mis='<p><b>❌ "เกล็ดเลือดเกาะกลุ่มก็หยุดเลือดได้สมบูรณ์แล้ว"</b></p><p>✅ Platelet plug เป็นเพียงการอุดชั่วคราว การแข็งตัวที่สมบูรณ์<b>ต้องมีเส้นใยไฟบริน (Fibrin)</b> สานเป็นร่างแห — ลองปิด Ca²⁺ ดู: เกล็ดเลือดเกาะได้แต่เลือดยังไหล</p><p><b>❌ "ไฟบรินมีอยู่ในเลือดตลอดเวลา"</b> ✅ ในเลือดมี <b>Fibrinogen</b> (ละลายน้ำได้) ซึ่งถูกเปลี่ยนเป็น Fibrin เมื่อเกิดบาดแผลเท่านั้น</p>';}
+    else{const d=$('#donor').value,r=$('#recip').value,ok=compat(d,r),A=ag(d),B=ag(r);const abs=[!B.A?'anti-A':'',!B.B?'anti-B':'',!B.D?'anti-D':''].filter(Boolean);st=[['หมู่เลือดผู้ให้',tname(d)],['หมู่เลือดผู้รับ',tname(r)],['แอนติบอดีผู้รับ',abs.join(', ')||'ไม่มี'],['ผลการให้เลือด',ok?'✓ ให้ได้':'✗ ไม่ได้']];
+      eq=`แอนติเจนผู้ให้ (บน RBC) + แอนติบอดีผู้รับ (ในพลาสมา) ที่ตรงกัน → การตกตะกอน (Agglutination)\nผู้ให้ ${tname(d)}: แอนติเจน {${[A.A?'A':'',A.B?'B':'',A.D?'D':''].filter(Boolean).join(', ')||'–'}}   ·   ผู้รับ ${tname(r)}: แอนติบอดี {${abs.join(', ')||'–'}}`;
+      an=ok?`<p><span class="tag ok">Compatible</span> แอนติบอดีของผู้รับไม่ตรงกับแอนติเจนบนเม็ดเลือดแดงของผู้ให้ จึงให้เลือดได้</p>`:`<p><span class="tag no">Incompatible</span> แอนติบอดีของผู้รับจับกับแอนติเจนของผู้ให้ → เม็ดเลือดแดงตกตะกอนและแตก (Hemolysis) อาจอุดตันหลอดเลือดและไตวาย</p>`;an+=d==='O-'?'<p>O Rh⁻ เรียกว่า "ผู้ให้สากล" เพราะไม่มีแอนติเจน A, B, D</p>':'';an+=r==='AB+'?'<p>AB Rh⁺ เรียกว่า "ผู้รับสากล" เพราะไม่มี anti-A, anti-B, anti-D</p>':'';an+=A.D&&!B.D?'<p><span class="tag mid">ระบบ Rh</span> ถ้าแม่ Rh⁻ ตั้งครรภ์ลูก Rh⁺ แม่จะสร้าง anti-D หลังคลอดครั้งแรก ครรภ์ถัดไปที่เป็น Rh⁺ anti-D ผ่านรกไปทำลายเม็ดเลือดแดงของทารก → <b>Erythroblastosis fetalis</b> (ป้องกันได้ด้วยการฉีด Anti-D immunoglobulin)</p>':'';
+      mis='<p><b>❌ "หมู่ O ให้เลือดได้ทุกคนโดยไม่มีข้อจำกัด"</b></p><p>✅ หมู่ O มี anti-A และ anti-B ในพลาสมา ถ้าให้ปริมาณมากอาจเกิดปัญหา ในทางปฏิบัติจึงให้หมู่ตรงกันและให้เฉพาะเม็ดเลือดแดง (Packed RBC)</p><p><b>❌ "คน Rh⁻ มี anti-D ตั้งแต่เกิด"</b> ✅ anti-D สร้างขึ้นหลังจากได้รับเลือด Rh⁺ (เช่น การให้เลือด หรือแม่ Rh⁻ ตั้งครรภ์ลูก Rh⁺)</p>';}
+    if(!tb)tb=T3;}
+  else{const c=cap(),e=clamp(M4.IF/30,0,1);st=[['การไหลของน้ำเหลือง',c.lymph.toFixed(1)+' mL/min (≈ '+(c.lymph*1.44).toFixed(1)+' L/วัน)'],['NFP ปลายเส้นเลือดแดง',(c.nfp(0)>0?'+':'')+c.nfp(0).toFixed(1)+' mmHg'],['NFP ปลายเส้นเลือดดำ',(c.nfp(1)>0?'+':'')+c.nfp(1).toFixed(1)+' mmHg'],['ของเหลวระหว่างเซลล์',e>0.15?'บวมน้ำ (Edema)':'ปกติ']];
+    eq=`Starling: Jv = Kf [ (Pc − Pi) − σ(πc − πi) ]   (Pi = ${PI_I}, πi = ${PIi}, σ = ${SIG} mmHg)\nปลายแดง: (${c.Pa.toFixed(0)} − ${PI_I}) − ${SIG}(${c.pic} − ${PIi}) = ${c.nfp(0).toFixed(1)} mmHg ${c.nfp(0)>0?'→ กรองออก':'→ ดูดกลับ'}\nปลายดำ:  (${c.Pv.toFixed(0)} − ${PI_I}) − ${SIG}(${c.pic} − ${PIi}) = ${c.nfp(1).toFixed(1)} mmHg ${c.nfp(1)>0?'→ กรองออก':'→ ดูดกลับ'}`;
+    const causes=[];if($('#alb').value==='def')causes.push('แอลบูมินต่ำ → πc ลดลง แรงดึงน้ำกลับน้อย (เช่น ขาดโปรตีน Kwashiorkor, โรคไต, โรคตับ)');if(c.Pa>40)causes.push('Pc สูง → ดันของเหลวออกมาก (เช่น หัวใจล้มเหลว ความดันในหลอดเลือดดำสูง)');if($('#lob').checked)causes.push('ท่อน้ำเหลืองอุดตัน → ระบายของเหลวไม่ได้ (เช่น โรคเท้าช้างจากพยาธิฟิลาเรีย)');if($('#res').value==='low')causes.push('ความต้านทานหลอดเลือดแดงเล็กต่ำ (หลอดเลือดขยาย เช่น การอักเสบ) → Pc สูงขึ้น');
+    an=`<p><span class="tag ${e>0.15?'no':c.filt>c.capL?'mid':'ok'}">${e>0.15?'Edema':c.filt>c.capL?'เสี่ยงบวมน้ำ':'Normal'}</span> ${e>0.15?'ของเหลวคั่งในช่องว่างระหว่างเซลล์':c.filt>c.capL?'การกรองเกินความสามารถระบายของน้ำเหลือง':'สมดุลระหว่างการกรองออกและการดูดกลับ + ระบบน้ำเหลือง'}</p>`+(causes.length?'<p>'+causes.map(s=>'• '+s).join('<br>')+'</p>':'<p>ปกติ: ปลายแดงกรองออก ปลายดำดูดกลับ ส่วนเกิน ~2–4 L/วัน กลับสู่เลือดทางระบบน้ำเหลือง</p>');
+    mis='<p><b>❌ "น้ำเหลืองเป็นของเหลวที่ถูกสร้างขึ้นเองในต่อมน้ำเหลือง"</b></p><p>✅ น้ำเหลือง<b>มาจากของเหลวระหว่างเซลล์ (Interstitial fluid)</b> ที่ถูกกรองออกจากเส้นเลือดฝอยแล้วไหลเข้าหลอดน้ำเหลืองฝอย</p><p><b>❌ "ของเหลวที่ถูกกรองออกถูกดูดกลับหมดที่ปลายเส้นเลือดดำ"</b> ✅ ดูดกลับได้ราว 85–90% ส่วนที่เหลือต้องอาศัย<b>ระบบน้ำเหลือง</b> — ลองเปิดการอุดตันท่อน้ำเหลือง</p>';tb=T4;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$('#donor').innerHTML=BT.map(t=>`<option value="${t}">${tname(t)}</option>`).join('');$('#recip').innerHTML=BT.map(t=>`<option value="${t}">${tname(t)}</option>`).join('');$('#donor').value='A+';$('#recip').value='B+';
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function sub3(){const c=$('#sub3').value==='clot';$('#clotBox').style.display=c?'':'none';$('#typeBox').style.display=c?'none':'';}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sub3();
+  $('#simTitle').textContent=['','ระบบหมุนเวียนเลือดของสัตว์กลุ่มต่าง ๆ','หัวใจ ระบบนำไฟฟ้า และคลื่นไฟฟ้าหัวใจ (ECG)','การแข็งตัวของเลือด / การตรวจหมู่เลือด','การแลกเปลี่ยนสารที่เส้นเลือดฝอยและระบบน้ำเหลือง'][m];
+  $('#chartTitle').textContent=chartTitle();updateText();}
+function chartTitle(){return['','เปรียบเทียบ O₂ และความดันของเลือดที่ไปเลี้ยงร่างกาย','Wiggers diagram (ความดัน ปริมาตร ECG ใน 1 รอบ)',$('#sub3').value==='clot'?'Thrombin / Fibrin / Platelet plug ตามเวลา':'ตารางความเข้ากันได้ของหมู่เลือด ABO × Rh','ความดันตามแนวเส้นเลือดฝอย (Starling forces)'][S.mode];}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('hr',v=>v+' ครั้ง/นาที');bind('sv',v=>v+' mL');bind('pa',v=>v+' mmHg');
+$('#hr').addEventListener('input',()=>{if($('#rhy').value!=='afib')M2.Tc=Math.min(M2.Tc,60/HRe());});
+$('#ans').addEventListener('change',()=>{if($('#rhy').value!=='afib')M2.Tc=Math.min(M2.Tc,60/HRe());updateText();});
+['org','rhy','res','ca','vitk','hemo','alb','lob'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+['donor','recip'].forEach(id=>$('#'+id).addEventListener('change',()=>{M3.tt=0;updateText();}));
+$('#sub3').addEventListener('change',()=>{sub3();M3.tt=0;$('#chartTitle').textContent=chartTitle();updateText();});
+$('#cut').onclick=()=>{const tt=M3.tt;initM3();M3.tt=tt;M3.wound=1;updateText();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgCond:'cond',tgStar:'star'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

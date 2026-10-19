@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เซลล์และการทำงาน | ห้องแล็บชีววิทยา</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#07141c; --ink:#e8fff1; --muted:#8fb8a0; --line:rgba(120,190,180,.22); --green:#1ed39a; --green-d:#c8ffd9; --green-s:#10281a; --amber:#2a210c; --shadow:0 10px 28px rgba(0,0,0,.45); }
+  * { box-sizing:border-box; } html,body { margin:0; height:100%; }
+  body { font-family:"Leelawadee UI", Tahoma, "Segoe UI", sans-serif; color:var(--ink); background:#050806; font-size:16.5px; line-height:1.6; }
+  header { height:64px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px; background:rgba(5,8,6,.9); border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:800; color:var(--green-d); }
+  .logo { width:32px; height:32px; border-radius:9px; background:#07140e; display:grid; place-items:center; }
+  nav { display:flex; gap:4px; overflow:auto; } nav a { text-decoration:none; color:var(--green-d); padding:6px 10px; border-radius:999px; white-space:nowrap; font-size:14px; }
+  nav a:hover, nav a[aria-current="page"] { background:var(--green-s); }
+  .layout { height:calc(100% - 64px); display:grid; grid-template-columns:320px minmax(0,1fr) 340px; }
+  .panel { overflow:auto; padding:14px; } .left{background:#070d0a;border-right:1px solid var(--line);} .right{background:#080d12;border-left:1px solid var(--line);}
+  .center { background:#050806; }
+  h1{font-size:1.22rem;margin:0 0 4px;color:var(--green-d);} h2{font-size:1.02rem;margin:12px 0 8px;color:var(--green-d);}
+  .eyebrow{margin:0;color:var(--green);font-weight:700;font-size:13px;} .hint{color:var(--muted);font-size:14px;margin:0 0 10px;}
+  .modes,.subs{display:grid;gap:6px;margin-bottom:10px;} .subs{grid-template-columns:1fr 1fr;}
+  button,select{font-family:inherit;font-size:15px;} button{word-break:keep-all;}
+  .mode,.sub,.btn,.switch{border:1px solid var(--line);background:#101814;color:var(--ink);border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;}
+  .mode.on,.sub.on,.switch.on{background:#07140d;color:#3dff8a;border-color:#3dff8a;}
+  .btn{background:linear-gradient(135deg,#3dff8a,#14f1c5);color:#04140c;border-color:#3dff8a;font-weight:700;text-align:center;}
+  .btn.alt{background:#101814;color:var(--green-d);} .row{display:flex;gap:8px;margin:8px 0;} .row .btn,.row .switch{flex:1;}
+  label{display:block;margin:8px 0;font-size:14.5px;color:var(--green-d);font-weight:700;} label span{font-weight:600;color:var(--ink);}
+  input[type="range"]{width:100%;accent-color:#3dff8a;} select{width:100%;margin-top:4px;padding:8px;border-radius:10px;border:1px solid var(--line);}
+  .cvwrap{height:520px;background:#101814;border:1px solid #3dff8a;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);} .cvwrap.short{height:220px;background:#101814;border:1px solid var(--line);margin-top:8px;}
+  canvas{width:100%;height:100%;display:block;}
+  .formula,.analysis{margin-top:10px;background:#101814;border:1px solid var(--line);border-radius:14px;padding:10px 12px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+  .stat{background:#101814;border:1px solid var(--line);border-radius:14px;padding:8px 10px;} .stat b{display:block;color:var(--green-d);font-size:1.02rem;} .stat span{color:var(--muted);font-size:13px;}
+  table{width:100%;border-collapse:collapse;background:#101814;font-size:14px;margin-top:8px;} th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;} th{background:var(--green-s);color:var(--green-d);}
+  .mis{background:var(--amber);border-left:4px solid #e0a100;border-radius:12px;padding:10px 12px;margin-top:8px;}
+  @media(max-width:1100px){.layout{height:auto;grid-template-columns:1fr;}.cvwrap{height:440px;}}
+
+  html{background-color:#07141c;}
+  html::before{content:"";position:fixed;left:-28%;top:-28%;width:156%;height:156%;z-index:-2;pointer-events:none;background:radial-gradient(circle at 22% 18%,rgba(30,211,154,.5),transparent 32%),radial-gradient(circle at 78% 14%,rgba(46,200,230,.38),transparent 28%),radial-gradient(circle at 60% 84%,rgba(20,140,90,.28),transparent 34%);background-repeat:no-repeat;background-size:130% 130%,120% 120%,140% 140%;animation:drift 8s ease-in-out infinite alternate,blobs 10s ease-in-out infinite alternate;}
+  body{background:transparent;}
+  body::before{content:"";position:fixed;left:-15%;top:-15%;right:-15%;bottom:-15%;width:auto;height:auto;z-index:-1;pointer-events:none;border-radius:0;filter:none;background:transparent;background-image:radial-gradient(1.2px 1.2px at 20px 30px,rgba(255,255,255,.75),transparent),radial-gradient(1px 1px at 90px 140px,rgba(180,255,230,.7),transparent),radial-gradient(1.3px 1.3px at 170px 70px,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40px 200px,rgba(160,230,255,.6),transparent);background-size:220px 220px;animation:stars 10s linear infinite,twinkle 2.8s ease-in-out infinite;}
+  body::after{content:none;}
+  header{position:sticky;top:0;z-index:4;background:rgba(7,11,9,.72);border-bottom:0;backdrop-filter:blur(12px);}
+  header::after{content:none;}
+  .logo{border:1px solid #1ed39a;box-shadow:0 0 14px rgba(30,211,154,.4);animation:floaty 4.2s ease-in-out infinite;}
+  .layout{grid-template-columns:270px minmax(0,1fr) 300px;}
+  .left,.right,.center{background:rgba(8,22,32,.72);box-shadow:none;}
+  .left{border-right:1px solid rgba(120,190,180,.18);}
+  .right{border-left:1px solid rgba(120,190,180,.18);}
+  .mode,.sub,.switch,.btn.alt,select,input[type="text"],input[type="number"],.formula,.analysis,.stat,table{background:rgba(10,24,34,.9);border-color:rgba(120,190,180,.22);color:#e7f6f1;}
+  .mode.on,.sub.on,.switch.on{background:rgba(30,180,120,.16);color:#e9fff4;border-color:#3dff8a;}
+  .btn:not(.alt){color:#fff;border:0;background:#14915f;box-shadow:0 8px 18px rgba(20,145,95,.28);}
+  .btn:hover{box-shadow:0 10px 24px rgba(46,200,230,.35);}
+  nav a{color:#c9ddd4;}
+  nav a:hover{color:#fff;background:transparent;}
+  nav a[aria-current="page"]{background:#1f8a5b;color:#fff;}
+  .cvwrap,.cvwrap.short{background:#f4fff8;border:1px solid rgba(46,200,180,.4);animation:screen 3.6s ease-in-out infinite;}
+  .mis{background:#1c2430;color:#d7fff2;border-left-color:#2ec8e6;}
+  .hint{color:#9dccc4;}
+  @keyframes stars{to{transform:translate3d(-220px,-220px,0);}}
+  @keyframes twinkle{0%,100%{opacity:.4;}50%{opacity:1;}}
+  @keyframes drift{from{transform:translate3d(-12%,-8%,0) scale(1);}to{transform:translate3d(14%,10%,0) scale(1.2);}}
+  @keyframes blobs{from{background-position:0% 0%,70% 10%,30% 100%;}to{background-position:40% 30%,0% 70%,80% 10%;}}
+  @keyframes hue{to{background-position:200% 0;}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,200,180,.2);}50%{box-shadow:0 0 16px 2px rgba(46,200,230,.45);}}
+  @keyframes edge{0%,100%{opacity:.7;}50%{opacity:1;}}
+  @keyframes screen{0%,100%{box-shadow:0 0 0 1px rgba(61,255,138,.2),0 0 16px rgba(30,211,154,.15);}50%{box-shadow:0 0 0 1px rgba(61,255,138,.45),0 0 22px rgba(30,211,154,.28);}}
+  @media (prefers-reduced-motion:reduce){.logo,.mode.on,.sub.on,.switch.on,.btn:not(.alt),.cvwrap,header::after,html::before,body::before,body::after{animation:none;}}
+  @media (max-width:1100px){
+    header{height:auto;flex-wrap:nowrap;padding:8px 14px;gap:8px;}
+    nav{min-width:0;-webkit-overflow-scrolling:touch;}
+    nav a{min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;}
+    .layout{height:auto;grid-template-columns:minmax(230px,300px) minmax(0,1fr);grid-template-areas:"controls view" "result view";}
+    .left{grid-area:controls;}
+    .center{grid-area:view;}
+    .right{grid-area:result;border-left:0;border-top:1px solid rgba(120,190,180,.18);}
+    .cvwrap{height:min(62vh,520px);}
+    .cvwrap.short{height:180px;}
+  }
+  @media (max-width:700px){
+    header{flex-wrap:wrap;}
+    nav{width:100%;}
+    .layout{grid-template-columns:1fr;grid-template-areas:"controls" "view" "result";}
+    .left,.right{border:0;}
+    .cvwrap{height:300px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .panel{padding:12px;}
+    .mode,.sub,.btn,.switch{min-height:44px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;}
+    .row>*{width:100%;min-width:0;}
+    table{display:block;overflow-x:auto;}
+  }
+
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html"><span class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M6 24c8-1 12-10 20-16-3 10-8 17-20 16z" fill="#3dff8a"/></svg></span>ห้องแล็บชีววิทยา</a>
+  <nav>
+    <a href="study.html">ธรรมชาติของสิ่งมีชีวิต</a><a href="chemistry.html">เคมีของชีวิต</a>
+    <a href="cell.html" aria-current="page">เซลล์</a><a href="genetics.html">พันธุกรรม</a><a href="genes.html">ยีนและโครโมโซม</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="panel left">
+    <p class="eyebrow">บทที่ 3</p><h1>เซลล์และการทำงานของเซลล์</h1>
+    <a class="btn" href="cell-3d.html" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin:8px 0 12px;min-height:48px;background:linear-gradient(180deg,#3ee58a,#14915f);border:0;box-shadow:0 8px 18px rgba(20,145,95,.3)" aria-label="เข้าห้องแล็บ 3D Cell Laboratory สำรวจเซลล์สัตว์และเซลล์พืชแบบสามมิติเต็มจอ">🔬 เข้าห้องแล็บ 3D เต็มจอ</a>
+    <div class="modes" id="modes"></div><div class="subs" id="subs"></div><div id="controls"></div>
+  </aside>
+  <main class="panel center"><div class="cvwrap"><canvas id="cv"></canvas></div><div class="formula" id="formula"></div><div class="stats" id="stats"></div></main>
+  <aside class="panel right"><h2>ผล</h2><div class="cvwrap short"><canvas id="graph"></canvas></div><div id="table"></div><div class="analysis" id="analysis"></div><div class="mis" id="mis"></div></aside>
+</div>
+<script>
+'use strict';
+const $=(id)=>document.getElementById(id);
+const ORG={
+  nucleus:'ควบคุมการทำงาน และเก็บ DNA',
+  rer:'สังเคราะห์โปรตีนที่จะส่งออกนอกเซลล์ มีไรโบโซมเกาะ',
+  ser:'สังเคราะห์ลิพิดและกำจัดสารพิษ',
+  golgi:'ปรับแต่งและบรรจุสาร',
+  mito:'สลายสารอาหารเพื่อสร้าง ATP',
+  chloro:'สร้างน้ำตาลด้วยแสง พบในพืช',
+  ribosome:'สร้างโปรตีน',
+  lysosome:'ย่อยสารในเซลล์สัตว์',
+  vacuole:'เก็บน้ำและสาร ในพืชมีขนาดใหญ่',
+  wall:'ผนังเซลล์พยุงรูปร่างพืชและแบคทีเรีย'
+};
+function defaults(){return{
+  mode:1,sub:'osmo',playing:true,t:0,cell:'plant',osm:0.3,organelle:'nucleus',showVec:true,
+  temp:37,pH:7,substrate:30,enzyme:50,inhibitor:'none',inhibAmt:40,graphKind:'s',
+  o2:100,ferm:'lactic',spin:0,
+  division:'mitosis',phase:0,cross:true,showSpin:true
+};}
+let state=defaults();
+const PHASES={
+  mitosis:['อินเตอร์เฟส','โพรเฟส','เมทาเฟส','แอนาเฟส','เทโลเฟส','เซลล์ลูก 2 เซลล์'],
+  meiosis:['อินเตอร์เฟส','โพรเฟส I','เมทาเฟส I','แอนาเฟส I','เทโลเฟส I','โพรเฟส II','เมทาเฟส II','แอนาเฟส II','เซลล์ลูก 4 เซลล์']
+};
+function num(n,d){return (isFinite(n)?n:0).toLocaleString('th-TH',{maximumFractionDigits:d,minimumFractionDigits:d});}
+function tonic(){ if(state.osm<0.25) return 'hypo'; if(state.osm>0.35) return 'hyper'; return 'iso'; }
+function waterPotential(){
+  const R=0.008314, T=298, Cin=0.30, Cout=state.osm;
+  const sIn=-Cin*R*T, sOut=-Cout*R*T;
+  let p=0;
+  if(state.cell==='plant' && sOut>sIn) p=sOut-sIn;
+  const cellPsi=(state.cell==='plant')?(sIn+p):sIn;
+  return {sIn,sOut,p,cellPsi};
+}
+function envName(){ const t=tonic(); if(state.cell==='plant') return t==='hypo'?'เต่ง (turgid)':t==='hyper'?'พลาสโมไลซิส':'แฟลกซิด'; if(state.cell==='bacteria') return t==='hyper'?'หดตัวภายในผนัง':'ผนังคงรูป'; return t==='hypo'?'เต่งและอาจแตก (lysis)':t==='hyper'?'เหี่ยวเป็นหนาม (crenation)':'ไอโซโทนิก'; }
+function enzymeV(){
+  let Km=8, Vmax=100;
+  if(state.inhibitor==='comp') Km=8*(1+state.inhibAmt/40);
+  if(state.inhibitor==='non') Vmax=100*(1-state.inhibAmt/140);
+  const tF=Math.exp(-Math.pow((state.temp-37)/16,2));
+  const pF=Math.exp(-Math.pow((state.pH-7)/1.7,2));
+  const base=Vmax*(state.enzyme/50)*state.substrate/(Km+state.substrate);
+  return {v:Math.max(0,base*tF*pF), Km, Vmax:Vmax*(state.enzyme/50)*tF*pF};
+}
+function atpInfo(){
+  if(state.o2<5) return {path:state.ferm==='lactic'?'การหมักแล็กติก':'การหมักแอลกอฮอล์', atp:2, nadh:0, fadh:0, note:'ไกลโคไลซิสได้ 2 ATP และรีไซเคิล NAD⁺'};
+  const limit=Math.min(1,(state.o2-5)/40);
+  const nadh=10*limit, fadh=2*limit;
+  const atp=2+2*limit+nadh*2.5+fadh*1.5;
+  return {path:'ใช้ออกซิเจน', atp, nadh, fadh, note:'ไกลโคไลซิส 2 ATP + เครบส์ 2 ATP + ตัวพาอิเล็กตรอน'};
+}
+function chromCount(){
+  const mito=[ [4,4],[4,8],[4,8],[8,8],[4,4],[4,4] ];
+  const meio=[ [4,4],[4,8],[4,8],[4,8],[2,4],[2,4],[2,4],[4,4],[2,2] ];
+  const pair=(state.division==='mitosis'?mito:meio)[state.phase]||[4,4];
+  return {chr:pair[0], ct:pair[1], n: state.division==='meiosis' && state.phase>=4 ? 'n' : '2n'};
+}
+function renderControls(){
+  const modes=[[1,'1. เซลล์และการลำเลียง'],[2,'2. เอนไซม์'],[3,'3. การหายใจระดับเซลล์'],[4,'4. การแบ่งเซลล์']];
+  $('modes').innerHTML=modes.map(([id,n])=>`<button class="mode ${state.mode===id?'on':''}" data-act="mode" data-v="${id}">${n}</button>`).join('');
+  let subs=[];
+  if(state.mode===1) subs=[['anatomy','ออร์แกเนลล์'],['osmo','ออสโมซิส'],['pump','ปั๊มโซเดียม']];
+  if(state.mode===4) subs=[['mitosis','ไมโทซิส'],['meiosis','ไมโอซิส']];
+  $('subs').innerHTML=subs.map(([id,n])=>`<button class="sub ${ (state.mode===4?state.division:state.sub)===id?'on':''}" data-act="sub" data-v="${id}">${n}</button>`).join('');
+  let html='';
+  if(state.mode===1){
+    html+=`<label>ชนิดเซลล์<span></span><select data-key="cell">${[['plant','เซลล์พืช'],['animal','เซลล์สัตว์'],['rbc','เม็ดเลือดแดง'],['bacteria','แบคทีเรีย']].map(([k,n])=>`<option ${state.cell===k?'selected':''} value="${k}">${n}</option>`).join('')}</select></label>`;
+    const orgName={nucleus:'นิวเคลียส',rer:'เอนโดพลาสมิกเรติคูลัมขรุขระ',ser:'เอนโดพลาสมิกเรติคูลัมเรียบ',golgi:'กอลจิบอดี',mito:'ไมโทคอนเดรีย',chloro:'คลอโรพลาสต์',ribosome:'ไรโบโซม',lysosome:'ไลโซโซม',vacuole:'แวคิวโอล',wall:'ผนังเซลล์'};
+    if(state.sub==='anatomy') html+=`<label>เจาะลึก<span></span><select data-key="organelle">${Object.keys(ORG).map(k=>`<option ${state.organelle===k?'selected':''} value="${k}">${orgName[k]}</option>`).join('')}</select></label>`;
+    if(state.sub==='osmo') html+=`<label>ความเข้มข้นภายนอก <span data-for="osm">${num(state.osm,2)} M</span><input type="range" min="0" max="1" step="0.05" value="${state.osm}" data-key="osm"></label><p class="hint">ในเซลล์ 0.30 M</p>`;
+    if(state.sub==='pump') html+=`<button class="btn" data-act="pump" style="width:100%">เดินปั๊ม 1 รอบ</button>`;
+    html+=`<button class="switch ${state.showVec?'on':''}" data-act="vec" style="width:100%;margin-top:8px">${state.showVec?'แสดงทิศทางน้ำ/สาร':'ซ่อนลูกศร'}</button>`;
+  } else if(state.mode===2){
+    html+=`<label>อุณหภูมิ <span data-for="temp">${num(state.temp,0)} °C</span><input data-key="temp" type="range" min="0" max="80" step="1" value="${state.temp}"></label>
+      <label>pH <span data-for="pH">${num(state.pH,1)}</span><input data-key="pH" type="range" min="1" max="14" step="0.5" value="${state.pH}"></label>
+      <label>ความเข้มข้นสับสเตรต <span data-for="substrate">${num(state.substrate,0)}</span><input data-key="substrate" type="range" min="0" max="100" step="1" value="${state.substrate}"></label>
+      <label>ปริมาณเอนไซม์ <span data-for="enzyme">${num(state.enzyme,0)}</span><input data-key="enzyme" type="range" min="10" max="100" step="1" value="${state.enzyme}"></label>
+      <label>ตัวยับยั้ง<span></span><select data-key="inhibitor"><option value="none" ${state.inhibitor==='none'?'selected':''}>ไม่มี</option><option value="comp" ${state.inhibitor==='comp'?'selected':''}>แข่งขัน (competitive)</option><option value="non" ${state.inhibitor==='non'?'selected':''}>ไม่แข่งขัน (non-competitive)</option></select></label>
+      ${state.inhibitor!=='none'?`<label>ปริมาณตัวยับยั้ง <span data-for="inhibAmt">${num(state.inhibAmt,0)}</span><input data-key="inhibAmt" type="range" min="0" max="100" value="${state.inhibAmt}"></label>`:''}
+      <label>กราฟ<span></span><select data-key="graphKind"><option value="s" ${state.graphKind==='s'?'selected':''}>เทียบความเข้มข้นสับสเตรต</option><option value="t" ${state.graphKind==='t'?'selected':''}>เทียบอุณหภูมิ</option><option value="p" ${state.graphKind==='p'?'selected':''}>เทียบ pH</option></select></label>`;
+  } else if(state.mode===3){
+    html+=`<label>ออกซิเจน <span data-for="o2">${num(state.o2,0)} %</span><input data-key="o2" type="range" min="0" max="100" value="${state.o2}"></label>
+      <label>ถ้าไม่มีออกซิเจน<span></span><select data-key="ferm"><option value="lactic" ${state.ferm==='lactic'?'selected':''}>กล้ามเนื้อ: แล็กติก</option><option value="alcohol" ${state.ferm==='alcohol'?'selected':''}>ยีสต์: แอลกอฮอล์</option></select></label>`;
+  } else {
+    html+=`<p class="hint">จำลองใช้ 2n = 4</p>
+      <div class="row"><button class="btn alt" data-act="stepb">ระยะก่อนหน้า</button><button class="btn" data-act="step">ระยะถัดไป</button></div>
+      <button class="switch ${state.cross?'on':''}" data-act="cross" style="width:100%">ครอสซิงโอเวอร์ในโพรเฟส I: ${state.cross?'เปิด':'ปิด'}</button>
+      <button class="switch ${state.showSpin?'on':''}" data-act="spin" style="width:100%;margin-top:8px">${state.showSpin?'แสดงเส้นใยสปินเดิล':'ซ่อนเส้นใยสปินเดิล'}</button>`;
+  }
+  html+=`<div class="row"><button class="btn alt" data-act="play">${state.playing?'หยุดภาพ':'เล่นภาพ'}</button><button class="btn alt" data-act="reset">รีเซ็ต</button></div>`;
+  $('controls').innerHTML=html;
+}
+function side(){
+  let formula='',stats='',analysis='',mis='',table='';
+  if(state.mode===1 && state.sub==='osmo'){
+    const w=waterPotential(); const names={hypo:'ไฮโพโทนิก',iso:'ไอโซโทนิก',hyper:'ไฮเพอร์โทนิก'};
+    formula=`Ψ = Ψs + Ψp<br>Ψs นอก = ${num(w.sOut,2)} MPa · Ψs ใน = ${num(w.sIn,2)} MPa · Ψp = ${num(w.p,2)} MPa`;
+    stats=[['สารละลาย',names[tonic()]],['สภาพเซลล์',envName()],['Ψ ของเซลล์',num(w.cellPsi,2)+' MPa']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='น้ำไหลจากศักย์สูงไปต่ำ';
+    mis='<strong>จำไว้:</strong> เซลล์พืชมีทั้งคลอโรพลาสต์และไมโทคอนเดรีย';
+    table=`<table><tr><th>ภายนอก</th><th>พืช</th><th>สัตว์ / เม็ดเลือดแดง</th></tr><tr><td>เจือจางกว่า</td><td>เต่ง</td><td>บวมหรือแตก</td></tr><tr><td>เท่ากัน</td><td>แฟลกซิด</td><td>รูปร่างปกติ</td></tr><tr><td>เข้มกว่า</td><td>พลาสโมไลซิส</td><td>เหี่ยว</td></tr></table>`;
+  } else if(state.mode===1 && state.sub==='pump'){
+    formula='3 Na⁺ ออก + 2 K⁺ เข้า + ATP → ADP + Pi';
+    stats=[['ทิศ Na⁺','ต่ำในเซลล์ → สู่นอก'],['ทิศ K⁺','ต่ำนอก → สู่ใน'],['พลังงาน','ATP']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='สวนความเข้มข้น และใช้ ATP';
+    mis='<strong>จำไว้:</strong> แอคทีฟไม่ใช่การแพร่';
+    table=`<table><tr><th>แบบ</th><th>ทิศ</th><th>ATP</th></tr><tr><td>แพร่ธรรมดา</td><td>สูง → ต่ำ</td><td>ไม่ใช้</td></tr><tr><td>แพร่ผ่านตัวพา</td><td>สูง → ต่ำ</td><td>ไม่ใช้</td></tr><tr><td>ออสโมซิส</td><td>น้ำไปสู่ที่ละลายเข้ม</td><td>ไม่ใช้</td></tr><tr><td>แอคทีฟ</td><td>ต่ำ → สูง</td><td>ใช้</td></tr><tr><td>เอนโด/เอ็กโซไซโทซิส</td><td>ก้อนใหญ่</td><td>ใช้</td></tr></table>`;
+  } else if(state.mode===1){
+    formula='เยื่อหุ้มเซลล์เป็นชั้นไขมันคู่ที่มีโปรตีน';
+    const cellName={plant:'เซลล์พืช',animal:'เซลล์สัตว์',rbc:'เม็ดเลือดแดง',bacteria:'แบคทีเรีย'};
+    const orgName={nucleus:'นิวเคลียส',rer:'RER',ser:'SER',golgi:'กอลจิ',mito:'ไมโทคอนเดรีย',chloro:'คลอโรพลาสต์',ribosome:'ไรโบโซม',lysosome:'ไลโซโซม',vacuole:'แวคิวโอล',wall:'ผนังเซลล์'};
+    stats=[['เซลล์',cellName[state.cell]],['จุดที่เลือก',orgName[state.organelle]||state.organelle],['แบบ',state.cell==='bacteria'?'โพรแคริโอต':'ยูแคริโอต']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=(orgName[state.organelle]||'')+(ORG[state.organelle]?' · '+ORG[state.organelle]:'');
+    mis='<strong>จำไว้:</strong> พืชมีทั้งคลอโรพลาสต์และไมโทคอนเดรีย';
+    table=`<table><tr><th></th><th>พืช</th><th>สัตว์</th><th>แบคทีเรีย</th></tr><tr><td>นิวเคลียส</td><td>มี</td><td>มี</td><td>ไม่มี</td></tr><tr><td>ไมโทคอนเดรีย</td><td>มี</td><td>มี</td><td>ไม่มี</td></tr><tr><td>คลอโรพลาสต์</td><td>มี</td><td>ไม่มี</td><td>ไม่มี</td></tr><tr><td>ผนังเซลล์</td><td>มี</td><td>ไม่มี</td><td>มี</td></tr></table>`;
+  } else if(state.mode===2){
+    const e=enzymeV();
+    formula=`v = Vmax [S] / (Km + [S]) = ${num(e.v,1)}<br>Km ขณะนี้ ${num(e.Km,1)} · Vmax ที่ใช้ได้ ${num(e.Vmax,1)}`;
+    stats=[['อัตรา v',num(e.v,1)],['แบบจำลอง','induced fit'],['ตัวยับยั้ง',state.inhibitor==='none'?'ไม่มี':state.inhibitor==='comp'?'แข่งขัน':'ไม่แข่งขัน']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=state.inhibitor==='comp'?'แข่งขัน: Km สูงขึ้น':state.inhibitor==='non'?'ไม่แข่งขัน: Vmax ลด':'ไม่มีตัวยับยั้ง';
+    mis='<strong>จำไว้:</strong> เอนไซม์ลดพลังงานกระตุ้น ไม่ถูกใช้หมด';
+    table=`<table><tr><th>ปัจจัย</th><th>ผล</th></tr><tr><td>[S] เพิ่ม</td><td>v เข้าใกล้ Vmax</td></tr><tr><td>อุณหภูมิสูงมาก</td><td>เอนไซม์เสียสภาพ</td></tr><tr><td>แข่งขัน</td><td>Km เพิ่ม</td></tr><tr><td>ไม่แข่งขัน</td><td>Vmax ลด</td></tr></table>`;
+  } else if(state.mode===3){
+    const a=atpInfo();
+    formula = state.o2<5 ? 'C₆H₁₂O₆ → ผลิตภัณฑ์หมัก + 2 ATP' : 'C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ประมาณ 30–32 ATP';
+    stats=[['วิถี',a.path],['ATP โดยประมาณ',num(a.atp,1)],['NADH ที่ใช้ใน ETC',num(a.nadh,1)]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=a.path+' · ATP '+num(a.atp,1);
+    mis='<strong>จำไว้:</strong> ไกลโคไลซิสอยู่ที่ไซโทพลาซึม';
+    table=`<table><tr><th>ขั้น</th><th>ที่เกิด</th><th>ได้สุทธิโดยประมาณ</th></tr><tr><td>ไกลโคไลซิส</td><td>ไซโทพลาซึม</td><td>2 ATP + 2 NADH</td></tr><tr><td>สร้างแอซีติลโคเอ</td><td>เมทริกซ์</td><td>2 NADH</td></tr><tr><td>เครบส์</td><td>เมทริกซ์</td><td>2 ATP + 6 NADH + 2 FADH₂</td></tr><tr><td>ETC</td><td>คริสตี</td><td>ATP จากเกรเดียนต์โปรตอน</td></tr></table>`;
+  } else {
+    const names=PHASES[state.division]; const c=chromCount();
+    formula = state.division==='mitosis' ? '1 เซลล์แม่ 2n → 2 เซลล์ลูก 2n พันธุกรรมเหมือนเดิม' : '1 เซลล์แม่ 2n → 4 เซลล์ลูก n และเกิดความหลากหลาย';
+    stats=[['ระยะ',names[state.phase]],['ชุดโครโมโซม',c.n],['โครโมโซม / โครมาทิด',c.chr+' / '+c.ct]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=state.division==='meiosis' && state.phase===1 ? (state.cross?'มีครอสซิงโอเวอร์':'ไม่มีครอสซิงโอเวอร์') : names[state.phase];
+    mis='<strong>จำไว้:</strong> ไมโอซิสได้เซลล์ n ไม่เหมือนแม่ทุกประการ';
+    table=`<table><tr><th></th><th>ไมโทซิส</th><th>ไมโอซิส</th></tr><tr><td>จำนวนครั้งที่แยกนิวเคลียส</td><td>1</td><td>2</td></tr><tr><td>เซลล์ลูก</td><td>2 เซลล์ 2n</td><td>4 เซลล์ n</td></tr><tr><td>ครอสซิงโอเวอร์</td><td>ไม่เกิดในกระบวนการปกติ</td><td>เกิดในโพรเฟส I</td></tr><tr><td>หน้าที่</td><td>เติบโต ซ่อมแซม</td><td>สร้างเซลล์สืบพันธุ์</td></tr></table>`;
+  }
+  $('formula').innerHTML=formula; $('stats').innerHTML=stats; $('analysis').innerHTML=analysis; $('mis').innerHTML=mis; $('table').innerHTML=table;
+}
+function fit(canvas){const r=canvas.getBoundingClientRect(); const dpr=Math.min(2,devicePixelRatio||1); const w=Math.max(10,r.width), h=Math.max(10,r.height); const W=Math.floor(w*dpr), H=Math.floor(h*dpr); if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;} const ctx=canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w,h};}
+function paper(ctx,w,h){ctx.fillStyle='#fff8fb';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(80,160,110,.18)';for(let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}}
+function drawCell(ctx,w,h){
+  paper(ctx,w,h);
+  const cx=w*0.5, cy=h*0.52;
+  const t=tonic();
+  const swell=t==='hypo'?1.18:t==='hyper'?0.78:1;
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText(envName(),20,34);
+  if(state.cell==='plant'||state.cell==='bacteria'){
+    ctx.strokeStyle='#6d4c41'; ctx.lineWidth=8; ctx.strokeRect(cx-150,cy-110,300,220);
+  }
+  ctx.save();
+  if(state.cell==='rbc'){
+    const rx=70*swell, ry=58*swell;
+    ctx.fillStyle='#ef5350'; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffcdd2'; ctx.beginPath(); ctx.ellipse(cx,cy,rx*0.35,ry*0.35,0,0,Math.PI*2); ctx.fill();
+    if(t==='hyper'){ctx.strokeStyle='#b71c1c'; ctx.beginPath(); ctx.moveTo(cx-40,cy-20); ctx.lineTo(cx-20,cy-40); ctx.lineTo(cx,cy-10); ctx.stroke();}
+  } else if(state.cell==='bacteria'){
+    ctx.fillStyle='#c8e6c9'; ctx.fillRect(cx-120,cy-70,240,140);
+    ctx.fillStyle='#1565c0'; ctx.beginPath(); ctx.ellipse(cx-20,cy,40,18,0.4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#2e7d32'; ctx.beginPath(); ctx.arc(cx+50,cy+20,6,0,Math.PI*2); ctx.fill();
+  } else {
+    const plasm=state.cell==='plant'&&t==='hyper';
+    ctx.fillStyle=plasm?'#e8f5e9':'#dcedc8';
+    ctx.beginPath(); ctx.ellipse(cx,cy,plasm?90:130*swell,plasm?70:95*swell,0,0,Math.PI*2); ctx.fill();
+    if(state.cell!=='rbc'){
+      ctx.fillStyle='#fff59d'; ctx.beginPath(); ctx.arc(cx-10,cy-8,28,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#f57c00'; ctx.beginPath(); ctx.ellipse(cx+50,cy+30,16,28,0.5,0,Math.PI*2); ctx.fill();
+      if(state.cell==='plant'){
+        ctx.fillStyle='#43a047'; ctx.beginPath(); ctx.ellipse(cx-50,cy+24,22,14,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='rgba(129,199,132,.55)'; ctx.beginPath(); ctx.ellipse(cx,cy,plasm?50:70,plasm?36:48,0,0,Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillStyle='#8e24aa'; ctx.beginPath(); ctx.arc(cx-40,cy+36,12,0,Math.PI*2); ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+  if(state.showVec && state.sub==='osmo'){
+    ctx.fillStyle='#1565c0'; ctx.font='16px Leelawadee UI';
+    if(t==='iso'){
+      ctx.fillText('น้ำเข้าและออกเท่ากัน', cx-78, cy-120);
+    } else {
+      ctx.strokeStyle='#1565c0'; ctx.lineWidth=3;
+      const dir=t==='hyper'?1:-1;
+      for(let i=-1;i<=1;i++){
+        const y=cy+i*36; ctx.beginPath(); ctx.moveTo(cx+dir*40,y); ctx.lineTo(cx-dir*70,y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx-dir*70,y); ctx.lineTo(cx-dir*58,y-6); ctx.lineTo(cx-dir*58,y+6); ctx.fill();
+      }
+      ctx.fillText(t==='hyper'?'น้ำออกจากเซลล์':'น้ำเข้าเซลล์', cx-50, cy-120);
+    }
+  }
+  if(state.sub==='pump'){
+    ctx.fillStyle='#5e35b1'; ctx.fillRect(cx-20,cy-70,40,24);
+    ctx.fillStyle='#2f7a4e'; ctx.font='14px Leelawadee UI';
+    ctx.fillText('Na⁺ ×3 ออก', cx-80, cy-84); ctx.fillText('K⁺ ×2 เข้า', cx+28, cy-84);
+    ctx.fillText('ATP', cx-16, cy-40);
+  }
+  if(state.sub==='anatomy'){
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(16,h-70,w-32,52);
+    ctx.fillStyle='#2f7a4e'; ctx.font='600 15px Leelawadee UI';
+    ctx.fillText(state.organelle+': '+(ORG[state.organelle]||''), 28, h-40);
+  }
+}
+function drawEnzyme(ctx,w,h){
+  paper(ctx,w,h);
+  const e=enzymeV();
+  ctx.fillStyle='#a5d6a7'; ctx.beginPath(); ctx.moveTo(w*0.42,h*0.35); ctx.lineTo(w*0.7,h*0.35); ctx.lineTo(w*0.74,h*0.7); ctx.lineTo(w*0.38,h*0.7); ctx.closePath(); ctx.fill();
+  const open=state.inhibitor==='non'?18: (state.substrate>20?6:16);
+  ctx.fillStyle='#fff8fb'; ctx.beginPath(); ctx.arc(w*0.52,h*0.52,28+open,Math.PI*0.15,Math.PI*1.15,true); ctx.fill();
+  const fit=state.inhibitor!=='non' && state.substrate>8 && e.v>5;
+  ctx.fillStyle=fit?'#f9a825':'#90a4ae';
+  ctx.beginPath(); ctx.arc(w*0.52-(fit?0:40), h*0.5, 16,0,Math.PI*2); ctx.fill();
+  if(state.inhibitor==='comp'){ ctx.fillStyle='#e53935'; ctx.beginPath(); ctx.arc(w*0.52+8,h*0.62,12,0,Math.PI*2); ctx.fill(); }
+  if(state.inhibitor==='non'){ ctx.fillStyle='#6d4c41'; ctx.fillRect(w*0.62,h*0.4,16,16); }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText('v = '+num(e.v,1), 24, 36);
+}
+function drawMito(ctx,w,h){
+  paper(ctx,w,h);
+  const a=atpInfo();
+  ctx.strokeStyle='#ef6c00'; ctx.lineWidth=10; ctx.beginPath(); ctx.ellipse(w*0.55,h*0.5,180,110,0,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='#f57c00'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(w*0.4,h*0.42); ctx.quadraticCurveTo(w*0.55,h*0.3,w*0.68,h*0.45); ctx.stroke();
+  if(state.o2>=5){
+    for(let i=0;i<6;i++){
+      const x=w*0.4+i*28; ctx.fillStyle='#1565c0'; ctx.beginPath(); ctx.arc(x, h*0.48+Math.sin(state.t*3+i)*10, 5,0,Math.PI*2); ctx.fill();
+    }
+    ctx.save(); ctx.translate(w*0.72,h*0.58); ctx.rotate(state.spin); ctx.fillStyle='#2e7d32'; ctx.fillRect(-8,-28,16,56); ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText('ATP', w*0.75, h*0.75);
+  } else {
+    ctx.fillStyle='#6a1b9a'; ctx.font='700 18px Leelawadee UI';
+    ctx.fillText(state.ferm==='lactic'?'แล็กติก':'เอทานอล + CO₂', w*0.38, h*0.55);
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText(a.path+' · ATP '+num(a.atp,1), 20, 36);
+}
+function drawDivision(ctx,w,h){
+  paper(ctx,w,h);
+  const phase=state.phase; const meio=state.division==='meiosis';
+  const cells = (meio && phase>=8) ? 4 : (phase>=5 && !meio) || (meio && phase>=4 && phase<8) ? 2 : 1;
+  const positions = cells===4?[[0.3,0.4],[0.7,0.4],[0.3,0.72],[0.7,0.72]]:cells===2?[[0.35,0.55],[0.68,0.55]]:[[0.5,0.55]];
+  positions.forEach((p,idx)=>{
+    const x=w*p[0], y=h*p[1];
+    ctx.strokeStyle='#81c784'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(x,y,cells===1?120:70, cells===1?90:54,0,0,Math.PI*2); ctx.stroke();
+    const n = meio && phase>=8 ? 2 : meio && phase>=4 ? 2 : 4;
+    for(let i=0;i<n;i++){
+      let dx=0, dy=(i-(n-1)/2)*18;
+      if((!meio && phase===2) || (meio && (phase===2||phase===6))) dy=(i-(n-1)/2)*8;
+      if((!meio && phase===3) || (meio && (phase===3||phase===7))) dx = (i%2?1:-1)*40;
+      const xx=x+dx, yy=y+dy;
+      ctx.strokeStyle=i%2?'#1565c0':'#c62828'; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(xx-8,yy-10); ctx.lineTo(xx,yy); ctx.lineTo(xx+8,yy-10); ctx.moveTo(xx-8,yy+10); ctx.lineTo(xx,yy); ctx.lineTo(xx+8,yy+10); ctx.stroke();
+      if(state.cross && meio && phase===1 && i===0){ ctx.strokeStyle='#f9a825'; ctx.beginPath(); ctx.moveTo(xx,yy); ctx.lineTo(xx+16,yy+8); ctx.stroke(); }
+    }
+    if(state.showSpin && phase>0 && phase<5){
+      ctx.strokeStyle='rgba(94,53,177,.6)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,y-70); ctx.lineTo(x,y+70); ctx.stroke();
+    }
+  });
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI';
+  ctx.fillText(PHASES[state.division][phase], 20, 34);
+}
+function drawMain(){ const {ctx,w,h}=fit($('cv')); if(state.mode===1) drawCell(ctx,w,h); else if(state.mode===2) drawEnzyme(ctx,w,h); else if(state.mode===3) drawMito(ctx,w,h); else drawDivision(ctx,w,h); }
+function drawGraph(){
+  const {ctx,w,h}=fit($('graph')); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const pad={l:36,r:10,t:16,b:26}, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  ctx.strokeStyle='#e7b7cc'; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+ih); ctx.lineTo(pad.l+iw,pad.t+ih); ctx.stroke();
+  ctx.font='12px Leelawadee UI'; ctx.fillStyle='#4e6a5c';
+  if(state.mode===2){
+    ctx.beginPath(); ctx.strokeStyle='#7dcea0'; ctx.lineWidth=2;
+    for(let i=0;i<=30;i++){
+      let y;
+      if(state.graphKind==='s'){ const S=i/30*100; const e=enzymeV(); const Km=state.inhibitor==='comp'?8*(1+state.inhibAmt/40):8; const V=state.inhibitor==='non'?100*(1-state.inhibAmt/140):100; y=(V*(state.enzyme/50)*S/(Km+S))/100; }
+      else if(state.graphKind==='t'){ const temp=i/30*80; y=Math.exp(-Math.pow((temp-37)/16,2)); }
+      else { const pH=1+i/30*13; y=Math.exp(-Math.pow((pH-7)/1.7,2)); }
+      const X=pad.l+i/30*iw, Y=pad.t+ih-y*ih;
+      if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.fillText(state.graphKind==='s'?'Michaelis–Menten':state.graphKind==='t'?'ระฆังอุณหภูมิ':'ระฆัง pH', pad.l, 12);
+  } else if(state.mode===3){
+    const xs=[0,20,40,60,80,100];
+    ctx.beginPath(); ctx.strokeStyle='#7dcea0'; ctx.lineWidth=2;
+    xs.forEach((o,i)=>{ const atp=o<5?2:2+2*Math.min(1,(o-5)/40)+10*Math.min(1,(o-5)/40)*2.5+2*Math.min(1,(o-5)/40)*1.5; const X=pad.l+o/100*iw, Y=pad.t+ih-(atp/34)*ih; if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); });
+    ctx.stroke(); ctx.fillText('ATP เทียบออกซิเจน', pad.l, 12);
+  } else {
+    ctx.fillText(state.mode===4?'จำนวนเซลล์ลูกเมื่อจบกระบวนการ':'ศักย์ของน้ำเปลี่ยนตามความเข้มข้น', pad.l, 12);
+    if(state.mode===4){
+      ctx.fillStyle='#7dcea0'; ctx.fillRect(pad.l+30, pad.t+ih-40, 40, 40); ctx.fillRect(pad.l+120, pad.t+ih-80, 40, 80);
+      ctx.fillStyle='#4e6a5c'; ctx.fillText('ไมโทซิส 2', pad.l+16, h-6); ctx.fillText('ไมโอซิส 4', pad.l+106, h-6);
+    } else {
+      ctx.beginPath(); ctx.strokeStyle='#1565c0';
+      for(let i=0;i<=20;i++){ const c=i/20; const X=pad.l+i/20*iw, Y=pad.t+ih-(1-c)*ih; if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y);} ctx.stroke();
+    }
+  }
+}
+function setKey(t){ if(!t.dataset||!t.dataset.key) return; const key=t.dataset.key; state[key]=t.type==='range'?parseFloat(t.value):t.value; const lab=document.querySelector(`[data-for="${key}"]`); if(lab){ const u=key==='temp'?' °C':key==='osm'?' M':key==='o2'?' %':''; lab.textContent=num(state[key], key==='pH'||key==='osm'?1:0)+u; } if(['cell','organelle','inhibitor','graphKind','ferm'].includes(key)) renderControls(); side(); }
+document.addEventListener('input',e=>setKey(e.target));
+document.addEventListener('change',e=>setKey(e.target));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const act=b.dataset.act, v=b.dataset.v;
+  if(act==='mode'){ state.mode=+v; renderControls(); side(); }
+  if(act==='sub'){ if(state.mode===4){ state.division=v; state.phase=0; } else state.sub=v; renderControls(); side(); }
+  if(act==='play'){ state.playing=!state.playing; renderControls(); }
+  if(act==='reset'){ const m=state.mode,s=state.sub,d=state.division; state=defaults(); state.mode=m; state.sub=s; state.division=d; renderControls(); side(); }
+  if(act==='vec'){ state.showVec=!state.showVec; renderControls(); }
+  if(act==='pump'){ state.showVec=true; side(); }
+  if(act==='step'){ const max=PHASES[state.division].length-1; state.phase=Math.min(max,state.phase+1); side(); }
+  if(act==='stepb'){ state.phase=Math.max(0,state.phase-1); side(); }
+  if(act==='cross'){ state.cross=!state.cross; renderControls(); side(); }
+  if(act==='spin'){ state.showSpin=!state.showSpin; renderControls(); }
+});
+let last=0, acc=0;
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000||0); last=now; if(state.playing){ state.t+=dt; if(state.o2>=5) state.spin+=dt*4; acc+=dt; if(state.mode===4 && acc>2.2){ acc=0; const max=PHASES[state.division].length-1; state.phase=state.phase>=max?0:state.phase+1; side(); } } drawMain(); drawGraph(); requestAnimationFrame(loop); }
+renderControls(); side(); requestAnimationFrame(loop);
+document.documentElement.dataset.ready='cell';
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

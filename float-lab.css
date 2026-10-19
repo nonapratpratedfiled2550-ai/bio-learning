@@ -1,0 +1,276 @@
+/* เปลือกแล็บร่วม: สื่อจำลองเต็มจอ + ปุ่ม/แผงลอย (ใช้คู่กับ float-lab.js) */
+html.lab-float, html.lab-float body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #050b10;
+}
+html.lab-float body > header,
+html.lab-float body > .grid,
+html.lab-float body > .layout {
+  display: none !important;
+}
+
+.lf-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+.lf-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(22, 56, 67, .55) 0%, transparent 55%),
+    #050b10;
+}
+.lf-viewer canvas#main,
+.lf-viewer canvas#cv,
+.lf-viewer .cvwrap,
+.lf-viewer .cvwrap canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+  background: transparent !important;
+}
+.lf-viewer .cvwrap {
+  position: absolute !important;
+  inset: 0 !important;
+  overflow: hidden;
+}
+.lf-hud {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(920px, calc(100% - 24px));
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+.lf-hud > * { pointer-events: auto; }
+.lf-hud .stats,
+.lf-hud .formula,
+.lf-hud .eq {
+  margin: 0 !important;
+  background: rgba(7, 18, 26, .82) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(120, 190, 180, .28) !important;
+  border-radius: 14px !important;
+  padding: 8px 12px !important;
+}
+.lf-hud .eq { font-size: 12.5px !important; max-height: 88px; overflow: auto; }
+.lf-hud .stats { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important; }
+
+.lf-float {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+.lf-float > * { pointer-events: auto; }
+.lf-top-left { top: 12px; left: 12px; max-width: min(420px, calc(100% - 100px)); }
+.lf-top-right { top: 12px; right: 12px; }
+.lf-fab-col { top: 84px; left: 12px; flex-direction: column; }
+.lf-toolbar {
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lf-glass {
+  background: rgba(7, 18, 26, .8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(120, 190, 180, .32);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+}
+
+.lf-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 14px 6px 6px;
+  border-radius: 16px;
+}
+.lf-title a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #c8ffd9;
+  background: #07140e;
+  border: 1px solid #1ed39a;
+  box-shadow: 0 0 14px rgba(30, 211, 154, .35);
+  font-weight: 800;
+}
+.lf-title .lf-titles { min-width: 0; }
+.lf-title h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: #c8ffd9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lf-title p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #9dccc4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lf-fab {
+  min-width: 66px;
+  min-height: 58px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-family: inherit;
+  color: #e8fff1;
+  text-decoration: none;
+  cursor: pointer;
+  background: rgba(7, 18, 26, .82);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(120, 190, 180, .32);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+  transition: border-color .15s, transform .15s;
+}
+.lf-fab .fi { font-size: 18px; line-height: 1.2; }
+.lf-fab .fl { font-size: 11.5px; font-weight: 700; line-height: 1.25; white-space: nowrap; }
+.lf-fab:hover { border-color: #3dff8a; transform: translateY(-1px); }
+.lf-fab[aria-expanded="true"],
+.lf-fab[aria-pressed="true"] {
+  border-color: #3dff8a;
+  color: #3dff8a;
+  background: rgba(16, 52, 40, .9);
+}
+.lf-fab:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.lf-pop[hidden] { display: none !important; }
+.lf-pop {
+  position: absolute;
+  z-index: 12;
+  display: block;
+  top: 84px;
+  bottom: 96px;
+  width: min(360px, calc(100% - 100px));
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px 14px 14px;
+  border-radius: 18px;
+  background: rgba(7, 18, 26, .92);
+}
+.lf-pop.left { left: 90px; }
+.lf-pop.right { right: 12px; width: min(380px, calc(100% - 100px)); top: 72px; }
+.lf-pop-head {
+  position: sticky;
+  top: -12px;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: -12px -14px 10px;
+  padding: 12px 14px 8px;
+  background: rgba(7, 18, 26, .96);
+  border-bottom: 1px solid rgba(120, 190, 180, .22);
+}
+.lf-pop-head h2 { margin: 0; font-size: 1.05rem; color: #c8ffd9; }
+.lf-x {
+  margin-left: auto;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 190, 180, .28);
+  background: rgba(10, 24, 34, .9);
+  color: #e8fff1;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.lf-x:hover { border-color: #3dff8a; }
+.lf-pop .card { margin-bottom: 10px; }
+.lf-pop .card:last-child { margin-bottom: 0; }
+.lf-pop h1 { font-size: 1.15rem; }
+.lf-pop .cvwrap.short { height: 180px !important; position: relative !important; inset: auto !important; }
+
+.lf-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 86px;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(7, 20, 28, .85);
+  border: 1px solid rgba(120, 190, 180, .28);
+  font-size: 13px;
+  color: #e7f6f1;
+  white-space: nowrap;
+  pointer-events: none;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lf-stage.has-hud .lf-hint { bottom: auto; top: 72px; }
+
+@media (max-width: 760px) {
+  .lf-top-left { top: 8px; left: 8px; max-width: calc(100% - 96px); }
+  .lf-title h1 { font-size: .95rem; }
+  .lf-title p { display: none; }
+  .lf-top-right { top: 8px; right: 8px; }
+  .lf-fab-col { top: 72px; left: 8px; }
+  .lf-fab { min-width: 56px; min-height: 52px; padding: 5px 6px; border-radius: 14px; }
+  .lf-fab .fi { font-size: 16px; }
+  .lf-fab .fl { font-size: 10.5px; }
+  .lf-toolbar {
+    bottom: 10px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    max-width: none;
+    gap: 6px;
+  }
+  .lf-toolbar .lf-fab { min-width: 0; flex: 1 1 0; padding: 5px 4px; }
+  .lf-toolbar .lf-fab .fl { font-size: 10px; }
+  .lf-pop, .lf-pop.left, .lf-pop.right {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    top: auto;
+    bottom: 78px;
+    max-height: min(48%, calc(100% - 190px));
+  }
+  .lf-hud { bottom: 78px; width: calc(100% - 16px); }
+  .lf-hint { bottom: 76px; font-size: 12px; }
+  .lf-stage.has-hud .lf-hint { top: 66px; bottom: auto; }
+}
+@media (max-width: 360px) {
+  .lf-toolbar .lf-fab .fl { display: none; }
+  .lf-toolbar .lf-fab { min-height: 46px; }
+}

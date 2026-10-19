@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>การลำเลียงของพืช – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0a1210;--panel:#111c19;--panel2:#172622;--line:#25403a;--txt:#e6f4ef;--mut:#93b3aa;--acc:#34d399;--acc2:#fbbf24;--blue:#38bdf8}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#0c3b2e,#0c2a3b);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#065f46;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#1d302b;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#047857;border-color:#34d399}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
+.presets .btn{font-size:12px;padding:6px}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#0369a1;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#050b09;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:17px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#08100e;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{border:1px solid var(--line);padding:4px 6px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#07100d;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🌿 การลำเลียงของพืช (Plant Transport System)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : ชลศักย์และเส้นทางน้ำในราก</button>
+    <button data-mode="2">โหมด 2 : การคายน้ำและแรงดึงในไซเล็ม (Potometer)</button>
+    <button data-mode="3">โหมด 3 : กลไกการเปิด-ปิดปากใบ</button>
+    <button data-mode="4">โหมด 4 : การลำเลียงอาหารทางโฟลเอ็ม (Pressure-Flow)</button>
+  </div>
+  <div class="card"><h3>สภาพแวดล้อม</h3>
+    <div class="presets"><button class="btn" data-pre="day">☀️ กลางวันปกติ</button><button class="btn" data-pre="hot">🔥 ร้อน แห้ง ลมแรง</button><button class="btn" data-pre="night">🌙 กลางคืนชื้น</button><button class="btn" data-pre="drought">🏜️ ดินแห้งแล้ง</button></div>
+    <div class="ctl"><label>ความเข้มแสง <b id="lV">40,000 lux</b></label><input type="range" id="light" min="0" max="100000" step="1000" value="40000"></div>
+    <div class="ctl"><label>อุณหภูมิ <b id="tV">25 °C</b></label><input type="range" id="temp" min="0" max="50" step="1" value="25"></div>
+    <div class="ctl"><label>ความชื้นสัมพัทธ์ <b id="hV">50 %</b></label><input type="range" id="rh" min="10" max="100" step="1" value="50"></div>
+    <div class="ctl"><label>ความเร็วลม <b id="wV">2 m/s</b></label><input type="range" id="wind" min="0" max="20" step="0.5" value="2"></div>
+    <div class="ctl"><label>ระดับฮอร์โมน ABA</label><select id="aba"><option value="0">Off (ไม่มี)</option><option value="1">Low (ต่ำ)</option><option value="2">High (สูง)</option></select></div>
+    <div class="ctl"><label>ชลศักย์ของดิน Ψw,soil <b id="sV">−0.10 MPa</b></label><input type="range" id="soil" min="-2" max="0" step="0.05" value="-0.1"></div>
+  </div>
+  <div class="card"><h3>ตัวแปรเฉพาะโหมด</h3>
+    <div data-m="1">
+      <div class="ctl"><label>ความเข้มข้นตัวละลายในเซลล์ราก C <b id="cV">0.25 M</b></label><input type="range" id="conc" min="0" max="0.8" step="0.01" value="0.25"></div>
+      <div class="ctl"><label>ชนิดตัวละลาย (i)</label><select id="ion"><option value="1">ซูโครส (i = 1)</option><option value="2">KCl (i = 2)</option></select></div>
+      <div class="ctl"><label>แรงดันเต่งเซลล์ราก Ψp <b id="pV">0.30 MPa</b></label><input type="range" id="press" min="0" max="1" step="0.01" value="0.3"></div>
+      <div class="ctl"><label>เน้นเส้นทาง</label><select id="path"><option value="all">ทั้ง 3 เส้นทาง</option><option value="apo">Apoplast</option><option value="sym">Symplast</option><option value="vac">Vacuolar</option></select></div>
+    </div>
+    <div data-m="2"><p class="hint">ปรับสภาพแวดล้อมด้านบนเพื่อดูการเปลี่ยนแปลงอัตราการคายน้ำและฟองอากาศในเครื่อง Potometer</p></div>
+    <div data-m="3"><p class="hint">ปรับแสงและ ABA ด้านบน — ลองกด "ดินแห้งแล้ง" เพื่อดูการสร้าง ABA ตามธรรมชาติ</p></div>
+    <div data-m="4">
+      <div class="ctl"><label>รูปแบบ Source → Sink</label><select id="flowcfg"><option value="down">ใบ (Source) → ราก (Sink) : ไหลลง</option><option value="up">ใบ (Source) → ผล/ยอดอ่อน (Sink) : ไหลขึ้น</option><option value="tuber">หัวสะสมใต้ดิน (Source ต้นฤดู) → ยอดอ่อน (Sink) : ไหลขึ้น</option></select></div>
+      <div class="ctl"><label>อัตราการสังเคราะห์ด้วยแสง/โหลดน้ำตาลที่ Source <b id="ldV">70 %</b></label><input type="range" id="load" min="0" max="100" step="1" value="70"></div>
+      <div class="ctl"><label>อัตราการใช้น้ำตาลที่ Sink <b id="useV">70 %</b></label><input type="range" id="use" min="0" max="100" step="1" value="70"></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgPsi" class="on">ค่าชลศักย์ Ψw, Ψs, Ψp</button><button id="tgIon">ทิศทางไอออน H⁺ K⁺ Cl⁻</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function T(g,s,x,y,col='#e6f4ef',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px "Sarabun","Leelawadee UI",Tahoma,sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const R=0.008314; // L·MPa/(mol·K)
+const S={mode:1,running:true,time:0,toggle:'psi',parts:[],hist3:[],bubble:0,gut:[]};
+const V=id=>+$('#'+id).value;
+const f2=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(2);
+
+/* ============ PHYSIOLOGY MODEL ============ */
+function env(){const L=V('light'),Tc=V('temp'),RH=V('rh')/100,wind=V('wind'),soil=V('soil');const abaSel=V('aba');const droughtABA=soil<-1.2?2:soil<-0.7?1:0;const aba=Math.max(abaSel,droughtABA);
+  const es=0.6108*Math.exp(17.27*Tc/(Tc+237.3));const vpd=es*(1-RH);
+  const fL=L/(L+12000),fA=[1,0.45,0.08][aba],fW=clamp(1+(soil+0.3)/1.2,0.05,1),fT=Tc<3?0.2:Tc>42?0.4:1;
+  const gs=clamp(fL*fA*fW*fT,0.02,1);const rs=1/(gs*0.35+0.006),rb=1/(0.3+0.5*Math.sqrt(wind));const E=9.6*vpd/(rs+rb);
+  const psiLeaf=soil-0.3-E*0.15;const psiStem=(soil+psiLeaf)/2-0.05;const psiRoot=soil-0.15-E*0.03;
+  const psiAir=0.4619*(Tc+273.15)*Math.log(Math.max(RH,0.01));
+  const rootPressure=RH>=0.9&&L<8000&&soil>-0.3;const potom=E*0.05*18*60/1000;// mL/min
+  const cav=psiStem<-2.6;
+  return{L,Tc,RH,wind,soil,aba,abaSel,droughtABA,vpd,gs,rs,rb,E,psiLeaf,psiStem,psiRoot,psiAir,rootPressure,potom,cav,es};}
+function root(){const e=env();const C=V('conc'),i=V('ion'),Tk=e.Tc+273.15;const psiS=-i*C*R*Tk;const psiP=V('press');const psiW=psiS+psiP;return{psiS,psiP,psiW,C,i,Tk,flow:e.soil-psiW};}
+function stoma(){const e=env();return e;}
+const G={K:120,psiP:0.4,ap:0.3};
+function guardStep(dt){const e=env();const fL=e.L/(e.L+12000);const target=e.aba>=2?70:e.aba===1?lerp(90,220,fL):lerp(90,450,fL);G.K+=(target-G.K)*Math.min(1,dt*0.7);
+  const C=0.15+G.K*1.7/1000;const Tk=e.Tc+273.15;G.psiS=-C*R*Tk;const psiEnv=e.psiLeaf;const pTarget=Math.max(0,psiEnv-G.psiS);G.psiP+=(pTarget-G.psiP)*Math.min(1,dt*1.2);G.psiW=G.psiS+G.psiP;G.ap=clamp((G.psiP-0.25)/1.5,0,1);G.target=target;G.envPsi=psiEnv;}
+function phloem(){const e=env();const load=V('load')/100,use=V('use')/100;const Tk=e.Tc+273.15;const Cs=0.12+0.78*load;const Ck=Math.max(0.05,0.08+Cs*(1-use)*0.7);
+  const psiX=e.psiStem;const sS=-Cs*R*Tk,sK=-Ck*R*Tk;const pS=Math.max(0,psiX-sS),pK=Math.max(0,psiX+0.05-sK);const dP=pS-pK;const eta=(1+2.2*(Cs+Ck)/2)*Math.exp(-0.02*(e.Tc-20));const v=Math.max(0,1.25*dP/eta);
+  return{Cs,Ck,sS,sK,pS,pK,dP,eta,v,psiX};}
+
+/* ============ UI ============ */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','ภาคตัดเซลล์ราก: เส้นทาง Apoplast / Symplast / Vacuolar','ต้นไม้จำลอง + เครื่อง Potometer + ท่อไซเล็ม','เซลล์คุม (Guard cells) และปากใบ','หลอดคู่ Xylem–Phloem : ทฤษฎีแรงดันการไหล'][m];
+  $('#chartTitle').textContent=['','โปรไฟล์ชลศักย์ (Ψw) ตามเส้นทางน้ำ','อัตราการคายน้ำ vs ความชื้น และ ความเร็วลม','ความกว้างปากใบ & K⁺ ในเซลล์คุม ตามเวลา','แรงดันเต่ง (Ψp) ตามแนวท่อโฟลเอ็ม'][m];S.parts=[];updateText();}
+const bind=(id,lab,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+lab).textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();};
+bind('light','lV',v=>v.toLocaleString('th-TH')+' lux');bind('temp','tV',v=>v+' °C');bind('rh','hV',v=>v+' %');bind('wind','wV',v=>v+' m/s');bind('soil','sV',v=>(v<0?'−':'')+Math.abs(v).toFixed(2)+' MPa');
+bind('conc','cV',v=>v.toFixed(2)+' M');bind('press','pV',v=>v.toFixed(2)+' MPa');bind('load','ldV',v=>v+' %');bind('use','useV',v=>v+' %');
+['aba','ion','path','flowcfg'].forEach(id=>$('#'+id).onchange=updateText);
+const PRE={day:{light:40000,temp:25,rh:50,wind:2,soil:-0.1,aba:0},hot:{light:90000,temp:38,rh:20,wind:12,soil:-0.3,aba:0},night:{light:0,temp:20,rh:96,wind:0,soil:-0.05,aba:0},drought:{light:60000,temp:33,rh:30,wind:3,soil:-1.6,aba:0}};
+$$('[data-pre]').forEach(b=>b.onclick=()=>{const p=PRE[b.dataset.pre];for(const k in p){$('#'+k).value=p[k];$('#'+k).dispatchEvent(new Event('input'));}updateText();});
+$('#tgPsi').onclick=()=>{S.toggle='psi';$('#tgPsi').classList.add('on');$('#tgIon').classList.remove('on');};
+$('#tgIon').onclick=()=>{S.toggle='ion';$('#tgIon').classList.add('on');$('#tgPsi').classList.remove('on');};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{S.parts=[];S.hist3=[];S.bubble=0;S.gut=[];G.K=120;G.psiP=0.4;Object.entries(PRE.day).forEach(([k,v])=>{$('#'+k).value=v;$('#'+k).dispatchEvent(new Event('input'));});updateText();};
+
+/* ============ MODE 1: ROOT ============ */
+const LAYERS=[['ดิน',0.1,'#6b4423'],['เอพิเดอร์มิส + ขนราก',0.11,'#3f6212'],['คอร์เทกซ์',0.12,'#365314'],['คอร์เทกซ์',0.12,'#365314'],['คอร์เทกซ์',0.12,'#365314'],['เอนโดเดอร์มิส',0.11,'#14532d'],['เพริไซเคิล',0.1,'#166534'],['ไซเล็ม',0.22,'#0c4a6e']];
+function layerX(w){let x=10,out=[];LAYERS.forEach(l=>{const lw=l[1]*(w-20);out.push({x,w:lw,name:l[0],col:l[2]});x+=lw;});return out;}
+function drawM1(g,w,h,dt){const L=layerX(w),rt=root(),e=env();const yT=60,yB=h-70,mid=(yT+yB)/2;const flow=rt.flow;const dir=flow>=0?1:-1;const speed=clamp(Math.abs(flow),0,1.5);const sel=$('#path').value;
+  const turg=clamp(rt.psiP/1,0.2,1);
+  L.forEach((l,i)=>{if(i===0){g.fillStyle=l.col;g.fillRect(l.x,yT-20,l.w,yB-yT+40);for(let k=0;k<30;k++){g.fillStyle='rgba(0,0,0,0.25)';g.beginPath();g.arc(l.x+hash(k)*l.w,yT+hash(k+9)*(yB-yT),3+hash(k+3)*5,0,7);g.fill();}return;}
+    if(i===7){g.fillStyle='#082f49';g.fillRect(l.x,yT-20,l.w,yB-yT+40);g.strokeStyle='#38bdf8';g.lineWidth=3;g.strokeRect(l.x+8,yT-10,l.w-16,yB-yT+20);for(let y=yT;y<yB;y+=14){g.strokeStyle='rgba(56,189,248,0.3)';g.beginPath();g.moveTo(l.x+8,y);g.lineTo(l.x+14,y+7);g.stroke();}return;}
+    [[yT,mid-6],[mid+6,yB]].forEach(([a,b],ri)=>{const inset=(1-turg)*6;g.fillStyle='#1a2e05';g.fillRect(l.x+1,a,l.w-2,b-a);rr(g,l.x+3+inset,a+3+inset,l.w-6-2*inset,b-a-6-2*inset,6);g.fillStyle=l.col;g.fill();
+      g.fillStyle='rgba(56,189,248,0.25)';rr(g,l.x+l.w*0.2+inset,a+(b-a)*0.25+inset,l.w*0.6-2*inset,(b-a)*0.5-2*inset,8);g.fill();
+      if(i<7){for(let k=0;k<3;k++){g.fillStyle='#a3e635';g.fillRect(l.x+l.w-3,a+(b-a)*(0.25+k*0.25),5,3);}}
+      if(i===5){g.fillStyle='#78350f';g.fillRect(l.x+l.w*0.3,ri===0?b-2:a-4,l.w*0.4,6);}});
+    if(i===1){for(let k=0;k<4;k++){g.strokeStyle='#4d7c0f';g.lineWidth=5;g.beginPath();g.moveTo(l.x+2,yT+20+k*((yB-yT)/4));g.lineTo(l.x-L[0].w*0.6,yT+30+k*((yB-yT)/4));g.stroke();}}
+    T(g,l.name,l.x+l.w/2,yB+16,'#bbf7d0',10.5,'center');});
+  T(g,'ดิน',L[0].x+L[0].w/2,yB+16,'#fcd34d',10.5,'center');T(g,'ท่อไซเล็ม',L[7].x+L[7].w/2,yB+32,'#7dd3fc',10.5,'center');
+  T(g,'■ Casparian strip (ซูเบอริน)',L[5].x+L[5].w/2,yT-30,'#fbbf24',11,'center',true);
+  T(g,'Symplast (ผ่านไซโทพลาซึม + พลาสโมเดสมาตา)',L[1].x+4,yT-8,'#a5f3fc',10.5);T(g,'Apoplast (ผนังเซลล์/ช่องว่าง)',L[1].x+4,mid,'#93c5fd',10.5);T(g,'Vacuolar (ผ่านแวคิวโอล/อควาพอริน)',L[1].x+4,yB+4+0,'#ddd6fe',10.5);
+  if(S.running&&speed>0.01&&Math.random()<speed*0.9){const types=sel==='all'?['apo','sym','vac']:[sel];types.forEach(t=>S.parts.push({t,x:dir>0?L[0].x+L[0].w*0.5:L[7].x+10,y:t==='apo'?mid+(Math.random()-0.5)*6:t==='sym'?yT+(mid-yT)*(0.2+Math.random()*0.6):mid+(yB-mid)*(0.3+Math.random()*0.4),st:0}));}
+  const casX=L[5].x+L[5].w*0.3;
+  S.parts=S.parts.filter(p=>{const v=(40+60*speed)*dt*dir;if(p.t==='apo'&&dir>0&&p.st===0&&p.x+v>=casX){p.st=1;}
+    if(p.st===1){p.y+= (yT+(mid-yT)*0.6-p.y)*Math.min(1,dt*3);if(Math.abs(p.y-(yT+(mid-yT)*0.6))<3)p.st=2;}else p.x+=v;
+    const col=p.t==='apo'?(p.st?'#a5f3fc':'#60a5fa'):p.t==='sym'?'#22d3ee':'#c4b5fd';g.fillStyle=col;g.beginPath();g.arc(p.x,p.y,3,0,7);g.fill();return p.x>0&&p.x<L[7].x+L[7].w-5;});
+  if(dir>0&&sel!=='sym'&&sel!=='vac'){arrow(g,casX-30,mid,casX-4,mid,'#f87171',2);T(g,'ถูกกั้น! → เข้าสู่ Symplast',casX-4,mid+16,'#fca5a5',10.5,'center',true);}
+  if(S.toggle==='psi'){const vals=[e.soil,rt.psiW,rt.psiW-0.05,rt.psiW-0.1,rt.psiW-0.15,rt.psiW-0.2,rt.psiW-0.22,e.psiStem];L.forEach((l,i)=>{rr(g,l.x+2,yT-52,l.w-4,18,4);g.fillStyle='rgba(0,0,0,0.6)';g.fill();T(g,f2(vals[i]),l.x+l.w/2,yT-43,'#fde68a',10,'center',true);});T(g,'Ψw (MPa)',12,yT-60,'#fde68a',10.5);}
+  else{for(let k=0;k<6;k++){const t=(S.time*0.4+k/6)%1;const x=lerp(L[1].x,L[7].x,t),y=yT+12+k*3;T(g,k%2?'K⁺':'NO₃⁻',x,y,'#f0abfc',10,'center',true);}T(g,'ไอออนแร่ธาตุถูกลำเลียงแบบ Active transport เข้าเซลล์ราก (ใช้ ATP) → สะสมในไซเล็ม → เกิด Root pressure',w/2,yT-46,'#f0abfc',11,'center',true);}
+  if(flow<0)T(g,'⚠ Ψw ดิน ต่ำกว่าเซลล์ราก → น้ำออสโมซิสออกจากราก (เซลล์เสียน้ำ)',w/2,h-16,'#fca5a5',12.5,'center',true);
+  else T(g,'น้ำเคลื่อนจาก Ψw สูง (ดิน '+f2(e.soil)+') → Ψw ต่ำ (ราก '+f2(rt.psiW)+' MPa)',w/2,h-16,'#a7f3d0',12.5,'center',true);}
+
+/* ============ MODE 2: TRANSPIRATION ============ */
+function drawM2(g,w,h,dt){const e=env();const soilY=h-60;
+  g.fillStyle=e.L>5000?'#0c2a3b':'#060b14';g.fillRect(0,0,w,soilY);if(e.L>0){g.fillStyle=`rgba(253,224,71,${0.3+0.7*e.L/100000})`;g.beginPath();g.arc(w-50,40,12+e.L/100000*14,0,7);g.fill();}
+  g.fillStyle=`rgb(${Math.round(lerp(150,80,clamp(1+e.soil/2,0,1)))},${Math.round(lerp(110,60,clamp(1+e.soil/2,0,1)))},50)`;g.fillRect(0,soilY,w,60);
+  // potometer
+  const px=20,py=soilY-140,pw=w*0.3;g.strokeStyle='#94a3b8';g.lineWidth=2;rr(g,px,py,40,120,6);g.stroke();g.fillStyle='rgba(56,189,248,0.4)';g.fillRect(px+2,py+10,36,108);
+  g.fillStyle='rgba(56,189,248,0.4)';g.fillRect(px+40,py+100,pw-40,8);g.strokeStyle='#94a3b8';g.strokeRect(px+40,py+100,pw-40,8);for(let i=0;i<=10;i++){const x=px+40+i*(pw-40)/10;g.beginPath();g.moveTo(x,py+108);g.lineTo(x,py+114);g.stroke();T(g,i,x,py+122,'#64748b',9,'center');}
+  if(S.running)S.bubble+=e.potom*dt*0.9;if(S.bubble>1)S.bubble=0;const bx=px+40+(pw-46)*(1-S.bubble);g.fillStyle='#f8fafc';g.beginPath();g.ellipse(bx,py+104,5,3,0,0,7);g.fill();
+  T(g,'Potometer: ฟองอากาศเคลื่อน ← '+e.potom.toFixed(3)+' mL/min',px,py+138,'#bae6fd',11);
+  g.strokeStyle='#65a30d';g.lineWidth=4;g.beginPath();g.moveTo(px+20,py+10);g.lineTo(px+20,py-60);g.stroke();for(let k=0;k<3;k++){g.fillStyle='#22c55e';g.beginPath();g.ellipse(px+20+(k%2?16:-16),py-20-k*16,15,6,(k%2?0.4:-0.4),0,7);g.fill();}
+  // tree
+  const tx=w*0.58,trunkTop=90;g.fillStyle='#78350f';g.fillRect(tx-16,trunkTop,32,soilY-trunkTop);g.strokeStyle='#78350f';g.lineWidth=6;for(let k=0;k<5;k++){g.beginPath();g.moveTo(tx,soilY+4);g.lineTo(tx+(k-2)*40,soilY+50);g.stroke();}
+  const wilt=e.psiLeaf<-1.8;g.fillStyle=wilt?'#a3a34a':'#15803d';[[0,60,90],[-70,95,60],[70,95,60],[-35,40,55],[35,40,55]].forEach(([dx,dy,r])=>{g.beginPath();g.ellipse(tx+dx,dy+(wilt?10:0),r,r*0.7,0,0,7);g.fill();});
+  // xylem column in trunk
+  g.fillStyle='#0c4a6e';g.fillRect(tx-6,trunkTop,12,soilY-trunkTop);const vel=e.E*12;const n=Math.floor((soilY-trunkTop)/9);
+  for(let k=0;k<n;k++){const y=soilY-((k*9+S.time*vel*(S.running?1:0))%(soilY-trunkTop));if(e.cav&&Math.abs(y-(soilY+trunkTop)/2)<20)continue;g.fillStyle='#38bdf8';g.beginPath();g.arc(tx,y,3.2,0,7);g.fill();}
+  if(e.cav){g.fillStyle='#f8fafc';g.beginPath();g.ellipse(tx,(soilY+trunkTop)/2,5,16,0,0,7);g.fill();T(g,'⚠ Cavitation: ฟองอากาศตัดสายน้ำ',tx+22,(soilY+trunkTop)/2,'#fca5a5',11,'left',true);}
+  // vapor
+  if(S.running&&Math.random()<e.E*0.12){S.gut.push({x:tx+(Math.random()-0.5)*160,y:60+Math.random()*60,t:0,k:'v'});}
+  if(e.rootPressure&&S.running&&Math.random()<0.05)S.gut.push({x:tx+(Math.random()<0.5?-125:125),y:95,t:0,k:'g'});
+  S.gut=S.gut.filter(p=>{p.t+=dt;if(p.k==='v'){p.y-=20*dt;p.x+=(e.wind*6)*dt;g.fillStyle=`rgba(186,230,253,${1-p.t/2})`;g.beginPath();g.arc(p.x,p.y,2.5,0,7);g.fill();return p.t<2;}else{const yy=p.y+Math.min(p.t,1.5)*6;g.fillStyle='#7dd3fc';g.beginPath();g.arc(p.x,yy,3+Math.min(p.t,1.5)*2,0,7);g.fill();return p.t<4;}});
+  if(e.wind>0){for(let k=0;k<5;k++){const x=((S.time*e.wind*20+k*90)%(w+60))-30;arrow(g,x,140+k*20,x+20,140+k*20,'rgba(226,232,240,0.4)',1.5);}}
+  // zoom vessel
+  const zx=w-150,zy=150,zw=120,zh=h-260;rr(g,zx,zy,zw,zh,8);g.fillStyle='rgba(2,6,23,0.85)';g.fill();g.strokeStyle='#38bdf8';g.stroke();T(g,'ขยายท่อ Vessel',zx+zw/2,zy-10,'#7dd3fc',11,'center',true);
+  g.strokeStyle='#a16207';g.lineWidth=4;g.beginPath();g.moveTo(zx+30,zy+8);g.lineTo(zx+30,zy+zh-8);g.moveTo(zx+zw-30,zy+8);g.lineTo(zx+zw-30,zy+zh-8);g.stroke();
+  const off=(S.time*vel*0.6*(S.running?1:0))%22;const mols=[];for(let y=zy+zh-10+off;y>zy+10;y-=22){[zx+zw/2-12,zx+zw/2+12].forEach((x,j)=>{if(y<zy+zh-6)mols.push([x,y-j*11]);});}
+  mols.forEach(([x,y],i)=>{g.fillStyle='#38bdf8';g.beginPath();g.arc(x,y,6,0,7);g.fill();g.fillStyle='#f8fafc';g.beginPath();g.arc(x-5,y-4,2.5,0,7);g.arc(x+5,y-4,2.5,0,7);g.fill();});
+  g.strokeStyle='rgba(250,204,21,0.8)';g.setLineDash([2,3]);g.lineWidth=1.2;for(let i=0;i<mols.length-1;i++){g.beginPath();g.moveTo(...mols[i]);g.lineTo(...mols[i+1]);g.stroke();}g.strokeStyle='rgba(244,114,182,0.8)';mols.forEach(([x,y])=>{g.beginPath();g.moveTo(x,y);g.lineTo(x<zx+zw/2?zx+30:zx+zw-30,y);g.stroke();});g.setLineDash([]);
+  T(g,'⋯ Cohesion (น้ำ–น้ำ)',zx,zy+zh+14,'#fde047',10.5);T(g,'⋯ Adhesion (น้ำ–ผนังท่อ)',zx,zy+zh+30,'#f9a8d4',10.5);
+  if(S.toggle==='psi'){[['อากาศ',e.psiAir,tx-180,30],['ใบ',e.psiLeaf,tx+100,60],['ลำต้น',e.psiStem,tx+24,soilY-140],['ราก',e.psiRoot,tx+24,soilY+20],['ดิน',e.soil,tx+90,soilY+40]].forEach(([n,v,x,y])=>{rr(g,x-4,y-10,118,20,5);g.fillStyle='rgba(0,0,0,0.65)';g.fill();T(g,`Ψw ${n} ${v<-10?v.toFixed(0):f2(v)} MPa`,x+2,y,'#fde68a',10.5,'left',true);});}
+  else{T(g,'K⁺ → เซลล์คุม (ปากใบ '+Math.round(e.gs*100)+'% เปิด)',tx-60,20,'#f0abfc',11,'left',true);}
+  if(e.rootPressure)T(g,'💧 Guttation: แรงดันรากดันน้ำออกทางไฮดาโทดที่ขอบใบ',w/2-60,h-18,'#7dd3fc',12,'center',true);
+  else T(g,'Transpiration pull: น้ำระเหยที่ใบ → Ψw ต่ำ → ดึงสายน้ำในไซเล็มขึ้นมา',w/2-60,h-18,'#a7f3d0',12,'center',true);}
+
+/* ============ MODE 3: GUARD CELLS ============ */
+function drawM3(g,w,h,dt){guardStep(dt);const e=env();const cx=w*0.42,cy=h*0.5;const ap=G.ap;const sw=lerp(0.85,1.1,clamp(G.psiP/2,0,1));
+  g.fillStyle='#14532d';g.fillRect(0,0,w,h);for(let i=0;i<14;i++){g.strokeStyle='rgba(0,0,0,0.3)';g.lineWidth=2;g.beginPath();g.moveTo(hash(i)*w,0);g.lineTo(hash(i+4)*w,h);g.stroke();}
+  const poreW=lerp(2,38,ap),H=150;
+  g.fillStyle='#020617';g.beginPath();g.ellipse(cx,cy,poreW,H*0.75,0,0,7);g.fill();
+  [-1,1].forEach(sd=>{const ox=cx+sd*(poreW+34*sw);g.fillStyle='#4ade80';g.strokeStyle='#052e16';g.lineWidth=2;g.beginPath();g.ellipse(ox,cy,36*sw,H,0,0,7);g.fill();g.stroke();
+    g.strokeStyle='#166534';g.lineWidth=7;g.beginPath();g.ellipse(ox,cy,36*sw,H,0,sd<0?-0.9:Math.PI-0.9,sd<0?0.9:Math.PI+0.9);g.stroke();
+    g.strokeStyle='rgba(5,46,22,0.5)';g.lineWidth=1;for(let k=-4;k<=4;k++){g.beginPath();g.moveTo(ox-sd*30*sw,cy+k*28);g.lineTo(ox+sd*30*sw,cy+k*30);g.stroke();}
+    for(let k=0;k<6;k++){g.fillStyle='#16a34a';g.beginPath();g.ellipse(ox+(hash(k+sd)-0.5)*30,cy+(hash(k*3+sd)-0.5)*200,7,4,0.5,0,7);g.fill();}
+    g.fillStyle='#86efac';g.beginPath();g.arc(ox,cy,10,0,7);g.fill();
+    const pumpY=cy-60,chY=cy+20,clY=cy+80;const outX=ox+sd*36*sw;
+    g.fillStyle='#facc15';rr(g,outX-8,pumpY-10,16,20,4);g.fill();g.fillStyle='#a78bfa';rr(g,outX-7,chY-9,14,18,4);g.fill();g.fillStyle='#34d399';rr(g,outX-7,clY-9,14,18,4);g.fill();
+    if(S.toggle==='ion'){const pumpOn=e.L>500&&e.aba<2;const kIn=G.target>G.K+5,kOut=G.target<G.K-5;const t=(S.time*0.8)%1;
+      if(pumpOn){const x=lerp(ox,outX+sd*40,t);T(g,'H⁺',x,pumpY,'#fca5a5',12,'center',true);}
+      if(kIn||(!kOut&&pumpOn)){const x=lerp(outX+sd*40,ox,t);T(g,'K⁺',x,chY,'#d8b4fe',12,'center',true);const x2=lerp(outX+sd*40,ox,(t+0.4)%1);T(g,'Cl⁻',x2,clY,'#6ee7b7',12,'center',true);}
+      if(kOut){const x=lerp(ox,outX+sd*40,t);T(g,'K⁺',x,chY,'#d8b4fe',12,'center',true);T(g,'Cl⁻',lerp(ox,outX+sd*40,(t+0.4)%1),clY,'#6ee7b7',12,'center',true);}
+      const wIn=G.psiW>G.envPsi?-1:1;const tw=(S.time*0.6)%1;const wx=wIn>0?lerp(outX+sd*50,ox,tw):lerp(ox,outX+sd*50,tw);g.fillStyle='#38bdf8';g.beginPath();g.arc(wx,cy-110,4,0,7);g.fill();}});
+  if(S.toggle==='ion'){T(g,'■ H⁺-ATPase (ใช้ ATP)',14,h-58,'#facc15',11);T(g,'■ ช่อง K⁺',14,h-40,'#c4b5fd',11);T(g,'■ ช่อง Cl⁻',14,h-22,'#6ee7b7',11);T(g,'● น้ำ (ออสโมซิส)',140,h-22,'#7dd3fc',11);}
+  else{const gx=cx+poreW+34*sw;[['Ψs',G.psiS],['Ψp',G.psiP],['Ψw',G.psiW]].forEach(([n,v],i)=>{rr(g,gx-46,cy-40+i*26,92,22,5);g.fillStyle='rgba(0,0,0,0.6)';g.fill();T(g,`${n} = ${f2(v)}`,gx,cy-29+i*26,'#fde68a',11.5,'center',true);});
+    rr(g,w-190,40,170,48,6);g.fillStyle='rgba(0,0,0,0.6)';g.fill();T(g,'เซลล์ข้างเคียง',w-105,54,'#bbf7d0',11,'center');T(g,'Ψw = '+f2(G.envPsi)+' MPa',w-105,74,'#fde68a',12,'center',true);}
+  T(g,'ผนังด้านในหนา (ติดรูปากใบ) ยืดได้น้อยกว่า → เมื่อเต่ง เซลล์โค้งออก ปากใบเปิด',w/2,18,'#bbf7d0',12,'center',true);
+  T(g,ap>0.6?'ปากใบเปิดกว้าง (Turgid)':ap>0.15?'ปากใบเปิดบางส่วน':'ปากใบปิด (Flaccid)',w/2,h-16,ap>0.15?'#86efac':'#fca5a5',14,'center',true);
+  if(S.running){S.hist3.push({ap,K:G.K});if(S.hist3.length>600)S.hist3.shift();}}
+
+/* ============ MODE 4: PHLOEM ============ */
+function drawM4(g,w,h,dt){const ph=phloem(),e=env(),cfg=$('#flowcfg').value;const top=70,bot=h-70;const srcTop=cfg==='down';const xX=w*0.33,pX=w*0.55,tw=44;
+  const srcY=srcTop?top:bot,snkY=srcTop?bot:top;
+  // source/sink organs
+  const organ=(y,label,isSrc)=>{const x=pX+tw+40;if(isSrc){if(cfg==='tuber'){g.fillStyle='#a16207';g.beginPath();g.ellipse(x+40,y,60,30,0,0,7);g.fill();}else{g.fillStyle='#16a34a';g.beginPath();g.ellipse(x+40,y,70,26,-0.2,0,7);g.fill();}}else{if(cfg==='down'){g.strokeStyle='#e7e5e4';g.lineWidth=3;for(let k=0;k<6;k++){g.beginPath();g.moveTo(x,y);g.lineTo(x+20+k*14,y+20+hash(k)*20);g.stroke();}}else{g.fillStyle=cfg==='up'?'#dc2626':'#84cc16';g.beginPath();g.arc(x+40,y,28,0,7);g.fill();}}
+    T(g,label,x+40,y+(isSrc?44:-42),isSrc?'#fde68a':'#fca5a5',12,'center',true);};
+  organ(srcY,cfg==='tuber'?'Source: หัวสะสม (สลายแป้ง→ซูโครส)':'Source: ใบ (สังเคราะห์ด้วยแสง)',true);organ(snkY,cfg==='down'?'Sink: ราก':cfg==='up'?'Sink: ผล':'Sink: ยอดอ่อน/ใบอ่อน',false);
+  // xylem tube
+  g.fillStyle='#082f49';g.fillRect(xX,top-20,tw,bot-top+40);g.strokeStyle='#38bdf8';g.lineWidth=2;g.strokeRect(xX,top-20,tw,bot-top+40);T(g,'Xylem (เซลล์ตาย)',xX+tw/2,top-32,'#7dd3fc',12,'center',true);
+  for(let k=0;k<26;k++){const y=bot+20-((k*18+S.time*40)%(bot-top+40));g.fillStyle='#38bdf8';g.beginPath();g.arc(xX+tw/2+(k%2?6:-6),y,3,0,7);g.fill();}arrow(g,xX-14,bot,xX-14,top,'#38bdf8',2);T(g,'น้ำขึ้นเสมอ',xX-18,(top+bot)/2,'#7dd3fc',10.5,'right');
+  // phloem tube
+  g.fillStyle='#3f2a05';g.fillRect(pX,top-20,tw,bot-top+40);g.strokeStyle='#f59e0b';g.strokeRect(pX,top-20,tw,bot-top+40);T(g,'Phloem: Sieve tube (มีชีวิต)',pX+tw/2,top-32,'#fcd34d',12,'center',true);
+  for(let y=top+20;y<bot;y+=60){g.strokeStyle='#f59e0b';g.lineWidth=3;g.setLineDash([5,3]);g.beginPath();g.moveTo(pX,y);g.lineTo(pX+tw,y);g.stroke();g.setLineDash([]);}
+  g.fillStyle='rgba(251,191,36,0.15)';g.fillRect(pX+tw,top-20,14,bot-top+40);T(g,'Companion cell',pX+tw+7,(top+bot)/2,'#fde68a',9.5,'center');
+  // sucrose particles
+  const dirY=srcTop?1:-1;const pxSpeed=ph.v*70;
+  if(S.running&&Math.random()<V('load')/100*0.6)S.parts.push({x:pX+8+Math.random()*(tw-16),y:srcY+(srcTop?-10:10),k:'s'});
+  if(S.running&&ph.dP>0&&Math.random()<0.35)S.parts.push({x:xX+tw,y:srcY+(srcTop?10:-10),k:'wi',t:0});
+  if(S.running&&ph.dP>0&&Math.random()<0.3*V('use')/100)S.parts.push({x:pX,y:snkY-(srcTop?10:-10),k:'wo',t:0});
+  S.parts=S.parts.filter(p=>{if(p.k==='s'){p.y+=pxSpeed*dirY*dt;const near=srcTop?p.y>snkY-30:p.y<snkY+30;if(near&&Math.random()<V('use')/100*dt*3){return false;}
+      g.fillStyle='#fb923c';g.beginPath();for(let a=0;a<6;a++){const xx=p.x+Math.cos(a*Math.PI/3)*4,yy=p.y+Math.sin(a*Math.PI/3)*4;a?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.closePath();g.fill();return srcTop?p.y<bot+16:p.y>top-16;}
+    p.t+=dt;const u=Math.min(1,p.t/1.2);const x=p.k==='wi'?lerp(xX+tw,pX,u):lerp(pX,xX+tw,u);g.fillStyle='#38bdf8';g.beginPath();g.arc(x,p.y,3,0,7);g.fill();return p.t<1.2;});
+  arrow(g,pX+tw+30,srcTop?top+40:bot-40,pX+tw+30,srcTop?bot-40:top+40,'#fb923c',3);T(g,'v = '+ph.v.toFixed(2)+' m/h',pX+tw+36,(top+bot)/2,'#fdba74',12,'left',true);
+  T(g,'① Loading',pX-10,srcY,'#fde68a',11,'right',true);T(g,'③ Unloading',pX-10,snkY,'#fca5a5',11,'right',true);T(g,'② น้ำเข้า ↑Ψp',xX+tw+4,srcY+(srcTop?28:-28),'#7dd3fc',10.5);T(g,'④ น้ำกลับ',xX+tw+4,snkY+(srcTop?-28:28),'#7dd3fc',10.5);
+  if(S.toggle==='psi'){[[srcY,'Source',ph.sS,ph.pS],[snkY,'Sink',ph.sK,ph.pK]].forEach(([y,n,s,p])=>{const bx=12,by=y-24;rr(g,bx,by,150,48,6);g.fillStyle='rgba(0,0,0,0.65)';g.fill();T(g,`${n}: Ψs ${f2(s)}`,bx+6,by+14,'#fde68a',11);T(g,`Ψp ${f2(p)}  Ψw ${f2(s+p)}`,bx+6,by+34,'#fde68a',11);});}
+  else{const y=srcY+(srcTop?20:-20);T(g,'H⁺ ⇄ ซูโครส (Symporter) + H⁺-ATPase',pX-14,y+(srcTop?16:-16),'#f0abfc',10.5,'right',true);}
+  if(ph.dP<=0.02)T(g,'⚠ ΔΨp ≈ 0 → การไหลหยุด (Source และ Sink มีแรงดันใกล้เคียงกัน)',w/2,h-14,'#fca5a5',12.5,'center',true);else T(g,'ซูโครสไหลจาก Ψp สูง (Source) → Ψp ต่ำ (Sink) ทิศ'+(srcTop?'ลง':'ขึ้น'),w/2,h-14,'#a7f3d0',12.5,'center',true);}
+
+/* ============ RIGHT CHART ============ */
+function axes(g,x,y,w,h,xl,yl){g.strokeStyle='#3f6158';g.beginPath();g.moveTo(x,y);g.lineTo(x,y+h);g.lineTo(x+w,y+h);g.stroke();T(g,xl,x+w/2,y+h+22,'#93b3aa',10.5,'center');g.save();g.translate(x-32,y+h/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#93b3aa',10.5,'center');g.restore();}
+function Ecalc(over){const keep={};for(const k in over){keep[k]=$('#'+k).value;$('#'+k).value=over[k];}const e=env();for(const k in keep)$('#'+k).value=keep[k];return e.E;}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode,e=env();
+  if(m===1){const rt=root();const pts=[['ดิน',e.soil],['เอพิฯ',rt.psiW],['คอร์เทกซ์',rt.psiW-0.1],['เอนโดฯ',rt.psiW-0.2],['ไซเล็ม',e.psiStem]];const x=46,y=14,cw=w-60,ch=h-50;axes(g,x,y,cw,ch,'ตำแหน่ง (ดิน → ไซเล็ม)','Ψw (MPa)');const mn=Math.min(-2.5,...pts.map(p=>p[1])),mx=0.2;const Y=v=>y+(mx-v)/(mx-mn)*ch;
+    for(let v=0;v>=mn;v-=0.5)T(g,v.toFixed(1),x-6,Y(v),'#64748b',9.5,'right');g.strokeStyle='#38bdf8';g.lineWidth=2.5;g.beginPath();pts.forEach((p,i)=>{const X=x+i/(pts.length-1)*cw;i?g.lineTo(X,Y(p[1])):g.moveTo(X,Y(p[1]));});g.stroke();
+    pts.forEach((p,i)=>{const X=x+i/(pts.length-1)*cw;g.fillStyle='#fde68a';g.beginPath();g.arc(X,Y(p[1]),4,0,7);g.fill();T(g,p[0],X,y+ch+9,'#cbd5e1',9.5,'center');});
+    const ok=pts.every((p,i)=>i===0||p[1]<=pts[i-1][1]+1e-6);T(g,ok?'Ψw ลดลงตามแนว → น้ำไหลเข้าราก ✓':'Ψw ไม่ลดหลั่น → น้ำไม่ไหลเข้า ✗',x+cw,y+6,ok?'#86efac':'#fca5a5',11,'right',true);return;}
+  if(m===2){const x=44,cw=w-58,hh=(h-64)/2;[[0,'ความชื้นสัมพัทธ์ (%)','rh',10,100,V('rh'),'#38bdf8'],[1,'ความเร็วลม (m/s)','wind',0,20,V('wind'),'#a3e635']].forEach(([i,lab,key,a,b,cur,col])=>{const y=8+i*(hh+32);const vals=[];for(let k=0;k<=40;k++){const v=lerp(a,b,k/40);vals.push(Ecalc({[key]:v}));}const mx=Math.max(1,...vals)*1.1;axes(g,x,y,cw,hh,lab,'E');
+      g.strokeStyle=col;g.lineWidth=2;g.beginPath();vals.forEach((v,k)=>{const X=x+k/40*cw,Y=y+hh-v/mx*hh;k?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();const X=x+(cur-a)/(b-a)*cw,Y=y+hh-e.E/mx*hh;g.fillStyle='#fff';g.beginPath();g.arc(X,Y,4,0,7);g.fill();T(g,e.E.toFixed(2),X+6,Y-8,'#fff',10);[a,b].forEach((v,j)=>T(g,v,x+j*cw,y+hh+9,'#64748b',9.5,'center'));});
+    T(g,'E (mmol/m²/s)',w-8,10,'#93b3aa',10,'right');return;}
+  if(m===3){const x=40,y=14,cw=w-56,ch=h-50;axes(g,x,y,cw,ch,'เวลา','');const hs=S.hist3;g.strokeStyle='#4ade80';g.lineWidth=2;g.beginPath();hs.forEach((p,i)=>{const X=x+i/600*cw,Y=y+ch-p.ap*ch;i?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();
+    g.strokeStyle='#c084fc';g.beginPath();hs.forEach((p,i)=>{const X=x+i/600*cw,Y=y+ch-p.K/500*ch;i?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();T(g,'— ความกว้างปากใบ (0–100%)',x+6,y+6,'#86efac',10.5);T(g,'— [K⁺] เซลล์คุม (0–500 mM)',x+6,y+22,'#d8b4fe',10.5);return;}
+  if(m===4){const ph=phloem();const x=46,y=14,cw=w-60,ch=h-60;axes(g,x,y,cw,ch,'ตำแหน่งตามท่อ (Source → Sink)','Ψp (MPa)');const mx=Math.max(1,ph.pS*1.2);const Y=v=>y+ch-v/mx*ch;
+    for(let v=0;v<=mx;v+=0.5)T(g,v.toFixed(1),x-6,Y(v),'#64748b',9.5,'right');g.strokeStyle='#fb923c';g.lineWidth=3;g.beginPath();g.moveTo(x,Y(ph.pS));g.lineTo(x+cw,Y(ph.pK));g.stroke();
+    g.strokeStyle='#38bdf8';g.setLineDash([4,3]);g.beginPath();g.moveTo(x,Y(Math.max(0,-ph.sS)));g.lineTo(x+cw,Y(Math.max(0,-ph.sK)));g.stroke();g.setLineDash([]);
+    T(g,'— Ψp ในท่อโฟลเอ็ม',x+6,y+6,'#fdba74',10.5);T(g,'- - |Ψs| (ความเข้มข้นซูโครส)',x+6,y+22,'#7dd3fc',10.5);T(g,'Source',x,y+ch+10,'#fde68a',10,'center');T(g,'Sink',x+cw,y+ch+10,'#fca5a5',10,'center');T(g,'ΔΨp = '+ph.dP.toFixed(2)+' MPa',x+cw,y+40,'#fff',11,'right',true);}}
+
+/* ============ TEXT ============ */
+function stats(a){$('#stats').innerHTML=a.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const XPTABLE='<table><tr><th>ลักษณะ</th><th>Xylem</th><th>Phloem</th></tr><tr><td>สารที่ลำเลียง</td><td>น้ำ + ธาตุอาหาร</td><td>อาหาร (ซูโครส), ฮอร์โมน</td></tr><tr><td>ทิศทาง</td><td>ขึ้นทางเดียว</td><td>สองทิศทาง (Source → Sink)</td></tr><tr><td>เซลล์</td><td>ตาย (Vessel, Tracheid)</td><td>มีชีวิต (Sieve tube + Companion cell)</td></tr><tr><td>แรงขับ</td><td>แรงดึงจากการคายน้ำ (+ แรงดันราก)</td><td>แรงดันการไหล (Pressure-Flow)</td></tr><tr><td>ความดันในท่อ</td><td>ติดลบ (Tension)</td><td>เป็นบวก (Turgor)</td></tr></table>';
+function updateText(){const m=S.mode,e=env();let st=[],eq='',an='',mis='',tb='';
+  const status=e.psiLeaf<-1.8||e.soil<-1.2?'<span class="tag no">สภาวะเครียดจากการขาดน้ำ (Water stress)</span>':e.psiLeaf<-1.2?'<span class="tag mid">เริ่มขาดน้ำ</span>':'<span class="tag ok">ปกติ</span>';
+  if(m===1){const rt=root();st=[['Ψs เซลล์ราก',f2(rt.psiS)+' MPa'],['Ψp เซลล์ราก',f2(rt.psiP)+' MPa'],['Ψw เซลล์ราก',f2(rt.psiW)+' MPa'],['ทิศทางน้ำ',rt.flow>=0?'ดิน → ราก':'ราก → ดิน']];
+    eq=`Ψw = Ψs + Ψp    Ψs = −iCRT\nΨs = −(${rt.i})(${rt.C.toFixed(2)} mol/L)(0.00831 L·MPa/mol·K)(${rt.Tk.toFixed(1)} K) = ${rt.psiS.toFixed(2)} MPa\nΨw ราก = ${rt.psiS.toFixed(2)} + ${rt.psiP.toFixed(2)} = ${rt.psiW.toFixed(2)} MPa  |  Ψw ดิน = ${e.soil.toFixed(2)} MPa`;
+    an=`<p>${rt.flow>=0?'<span class="tag ok">น้ำเข้าราก</span> เพราะ Ψw ดิน สูงกว่า Ψw เซลล์ราก':'<span class="tag no">น้ำออกจากราก</span> เพราะ Ψw ดิน ต่ำกว่า (ดินแห้งหรือเค็ม)'}</p><p><b>Apoplast</b> เร็วที่สุด แต่ถูก <b>Casparian strip</b> ที่เอนโดเดอร์มิสกั้น บังคับให้น้ำและแร่ธาตุผ่านเยื่อหุ้มเซลล์ → พืช<b>คัดเลือก</b>สารที่จะเข้าสู่ท่อไซเล็มได้</p><p><b>Symplast</b> ผ่านพลาสโมเดสมาตาที่เชื่อมไซโทพลาซึม · <b>Vacuolar</b> ผ่านแวคิวโอลด้วยโปรตีนอควาพอริน</p><p>สถานะพืช: ${status}</p>`;
+    mis='<p><b>❌ "น้ำไหลจากที่มีน้ำมากไปน้อยเสมอ ไม่เกี่ยวกับตัวละลาย"</b></p><p>✅ น้ำเคลื่อนจาก <b>Ψw สูง → Ψw ต่ำ</b> ตัวละลายทำให้ Ψs ติดลบมากขึ้น ลองเพิ่ม C ในเซลล์ราก จะดึงน้ำเข้าได้ดีขึ้น ส่วนดินเค็ม (Ψw ต่ำ) ดึงน้ำออกจากราก</p><p><b>❌ "แรงดันราก (Root pressure) ดันน้ำขึ้นยอดต้นไม้สูง ๆ"</b> ✅ แรงดันรากดันได้เพียงไม่กี่เมตร ไม้ยืนต้นใช้แรงดึงจากการคายน้ำเป็นหลัก</p>';
+    tb='<table><tr><th>เส้นทาง</th><th>ผ่าน</th><th>ที่เอนโดเดอร์มิส</th></tr><tr><td>Apoplast</td><td>ผนังเซลล์ + ช่องว่างระหว่างเซลล์</td><td>ถูกกั้นด้วย Casparian strip</td></tr><tr><td>Symplast</td><td>ไซโทพลาซึม + พลาสโมเดสมาตา</td><td>ผ่านได้</td></tr><tr><td>Vacuolar</td><td>เยื่อหุ้มเซลล์ + แวคิวโอล (อควาพอริน)</td><td>ผ่านได้</td></tr></table>';}
+  else if(m===2){st=[['อัตราการคายน้ำ E',e.E.toFixed(2)+' mmol/m²/s'],['Potometer',e.potom.toFixed(3)+' mL/min'],['Ψw ใบ',f2(e.psiLeaf)+' MPa'],['Stomatal conductance',Math.round(e.gs*100)+' %']];
+    eq=`Transpiration ∝ (Ψw,leaf − Ψw,air) / (R_stomatal + R_boundary)\nΨw,air = (RT/V̄w)·ln(RH) = ${e.psiAir.toFixed(1)} MPa   |   Ψw,leaf = ${e.psiLeaf.toFixed(2)} MPa\nR_stomatal = ${e.rs.toFixed(2)}   R_boundary = ${e.rb.toFixed(2)}   VPD = ${e.vpd.toFixed(2)} kPa`;
+    an=`<p><b>กลไก:</b> ${e.rootPressure?'อากาศชื้นมาก + แสงน้อย → การคายน้ำต่ำ แต่ดินชื้น รากลำเลียงไอออนแบบ Active transport เข้าไซเล็ม → <b>แรงดันราก</b> ดันน้ำออกทาง<b>ไฮดาโทด</b> = Guttation':'<b>Transpiration pull (Cohesion–Tension)</b>: น้ำระเหยทางปากใบ → Ψw ที่ใบต่ำ → ดึงสายน้ำที่ต่อเนื่องด้วยแรง Cohesion และยึดผนังท่อด้วย Adhesion'}</p>`;
+    an+=`<p>แสง ${e.L>20000?'มาก → ปากใบเปิด ↑E':'น้อย → ปากใบปิด ↓E'} · อุณหภูมิ ${e.Tc}°C · ความชื้น ${Math.round(e.RH*100)}% ${e.RH>0.8?'(สูง → ↓E)':'(ต่ำ → ↑E)'} · ลม ${e.wind} m/s ${e.wind>5?'(พัดไอน้ำออก ลด Boundary layer → ↑E)':''}</p><p>สถานะพืช: ${status}${e.droughtABA?' — พืชสร้าง ABA ปิดปากใบเพื่อลดการเสียน้ำ':''}</p>`;
+    if(e.cav)an+='<p><span class="tag no">Cavitation</span> แรงตึงในไซเล็มสูงเกินไป เกิดฟองอากาศ (Embolism) ตัดสายน้ำ</p>';
+    mis=e.rootPressure?'<p><b>❌ "หยดน้ำที่ขอบใบตอนเช้าคือน้ำค้าง"</b></p><p>✅ หยดน้ำ<b>กัตเตชัน</b>เกิดจากแรงดันรากดันน้ำออกทางไฮดาโทดที่ขอบใบ ส่วนน้ำค้างคือไอน้ำในอากาศกลั่นตัวเกาะทั่วผิวใบ</p>':'<p><b>❌ "การคายน้ำเป็นอันตราย พืชควรหยุดคายน้ำ"</b></p><p>✅ การคายน้ำ<b>ลดความร้อน</b>ของใบ และเป็นแรงขับหลักที่ดึงน้ำและธาตุอาหารจากรากขึ้นไป แลกกับการได้ CO₂ เข้าปากใบเพื่อสังเคราะห์ด้วยแสง</p><p><b>❌ "แรงดันรากเป็นกลไกหลักในต้นไม้สูง"</b> ✅ ดันได้เพียงไม่กี่เมตร</p>';
+    tb=XPTABLE;}
+  else if(m===3){st=[['Ψw เซลล์คุม',f2(G.psiW||0)+' MPa'],['Ψp (แรงดันเต่ง)',f2(G.psiP)+' MPa'],['ความกว้างปากใบ',(G.ap*12).toFixed(1)+' μm ('+Math.round(G.ap*100)+'%)'],['[K⁺] เซลล์คุม',Math.round(G.K)+' mM']];
+    eq=`Ψs = −iCRT = ${f2(G.psiS||0)} MPa   (C = ตัวละลายพื้นฐาน + K⁺ + Cl⁻)\nΨw = Ψs + Ψp = ${f2(G.psiS||0)} + ${Math.abs(G.psiP).toFixed(2)} = ${f2(G.psiW||0)} MPa\nเปิด: แสง → H⁺-ATPase ปั๊ม H⁺ ออก → K⁺, Cl⁻ เข้า → Ψs↓ Ψw↓ → น้ำเข้า → เต่ง → เปิด\nปิด: ABA → K⁺, Cl⁻ ออก → Ψw↑ → น้ำออก → แฟบ → ปิด`;
+    const opening=G.target>G.K+5,closing=G.target<G.K-5;
+    an=`<p>${opening?'<span class="tag ok">กำลังเปิด</span> K⁺ ไหลเข้าเซลล์คุม':closing?'<span class="tag no">กำลังปิด</span> K⁺ ไหลออกจากเซลล์คุม':'<span class="tag mid">สมดุล</span>'}</p><p>แสง ${e.L.toLocaleString('th-TH')} lux · ABA ${['ไม่มี','ต่ำ','สูง'][e.aba]}${e.droughtABA>e.abaSel?' (สร้างเพิ่มเองเพราะดินแห้ง)':''}</p><p>สถานะพืช: ${status}</p>`;
+    mis='<p><b>❌ "ปากใบเปิดเพราะเซลล์คุมดูดน้ำเข้าเอง โดยไม่ต้องใช้พลังงาน"</b></p><p>✅ การเปิดปากใบต้องใช้ <b>ATP</b> ในการปั๊ม H⁺ ออก สร้างเกรเดียนต์ให้ K⁺ ไหลเข้า การออสโมซิสของน้ำเป็นผลตามมา</p><p><b>❌ "การคายน้ำไม่มีประโยชน์"</b> ✅ ช่วยระบายความร้อนและดึงน้ำ/ธาตุอาหาร และการเปิดปากใบจำเป็นต่อการรับ CO₂</p>';
+    tb='<table><tr><th>ขั้น</th><th>ปากใบเปิด</th><th>ปากใบปิด</th></tr><tr><td>สิ่งกระตุ้น</td><td>แสง (แสงสีน้ำเงิน), CO₂ ต่ำ</td><td>ABA, ขาดน้ำ, มืด</td></tr><tr><td>H⁺-ATPase</td><td>ทำงาน ปั๊ม H⁺ ออก</td><td>ถูกยับยั้ง</td></tr><tr><td>K⁺ / Cl⁻</td><td>ไหลเข้า</td><td>ไหลออก</td></tr><tr><td>Ψs, Ψw เซลล์คุม</td><td>ลดลง</td><td>เพิ่มขึ้น</td></tr><tr><td>น้ำ</td><td>ออสโมซิสเข้า → เต่ง</td><td>ออสโมซิสออก → แฟบ</td></tr></table>';}
+  else{const ph=phloem();st=[['Ψp Source / Sink',ph.pS.toFixed(2)+' / '+ph.pK.toFixed(2)],['ΔΨp',ph.dP.toFixed(2)+' MPa'],['ความเร็วการไหล v',ph.v.toFixed(2)+' m/h'],['ซูโครส Source / Sink',ph.Cs.toFixed(2)+' / '+ph.Ck.toFixed(2)+' M']];
+    eq=`v = (k/η) · (ΔΨp/Δx)   η (ความหนืดสัมพัทธ์) = ${ph.eta.toFixed(2)}   Δx = 1 m\nv = (1.25/${ph.eta.toFixed(2)}) × (${ph.dP.toFixed(2)}/1) = ${ph.v.toFixed(2)} m/h\n① Loading (Active) → ② น้ำจาก Xylem ออสโมซิสเข้า Ψp↑ → ③ Unloading ที่ Sink → ④ น้ำกลับสู่ Xylem`;
+    const cfg=$('#flowcfg').value;an=`<p><b>ทิศทาง:</b> ${cfg==='down'?'ไหลลงจากใบไปราก':'ไหล<b>ขึ้น</b>ไปยัง'+(cfg==='up'?'ผล':'ยอดอ่อน')} — โฟลเอ็มไหลจาก Source ไป Sink เสมอ ไม่ว่าจะอยู่ด้านบนหรือล่าง</p><p>${ph.dP>0.3?'<span class="tag ok">ไหลดี</span> ความต่างของแรงดันสูง':ph.dP>0.02?'<span class="tag mid">ไหลช้า</span>':'<span class="tag no">ไม่ไหล</span> ลองเพิ่มการสังเคราะห์ด้วยแสงที่ Source หรือการใช้น้ำตาลที่ Sink'}</p><p>สถานะพืช: ${status}</p>`;
+    mis='<p><b>❌ "โฟลเอ็มลำเลียงอาหารจากใบลงสู่รากทางเดียวเท่านั้น"</b></p><p>✅ โฟลเอ็มลำเลียงจาก <b>Source → Sink</b> ซึ่งอาจไหลขึ้นไปยังยอด/ผล หรือไหลลงไปยังรากก็ได้ (ลองเปลี่ยนรูปแบบ Source → Sink)</p><p><b>❌ "หัวมันเป็น Sink เสมอ"</b> ✅ ช่วงต้นฤดู หัวสะสมสลายแป้งส่งให้ยอดอ่อน จึงกลายเป็น Source</p>';
+    tb=XPTABLE;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;S.time+=S.running?dt:0;const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h,S.running?dt:0);
+  if(S.mode!==3)guardStep(dt);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

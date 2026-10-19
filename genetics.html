@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>การถ่ายทอดทางพันธุกรรม | ห้องแล็บชีววิทยา</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#07141c; --ink:#e8fff1; --muted:#8fb8a0; --line:rgba(120,190,180,.22); --green:#1ed39a; --green-d:#c8ffd9; --green-s:#10281a; --amber:#2a210c; --shadow:0 10px 28px rgba(0,0,0,.45); }
+  *{box-sizing:border-box;} html,body{margin:0;height:100%;}
+  body{font-family:"Leelawadee UI",Tahoma,"Segoe UI",sans-serif;color:var(--ink);background:#050806;font-size:16.5px;line-height:1.6;}
+  header{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;background:rgba(5,8,6,.9);border-bottom:1px solid var(--line);}
+  .brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;color:var(--green-d);}
+  .logo{width:32px;height:32px;border-radius:9px;background:#07140e;display:grid;place-items:center;}
+  nav{display:flex;gap:4px;overflow:auto;} nav a{text-decoration:none;color:var(--green-d);padding:6px 10px;border-radius:999px;white-space:nowrap;font-size:14px;}
+  nav a:hover,nav a[aria-current="page"]{background:var(--green-s);}
+  .layout{height:calc(100% - 64px);display:grid;grid-template-columns:320px minmax(0,1fr) 360px;}
+  .panel{overflow:auto;padding:14px;} .left{background:#070d0a;border-right:1px solid var(--line);} .right{background:#080d12;border-left:1px solid var(--line);}
+  .center{background:#050806;}
+  h1{font-size:1.2rem;margin:0 0 4px;color:var(--green-d);} h2{font-size:1.02rem;margin:12px 0 8px;color:var(--green-d);}
+  .eyebrow{margin:0;color:var(--green);font-weight:700;font-size:13px;} .hint{color:var(--muted);font-size:14px;margin:0 0 10px;}
+  .modes,.subs{display:grid;gap:6px;margin-bottom:10px;} .subs{grid-template-columns:1fr 1fr;}
+  button,select,input[type="number"]{font-family:inherit;font-size:15px;} button{word-break:keep-all;}
+  .mode,.sub,.btn,.switch{border:1px solid var(--line);background:#101814;color:var(--ink);border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;}
+  .mode.on,.sub.on,.switch.on{background:#07140d;color:#3dff8a;border-color:#3dff8a;}
+  .btn{background:linear-gradient(135deg,#3dff8a,#14f1c5);color:#04140c;border-color:#3dff8a;font-weight:700;text-align:center;}
+  .btn.alt{background:#101814;color:var(--green-d);} .row{display:flex;gap:8px;margin:8px 0;} .row .btn,.row .switch{flex:1;}
+  label{display:block;margin:8px 0;font-size:14.5px;color:var(--green-d);font-weight:700;} label span{font-weight:600;color:var(--ink);}
+  input[type="range"],input[type="number"]{width:100%;accent-color:#3dff8a;} select,input[type="number"]{margin-top:4px;padding:8px;border-radius:10px;border:1px solid var(--line);}
+  .cvwrap{height:520px;background:#101814;border:1px solid #3dff8a;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);} .cvwrap.short{height:220px;background:#101814;border:1px solid var(--line);margin-top:8px;}
+  canvas{width:100%;height:100%;display:block;cursor:pointer;}
+  .formula,.analysis{margin-top:10px;background:#101814;border:1px solid var(--line);border-radius:14px;padding:10px 12px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+  .stat{background:#101814;border:1px solid var(--line);border-radius:14px;padding:8px 10px;} .stat b{display:block;color:var(--green-d);font-size:1rem;} .stat span{color:var(--muted);font-size:13px;}
+  table{width:100%;border-collapse:collapse;background:#101814;font-size:13.5px;margin-top:8px;} th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;} th{background:var(--green-s);color:var(--green-d);}
+  .mis{background:var(--amber);border-left:4px solid #e0a100;border-radius:12px;padding:10px 12px;margin-top:8px;}
+  @media(max-width:1100px){.layout{height:auto;grid-template-columns:1fr;}.cvwrap{height:460px;}}
+
+  html{background-color:#07141c;}
+  html::before{content:"";position:fixed;left:-28%;top:-28%;width:156%;height:156%;z-index:-2;pointer-events:none;background:radial-gradient(circle at 22% 18%,rgba(30,211,154,.5),transparent 32%),radial-gradient(circle at 78% 14%,rgba(46,200,230,.38),transparent 28%),radial-gradient(circle at 60% 84%,rgba(20,140,90,.28),transparent 34%);background-repeat:no-repeat;background-size:130% 130%,120% 120%,140% 140%;animation:drift 8s ease-in-out infinite alternate,blobs 10s ease-in-out infinite alternate;}
+  body{background:transparent;}
+  body::before{content:"";position:fixed;left:-15%;top:-15%;right:-15%;bottom:-15%;width:auto;height:auto;z-index:-1;pointer-events:none;border-radius:0;filter:none;background:transparent;background-image:radial-gradient(1.2px 1.2px at 20px 30px,rgba(255,255,255,.75),transparent),radial-gradient(1px 1px at 90px 140px,rgba(180,255,230,.7),transparent),radial-gradient(1.3px 1.3px at 170px 70px,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40px 200px,rgba(160,230,255,.6),transparent);background-size:220px 220px;animation:stars 10s linear infinite,twinkle 2.8s ease-in-out infinite;}
+  body::after{content:none;}
+  header{position:sticky;top:0;z-index:4;background:rgba(7,11,9,.72);border-bottom:0;backdrop-filter:blur(12px);}
+  header::after{content:none;}
+  .logo{border:1px solid #1ed39a;box-shadow:0 0 14px rgba(30,211,154,.4);animation:floaty 4.2s ease-in-out infinite;}
+  .layout{grid-template-columns:270px minmax(0,1fr) 300px;}
+  .left,.right,.center{background:rgba(8,22,32,.72);box-shadow:none;}
+  .left{border-right:1px solid rgba(120,190,180,.18);}
+  .right{border-left:1px solid rgba(120,190,180,.18);}
+  .mode,.sub,.switch,.btn.alt,select,input[type="text"],input[type="number"],.formula,.analysis,.stat,table{background:rgba(10,24,34,.9);border-color:rgba(120,190,180,.22);color:#e7f6f1;}
+  .mode.on,.sub.on,.switch.on{background:rgba(30,180,120,.16);color:#e9fff4;border-color:#3dff8a;}
+  .btn:not(.alt){color:#fff;border:0;background:#14915f;box-shadow:0 8px 18px rgba(20,145,95,.28);}
+  .btn:hover{box-shadow:0 10px 24px rgba(46,200,230,.35);}
+  nav a{color:#c9ddd4;}
+  nav a:hover{color:#fff;background:transparent;}
+  nav a[aria-current="page"]{background:#1f8a5b;color:#fff;}
+  .cvwrap,.cvwrap.short{background:#f4fff8;border:1px solid rgba(46,200,180,.4);animation:screen 3.6s ease-in-out infinite;}
+  .mis{background:#1c2430;color:#d7fff2;border-left-color:#2ec8e6;}
+  .hint{color:#9dccc4;}
+  @keyframes stars{to{transform:translate3d(-220px,-220px,0);}}
+  @keyframes twinkle{0%,100%{opacity:.4;}50%{opacity:1;}}
+  @keyframes drift{from{transform:translate3d(-12%,-8%,0) scale(1);}to{transform:translate3d(14%,10%,0) scale(1.2);}}
+  @keyframes blobs{from{background-position:0% 0%,70% 10%,30% 100%;}to{background-position:40% 30%,0% 70%,80% 10%;}}
+  @keyframes hue{to{background-position:200% 0;}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,200,180,.2);}50%{box-shadow:0 0 16px 2px rgba(46,200,230,.45);}}
+  @keyframes edge{0%,100%{opacity:.7;}50%{opacity:1;}}
+  @keyframes screen{0%,100%{box-shadow:0 0 0 1px rgba(61,255,138,.2),0 0 16px rgba(30,211,154,.15);}50%{box-shadow:0 0 0 1px rgba(61,255,138,.45),0 0 22px rgba(30,211,154,.28);}}
+  @media (prefers-reduced-motion:reduce){.logo,.mode.on,.sub.on,.switch.on,.btn:not(.alt),.cvwrap,header::after,html::before,body::before,body::after{animation:none;}}
+  @media (max-width:1100px){
+    header{height:auto;flex-wrap:nowrap;padding:8px 14px;gap:8px;}
+    nav{min-width:0;-webkit-overflow-scrolling:touch;}
+    nav a{min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;}
+    .layout{height:auto;grid-template-columns:minmax(230px,300px) minmax(0,1fr);grid-template-areas:"controls view" "result view";}
+    .left{grid-area:controls;}
+    .center{grid-area:view;}
+    .right{grid-area:result;border-left:0;border-top:1px solid rgba(120,190,180,.18);}
+    .cvwrap{height:min(62vh,520px);}
+    .cvwrap.short{height:180px;}
+  }
+  @media (max-width:700px){
+    header{flex-wrap:wrap;}
+    nav{width:100%;}
+    .layout{grid-template-columns:1fr;grid-template-areas:"controls" "view" "result";}
+    .left,.right{border:0;}
+    .cvwrap{height:300px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .panel{padding:12px;}
+    .mode,.sub,.btn,.switch{min-height:44px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;}
+    .row>*{width:100%;min-width:0;}
+    table{display:block;overflow-x:auto;}
+  }
+
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html"><span class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M6 24c8-1 12-10 20-16-3 10-8 17-20 16z" fill="#3dff8a"/></svg></span>ห้องแล็บชีววิทยา</a>
+  <nav>
+    <a href="study.html">ธรรมชาติของสิ่งมีชีวิต</a><a href="chemistry.html">เคมีของชีวิต</a><a href="cell.html">เซลล์</a>
+    <a href="genetics.html" aria-current="page">พันธุกรรม</a><a href="genes.html">ยีนและโครโมโซม</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="panel left">
+    <p class="eyebrow">บทที่ 4</p><h1>การถ่ายทอดทางพันธุกรรม</h1>
+    <div class="modes" id="modes"></div><div class="subs" id="subs"></div><div id="controls"></div>
+  </aside>
+  <main class="panel center"><div class="cvwrap"><canvas id="cv"></canvas></div><div class="formula" id="formula"></div><div class="stats" id="stats"></div></main>
+  <aside class="panel right"><h2>ผล</h2><div class="cvwrap short"><canvas id="graph"></canvas></div><div id="table"></div><div class="analysis" id="analysis"></div><div class="mis" id="mis"></div></aside>
+</div>
+<script>
+'use strict';
+const $=(id)=>document.getElementById(id);
+function defaults(){return{
+  mode:1, sub:'incomplete', playing:true, t:0, showTheory:true,
+  cross:'mono', p1:'Aa', p2:'Aa', nSlider:35, obs:null,
+  mom:'RW', dad:'RW', abo1:'AO', abo2:'BO',
+  momX:'Bb', dadX:'BY', polyM:3, polyF:3, rec:12, total:100,
+  caseId:0, picks:{}, selected:-1, verdict:'',
+  p:0.6, N:200, selection:0, mu:0, history:[0.6], pop:[]
+};}
+let state=defaults();
+const MONO=['AA','Aa','aa'];
+const DI=['AABB','AaBb','aabb','AAbb','aaBB','AaBB','AABb','Aabb','aaBb'];
+const CASES=[
+  {title:'ออโตโซมด้อย', hint:'พ่อแม่ปกติที่มีลูกเป็นโรค มักเป็น Aa', people:[
+    {sex:'m',aff:0,ok:['Aa'],x:.18,y:.22},{sex:'f',aff:0,ok:['Aa'],x:.38,y:.22},
+    {sex:'m',aff:1,ok:['aa'],x:.12,y:.58},{sex:'f',aff:0,ok:['AA','Aa'],x:.32,y:.58},{sex:'m',aff:0,ok:['AA','Aa'],x:.5,y:.58}
+  ], mates:[[0,1]], kids:[2,3,4], parents:[0,1]},
+  {title:'ออโตโซมเด่น', hint:'ผู้ไม่เป็นโรคคือ aa', people:[
+    {sex:'m',aff:1,ok:['Aa'],x:.18,y:.22},{sex:'f',aff:0,ok:['aa'],x:.38,y:.22},
+    {sex:'f',aff:1,ok:['Aa'],x:.16,y:.58},{sex:'m',aff:0,ok:['aa'],x:.36,y:.58},{sex:'f',aff:1,ok:['Aa'],x:.56,y:.58}
+  ], mates:[[0,1]], kids:[2,3,4], parents:[0,1]},
+  {title:'X-linked ด้อย', hint:'พ่อส่ง X ให้ลูกสาวทุกคน', people:[
+    {sex:'m',aff:1,ok:['XbY'],x:.18,y:.22},{sex:'f',aff:0,ok:['XBXB'],x:.4,y:.22},
+    {sex:'f',aff:0,ok:['XBXb'],x:.16,y:.58},{sex:'m',aff:0,ok:['XBY'],x:.36,y:.58},{sex:'f',aff:0,ok:['XBXb'],x:.56,y:.58}
+  ], mates:[[0,1]], kids:[2,3,4], parents:[0,1]}
+];
+function num(n,d){return (isFinite(n)?n:0).toLocaleString('th-TH',{maximumFractionDigits:d,minimumFractionDigits:d});}
+function gammaln(z){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];let x=z,y=z,tmp=x+5.5;tmp-=(x+.5)*Math.log(tmp);let ser=1.000000000190015;for(let j=0;j<6;j++)ser+=c[j]/++y;return -tmp+Math.log(2.5066282746310005*ser/x);}
+function gser(a,x){const gln=gammaln(a);let ap=a,sum=1/a,del=sum;for(let n=1;n<=80;n++){ap++;del*=x/ap;sum+=del;if(Math.abs(del)<Math.abs(sum)*1e-8)break;}return sum*Math.exp(-x+a*Math.log(x)-gln);}
+function gcf(a,x){const gln=gammaln(a);let b=x+1-a,c=1/1e-30,d=1/b,h=d;for(let i=1;i<=80;i++){const an=-i*(i-a);b+=2;d=an*d+b;if(Math.abs(d)<1e-30)d=1e-30;c=b+an/c;if(Math.abs(c)<1e-30)c=1e-30;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<1e-8)break;}return Math.exp(-x+a*Math.log(x)-gln)*h;}
+function chiP(x,df){if(df<=0)return 1;const a=df/2,xx=x/2;if(xx<=0)return 1;return xx<a+1?1-gser(a,xx):gcf(a,xx);}
+function sampleN(){return Math.max(4, Math.round(4*Math.pow(10000/4, state.nSlider/100)));}
+function gametesOf(g){
+  if(g.length===2) return [g[0], g[1]];
+  return [g[0]+g[2], g[0]+g[3], g[1]+g[2], g[1]+g[3]];
+}
+function combine(a,b){
+  if(a.length===1) return [a,b].sort().join('');
+  return [a[0],b[0]].sort().join('')+[a[1],b[1]].sort().join('');
+}
+function pheno(g){
+  if(g.length===2) return g.includes('A')?'ลักษณะเด่น':'ลักษณะด้อย';
+  const A=g[0]==='A'||g[1]==='A', B=g[2]==='B'||g[3]==='B';
+  if(A&&B) return 'เด่นทั้งสอง'; if(A&&!B) return 'เด่นเฉพาะคู่แรก'; if(!A&&B) return 'เด่นเฉพาะคู่สอง'; return 'ด้อยทั้งสอง';
+}
+function probs(){
+  const g1=gametesOf(state.p1), g2=gametesOf(state.p2), map={};
+  g1.forEach(a=>g2.forEach(b=>{const p=pheno(combine(a,b)); map[p]=(map[p]||0)+1/(g1.length*g2.length);}));
+  return map;
+}
+function runCross(){
+  const g1=gametesOf(state.p1), g2=gametesOf(state.p2), N=sampleN(), obs={};
+  for(let i=0;i<N;i++){
+    const a=g1[Math.floor(Math.random()*g1.length)];
+    const b=g2[Math.floor(Math.random()*g2.length)];
+    const p=pheno(combine(a,b)); obs[p]=(obs[p]||0)+1;
+  }
+  state.obs=obs;
+}
+function chiOf(){
+  if(!state.obs) return null;
+  const pr=probs(), N=sampleN(); let chi=0, k=0, low=false;
+  Object.keys(pr).forEach(p=>{const e=pr[p]*N; const o=state.obs[p]||0; if(e<5) low=true; chi+=(o-e)*(o-e)/e; k++;});
+  const df=k-1, p=chiP(chi,df);
+  return {chi,df,p,low};
+}
+function aboGam(g){return [g[0], g[1]];}
+function aboPheno(a,b){
+  const s=[a,b].sort().join('');
+  if(s.includes('A')&&s.includes('B')) return 'AB';
+  if(s.includes('A')) return 'A';
+  if(s.includes('B')) return 'B';
+  return 'O';
+}
+function aboProbs(){
+  const m=aboGam(state.abo1), d=aboGam(state.abo2), map={};
+  m.forEach(a=>d.forEach(b=>{const p=aboPheno(a,b); map[p]=(map[p]||0)+0.25;}));
+  return map;
+}
+function sexKids(){
+  const mom=state.momX, dad=state.dadX;
+  const momA=[mom[0],mom[1]], dadA=dad[0];
+  const kids=[];
+  momA.forEach(m=>{
+    kids.push({sex:'ลูกสาว', geno:'X'+m+'X'+dadA, pheno:(m==='b'&&dadA==='b')?'ตาบอดสี':'สายตาปกติ'});
+    kids.push({sex:'ลูกชาย', geno:'X'+m+'Y', pheno:m==='b'?'ตาบอดสี':'สายตาปกติ'});
+  });
+  return kids;
+}
+function gauss(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function nextGen(){
+  let p=state.p, q=1-p, u=state.mu;
+  p=p*(1-u)+q*u; q=1-p;
+  let AA=p*p, Aa=2*p*q, aa=q*q;
+  const waa=1-state.selection/100;
+  const wbar=AA+Aa+aa*waa || 1;
+  AA/=wbar; Aa/=wbar; aa=aa*waa/wbar;
+  p=Math.min(1,Math.max(0, AA+Aa/2));
+  const se=Math.sqrt(Math.max(0,p*(1-p))/Math.max(2,state.N*2));
+  p=Math.min(1,Math.max(0,p+se*gauss()));
+  state.p=p; state.history.push(p); if(state.history.length>80) state.history.shift();
+}
+function renderControls(){
+  const modes=[[1,'1. ตารางพันเนตต์'],[2,'2. นอกกฎเมนเดล'],[3,'3. พงศาวลี'],[4,'4. ฮาร์ดี-ไวน์เบิร์ก']];
+  $('modes').innerHTML=modes.map(([id,n])=>`<button class="mode ${state.mode===id?'on':''}" data-act="mode" data-v="${id}">${n}</button>`).join('');
+  const subs=state.mode===2?[['incomplete','ข่มไม่สมบูรณ์'],['abo','หมู่เลือด ABO'],['sex','ตาบอดสี'],['poly','พอลียีน'],['link','ยีนโยงกัน']]:[];
+  $('subs').innerHTML=subs.map(([id,n])=>`<button class="sub ${state.sub===id?'on':''}" data-act="sub" data-v="${id}">${n}</button>`).join('');
+  let html='';
+  if(state.mode===1){
+    const opts=state.cross==='mono'?MONO:DI;
+    if(!opts.includes(state.p1)) state.p1=opts[1];
+    if(!opts.includes(state.p2)) state.p2=opts[1];
+    html+=`<div class="row"><button class="switch ${state.cross==='mono'?'on':''}" data-act="cross" data-v="mono">ลักษณะเดียว</button><button class="switch ${state.cross==='di'?'on':''}" data-act="cross" data-v="di">สองลักษณะ</button></div>
+      <label>พ่อ/ต้นที่ 1<span></span><select data-key="p1">${opts.map(g=>`<option ${state.p1===g?'selected':''}>${g}</option>`).join('')}</select></label>
+      <label>แม่/ต้นที่ 2<span></span><select data-key="p2">${opts.map(g=>`<option ${state.p2===g?'selected':''}>${g}</option>`).join('')}</select></label>
+      <label>ขนาดตัวอย่าง (สเกลลอการิทึม) <span data-for="nSlider">${sampleN().toLocaleString('th-TH')} ตัว</span><input data-key="nSlider" type="range" min="0" max="100" value="${state.nSlider}"></label>
+      <div class="row"><button class="btn" data-act="breed">สุ่มลูก</button><button class="btn alt" data-act="testcross">ผสมทดสอบ</button></div>
+      <button class="switch ${state.showTheory?'on':''}" data-act="theory" style="width:100%">${state.showTheory?'กำลังเน้นอัตราส่วนทฤษฎี':'กำลังเน้นผลสุ่มจริง'}</button>`;
+  } else if(state.sub==='incomplete'){
+    html+=`<label>ต้นที่ 1<span></span><select data-key="mom">${['RR','RW','WW'].map(g=>`<option ${state.mom===g?'selected':''}>${g}</option>`).join('')}</select></label>
+      <label>ต้นที่ 2<span></span><select data-key="dad">${['RR','RW','WW'].map(g=>`<option ${state.dad===g?'selected':''}>${g}</option>`).join('')}</select></label>`;
+  } else if(state.sub==='abo'){
+    html+=`<label>พ่อ<span></span><select data-key="abo1">${['AA','AO','BB','BO','AB','OO'].map(g=>`<option ${state.abo1===g?'selected':''}>${g}</option>`).join('')}</select></label>
+      <label>แม่<span></span><select data-key="abo2">${['AA','AO','BB','BO','AB','OO'].map(g=>`<option ${state.abo2===g?'selected':''}>${g}</option>`).join('')}</select></label>`;
+  } else if(state.sub==='sex'){
+    html+=`<label>แม่<span></span><select data-key="momX">${[['BB','XᴮXᴮ'],['Bb','XᴮXᵇ'],['bb','XᵇXᵇ']].map(([k,n])=>`<option value="${k}" ${state.momX===k?'selected':''}>${n}</option>`).join('')}</select></label>
+      <label>พ่อ<span></span><select data-key="dadX">${[['BY','XᴮY'],['bY','XᵇY']].map(([k,n])=>`<option value="${k}" ${state.dadX===k?'selected':''}>${n}</option>`).join('')}</select></label>`;
+  } else if(state.sub==='poly'){
+    html+=`<label>อัลลีลเติมสีของแม่ <span data-for="polyM">${state.polyM} / 6</span><input data-key="polyM" type="range" min="0" max="6" value="${state.polyM}"></label>
+      <label>อัลลีลเติมสีของพ่อ <span data-for="polyF">${state.polyF} / 6</span><input data-key="polyF" type="range" min="0" max="6" value="${state.polyF}"></label>`;
+  } else if(state.sub==='link'){
+    html+=`<label>จำนวนลูกสายพันธุ์ใหม่ <span data-for="rec">${state.rec}</span><input data-key="rec" type="range" min="0" max="400" value="${state.rec}"></label>
+      <label>จำนวนลูกทั้งหมด <span data-for="total">${state.total}</span><input data-key="total" type="range" min="10" max="400" value="${state.total}"></label>`;
+  } else if(state.mode===3){
+    html+=`<label>กรณี<span></span><select data-key="caseId">${CASES.map((c,i)=>`<option value="${i}" ${state.caseId===i?'selected':''}>${c.title}</option>`).join('')}</select></label>
+      <p class="hint">คลิกคนในแผนภาพ</p>
+      <div id="genoBtns"></div>
+      <button class="btn" data-act="checkped" style="width:100%">ตรวจพงศาวลี</button>`;
+  } else {
+    html+=`<label>ความถี่อัลลีล p <span data-for="p">${num(state.p,2)}</span><input data-key="p" type="range" min="0" max="1" step="0.05" value="${state.p}"></label>
+      <label>ขนาดประชากร N <span data-for="N">${state.N.toLocaleString('th-TH')}</span><input data-key="N" type="range" min="10" max="10000" step="10" value="${state.N}"></label>
+      <label>การคัดเลือกต่อ aa <span data-for="selection">${state.selection}%</span><input data-key="selection" type="range" min="0" max="100" value="${state.selection}"></label>
+      <label>อัตราการกลายพันธุ์ต่อรุ่น <span data-for="mu">${num(state.mu,3)}</span><input data-key="mu" type="range" min="0" max="0.05" step="0.005" value="${state.mu}"></label>
+      <div class="row"><button class="btn" data-act="gen">ถัดไป 1 รุ่น</button><button class="btn alt" data-act="gen20">เล่น 20 รุ่น</button></div>`;
+  }
+  html+=`<div class="row"><button class="btn alt" data-act="play">${state.playing?'หยุดภาพ':'เล่นภาพ'}</button><button class="btn alt" data-act="reset">รีเซ็ต</button></div>`;
+  $('controls').innerHTML=html;
+  genoButtons();
+}
+function cycleList(){
+  if(state.caseId===2){ const person=CASES[2].people[state.selected]; return person&&person.sex==='m'?['XBY','XbY']:['XBXB','XBXb','XbXb']; }
+  return ['AA','Aa','aa'];
+}
+function genoButtons(){
+  const box=document.getElementById('genoBtns'); if(!box) return;
+  if(state.selected<0){ box.innerHTML='<p class="hint">ยังไม่ได้เลือกบุคคล</p>'; return; }
+  box.innerHTML=cycleList().map(g=>`<button class="btn alt" data-act="setg" data-v="${g}" style="width:100%;margin-top:6px">${g}</button>`).join('');
+}
+function side(){
+  let formula='',stats='',analysis='',mis='',table='';
+  if(state.mode===1){
+    const pr=probs(); const N=sampleN(); const chi=chiOf();
+    formula = state.cross==='mono' ? 'กฎการแยกตัว: อัลลีลคู่หนึ่งแยกเข้าคนละเซลล์สืบพันธุ์' : 'กฎการเข้ากลุ่มอย่างอิสระ: ยีนคนละโครโมโซมจัดคู่กันได้อย่างอิสระ';
+    const keys=Object.keys(pr);
+    const theory=keys.map(k=>`${k} ${num(pr[k]*100,1)}%`).join(' · ');
+    const obs=state.obs?keys.map(k=>`${k} ${state.obs[k]||0}`).join(' · '):'ยังไม่ได้สุ่ม';
+    stats=[['ลูกที่สุ่ม', N.toLocaleString('th-TH')],['ไคสแควร์', chi?num(chi.chi,2):'-'],['ค่า p', chi?num(chi.p,3):'-']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=(state.showTheory?'ทฤษฎี: ':'ผลสุ่ม: ')+(state.showTheory?theory:obs);
+    mis='<strong>จำไว้:</strong> 3:1 และ 9:3:3:1 เป็นความน่าจะเป็น';
+    table=`<table><tr><th>ฟีโนไทป์</th><th>ทฤษฎี</th><th>สุ่มได้</th></tr>${keys.map(k=>`<tr><td>${k}</td><td>${num(pr[k]*N,1)}</td><td>${state.obs?state.obs[k]||0:'-'}</td></tr>`).join('')}</table>`;
+  } else if(state.sub==='incomplete'){
+    const g1=gametesOf(state.mom), g2=gametesOf(state.dad), map={};
+    g1.forEach(a=>g2.forEach(b=>{const s=[a,b].sort().join(''); const name=s==='RR'?'แดง':s==='WW'?'ขาว':'ชมพู'; map[name]=(map[name]||0)+0.25;}));
+    formula='ข่มไม่สมบูรณ์: เฮเทอโรไซโกตมีฟีโนไทป์กึ่งกลาง อัตราส่วนฟีโนไทป์เท่ากับจีโนไทป์ 1:2:1 เมื่อผสม Rw × Rw';
+    stats=Object.entries(map).slice(0,3).map(([k,v])=>`<div class="stat"><span>${k}</span><b>${num(v*100,0)}%</b></div>`).join('');
+    analysis='Rw ได้สีกึ่งกลาง';
+    mis='<strong>จำไว้:</strong> ข่มไม่สมบูรณ์ ≠ หมู่เลือด AB';
+    table=`<table><tr><th>สี</th><th>โอกาส</th></tr>${Object.entries(map).map(([k,v])=>`<tr><td>${k}</td><td>${num(v*100,0)}%</td></tr>`).join('')}</table>`;
+  } else if(state.sub==='abo'){
+    const map=aboProbs();
+    formula='Iᴬ และ Iᴮ ข่มร่วมกัน และทั้งคู่ข่ม i ระบบ ABO จึงเป็นทั้งมัลติเปิลอัลลีลและข่มร่วม';
+    stats=[['A',num((map.A||0)*100,0)+'%'],['B',num((map.B||0)*100,0)+'%'],['AB / O',num((map.AB||0)*100,0)+' / '+num((map.O||0)*100,0)+'%']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='แต่ละคนถือได้ 2 อัลลีล จาก 3 แบบ';
+    mis='<strong>จำไว้:</strong> หมู่เลือดมี 3 อัลลีล';
+    table=`<table><tr><th>หมู่</th><th>โอกาส</th></tr>${['A','B','AB','O'].map(k=>`<tr><td>${k}</td><td>${num((map[k]||0)*100,0)}%</td></tr>`).join('')}</table>`;
+  } else if(state.sub==='sex'){
+    const kids=sexKids();
+    formula='P(ลูกชายตาบอดสี) ขึ้นกับ X ที่ได้รับจากแม่ พ่อส่ง Y ให้ลูกชาย จึงไม่ส่งยีนตาบอดสีบน X ให้ลูกชาย';
+    const sons=kids.filter(k=>k.sex==='ลูกชาย'); const daus=kids.filter(k=>k.sex==='ลูกสาว');
+    stats=[['ลูกสาว', daus.map(k=>k.pheno).join(', ')],['ลูกชาย', sons.map(k=>k.pheno).join(', ')],['แบบ', 'X-linked']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='พ่อส่ง X ให้ลูกสาว และส่ง Y ให้ลูกชาย';
+    mis='<strong>จำไว้:</strong> พ่อไม่ส่งโรคบน X ให้ลูกชาย';
+    table=`<table><tr><th>เพศ</th><th>จีโนไทป์</th><th>ฟีโนไทป์</th></tr>${kids.map(k=>`<tr><td>${k.sex}</td><td>${k.geno}</td><td>${k.pheno}</td></tr>`).join('')}</table>`;
+  } else if(state.sub==='poly'){
+    formula='ลักษณะปริมาณถูกควบคุมด้วยหลายคู่ยีน ผลรวมของอัลลีลเติมจึงเป็นสเปกตรัมต่อเนื่อง';
+    const mean=(state.polyM+state.polyF)/2;
+    stats=[['ค่าเฉลี่ยลูก', num(mean,1)+' / 6'],['แบบ', 'ต่อเนื่อง'],['คู่ยีน', '3 คู่']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='หลายยีนร่วมกัน ได้กราฟรูประฆัง';
+    mis='<strong>จำไว้:</strong> พอลียีนไม่แยกเป็นสองกลุ่มชัด';
+    table=`<table><tr><th>จำนวนอัลลีลเติม</th><th>เฉด</th></tr>${[0,1,2,3,4,5,6].map(i=>`<tr><td>${i}</td><td>${'อ่อนมาก,อ่อน,ค่อนข้างอ่อน,ปานกลาง,ค่อนข้างเข้ม,เข้ม,เข้มมาก'.split(',')[i]}</td></tr>`).join('')}</table>`;
+  } else if(state.sub==='link'){
+    const rf=state.total? state.rec/state.total*100:0;
+    formula=`ความถี่รีคอมบิเนชัน = ลูกสายพันธุ์ใหม่ / ลูกทั้งหมด × 100 = ${num(rf,1)}%`;
+    stats=[['ระยะบนแผนที่', num(rf,1)+' cM'],['การโยง', rf<50?'โยงกัน':'ห่างกันมากหรือคนละโครโมโซม'],['1% =', '1 cM']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ยิ่งห่างกัน ยิ่งแลกเปลี่ยนบ่อย';
+    mis='<strong>จำไว้:</strong> ห่างมากจนใกล้ 50% จะแยกจากยีนคนละโครโมโซมไม่ได้';
+    table=`<table><tr><th>RF</th><th>การอ่าน</th></tr><tr><td>ใกล้ 0%</td><td>อยู่ชิดกันมาก</td></tr><tr><td>${num(rf,1)}%</td><td>ระยะประมาณ ${num(rf,1)} แมปยูนิต</td></tr><tr><td>50%</td><td>จัดคู่อย่างอิสระในทางปฏิบัติ</td></tr></table>`;
+  } else if(state.mode===3){
+    const c=CASES[state.caseId];
+    formula='สี่เหลี่ยม = ชาย · วงกลม = หญิง · พื้นทึบ = เป็นโรค';
+    stats=[['แบบที่สงสัย', c.title],['คนที่เลือก', state.selected<0?'-':'คนที่ '+(state.selected+1)],['ผลตรวจ', state.verdict||'ยังไม่ตรวจ']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=c.hint;
+    mis=state.caseId===2?'<strong>จำไว้:</strong> พ่อส่ง X ให้ลูกสาว ไม่ใช่ลูกชาย':'<strong>จำไว้:</strong> อัลลีลเด่นไม่จำเป็นต้องพบมาก';
+    table=`<table><tr><th>บุคคล</th><th>ที่ระบุ</th><th>ที่เป็นไปได้</th></tr>${c.people.map((p,i)=>`<tr><td>${i+1} ${p.sex==='m'?'ชาย':'หญิง'}</td><td>${state.picks[state.caseId+'-'+i]||'-'}</td><td>${p.ok.join(' หรือ ')}</td></tr>`).join('')}</table>`;
+  } else {
+    const p=state.p,q=1-p;
+    formula=`p + q = 1<br>p² + 2pq + q² = 1<br>AA ${num(p*p*100,1)}% · Aa ${num(2*p*q*100,1)}% · aa ${num(q*q*100,1)}%`;
+    stats=[['p',num(p,3)],['q',num(q,3)],['รุ่นที่บันทึก', state.history.length]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ประชากรเล็ก ความถี่แกว่งได้';
+    mis='<strong>จำไว้:</strong> อัลลีลเด่นไม่จำเป็นต้องมีมาก';
+    table=`<table><tr><th>แรง</th><th>ผลในแบบจำลอง</th></tr><tr><td>N เล็ก</td><td>p แกว่งแรง</td></tr><tr><td>คัด aa</td><td>p มีแนวโน้มสูงขึ้น</td></tr><tr><td>กลายพันธุ์สองทาง</td><td>ดึง p เข้าหา 0.5</td></tr></table>`;
+  }
+  $('formula').innerHTML=formula; $('stats').innerHTML=stats; $('analysis').innerHTML=analysis; $('mis').innerHTML=mis; $('table').innerHTML=table;
+}
+function fit(canvas){const r=canvas.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);const w=Math.max(10,r.width),h=Math.max(10,r.height);const W=Math.floor(w*dpr),H=Math.floor(h*dpr);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function paper(ctx,w,h){ctx.fillStyle='#fff8fb';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(80,160,110,.18)';for(let x=0;x<w;x+=26){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}}
+const hits=[];
+function drawPunnett(ctx,w,h){
+  paper(ctx,w,h); hits.length=0;
+  const g1=gametesOf(state.p1), g2=gametesOf(state.p2);
+  const cols=[...new Set(g1)], rows=[...new Set(g2)];
+  const x0=90, y0=70, cw=Math.min(70,(w-120)/cols.length), ch=36;
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText(state.p1+' × '+state.p2, 20, 32);
+  ctx.font='14px Leelawadee UI';
+  cols.forEach((g,i)=>ctx.fillText(g, x0+i*cw+8, y0-8));
+  rows.forEach((g,j)=>{
+    ctx.fillText(g, 40, y0+j*ch+22);
+    cols.forEach((c,i)=>{
+      const geno=combine(c,g); const x=x0+i*cw, y=y0+j*ch;
+      ctx.fillStyle='#e5f6ec'; ctx.fillRect(x,y,cw-4,ch-4);
+      ctx.fillStyle='#2f7a4e'; ctx.fillText(geno, x+6, y+22);
+    });
+  });
+}
+function drawFlowers(ctx,w,h){
+  paper(ctx,w,h);
+  const g1=gametesOf(state.mom), g2=gametesOf(state.dad);
+  for(let i=0;i<8;i++){
+    const a=g1[i%g1.length], b=g2[Math.floor(i/2)%g2.length];
+    const s=[a,b].sort().join('');
+    const col=s==='RR'?'#c62828':s==='WW'?'#fafafa':'#f48fb1';
+    const x=70+(i%4)*90, y=120+Math.floor(i/4)*140;
+    ctx.fillStyle='#2e7d32'; ctx.fillRect(x-3,y,6,40);
+    ctx.fillStyle=col; ctx.strokeStyle='#ad1457';
+    for(let k=0;k<5;k++){ctx.beginPath();ctx.ellipse(x+Math.cos(k)*16,y+Math.sin(k)*16,10,16,k,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText('ดอกที่ได้จากคู่พ่อแม่',20,36);
+}
+function drawBlood(ctx,w,h){
+  paper(ctx,w,h); const map=aboProbs();
+  ['A','B','AB','O'].forEach((k,i)=>{
+    const x=70+i*90, y=h*0.45;
+    ctx.fillStyle={A:'#e53935',B:'#1e88e5',AB:'#6a1b9a',O:'#eeeeee'}[k];
+    ctx.beginPath(); ctx.arc(x,y,28,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText(k, x-8, y+50);
+    ctx.fillText(num((map[k]||0)*100,0)+'%', x-16, y+72);
+  });
+}
+function drawSex(ctx,w,h){
+  paper(ctx,w,h);
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText('โครโมโซมเพศของลูก',20,36);
+  sexKids().forEach((k,i)=>{
+    const x=60+(i%4)*110, y=140;
+    ctx.strokeStyle=k.pheno==='ตาบอดสี'?'#c62828':'#1565c0'; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+24,y+10); ctx.lineTo(x+24,y+78); ctx.stroke();
+    ctx.fillStyle='#2f7a4e'; ctx.font='14px Leelawadee UI'; ctx.fillText(k.sex, x-10, y+100); ctx.fillText(k.pheno, x-16, y+120);
+  });
+}
+function drawPoly(ctx,w,h){
+  paper(ctx,w,h);
+  for(let i=0;i<=6;i++){
+    const x=40+i*(w-80)/6;
+    const shade=Math.round(255-i*28);
+    ctx.fillStyle=`rgb(${shade},${Math.round(shade*0.8)},${Math.round(shade*0.65)})`;
+    ctx.beginPath(); ctx.arc(x,h*0.48,22,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#2f7a4e'; ctx.font='13px Leelawadee UI'; ctx.fillText(String(i), x-4, h*0.48+48);
+  }
+  ctx.fillStyle='#c62828'; ctx.beginPath(); ctx.arc(40+((state.polyM+state.polyF)/2)*(w-80)/6, h*0.48, 26,0,Math.PI*2); ctx.stroke();
+}
+function drawLink(ctx,w,h){
+  paper(ctx,w,h);
+  const rf=state.total?state.rec/state.total*100:0;
+  ctx.strokeStyle='#6a1b9a'; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(40,h*0.5); ctx.lineTo(w-40,h*0.5); ctx.stroke();
+  ctx.fillStyle='#c62828'; ctx.beginPath(); ctx.arc(80,h*0.5,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#1565c0'; ctx.beginPath(); ctx.arc(80+Math.min(w-160, rf*4), h*0.5,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText(num(rf,1)+' cM', 20, 40);
+}
+function drawPed(ctx,w,h){
+  paper(ctx,w,h); hits.length=0;
+  const c=CASES[state.caseId];
+  ctx.strokeStyle='#2f7a4e'; ctx.lineWidth=2;
+  const P=c.parents.map(i=>c.people[i]);
+  const x1=P[0].x*w, y1=P[0].y*h, x2=P[1].x*w, y2=P[1].y*h;
+  ctx.beginPath(); ctx.moveTo(x1,y1+18); ctx.lineTo(x2,y2+18); ctx.stroke();
+  const kids=c.kids.map(i=>c.people[i]);
+  const mid=(x1+x2)/2; const yb=y1+70;
+  ctx.beginPath(); ctx.moveTo(mid,(y1+18)); ctx.lineTo(mid,yb); ctx.stroke();
+  const xs=kids.map(k=>k.x*w);
+  ctx.beginPath(); ctx.moveTo(Math.min(...xs), yb); ctx.lineTo(Math.max(...xs), yb); ctx.stroke();
+  c.people.forEach((p,i)=>{
+    const x=p.x*w, y=p.y*h;
+    if(c.kids.includes(i)){ ctx.beginPath(); ctx.moveTo(x,yb); ctx.lineTo(x,y-16); ctx.stroke(); }
+    ctx.fillStyle=p.aff?'#2f7a4e':'#fff';
+    ctx.strokeStyle=state.selected===i?'#e0a100':'#2f7a4e'; ctx.lineWidth=state.selected===i?4:2;
+    ctx.beginPath();
+    if(p.sex==='m') ctx.rect(x-14,y-14,28,28); else ctx.arc(x,y,15,0,Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    const g=state.picks[state.caseId+'-'+i];
+    if(g){ ctx.fillStyle=p.aff?'#fff':'#2f7a4e'; ctx.font='11px Leelawadee UI'; ctx.fillText(g, x-14, y+4); }
+    hits.push({i,x,y,r:18});
+  });
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText(c.title,20,32);
+}
+function drawHW(ctx,w,h){
+  paper(ctx,w,h);
+  const p=state.p;
+  for(let i=0;i<48;i++){
+    const raw=Math.sin(i*12.9898+p*78.233)*43758.5453;
+    const r=raw-Math.floor(raw);
+    const geno=r<p*p?'AA':r<p*p+2*p*q?'Aa':'aa';
+    const col=geno==='AA'?'#2f7a4e':geno==='Aa'?'#66bb6a':'#dcedc8';
+    const x=30+(i%8)*((w-40)/8), y=70+Math.floor(i/8)*70;
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y+Math.sin(state.t+i)*2,16,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText('ตัวแทนประชากรตาม p = '+num(p,2),20,32);
+}
+function drawMain(){
+  const {ctx,w,h}=fit($('cv'));
+  if(state.mode===1) drawPunnett(ctx,w,h);
+  else if(state.mode===3) drawPed(ctx,w,h);
+  else if(state.mode===4) drawHW(ctx,w,h);
+  else if(state.sub==='incomplete') drawFlowers(ctx,w,h);
+  else if(state.sub==='abo') drawBlood(ctx,w,h);
+  else if(state.sub==='sex') drawSex(ctx,w,h);
+  else if(state.sub==='poly') drawPoly(ctx,w,h);
+  else drawLink(ctx,w,h);
+}
+function drawGraph(){
+  const {ctx,w,h}=fit($('graph')); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const pad={l:32,r:8,t:16,b:24}, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  ctx.strokeStyle='#e7b7cc'; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+ih); ctx.lineTo(pad.l+iw,pad.t+ih); ctx.stroke();
+  if(state.mode===1){
+    const pr=probs(); const keys=Object.keys(pr); const N=sampleN();
+    keys.forEach((k,i)=>{
+      const x=pad.l+i*(iw/keys.length)+6;
+      const th=pr[k], ob=state.obs?(state.obs[k]||0)/N:0;
+      ctx.fillStyle=state.showTheory?'#7dcea0':'#c5e1a5'; ctx.fillRect(x, pad.t+ih-th*ih, 12, th*ih);
+      ctx.fillStyle=state.showTheory?'#c5e1a5':'#2f7a4e'; ctx.fillRect(x+14, pad.t+ih-ob*ih, 12, ob*ih);
+    });
+  } else if(state.mode===4){
+    const hs=state.history; ctx.beginPath(); ctx.strokeStyle='#7dcea0'; ctx.lineWidth=2;
+    hs.forEach((p,i)=>{const X=pad.l+i/Math.max(1,hs.length-1)*iw, Y=pad.t+ih-p*ih; if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y);});
+    ctx.stroke();
+  } else if(state.sub==='poly'){
+    for(let i=0;i<=6;i++){ const x=pad.l+i/6*iw; const weight=Math.exp(-Math.pow(i-(state.polyM+state.polyF)/2,2)/2); ctx.fillStyle='#7dcea0'; ctx.fillRect(x, pad.t+ih-weight*(ih-8), 10, weight*(ih-8)); }
+  } else {
+    ctx.fillStyle='#4e6a5c'; ctx.font='13px Leelawadee UI'; ctx.fillText('กราฟเปรียบเทียบอยู่ในการทดลองพันเนตต์และฮาร์ดี-ไวน์เบิร์ก', pad.l, 40);
+  }
+}
+function setKey(t){ if(!t.dataset||!t.dataset.key) return; const key=t.dataset.key; let v=t.type==='range'?parseFloat(t.value):t.value; if(key==='caseId') v=+v; state[key]=v; if(key==='caseId'){ state.selected=-1; state.verdict=''; } if(key==='p'){ state.history=[state.p]; } const lab=document.querySelector(`[data-for="${key}"]`); if(lab) lab.textContent = key==='nSlider'? sampleN().toLocaleString('th-TH')+' ตัว' : key==='p'||key==='mu'? num(state[key], key==='mu'?3:2) : key==='N'? state.N.toLocaleString('th-TH') : state[key]+(key==='selection'?'%':key==='polyM'||key==='polyF'?' / 6':''); if(['p1','p2','cross','mom','dad','abo1','abo2','momX','dadX','caseId'].includes(key)) { if(key==='p1'||key==='p2') state.obs=null; renderControls(); } side(); }
+document.addEventListener('input',e=>setKey(e.target));
+document.addEventListener('change',e=>setKey(e.target));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(b){
+    const act=b.dataset.act, v=b.dataset.v;
+    if(act==='mode'){ state.mode=+v; renderControls(); side(); }
+    if(act==='sub'){ state.sub=v; renderControls(); side(); }
+    if(act==='play'){ state.playing=!state.playing; renderControls(); }
+    if(act==='reset'){ const m=state.mode,s=state.sub; state=defaults(); state.mode=m; state.sub=s; renderControls(); side(); }
+    if(act==='cross'){ state.cross=v; const opts=v==='mono'?MONO:DI; state.p1=opts[1]; state.p2=opts[1]; state.obs=null; renderControls(); side(); }
+    if(act==='breed'){ runCross(); side(); }
+    if(act==='testcross'){ state.p2=state.cross==='mono'?'aa':'aabb'; state.obs=null; renderControls(); side(); }
+    if(act==='theory'){ state.showTheory=!state.showTheory; renderControls(); side(); }
+    if(act==='setg'){ state.picks[state.caseId+'-'+state.selected]=v; side(); }
+    if(act==='checkped'){
+      const c=CASES[state.caseId];
+      const ok=c.people.every((p,i)=>p.ok.includes(state.picks[state.caseId+'-'+i]));
+      state.verdict=ok?'สอดคล้องกับพงศาวลี':'ยังไม่ครบหรือยังไม่ตรง'; side();
+    }
+    if(act==='gen'){ nextGen(); side(); }
+    if(act==='gen20'){ for(let i=0;i<20;i++) nextGen(); side(); }
+    return;
+  }
+  if(e.target.id==='cv' && state.mode===3){
+    const r=e.target.getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    const hit=hits.find(h=>Math.hypot(h.x-x,h.y-y)<h.r+6);
+    if(hit){ state.selected=hit.i; renderControls(); side(); }
+  }
+});
+let last=0;
+function loop(now){const dt=Math.min(.05,(now-last)/1000||0); last=now; if(state.playing) state.t+=dt; drawMain(); drawGraph(); requestAnimationFrame(loop);}
+renderControls(); runCross(); side(); requestAnimationFrame(loop);
+document.documentElement.dataset.ready='genetics';
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบรับความรู้สึกและการเคลื่อนที่ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#040f0e;--panel:#0b1a19;--panel2:#112624;--line:#1f3b39;--txt:#e6fbf7;--mut:#94bdb6;--acc:#5eead4;--acc2:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#115e59,#7c2d12);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#115e59;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#14302d;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#0f766e;border-color:#5eead4}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#b45309;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#050f0e;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:#0f766e;color:#fff;border-color:#5eead4}.flow span.done{color:#99f6e4;border-color:#115e59}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:#03100e;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#03100e;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🦴 ระบบรับความรู้สึกและการเคลื่อนที่ (Sensory System, Movement &amp; Locomotion)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : เปรียบเทียบการเคลื่อนที่ของสิ่งมีชีวิต</button>
+    <button data-mode="2">โหมด 2 : การหดตัวของกล้ามเนื้อ (Sliding filament)</button>
+    <button data-mode="3">โหมด 3 : ตาและการมองเห็น</button>
+    <button data-mode="4">โหมด 4 : หู การได้ยิน และการทรงตัว</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="loco"><option value="amoeba">อะมีบา – Pseudopodium</option><option value="paramecium">พารามีเซียม / ยูกลีนา – Cilia / Flagellum</option><option value="jelly">แมงกะพรุน / หมึก – Jet propulsion</option><option value="starfish">ดาวทะเล – Water vascular system</option><option value="earthworm">ไส้เดือนดิน – Hydrostatic skeleton</option><option value="insect">แมลง – Exoskeleton + ปีก</option><option value="fish">ปลา – Myotome + Swim bladder</option><option value="bird">นก – ปีก + Keel</option><option value="human" selected>มนุษย์ – Endoskeleton</option></select></div>
+      <p class="hint">Toggle "Antagonism" แสดงคู่กล้ามเนื้อที่ทำงานตรงข้ามกัน · "Troponin–Tropomyosin" แสดงโครงสร้างระดับเซลล์/โมเลกุล</p>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>Ca²⁺ ใน Sarcoplasm</label><select id="ca"><option value="zero">ไม่มี (Zero)</option><option value="normal" selected>ปกติ (Normal)</option><option value="high">สูงค้าง (High – SR สูบกลับไม่ทัน)</option></select></div>
+      <div class="ctl"><label>ATP</label><select id="atp"><option value="dep">หมด (Depleted – Rigor mortis)</option><option value="normal" selected>ปกติ (Normal)</option><option value="high">สูง (High)</option></select></div>
+      <div class="ctl"><label>ความถี่กระแสประสาทสั่งการ <b id="hzV"></b></label><input type="range" id="hz" min="0" max="50" step="1" value="0"></div>
+      <div class="ctl"><label>น้ำหนักที่ถือ <b id="loadV"></b></label><input type="range" id="load" min="0" max="20" step="1" value="2"></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ความเข้มแสง <b id="luxV"></b></label><input type="range" id="lux" min="0" max="1000" step="1" value="400"></div>
+      <div class="ctl"><label>ระยะวัตถุ <b id="distV"></b></label><input type="range" id="dist" min="10" max="600" step="5" value="600"></div>
+      <div class="ctl"><label>สภาพสายตา</label><select id="refr"><option value="normal">ปกติ (Emmetropia)</option><option value="myo">สายตาสั้น (Myopia)</option><option value="hyp">สายตายาว (Hyperopia)</option><option value="pres">สายตายาวตามอายุ (Presbyopia)</option></select></div>
+      <label class="chk"><input type="checkbox" id="corr"> สวมแว่นแก้ไข</label>
+      <label class="chk"><input type="checkbox" id="vitA"> ขาดวิตามิน A</label>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>ความถี่เสียง <b id="freqV"></b></label><input type="range" id="freq" min="0" max="1000" step="1" value="510"></div>
+      <div class="ctl"><label>ความดังเสียง <b id="dbV"></b></label><input type="range" id="db" min="0" max="130" step="1" value="60"></div>
+      <div class="ctl"><label>เอียงศีรษะ <b id="tiltV"></b></label><input type="range" id="tilt" min="-60" max="60" step="1" value="0"></div>
+      <div class="ctl"><label>สภาพหู</label><select id="hear"><option value="normal">ปกติ</option><option value="oto">กระดูกโกลนยึดติด (Otosclerosis)</option><option value="noise">ประสาทหูเสื่อมจากเสียงดัง</option><option value="age">ประสาทหูเสื่อมตามอายุ (Presbycusis)</option></select></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgAnt" class="on">กล้ามเนื้อทำงานเป็นคู่ (Antagonism)</button><button id="tgTrop">Troponin–Tropomyosin / โมเลกุล</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#e6fbf7',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'ant',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#173230';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#cdeee8',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t)];}
+function flow(g,P,n,speed,col,r=3,off=0){for(let j=0;j<n;j++){const s=(S.time*speed+j/n+off)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();}}
+function panel(g,x,y,w,h){g.fillStyle='rgba(8,24,23,.94)';rr(g,x,y,w,h,10);g.fill();}
+function line(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+function seg(g,a,b,col,lw){line(g,[a,b],col,lw);}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+
+/* ================= MODE 1 : LOCOMOTION ================= */
+const LOCO={
+ amoeba:{n:'อะมีบา',how:'เท้าเทียม (Pseudopodium) — Amoeboid movement',sk:'ไม่มีโครงร่าง',sp:1e-5,ant:'ไม่มีกล้ามเนื้อ — ใช้ Actin microfilament ร่วมกับ Myosin ภายในเซลล์ บีบดันไซโทพลาซึมให้ไหล',mol:'Actin ประกอบ/สลายตัวสลับ ทำให้ Ectoplasm (Gel) ⇌ Endoplasm (Sol) เกิดการไหลของไซโทพลาซึม (Cytoplasmic streaming)',
+  steps:['Ectoplasm ท้ายเซลล์หดตัว','Endoplasm (Sol) ไหลไปด้านหน้า','เท้าเทียมยื่นออก','ด้านหน้าเปลี่ยนเป็น Gel ยึดพื้น'],eq:'Ectoplasm (Gel) ⇌ Endoplasm (Sol) · Actin + Myosin หดตัวบีบดันไซโทพลาซึมไปยังเท้าเทียม',
+  an:'อะมีบาเคลื่อนที่โดย<b>การไหลของไซโทพลาซึม</b> Ectoplasm ด้านท้ายหดตัว (Actin–Myosin) ดัน Endoplasm ที่เหลวกว่าไปด้านหน้า เกิดเท้าเทียม — เซลล์เม็ดเลือดขาว (Macrophage) ก็เคลื่อนที่แบบเดียวกัน'},
+ paramecium:{n:'พารามีเซียม / ยูกลีนา',how:'Cilia (พารามีเซียม) / Flagellum (ยูกลีนา)',sk:'ไม่มี (Pellicle คงรูปร่าง)',sp:1e-3,ant:'ไม่มีกล้ามเนื้อ — Cilia พัดแรง (Power stroke) สลับกับม้วนกลับ (Recovery stroke)',mol:'Axoneme แบบ 9+2: Microtubule คู่ 9 ชุดรอบนอก + เดี่ยว 2 เส้นตรงกลาง · แขน Dynein ใช้ ATP เดินบน Microtubule คู่ข้างเคียง → Cilia โค้งงอ',
+  steps:['ATP → แขน Dynein','Microtubule เลื่อนผ่านกัน','Cilia โค้งงอ','Power stroke','Recovery stroke'],eq:'Cilia/Flagella: โครงสร้าง 9+2 · Dynein + ATP → Microtubule เลื่อนผ่านกัน → โค้งงอ',
+  an:'Cilia ของพารามีเซียมสั้นและมีจำนวนมาก โบกพัดเป็นจังหวะคลื่น (Metachronal wave) ส่วน Flagellum ของยูกลีนายาวและมีน้อย พัดเป็นลูกคลื่น — ทั้งคู่มีโครงสร้าง <b>9+2</b> เหมือนกัน'},
+ jelly:{n:'แมงกะพรุน / หมึก',how:'การพ่นน้ำ (Jet propulsion)',sk:'แมงกะพรุน: Hydrostatic (Mesoglea) · หมึก: Pen ภายใน',sp:0.05,ant:'กล้ามเนื้อวงรอบร่ม/Mantle หด (พ่นน้ำ) ⇄ ความยืดหยุ่นของ Mesoglea / กล้ามเนื้อแนวรัศมี (ดึงน้ำเข้า)',mol:'เซลล์กล้ามเนื้อ (หมึก) และ Epitheliomuscular cell (แมงกะพรุน) หดตัวด้วย Actin–Myosin',
+  steps:['คลายตัว น้ำเข้าโพรง','กล้ามเนื้อรอบตัวหด','พ่นน้ำออก (หมึก: Siphon)','แรงปฏิกิริยาดันตัว'],eq:'กฎข้อที่ 3 ของนิวตัน: แรงพ่นน้ำออก (Action) = แรงดันตัวไปทางตรงข้าม (Reaction)',
+  an:'แมงกะพรุนหดร่มพ่นน้ำออกด้านล่าง ตัวจึงพุ่งขึ้น ส่วน<b>หมึก</b>หด Mantle พ่นน้ำผ่าน Siphon ซึ่งหันทิศได้ จึงเคลื่อนที่ได้เร็วและเปลี่ยนทิศได้'},
+ starfish:{n:'ดาวทะเล',how:'ระบบท่อน้ำ (Water vascular system) + Tube feet',sk:'Endoskeleton (แผ่นหินปูน Ossicle ใต้ผิว)',sp:0.0025,ant:'Ampulla หด (ดันน้ำ → Tube feet ยืด) ⇄ กล้ามเนื้อใน Tube feet หด (ดันน้ำกลับ → Tube feet หดสั้น)',mol:'กล้ามเนื้อของ Ampulla และ Tube feet หดตัวด้วย Actin–Myosin เปลี่ยนแรงดันน้ำในระบบท่อ',
+  steps:['Madreporite','Stone canal','Ring canal','Radial canal','Ampulla','Tube feet'],eq:'Madreporite → Stone canal → Ring canal → Radial canal → Ampulla ⇄ Tube feet (ใช้แรงดันน้ำ)',
+  an:'น้ำทะเลเข้าทาง <b>Madreporite</b> ผ่าน Stone canal → Ring canal → Radial canal ในแต่ละแขน เมื่อ <b>Ampulla</b> หดตัวจะดันน้ำเข้า <b>Tube feet</b> ให้ยืดยาวและดูดยึดพื้น แล้วหดดึงตัวไปข้างหน้า'},
+ earthworm:{n:'ไส้เดือนดิน',how:'กล้ามเนื้อ 2 ชั้น + เดือย (Setae)',sk:'Hydrostatic skeleton (ของเหลวในช่องลำตัว)',sp:0.02,ant:'Circular muscle (วง) ⇄ Longitudinal muscle (ตามยาว) ทำงานสลับกัน',mol:'กล้ามเนื้อเรียบ (Obliquely striated) หดตัวด้วย Actin–Myosin ดันของเหลวใน Coelom',
+  steps:['Circular หด → ปล้องยาว เรียว','Setae ปล้องท้ายยึดดิน','Longitudinal หด → ปล้องสั้น อ้วน','Setae ปล้องหน้ายึด ดึงตัวตาม'],eq:'ปริมาตรของเหลวคงที่ V = πr²L → Circular หด: r ↓ ⇒ L ↑ · Longitudinal หด: L ↓ ⇒ r ↑',
+  an:'ของเหลวในช่องลำตัวอัดตัวไม่ได้ ทำหน้าที่เป็น<b>โครงร่างค้ำจุนแบบอุทกสถิต</b> เมื่อกล้ามเนื้อวงหดตัว ปล้องจะเรียวยาว เมื่อกล้ามเนื้อตามยาวหดตัว ปล้องจะสั้นอ้วน — <b>Setae</b> ยึดดินไม่ให้ลื่นถอยหลัง'},
+ insect:{n:'แมลง',how:'ขา 3 คู่ + ปีก',sk:'Exoskeleton (Chitin) — กล้ามเนื้อยึดด้านใน',sp:2,ant:'ขา: Flexor ⇄ Extensor · ปีก: Dorsoventral muscle ⇄ Longitudinal muscle (Indirect flight muscle)',mol:'กล้ามเนื้อลายภายในโครงร่างภายนอก · กล้ามเนื้อบินบางชนิดหดตัวได้หลายครั้งต่อกระแสประสาท 1 ครั้ง (Asynchronous)',
+  steps:['Flexor หด → งอขา','Extensor หด → เหยียดขา','Dorsoventral หด → อกยุบ → ปีกยก','Longitudinal หด → อกโก่ง → ปีกกด'],eq:'กล้ามเนื้อยึดอยู่ด้านในโครงร่างภายนอก · Flexor ⇄ Extensor (Antagonism) · ปีก: Indirect flight muscles',
+  an:'แมลงมี<b>โครงร่างภายนอก</b> กล้ามเนื้อยึดอยู่ด้านใน ขาแต่ละปล้องมี Flexor/Extensor ทำงานตรงข้ามกัน ปีกของแมลงส่วนใหญ่ขยับโดย <b>Indirect flight muscle</b> ที่ทำให้อกเปลี่ยนรูป (ส่วนแมลงปอใช้ Direct flight muscle ยึดที่โคนปีกโดยตรง)'},
+ fish:{n:'ปลา',how:'ลำตัวเป็นลูกคลื่น + ครีบ',sk:'Endoskeleton (กระดูกสันหลัง)',sp:1,ant:'Myotome ด้านซ้าย ⇄ Myotome ด้านขวา หดสลับกัน',mol:'Myotome = กล้ามเนื้อลายเรียงเป็นปล้องรูป W ยึดกับกระดูกสันหลัง',
+  steps:['Myotome ซ้ายหด','Myotome ขวาหด','ลำตัวโค้งเป็นลูกคลื่น','ครีบหางผลักน้ำ','Swim bladder ปรับการลอย'],eq:'Myotome ซ้าย ⇄ ขวา หดสลับ (Antagonism) · Swim bladder ปรับความหนาแน่นด้วยปริมาณแก๊ส',
+  an:'ปลาหด <b>Myotome</b> ซ้าย–ขวาสลับกัน ลำตัวโค้งเป็นลูกคลื่นจากหัวไปหาง ครีบหางผลักน้ำไปด้านหลัง ปลาจึงพุ่งไปข้างหน้า ส่วน<b>กระเพาะลม</b>ช่วยปรับการลอยตัว (ปลากระดูกอ่อนไม่มี)'},
+ bird:{n:'นก',how:'ปีก (Flight)',sk:'Endoskeleton — กระดูกกลวง + กระดูกอกเป็นสัน (Keel)',sp:15,ant:'Pectoralis major (กดปีกลง) ⇄ Supracoracoideus (ยกปีกขึ้น) — ยึดกับ Keel ทั้งคู่',mol:'กล้ามเนื้อลาย Pectoralis มี Mitochondria และ Myoglobin มาก (เนื้อสีเข้ม) ให้พลังงานบินได้นาน',
+  steps:['Pectoralis หด → Downstroke','Supracoracoideus หด → Upstroke','ปีกสร้างแรงยก'],eq:'Pectoralis (กดปีก) ⇄ Supracoracoideus (ยกปีก ผ่านเอ็นลอดช่อง Triosseal canal) · ยึดกับกระดูกอก Keel',
+  an:'กล้ามเนื้อบินของนกใหญ่มากและยึดกับ <b>Keel</b> ของกระดูกอก <b>Pectoralis</b> กดปีกลงสร้างแรงยกหลัก ส่วน <b>Supracoracoideus</b> ยกปีกขึ้นผ่านเอ็นที่ลอดช่องเหนือไหล่ (ทำงานเหมือนรอก) — กระดูกกลวงช่วยลดน้ำหนัก'},
+ human:{n:'มนุษย์',how:'กระดูก + ข้อต่อ + กล้ามเนื้อลาย',sk:'Endoskeleton 206 ชิ้น (Axial 80 + Appendicular 126)',sp:1.4,ant:'Biceps ⇄ Triceps (แขน) · Quadriceps ⇄ Hamstrings (ขา) — มัดหนึ่งหด อีกมัดคลาย',mol:'กล้ามเนื้อลาย: Sarcomere ประกอบด้วย Actin + Myosin เลื่อนผ่านกัน (Sliding filament) ใช้ Ca²⁺ และ ATP — ดูโหมด 2',
+  steps:['สมองสั่งการ (Motor neuron)','Hamstrings หด → งอเข่า','Quadriceps หด → เหยียดเข่า','Tendon ส่งแรงสู่กระดูก','ข้อต่อเป็นจุดหมุน'],eq:'กระดูก 206 ชิ้น = Axial 80 (กะโหลก กระดูกสันหลัง ซี่โครง กระดูกอก) + Appendicular 126 (แขน ขา และกระดูกเชื่อมรยางค์)\nTendon (เอ็นกล้ามเนื้อ): กล้ามเนื้อ–กระดูก · Ligament (เอ็นยึดข้อ): กระดูก–กระดูก',
+  an:'กระดูกเป็น<b>เนื้อเยื่อมีชีวิต</b> หน่วยโครงสร้างคือ <b>Osteon (Haversian system)</b> มี Osteoblast สร้างและ Osteoclast สลายเนื้อกระดูกตลอดเวลา กล้ามเนื้อลายยึดกระดูกด้วย Tendon และทำงานเป็นคู่ตรงข้ามรอบข้อต่อ'}};
+let M1;function initM1(){M1={t:0};}
+function stepM1(dt){M1.t+=dt;}
+function nine2(g,cx,cy,R,t){g.strokeStyle='#67e8f9';g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+  for(let i=0;i<9;i++){const a=i/9*6.283-Math.PI/2,x=cx+Math.cos(a)*R*0.72,y=cy+Math.sin(a)*R*0.72;g.fillStyle='#22d3ee';g.beginPath();g.arc(x-Math.sin(a)*R*0.07,y+Math.cos(a)*R*0.07,R*0.1,0,7);g.fill();g.fillStyle='#0891b2';g.beginPath();g.arc(x+Math.sin(a)*R*0.08,y-Math.cos(a)*R*0.08,R*0.09,0,7);g.fill();
+    const L=R*0.12*(0.6+0.4*Math.sin(t*6+i));g.strokeStyle='#fbbf24';g.lineWidth=2;g.beginPath();g.moveTo(x-Math.sin(a)*R*0.15,y+Math.cos(a)*R*0.15);g.lineTo(x-Math.sin(a)*(R*0.15+L),y+Math.cos(a)*(R*0.15+L));g.stroke();
+    g.strokeStyle='rgba(165,243,252,.4)';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(cx+Math.cos(a)*R*0.25,cy+Math.sin(a)*R*0.25);g.stroke();}
+  g.fillStyle='#a5f3fc';g.beginPath();g.arc(cx-R*0.13,cy,R*0.1,0,7);g.arc(cx+R*0.13,cy,R*0.1,0,7);g.fill();
+  T(g,'9 คู่',cx+R+6,cy-R*0.6,'#22d3ee',10);T(g,'+ 2 เส้นกลาง',cx+R+6,cy,'#a5f3fc',10);T(g,'แขน Dynein',cx+R+6,cy+R*0.6,'#fbbf24',10);}
+function actinNet(g,x,y,w,h,t){for(let i=0;i<26;i++){const x1=x+hash(i)*w,y1=y+hash(i+50)*h,a=hash(i+90)*6.283+0.3*Math.sin(t+i),L=20+hash(i+7)*25;g.strokeStyle='#5eead4';g.lineWidth=1.5;g.beginPath();g.moveTo(x1,y1);g.lineTo(clamp(x1+Math.cos(a)*L,x,x+w),clamp(y1+Math.sin(a)*L,y,y+h));g.stroke();}
+  for(let i=0;i<8;i++){g.fillStyle='#f472b6';g.beginPath();g.arc(x+hash(i+200)*w,y+hash(i+300)*h,3,0,7);g.fill();}T(g,'— Actin   ● Myosin',x,y+h+10,'#cdeee8',10);}
+function actMyo(g,x,cy,w,t){const off=(t*12)%16;for(const dy of[-20,20]){for(let i=0;i<w/8;i++){g.fillStyle='#93c5fd';g.beginPath();g.arc(x+((i*8+off*(dy<0?1:-1))%w+w)%w,cy+dy,3.2,0,7);g.fill();}}
+  g.strokeStyle='#f87171';g.lineWidth=7;g.beginPath();g.moveTo(x+w*0.15,cy);g.lineTo(x+w*0.85,cy);g.stroke();
+  for(let i=0;i<10;i++){const hx=x+w*0.18+i*w*0.064,s=Math.sin(t*5+i);for(const d of[-1,1]){g.strokeStyle='#fca5a5';g.lineWidth=2;g.beginPath();g.moveTo(hx,cy+d*3);g.lineTo(hx+(i<5?-1:1)*5*s,cy+d*15);g.stroke();}}
+  T(g,'Actin (บาง)',x,cy-34,'#93c5fd',10);T(g,'Myosin (หนา) + หัว Cross-bridge',x,cy+34,'#fca5a5',10);}
+function dAmoeba(g,W,h,t,X,Y){const cx=X(0.22)+(t*10)%(W*0.4),cy=Y(0.5),R=h*0.17,ext=0.3+0.35*(0.5+0.5*Math.sin(t*1.4));
+  const shape=sc=>{g.beginPath();for(let i=0;i<=72;i++){const a=i/72*6.283,d=Math.atan2(Math.sin(a),Math.cos(a));const r=R*sc*(1+ext*Math.exp(-d*d/0.22)+0.07*Math.sin(3*a+t*1.3)+0.05*Math.sin(5*a-t));const x=cx+Math.cos(a)*r*1.1,y=cy+Math.sin(a)*r*0.85;i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();};
+  shape(1);g.fillStyle='rgba(153,246,228,.3)';g.fill();g.strokeStyle='#99f6e4';g.lineWidth=2;g.stroke();shape(0.76);g.fillStyle='rgba(45,212,191,.35)';g.fill();
+  for(let i=0;i<30;i++){const s=(t*0.25+hash(i))%1;g.fillStyle='#ccfbf1';g.beginPath();g.arc(cx-R*0.6+s*R*(1.3+ext),cy+(hash(i+9)-0.5)*R*0.9*(1-s*0.6),2.2,0,7);g.fill();}
+  g.fillStyle='#0f766e';g.beginPath();g.arc(cx-R*0.3,cy+R*0.15,R*0.18,0,7);g.fill();g.fillStyle='rgba(186,230,253,.5)';g.beginPath();g.arc(cx-R*0.55,cy-R*0.3,R*0.1,0,7);g.fill();
+  arrow(g,cx+R*(1.25+ext)*1.1,cy,cx+R*(1.25+ext)*1.1+36,cy,'#fbbf24',2.5);
+  T(g,'Pseudopodium (เท้าเทียม)',cx+R*(0.9+ext),cy-R*0.95,'#fbbf24',11,'center',true);T(g,'Ectoplasm (Gel) ชั้นนอก',cx-R*0.6,cy-R*1.08,'#99f6e4',10.5,'center');T(g,'Endoplasm (Sol) ไหลไปด้านหน้า',cx,cy+R*1.15,'#5eead4',10.5,'center');T(g,'Nucleus',cx-R*0.3,cy+R*0.45,'#ccfbf1',9.5,'center');T(g,'Contractile vacuole',cx-R*0.55,cy-R*0.5,'#bae6fd',9,'center');}
+function dPara(g,W,h,t,X,Y){const cx=X(0.2)+(t*22)%(W*0.5),cy=Y(0.4),a=h*0.2,b=h*0.08;
+  for(let i=0;i<50;i++){const th=i/50*6.283,x=cx+Math.cos(th)*a,y=cy+Math.sin(th)*b;const nx=Math.cos(th)/a,ny=Math.sin(th)/b,ang=Math.atan2(ny,nx)+0.7*Math.sin(t*9-i*0.55)-0.4;g.strokeStyle='#a5f3fc';g.lineWidth=1.3;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(ang)*12,y+Math.sin(ang)*12);g.stroke();}
+  g.fillStyle='rgba(103,232,249,.3)';g.beginPath();g.ellipse(cx,cy,a,b,0,0,7);g.fill();g.strokeStyle='#67e8f9';g.lineWidth=2;g.stroke();
+  g.fillStyle='#0e7490';g.beginPath();g.ellipse(cx-a*0.1,cy,a*0.22,b*0.45,0,0,7);g.fill();T(g,'Macronucleus',cx-a*0.1,cy,'#cffafe',9,'center');
+  g.strokeStyle='#22d3ee';g.lineWidth=2;g.beginPath();g.moveTo(cx+a*0.5,cy+b*0.9);g.quadraticCurveTo(cx+a*0.25,cy+b*0.2,cx+a*0.05,cy+b*0.45);g.stroke();T(g,'ร่องปาก (Oral groove)',cx+a*0.5,cy+b+24,'#a5f3fc',9.5,'center');
+  T(g,'พารามีเซียม: Cilia จำนวนมากโบกพัดเป็นจังหวะคลื่น',X(0.03),Y(0.07),'#a5f3fc',11,'left',true);arrow(g,cx+a+16,cy,cx+a+46,cy,'#fbbf24',2.5);
+  const ex=X(0.15)+(t*15)%(W*0.55),ey=Y(0.8),eL=h*0.1;g.fillStyle='rgba(74,222,128,.35)';g.beginPath();g.ellipse(ex,ey,eL,h*0.035,0,0,7);g.fill();g.strokeStyle='#4ade80';g.lineWidth=1.5;g.stroke();
+  for(let i=0;i<5;i++){g.fillStyle='#16a34a';g.beginPath();g.arc(ex-eL*0.6+i*eL*0.28,ey+(i%2?3:-3),3,0,7);g.fill();}
+  g.fillStyle='#ef4444';g.beginPath();g.arc(ex+eL*0.7,ey-3,3,0,7);g.fill();
+  g.strokeStyle='#bbf7d0';g.lineWidth=1.5;g.beginPath();for(let i=0;i<=24;i++){const s=i/24,x=ex+eL+s*70,y=ey+Math.sin(s*9-t*12)*8*s;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+  T(g,'ยูกลีนา: Flagellum 1 เส้นพัดเป็นลูกคลื่น · จุดตา (Eyespot) สีแดงรับแสง',X(0.03),Y(0.95),'#86efac',10.5);}
+function dJelly(g,W,h,t,X,Y){const ph=(t*0.7)%1,c=ph<0.3?Math.sin(ph/0.3*Math.PI/2):1-(ph-0.3)/0.7;const cx=X(0.28),cy=Y(0.42)-6*c,R=h*0.16;
+  const bw=R*(1-0.3*c),bh=R*(0.75+0.25*c);g.fillStyle='rgba(244,114,182,.35)';g.beginPath();g.ellipse(cx,cy,bw,bh,0,Math.PI,0);g.closePath();g.fill();g.strokeStyle='#f9a8d4';g.lineWidth=2;g.stroke();
+  for(let i=0;i<7;i++){const x0=cx-bw*0.85+i*bw*0.28;g.strokeStyle='rgba(249,168,212,.7)';g.lineWidth=1.3;g.beginPath();for(let j=0;j<=12;j++){const y=cy+j*8,x=x0+Math.sin(j*0.6+t*3+i)*4;j?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();}
+  if(ph<0.45){const s=ph/0.45;for(let i=0;i<12;i++){g.fillStyle=`rgba(125,211,252,${1-s})`;g.beginPath();g.arc(cx+(hash(i)-0.5)*bw*1.2,cy+10+s*90+hash(i+3)*20,2.5,0,7);g.fill();}}
+  arrow(g,cx,cy-bh-8,cx,cy-bh-44,'#fbbf24',2.5);T(g,'แมงกะพรุน: หดร่ม → พ่นน้ำลง → ตัวพุ่งขึ้น',cx,Y(0.93),'#f9a8d4',11,'center',true);T(g,c>0.5?'กล้ามเนื้อรอบร่มหด':'คลายตัว น้ำเข้า',cx+bw+10,cy-bh*0.4,'#fde68a',10.5);
+  const sx=X(0.74),sy=Y(0.45),m=1-0.18*c;g.fillStyle='rgba(251,146,60,.35)';g.beginPath();g.ellipse(sx+30,sy,h*0.16,h*0.06*m,0,0,7);g.fill();g.strokeStyle='#fdba74';g.lineWidth=2;g.stroke();
+  g.fillStyle='#fdba74';g.beginPath();g.moveTo(sx+30+h*0.16,sy);g.lineTo(sx+30+h*0.21,sy-h*0.05);g.lineTo(sx+30+h*0.21,sy+h*0.05);g.closePath();g.fill();
+  g.fillStyle='#fb923c';g.beginPath();g.arc(sx-h*0.13+30,sy,h*0.035,0,7);g.fill();for(let i=0;i<6;i++){g.strokeStyle='#fdba74';g.lineWidth=1.5;g.beginPath();g.moveTo(sx-h*0.15+30,sy-8+i*3);g.quadraticCurveTo(sx-h*0.25+30,sy-12+i*5+Math.sin(t*3+i)*4,sx-h*0.33+30,sy-14+i*6);g.stroke();}
+  g.strokeStyle='#fde68a';g.lineWidth=3;g.beginPath();g.moveTo(sx-h*0.09+30,sy+h*0.05);g.lineTo(sx-h*0.17+30,sy+h*0.08);g.stroke();
+  if(ph<0.45){const s=ph/0.45;for(let i=0;i<8;i++){g.fillStyle=`rgba(125,211,252,${1-s})`;g.beginPath();g.arc(sx-h*0.17+30-s*60-hash(i)*15,sy+h*0.08+(hash(i+2)-0.5)*14,2.5,0,7);g.fill();}}
+  arrow(g,sx+30+h*0.23,sy,sx+30+h*0.23+30,sy,'#fbbf24',2.5);T(g,'หมึก: Mantle หด → พ่นน้ำผ่าน Siphon',sx+20,Y(0.72),'#fdba74',11,'center',true);T(g,'Siphon',sx-h*0.17+30,sy+h*0.08+14,'#fde68a',9.5,'center');}
+function dStar(g,W,h,t,X,Y){const cx=X(0.42)+Math.sin(t*0.3)*15,cy=Y(0.52),R=h*0.42,r=R*0.34,tf=$('#loco')&&1;
+  g.fillStyle='#9a3412';g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r:R;i?g.lineTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q):g.moveTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q);}g.closePath();g.fill();g.strokeStyle='#fdba74';g.lineWidth=2;g.stroke();
+  const ma=-Math.PI/2+Math.PI/5,md=[cx+Math.cos(ma)*r*0.85,cy+Math.sin(ma)*r*0.85],rp=[cx+Math.cos(ma)*r*0.5,cy+Math.sin(ma)*r*0.5];
+  g.strokeStyle='#38bdf8';g.lineWidth=4;g.beginPath();g.arc(cx,cy,r*0.5,0,7);g.stroke();line(g,[md,rp],'#7dd3fc',3);g.fillStyle='#fde68a';g.beginPath();g.arc(md[0],md[1],7,0,7);g.fill();
+  flow(g,[md,rp],3,0.5,'#e0f2fe',2.5);
+  for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5,p0=[cx+Math.cos(a)*r*0.5,cy+Math.sin(a)*r*0.5],p1=[cx+Math.cos(a)*R*0.88,cy+Math.sin(a)*R*0.88];line(g,[p0,p1],'#0ea5e9',3);flow(g,[p0,p1],3,0.3,'#e0f2fe',2,i*0.2);
+    for(let k=1;k<=5;k++){const d=lerp(r*0.7,R*0.82,k/5.5),px=cx+Math.cos(a)*d,py=cy+Math.sin(a)*d,e=0.5+0.5*Math.sin(t*3+k*1.1+i),nx=-Math.sin(a),ny=Math.cos(a);
+      for(const sd of[-1,1]){g.fillStyle='#bae6fd';g.beginPath();g.arc(px+nx*sd*8,py+ny*sd*8,2.5+(1-e)*3,0,7);g.fill();g.fillStyle='#fef3c7';g.beginPath();g.arc(px+nx*sd*(12+e*7),py+ny*sd*(12+e*7),2+e*1.5,0,7);g.fill();}}}
+  T(g,'Madreporite',md[0]+10,md[1]-10,'#fde68a',10.5,'left',true);T(g,'Stone canal',rp[0]+8,rp[1]+12,'#7dd3fc',10);T(g,'Ring canal',cx,cy,'#38bdf8',10,'center',true);
+  const a2=-Math.PI/2+2*2*Math.PI/5;T(g,'Radial canal',cx+Math.cos(a2)*R*0.6+10,cy+Math.sin(a2)*R*0.6,'#0ea5e9',10);
+  T(g,'● Ampulla (กระเปาะ)  ● Tube feet (เท้าท่อ)',X(0.02),Y(0.05),'#e0f2fe',10.5);T(g,'มองจากด้านบน (เท้าท่ออยู่ด้านล่างแขน)',X(0.02),Y(0.96),'#fdba74',10.5);}
+function dWorm(g,W,h,t,X,Y){const n=14,L0=W*0.052,r0=h*0.07,cy=Y(0.5);let x=X(0.12)+L0*n+((t*12)%(W*0.25));
+  g.fillStyle='#3b2610';g.fillRect(0,cy+r0*1.25,W,h);T(g,'คลื่นการหดตัวเคลื่อนจากหัวไปท้าย → ไส้เดือนเคลื่อนไปข้างหน้า →',X(0.03),Y(0.08),'#a5f3fc',11,'left',true);
+  for(let i=0;i<n;i++){const c=Math.sin(t*2.2-i*0.65),L=L0*(1+0.35*c),r=r0*(1-0.3*c);x-=L;const col=c>0.25?'#22d3ee':c<-0.25?'#fb923c':'#f9a8d4';
+    g.fillStyle=S.toggle==='ant'?col:(i>=3&&i<=5?'#db2777':'#f9a8d4');rr(g,x,cy-r,L-1.5,2*r,Math.min(r,L/2)*0.8);g.fill();g.strokeStyle='#9d174d';g.lineWidth=1;g.stroke();
+    if(c<-0.3){g.strokeStyle='#fde68a';g.lineWidth=2;g.beginPath();g.moveTo(x+L/2,cy+r);g.lineTo(x+L/2-5,cy+r+8);g.stroke();}}
+  T(g,'หัว',X(0.12)+L0*n+((t*12)%(W*0.25))-10,cy-r0*1.6,'#fde68a',10,'center',true);
+  const ix=X(0.78),iy=Y(0.24);g.fillStyle='#fb923c';g.beginPath();g.arc(ix,iy,h*0.11,0,7);g.fill();g.fillStyle='#22d3ee';g.beginPath();g.arc(ix,iy,h*0.09,0,7);g.fill();g.fillStyle='#164e63';g.beginPath();g.arc(ix,iy,h*0.065,0,7);g.fill();g.fillStyle='#78350f';g.beginPath();g.arc(ix,iy,h*0.02,0,7);g.fill();
+  T(g,'ภาคตัดขวาง',ix,iy-h*0.13,'#e6fbf7',10.5,'center',true);T(g,'Circular (นอก)',ix-h*0.12,iy+h*0.14,'#fb923c',9.5,'center');T(g,'Longitudinal (ใน)',ix+h*0.1,iy+h*0.14,'#22d3ee',9.5,'center');T(g,'Coelom (ของเหลว)',ix,iy+h*0.025+10,'#bae6fd',9,'center');
+  [['#22d3ee','Circular muscle หด → ปล้องยาว เรียว'],['#fb923c','Longitudinal muscle หด → ปล้องสั้น อ้วน'],['#fde68a','Setae ยึดดิน']].forEach(([c,s],i)=>{g.fillStyle=c;g.fillRect(X(0.03),Y(0.78)+i*17,12,8);T(g,s,X(0.03)+18,Y(0.78)+i*17+4,'#e6fbf7',10.5);});}
+function dInsect(g,W,h,t,X,Y){const s=0.5+0.5*Math.sin(t*2),flex=Math.cos(t*2)>0,hip=[X(0.06),Y(0.3)],kn=[X(0.36),Y(0.4)],phi=1.25+0.9*s,tL=h*0.36,ft=[kn[0]+Math.cos(phi)*tL,kn[1]+Math.sin(phi)*tL];
+  line(g,[hip,kn],'#a16207',26);line(g,[hip,kn],'#1c1206',18);line(g,[kn,ft],'#a16207',16);line(g,[kn,ft],'#1c1206',10);
+  const fa=lerp(hip[0],kn[0],0.25),fb=lerp(hip[1],kn[1],0.25),fl=[kn[0]+Math.cos(phi+0.5)*20,kn[1]+Math.sin(phi+0.5)*20],ex=[kn[0]+Math.cos(phi-1.2)*10,kn[1]+Math.sin(phi-1.2)*10];
+  line(g,[[fa,fb+5],[kn[0]-14,kn[1]+6],fl],flex?'#ef4444':'rgba(252,165,165,.45)',flex?5:3);line(g,[[fa,fb-5],[kn[0]-10,kn[1]-7],ex],!flex?'#3b82f6':'rgba(147,197,253,.45)',!flex?5:3);
+  g.fillStyle='#fde68a';g.beginPath();g.arc(kn[0],kn[1],5,0,7);g.fill();
+  T(g,'Flexor '+(flex?'(หด)':'(คลาย)'),fa+10,fb+30,flex?'#fca5a5':'#94bdb6',11,'left',true);T(g,'Extensor '+(!flex?'(หด)':'(คลาย)'),fa+10,fb-28,!flex?'#93c5fd':'#94bdb6',11,'left',true);T(g,'Exoskeleton (Chitin)',X(0.06),Y(0.12),'#facc15',11,'left',true);T(g,'ขาแมลง: กล้ามเนื้อยึดด้านในโครงร่าง',X(0.06),Y(0.92),'#e6fbf7',10.5);
+  const d=Math.sin(t*6),dv=Math.cos(t*6)>0,cx=X(0.75),cy=Y(0.5),bw=W*0.1,bh=h*0.16,ty=cy-bh+7*d;
+  g.fillStyle='rgba(161,98,7,.25)';g.beginPath();g.moveTo(cx-bw,cy-bh+4);g.quadraticCurveTo(cx,ty-10,cx+bw,cy-bh+4);g.lineTo(cx+bw,cy+bh);g.lineTo(cx-bw,cy+bh);g.closePath();g.fill();g.strokeStyle='#facc15';g.lineWidth=2.5;g.stroke();
+  for(const sd of[-1,1]){const p=[cx+sd*bw,cy-bh+4];line(g,[[cx+sd*bw*0.6,ty-4],p,[p[0]+sd*W*0.14,p[1]-45*d]],'#e0f2fe',3);}
+  for(const dx of[-0.4,0.4])line(g,[[cx+dx*bw,ty-2],[cx+dx*bw,cy+bh]],dv?'#ef4444':'rgba(252,165,165,.4)',dv?6:3);
+  g.fillStyle=!dv?'#3b82f6':'rgba(147,197,253,.4)';g.beginPath();g.arc(cx,cy,bh*0.32,0,7);g.fill();
+  T(g,'อก (ภาคตัดขวาง)',cx,cy+bh+14,'#facc15',10.5,'center',true);T(g,'Dorsoventral '+(dv?'หด → ปีกยก':''),cx,cy-bh-34,dv?'#fca5a5':'#94bdb6',10,'center');T(g,'Longitudinal '+(!dv?'หด → ปีกกด':''),cx,cy+bh+30,!dv?'#93c5fd':'#94bdb6',10,'center');}
+function dFish(g,W,h,t,X,Y){const x0=X(0.14),x1=X(0.8),cy=Y(0.46),N=44,amp=s=>h*0.08*s*s,ph=s=>s*5.5-t*5,th=s=>h*0.1*Math.pow(Math.sin(Math.PI*Math.min(0.98,s*0.95+0.04)),0.7)*(1-0.55*s)+2;
+  const C=[];for(let i=0;i<=N;i++){const s=i/N;C.push([lerp(x0,x1,s),cy+amp(s)*Math.sin(ph(s)),th(s)]);}
+  g.fillStyle='rgba(56,189,248,.28)';g.beginPath();C.forEach(([x,y,r],i)=>i?g.lineTo(x,y-r):g.moveTo(x,y-r));for(let i=N;i>=0;i--)g.lineTo(C[i][0],C[i][1]+C[i][2]);g.closePath();g.fill();g.strokeStyle='#7dd3fc';g.lineWidth=2;g.stroke();
+  const tl=C[N];g.fillStyle='rgba(125,211,252,.6)';g.beginPath();g.moveTo(tl[0],tl[1]);g.lineTo(tl[0]+30,tl[1]-28+8*Math.sin(t*5));g.lineTo(tl[0]+22,tl[1]);g.lineTo(tl[0]+30,tl[1]+28+8*Math.sin(t*5));g.closePath();g.fill();
+  for(let i=4;i<N-2;i+=3){const s=i/N,[x,y,r]=C[i],k=Math.sin(ph(s));const up=k>0;g.strokeStyle=S.toggle==='ant'?(up?'#ef4444':'rgba(252,165,165,.35)'):'#38bdf8';g.lineWidth=2;g.beginPath();g.moveTo(x+6,y-r*0.9);g.lineTo(x-4,y-r*0.45);g.lineTo(x+3,y);g.stroke();g.strokeStyle=S.toggle==='ant'?(!up?'#ef4444':'rgba(252,165,165,.35)'):'#38bdf8';g.beginPath();g.moveTo(x+3,y);g.lineTo(x-4,y+r*0.45);g.lineTo(x+6,y+r*0.9);g.stroke();}
+  const sb=C[Math.round(N*0.33)];g.fillStyle='rgba(254,240,138,.55)';g.beginPath();g.ellipse(sb[0],sb[1],W*0.07,sb[2]*0.35,0,0,7);g.fill();
+  g.fillStyle='#e0f2fe';g.beginPath();g.arc(C[2][0]+4,C[2][1]-4,4,0,7);g.fill();g.strokeStyle='#bae6fd';line(g,[[C[0][0],C[0][1]],[C[0][0]-8,C[0][1]]],'#bae6fd',2);
+  arrow(g,x0-14,cy,x0-54,cy,'#fbbf24',2.5);T(g,'ทิศการเคลื่อนที่',x0-34,cy-14,'#fbbf24',10,'center');
+  T(g,'Myotome (กล้ามเนื้อเป็นปล้องรูป W)',X(0.45),Y(0.14),'#7dd3fc',11,'center',true);T(g,'กระเพาะลม (Swim bladder)',sb[0],sb[1]+h*0.16,'#fde68a',10.5,'center');T(g,'ครีบหาง',tl[0]+10,tl[1]+48,'#bae6fd',10,'center');T(g,'มองจากด้านบน',X(0.02),Y(0.95),'#94bdb6',10);
+  if(S.toggle==='ant')T(g,'แดง = Myotome ด้านที่กำลังหดตัว (ซ้าย–ขวาสลับกัน)',X(0.3),Y(0.9),'#fca5a5',10.5);}
+function dBird(g,W,h,t,X,Y){const a=0.6*Math.sin(t*3),down=Math.cos(t*3)<0,cx=X(0.5),cy=Y(0.4);
+  g.fillStyle='rgba(203,213,225,.18)';g.beginPath();g.moveTo(cx-6,cy+10);g.lineTo(cx,cy+h*0.32);g.lineTo(cx+6,cy+10);g.closePath();g.fill();g.strokeStyle='#e2e8f0';g.lineWidth=2;g.stroke();T(g,'Keel (สันกระดูกอก)',cx+10,cy+h*0.28,'#e2e8f0',10.5);
+  g.fillStyle='rgba(148,163,184,.35)';g.beginPath();g.ellipse(cx,cy,26,40,0,0,7);g.fill();g.fillStyle='rgba(148,163,184,.5)';g.beginPath();g.arc(cx,cy-52,14,0,7);g.fill();
+  for(const sd of[-1,1]){const sh=[cx+sd*22,cy-22],an=-a,hu=[sh[0]+sd*Math.cos(an)*W*0.16,sh[1]+Math.sin(an)*W*0.16],tip=[hu[0]+sd*Math.cos(an*1.2)*W*0.18,hu[1]+Math.sin(an*1.2)*W*0.18];
+    line(g,[sh,hu,tip],'#e2e8f0',5);for(let k=0;k<6;k++){const p=along([hu,tip],k/5);line(g,[p,[p[0]+sd*4,p[1]+26]],'rgba(226,232,240,.4)',3);}
+    const pi=along([sh,hu],0.35);line(g,[[cx+sd*3,cy+h*0.12],[pi[0],pi[1]+6]],down?'#ef4444':'rgba(252,165,165,.35)',down?9:5);
+    const su=along([sh,hu],0.18);line(g,[[cx+sd*3,cy+h*0.05],[cx+sd*12,sh[1]-10],[su[0],su[1]-6]],!down?'#3b82f6':'rgba(147,197,253,.35)',!down?5:3);}
+  T(g,'Pectoralis major '+(down?'หด → กดปีก (Downstroke)':'คลาย'),X(0.02),Y(0.86),down?'#fca5a5':'#94bdb6',11.5,'left',true);T(g,'Supracoracoideus '+(!down?'หด → ยกปีก (Upstroke)':'คลาย'),X(0.02),Y(0.93),!down?'#93c5fd':'#94bdb6',11.5,'left',true);T(g,'มองจากด้านหน้า',X(0.02),Y(0.05),'#94bdb6',10);}
+function dHuman(g,W,h,t,X,Y){const ax='#5eead4',ap='#fbbf24',cx=X(0.25),top=Y(0.08),u=h*0.085;
+  g.strokeStyle=ax;g.lineWidth=2.5;g.beginPath();g.ellipse(cx,top+u*0.55,u*0.45,u*0.55,0,0,7);g.stroke();line(g,[[cx,top+u*1.1],[cx,top+u*4.9]],ax,4);for(let i=0;i<5;i++){g.strokeStyle=ax;g.lineWidth=1.8;g.beginPath();g.ellipse(cx,top+u*(1.9+i*0.4),u*(0.75-i*0.04),u*0.16,0,0,7);g.stroke();}
+  line(g,[[cx-u*0.85,top+u*1.5],[cx+u*0.85,top+u*1.5]],ap,3);line(g,[[cx-u*0.8,top+u*1.5],[cx-u*1.1,top+u*3.2],[cx-u*1.25,top+u*4.6]],ap,3);line(g,[[cx+u*0.8,top+u*1.5],[cx+u*1.1,top+u*3.2],[cx+u*1.25,top+u*4.6]],ap,3);
+  g.strokeStyle=ap;g.lineWidth=3;g.beginPath();g.ellipse(cx,top+u*5.1,u*0.75,u*0.35,0,0,7);g.stroke();line(g,[[cx-u*0.45,top+u*5.4],[cx-u*0.5,top+u*7.6],[cx-u*0.5,top+u*9.8],[cx-u*0.8,top+u*10]],ap,3.5);line(g,[[cx+u*0.45,top+u*5.4],[cx+u*0.5,top+u*7.6],[cx+u*0.5,top+u*9.8],[cx+u*0.8,top+u*10]],ap,3.5);
+  [[cx+u*0.8,top+u*1.5,'ไหล่: Ball-and-socket'],[cx+u*1.1,top+u*3.2,'ศอก: Hinge'],[cx,top+u*1.15,'คอ (Atlas–Axis): Pivot'],[cx+u*1.25,top+u*4.6,'ข้อมือ: Gliding']].forEach(([x,y,s],i)=>{g.fillStyle='#f472b6';g.beginPath();g.arc(x,y,4,0,7);g.fill();T(g,s,x+8,y+(i===2?-8:0),'#f9a8d4',9.5);});
+  T(g,'■ Axial 80 ชิ้น',X(0.02),Y(0.9),ax,11,'left',true);T(g,'■ Appendicular 126 ชิ้น',X(0.02),Y(0.96),ap,11,'left',true);
+  const hp=[X(0.72),Y(0.18)],sw=0.35*Math.sin(t*2),bend=0.15+0.75*(0.5+0.5*Math.sin(t*2+1.2)),bending=Math.cos(t*2+1.2)>0,tl=h*0.32,kn=[hp[0]+Math.sin(sw)*tl,hp[1]+Math.cos(sw)*tl],sa=sw-bend,ft=[kn[0]+Math.sin(sa)*tl,kn[1]+Math.cos(sa)*tl];
+  line(g,[hp,kn],'#e7e5e4',9);line(g,[kn,ft],'#e7e5e4',8);line(g,[ft,[ft[0]+30,ft[1]]],'#e7e5e4',6);g.fillStyle='#f472b6';g.beginPath();g.arc(kn[0],kn[1],6,0,7);g.fill();
+  const nx=Math.cos(sw),ny=-Math.sin(sw);const q1=[hp[0]+nx*12,hp[1]+ny*12+10],q2=[kn[0]+nx*10,kn[1]+ny*10],h1=[hp[0]-nx*12,hp[1]-ny*12+10],h2=[kn[0]-nx*9+Math.sin(sa)*14,kn[1]-ny*9+Math.cos(sa)*14];
+  line(g,[q1,q2,[kn[0]+Math.sin(sa)*18+6,kn[1]+Math.cos(sa)*18]],!bending?'#ef4444':'rgba(252,165,165,.4)',!bending?8:5);line(g,[h1,h2],bending?'#3b82f6':'rgba(147,197,253,.4)',bending?8:5);
+  T(g,'Quadriceps '+(!bending?'หด → เหยียดเข่า':'คลาย'),X(0.52),Y(0.06),!bending?'#fca5a5':'#94bdb6',10.5,'left',true);T(g,'Hamstrings '+(bending?'หด → งอเข่า':'คลาย'),X(0.52),Y(0.12),bending?'#93c5fd':'#94bdb6',10.5,'left',true);
+  T(g,'เข่า: Hinge',kn[0]+12,kn[1]-6,'#f9a8d4',10);T(g,'Tendon',q2[0]+12,q2[1]+8,'#fde68a',9.5);T(g,'Ligament ยึดกระดูก–กระดูก',X(0.5),Y(0.96),'#fde68a',10);}
+function drawM1(g,w,h){g.fillStyle='#050f0e';g.fillRect(0,0,w,h);const k=$('#loco').value,o=LOCO[k],UW=w*0.64,X=f=>f*UW,Y=f=>f*h,t=M1.t;
+  g.save();g.beginPath();g.rect(0,0,UW,h);g.clip();({amoeba:dAmoeba,paramecium:dPara,jelly:dJelly,starfish:dStar,earthworm:dWorm,insect:dInsect,fish:dFish,bird:dBird,human:dHuman})[k](g,UW,h,t,X,Y);g.restore();
+  const px=UW+8,pw=w-px-8;panel(g,px,8,pw,h-16);let y=28;T(g,o.n,px+10,y,'#5eead4',14,'left',true);y+=22;
+  [['การเคลื่อนที่',o.how],['โครงร่างค้ำจุน',o.sk]].forEach(([a,b])=>{T(g,a,px+10,y,'#94bdb6',10.5);y=wrap(g,b,px+10,y+16,pw-20,15,'#e6fbf7',11.5,true)+8;});
+  T(g,S.toggle==='ant'?'คู่กล้ามเนื้อ (Antagonism)':'ระดับเซลล์ / โมเลกุล',px+10,y+2,'#fbbf24',12,'left',true);y+=20;
+  if(S.toggle==='ant')wrap(g,o.ant,px+10,y,pw-20,16,'#fde68a',11.5);
+  else{if(k==='paramecium'){nine2(g,px+pw*0.35,y+58,46,t);y+=120;}else if(k==='amoeba'){actinNet(g,px+12,y,pw-24,90,t);y+=112;}else{actMyo(g,px+12,y+50,pw-24,t);y+=100;}wrap(g,o.mol,px+10,y,pw-20,15,'#bae6fd',10.5);}}
+
+/* ================= MODE 2 : MUSCLE ================= */
+let M2;function initM2(){M2={act:0,L:2.5,rig:false,rigT:0,T:0,dL:0};}
+const LT=L=>L<=1.27?0:L<1.67?0.84*(L-1.27)/0.4:L<2.0?0.84+0.16*(L-1.67)/0.33:L<=2.25?1:L<3.65?1-(L-2.25)/1.4:0;
+function m2in(){return{ca:$('#ca').value,atp:$('#atp').value,hz:V('hz'),load:V('load')};}
+const Fload=p=>p.load*9.8*3+20;
+function stepM2(dt){const p=m2in();if(p.atp==='dep'){if(!M2.rig){M2.rig=true;M2.rigT=Math.max(M2.T,120);}M2.T=M2.rigT;M2.dL=0;return;}M2.rig=false;
+  const tgt=p.ca==='zero'?0:Math.max(p.hz>0?clamp(p.hz/30,0,1):0,p.ca==='high'?0.9:0);M2.act+=(tgt-M2.act)*Math.min(1,dt*6);
+  const Fc=600*M2.act*LT(M2.L),Fl=Fload(p),sp=p.atp==='high'?1.2:1,L0=M2.L;
+  if(Fc>Fl)M2.L=Math.max(1.8,M2.L-dt*0.5*sp*(1-Fl/Fc));else M2.L=Math.min(2.5,M2.L+dt*0.6*(1-Fc/Fl));M2.dL=(M2.L-L0)/dt;M2.T=Fc;}
+function drawArm(g,W,h){const p=m2in(),L=M2.L,ang=lerp(170,50,(2.5-L)/0.7),act=M2.rig?1:M2.act,sh=[W*0.3,h*0.1],el=[W*0.3,h*0.52],ph=(180-ang)*Math.PI/180,fa=[Math.sin(ph),Math.cos(ph)],fl=h*0.34,hd=[el[0]+fa[0]*fl,el[1]+fa[1]*fl];
+  line(g,[sh,el],'#e7e5e4',10);line(g,[el,hd],'#e7e5e4',9);g.fillStyle='#fde68a';g.beginPath();g.arc(el[0],el[1],7,0,7);g.fill();g.fillStyle='#e7e5e4';g.beginPath();g.arc(sh[0],sh[1],9,0,7);g.fill();
+  const ins=[el[0]+fa[0]*30+fa[1]*6,el[1]+fa[1]*30-fa[0]*6],b0=[sh[0]+9,sh[1]+14],bm=[(b0[0]+ins[0])/2+16+20*act*(2.5-L)/0.7,(b0[1]+ins[1])/2];
+  const bOn=act>0.05||M2.rig;g.strokeStyle=bOn?(M2.rig?'#a855f7':'#ef4444'):'rgba(252,165,165,.45)';g.lineWidth=bOn?16:11;g.lineCap='round';g.beginPath();g.moveTo(b0[0],b0[1]);g.quadraticCurveTo(bm[0],bm[1],ins[0],ins[1]);g.stroke();
+  const ol=[el[0]-fa[0]*12-6,el[1]-fa[1]*12],t0=[sh[0]-9,sh[1]+14],tOn=M2.dL>0.01;g.strokeStyle=tOn?'#3b82f6':'rgba(147,197,253,.45)';g.lineWidth=tOn?15:11;g.beginPath();g.moveTo(t0[0],t0[1]);g.quadraticCurveTo(sh[0]-24,(sh[1]+el[1])/2,ol[0],ol[1]);g.stroke();
+  const bx=hd[0]-14,by=hd[1]+4;g.fillStyle='#475569';rr(g,bx,by,28,22+p.load*0.8,4);g.fill();T(g,p.load+' kg',hd[0],by+11+p.load*0.4,'#fff',10,'center',true);
+  T(g,'Biceps',bm[0]+12,bm[1]-12,bOn?'#fca5a5':'#94bdb6',11.5,'left',true);T(g,M2.rig?'แข็งค้าง':bOn?'หดตัว':'คลายตัว',bm[0]+12,bm[1]+4,bOn?'#fca5a5':'#94bdb6',10);
+  T(g,'Triceps',sh[0]-30,(sh[1]+el[1])/2-10,tOn?'#93c5fd':'#94bdb6',11.5,'right',true);T(g,tOn?'หดตัว':'คลายตัว',sh[0]-30,(sh[1]+el[1])/2+6,tOn?'#93c5fd':'#94bdb6',10,'right');
+  T(g,'มุมข้อศอก '+ang.toFixed(0)+'°',W*0.06,h*0.97,'#fde68a',11,'left',true);T(g,'Tendon',ins[0]+8,ins[1]+10,'#fde68a',9.5);
+  if(S.toggle==='ant'){T(g,bOn?'Agonist':'',bm[0]+12,bm[1]+18,'#fca5a5',9.5);T(g,bOn?'Antagonist':tOn?'Agonist':'',sh[0]-30,(sh[1]+el[1])/2+20,'#93c5fd',9.5,'right');T(g,'ข้อศอก = ข้อต่อแบบบานพับ (Hinge)',W*0.06,h*0.91,'#f9a8d4',10);
+    if(Math.abs(M2.dL)>0.01){const r=40,a0=Math.atan2(fa[1],fa[0]);g.strokeStyle='#fbbf24';g.lineWidth=2;g.beginPath();g.arc(el[0],el[1],r,a0-0.3,a0+0.3);g.stroke();T(g,M2.dL<0?'งอแขน':'เหยียดแขน',el[0]+r+4,el[1]+6,'#fbbf24',10);}}}
+function drawSarc(g,x,y,W,H,L){const s=(W-30)/2.7,c=x+W/2,half=L/2*s,Z1=c-half,Z2=c+half,cy=y+H*0.5,Hz=Math.max(0,L-2.0);
+  T(g,'Sarcomere (Z line → Z line)',x+6,y+12,'#5eead4',11.5,'left',true);
+  g.fillStyle='rgba(224,242,254,.08)';g.fillRect(Z1,cy-40,c-0.8*s-Z1,80);g.fillRect(c+0.8*s,cy-40,Z2-c-0.8*s,80);g.fillStyle='rgba(14,116,144,.35)';g.fillRect(c-0.8*s,cy-40,1.6*s,80);if(Hz>0){g.fillStyle='rgba(94,234,212,.15)';g.fillRect(c-Hz/2*s,cy-40,Hz*s,80);}
+  for(const z of[Z1,Z2]){g.strokeStyle='#e2e8f0';g.lineWidth=2.5;g.beginPath();for(let i=0;i<=8;i++){const yy=cy-42+i*10.5;g.lineTo(z+(i%2?5:-5),yy);}g.stroke();}
+  for(const r of[-30,0,30]){g.strokeStyle='#93c5fd';g.lineWidth=3;g.beginPath();g.moveTo(Z1,cy+r);g.lineTo(Z1+1.0*s,cy+r);g.stroke();g.beginPath();g.moveTo(Z2,cy+r);g.lineTo(Z2-1.0*s,cy+r);g.stroke();}
+  for(const r of[-15,15]){g.strokeStyle='#f87171';g.lineWidth=6;g.beginPath();g.moveTo(c-0.8*s,cy+r);g.lineTo(c+0.8*s,cy+r);g.stroke();for(let i=0;i<14;i++){const hx=c-0.75*s+i*(1.5*s/13);if(Math.abs(hx-c)<0.1*s)continue;const d=hx<c?-1:1,ph=Math.sin(S.time*6+i)*(M2.act>0.05&&!M2.rig?3:0);g.strokeStyle='#fca5a5';g.lineWidth=1.5;for(const v of[-1,1]){g.beginPath();g.moveTo(hx,cy+r+v*3);g.lineTo(hx+d*(4+ph),cy+r+v*9);g.stroke();}}}
+  g.strokeStyle='#fde68a';g.lineWidth=1.5;g.setLineDash([3,3]);g.beginPath();g.moveTo(c,cy-44);g.lineTo(c,cy+44);g.stroke();g.setLineDash([]);T(g,'M line',c+4,cy+46,'#fde68a',9,'left',true);T(g,'Z',Z1,cy-50,'#e2e8f0',9.5,'center',true);T(g,'Z',Z2,cy-50,'#e2e8f0',9.5,'center',true);
+  const br=(a,b,yy,col,txt)=>{g.strokeStyle=col;g.lineWidth=1.5;g.beginPath();g.moveTo(a,yy-4);g.lineTo(a,yy);g.lineTo(b,yy);g.lineTo(b,yy+(-4));g.stroke();T(g,txt,(a+b)/2,yy+10,col,10,'center',true);};
+  br(c-0.8*s,c+0.8*s,cy+54,'#f87171','A band 1.60 µm (คงที่)');br(Z1,c-0.8*s,cy+80,'#93c5fd','I '+((L-1.6)/2).toFixed(2));br(c+0.8*s,Z2,cy+80,'#93c5fd','I '+((L-1.6)/2).toFixed(2));if(Hz>0.02)br(c-Hz/2*s,c+Hz/2*s,cy-62,'#5eead4','H '+Hz.toFixed(2));else T(g,'H zone หายไป',c,cy-62,'#5eead4',10,'center',true);
+  T(g,'L = '+L.toFixed(2)+' µm',x+W-6,y+12,'#fbbf24',12,'right',true);}
+function drawMol(g,x,y,W,H){const p=m2in(),act=M2.act,on=act>0.05&&!M2.rig,trop=S.toggle==='trop',ay=y+H*0.32,my=y+H*0.78;g.fillStyle='rgba(8,24,23,.9)';rr(g,x,y,W,H,10);g.fill();
+  T(g,trop?'Troponin–Tropomyosin กับการเปิดตำแหน่งจับ':'วัฏจักร Cross-bridge (หัวไมโอซิน)',x+8,y+12,'#5eead4',11.5,'left',true);
+  const off=on?(S.time*act*18)%14:0;for(let i=0;i<Math.ceil(W/14)+1;i++){const bx=x+10+((i*14-off)%(W-20)+(W-20))%(W-20);for(const d of[-4,4]){g.fillStyle='#93c5fd';g.beginPath();g.arc(bx+(d>0?7:0),ay+d,4.2,0,7);g.fill();}if(i%2===0&&(on||M2.rig)){g.fillStyle='#fde047';g.beginPath();g.arc(bx,ay+9,2.2,0,7);g.fill();}}
+  if(trop){const ty=on||M2.rig?ay-9:ay+3;g.strokeStyle='#a78bfa';g.lineWidth=3.5;g.beginPath();for(let i=0;i<=60;i++){const xx=x+10+i*(W-20)/60;g.lineTo(xx,ty+Math.sin(i*0.5)*2);}g.stroke();
+    for(let i=0;i<6;i++){const tx=x+30+i*(W-60)/5;g.fillStyle='#f472b6';g.beginPath();g.arc(tx,ty-6,6,0,7);g.fill();if(on||M2.rig){g.fillStyle='#4ade80';g.beginPath();g.arc(tx+5,ty-12,3.2,0,7);g.fill();}}
+    T(g,'Tropomyosin '+(on||M2.rig?'เลื่อนออก → ตำแหน่งจับ (●) เปิด':'ปิดตำแหน่งจับ'),x+10,y+30,'#c4b5fd',10.5);T(g,'Troponin ● + Ca²⁺ ●',x+W-10,y+30,'#f9a8d4',10.5,'right');}
+  g.strokeStyle='#f87171';g.lineWidth=9;g.beginPath();g.moveTo(x+14,my);g.lineTo(x+W-14,my);g.stroke();
+  const rate=1.1*(p.atp==='high'?1.3:1);for(let i=0;i<6;i++){const hx=x+40+i*(W-80)/5,neck=[hx,my-5];let tip,col='#fca5a5',lab='';const ph=(S.time*rate+i*0.37)%1;
+    if(M2.rig){tip=[hx-12,ay+8];col='#a855f7';lab='ติดค้าง';}else if(!on){tip=[hx+10,my-26];lab='';}
+    else if(ph<0.3){const q=ph/0.3;tip=[hx+12-24*q,ay+8];col='#ef4444';lab=q<0.15?'จับ':'Power stroke';}else if(ph<0.42){tip=[hx-12,lerp(ay+8,my-30,(ph-0.3)/0.12)];col='#fbbf24';lab='ATP → หลุด';}else{tip=[lerp(hx-12,hx+12,(ph-0.42)/0.58),my-30];col='#fdba74';lab='ATP→ADP+Pi';}
+    line(g,[neck,[hx+(tip[0]-hx)*0.4,my-16],tip],col,4);g.fillStyle=col;g.beginPath();g.ellipse(tip[0],tip[1],7,5,0,0,7);g.fill();if(lab&&i%2===0)T(g,lab,hx,my+16,col,9.5,'center');}
+  T(g,'Actin (เส้นใยบาง)',x+W-10,ay-20+(trop?0:6),'#93c5fd',10,'right');T(g,'Myosin (เส้นใยหนา)',x+W-10,my+30,'#f87171',10,'right');
+  if(!on&&!M2.rig)T(g,p.ca==='zero'?'ไม่มี Ca²⁺ → Tropomyosin ปิดตำแหน่งจับ':p.hz===0?'ไม่มีกระแสประสาท → คลายตัว':'',x+10,y+H-10,'#fde68a',10.5);if(M2.rig)T(g,'ไม่มี ATP มาจับ → หัวไมโอซินหลุดไม่ได้ (Rigor)',x+10,y+H-10,'#d8b4fe',10.5,'left',true);}
+function drawM2(g,w,h){g.fillStyle='#050f0e';g.fillRect(0,0,w,h);drawArm(g,w*0.36,h);g.strokeStyle='#1f3b39';g.beginPath();g.moveTo(w*0.37,10);g.lineTo(w*0.37,h-10);g.stroke();drawSarc(g,w*0.38,6,w*0.61,h*0.5,M2.L);drawMol(g,w*0.38,h*0.53,w*0.61,h*0.45);}
+
+/* ================= MODE 3 : EYE ================= */
+let M3;function initM3(){M3={A:0,pup:4,rho:1};}
+function eyeM(){const lux=V('lux'),d=V('dist')/100,rf=$('#refr').value,corr=$('#corr').checked,vitA=$('#vitA').checked;const R={normal:0,myo:3,hyp:-3,pres:0}[rf],amp=rf==='pres'?1.5:rf==='hyp'?2:10,G=corr?{normal:0,myo:-3,hyp:3,pres:2.5}[rf]:0,need=1/d-(R+G),At=clamp(need,0,amp),pupT=2+6*(1-clamp(Math.log10(lux+1)/3,0,1));
+  const rod=M3.rho*lux/(lux+0.5)/(1+lux/30),cone=lux/(lux+30),D=M3.A-need;return{lux,d,rf,corr,vitA,R,G,amp,need,At,pupT,rod,cone,D,bright:clamp(cone+rod*0.9,0,1),ap:Math.round(5+95*clamp(cone+rod*0.9,0,1))};}
+function stepM3(dt){const e=eyeM();M3.A+=(e.At-M3.A)*Math.min(1,dt*4);M3.pup+=(e.pupT-M3.pup)*Math.min(1,dt*3);M3.rho=clamp(M3.rho+dt*(-0.5*e.lux/(e.lux+100)*M3.rho+(e.vitA?0.03:0.1)*((e.vitA?0.35:1)-M3.rho)),0,1);}
+function scene(g,x,y,w,h,e){g.save();rr(g,x,y,w,h,8);g.clip();const blur=Math.min(9,Math.abs(e.D)*3),gray=e.cone<0.2?1:e.cone<0.45?(0.45-e.cone)/0.25:0,br=0.05+e.bright*1.05;g.filter=`blur(${blur.toFixed(1)}px) grayscale(${gray.toFixed(2)}) brightness(${br.toFixed(2)})`;
+  g.fillStyle='#60a5fa';g.fillRect(x,y,w,h*0.62);g.fillStyle='#22c55e';g.fillRect(x,y+h*0.62,w,h*0.38);g.fillStyle='#facc15';g.beginPath();g.arc(x+w*0.82,y+h*0.2,h*0.1,0,7);g.fill();
+  g.fillStyle='#78350f';g.fillRect(x+w*0.2,y+h*0.35,w*0.05,h*0.35);g.fillStyle='#15803d';g.beginPath();g.arc(x+w*0.225,y+h*0.32,h*0.17,0,7);g.fill();for(let i=0;i<4;i++){g.fillStyle='#dc2626';g.beginPath();g.arc(x+w*(0.17+i*0.035),y+h*(0.28+(i%2)*0.08),h*0.035,0,7);g.fill();}
+  g.fillStyle='#fff';g.font='700 '+Math.round(h*0.22)+'px '+FONT;g.textAlign='center';g.textBaseline='middle';g.fillText('E F P',x+w*0.6,y+h*0.5);g.fillStyle='#7c3aed';g.beginPath();g.arc(x+w*0.45,y+h*0.82,h*0.06,0,7);g.fill();g.restore();g.filter='none';}
+function drawM3(g,w,h){g.fillStyle='#050f0e';g.fillRect(0,0,w,h);const e=eyeM(),UW=w*0.64,X=f=>f*UW,ex=X(0.52),ey=h*0.5,ER=Math.min(UW*0.3,h*0.38),A=M3.A;
+  const amb=clamp(Math.log10(e.lux+1)/3,0,1);g.fillStyle=`rgba(253,224,71,${0.04+0.1*amb})`;g.fillRect(0,0,UW,h);
+  g.fillStyle='rgba(15,23,42,.9)';g.beginPath();g.arc(ex,ey,ER,0,7);g.fill();g.strokeStyle='#e2e8f0';g.lineWidth=3;g.stroke();
+  g.strokeStyle='#f472b6';g.lineWidth=5;g.beginPath();g.arc(ex,ey,ER*0.95,-1.25,1.25);g.stroke();g.fillStyle='#050f0e';g.beginPath();g.arc(ex+ER*0.95,ey,4,0,7);g.fill();
+  line(g,[[ex+ER*0.93,ey+ER*0.2],[ex+ER*1.3,ey+ER*0.32]],'#fde047',10);
+  const cx0=ex-ER*0.78;g.fillStyle='rgba(186,230,253,.15)';g.beginPath();g.ellipse(cx0,ey,ER*0.22,ER*0.5,0,Math.PI/2,Math.PI*1.5);g.fill();g.strokeStyle='#bae6fd';g.lineWidth=2.5;g.stroke();
+  const ix=ex-ER*0.72,pr=ER*0.034*M3.pup;line(g,[[ix,ey-ER*0.5],[ix,ey-pr]],'#92400e',6);line(g,[[ix,ey+pr],[ix,ey+ER*0.5]],'#92400e',6);
+  const lx=ex-ER*0.56,lt=ER*(0.08+0.011*A),lh=ER*0.3;g.fillStyle='rgba(224,242,254,.55)';g.beginPath();g.ellipse(lx,ey,lt,lh,0,0,7);g.fill();g.strokeStyle='#e0f2fe';g.lineWidth=1.5;g.stroke();
+  for(const sd of[-1,1]){const cb=[lx,ey+sd*ER*0.62];g.fillStyle=A>2?'#ef4444':'#b45309';g.beginPath();g.ellipse(cb[0],cb[1],ER*0.07,ER*0.09,0,0,7);g.fill();
+    g.strokeStyle='rgba(253,230,138,.8)';g.lineWidth=1.2;for(const dx of[-lt*0.6,0,lt*0.6]){g.beginPath();g.moveTo(cb[0]+dx,cb[1]-sd*ER*0.08);if(A>2)g.quadraticCurveTo(cb[0]+dx+6,(cb[1]+ey+sd*lh)/2,lx+dx*0.6,ey+sd*lh*0.92);else g.lineTo(lx+dx*0.6,ey+sd*lh*0.92);g.stroke();}}
+  const rx=ex+ER*0.95,fx=clamp(rx-e.D*ER*0.25,lx+ER*0.45,rx+ER*0.9),ox=X(0.04),la=0.25+0.6*amb;
+  T(g,'วัตถุ',ox,ey-30,'#fde68a',10.5,'center',true);g.fillStyle='#dc2626';g.beginPath();g.arc(ox,ey,7,0,7);g.fill();T(g,(e.d*100).toFixed(0)+' cm',ox,ey+22,'#fde68a',10,'center');
+  if(e.lux>0)for(const f of[-0.9,-0.45,0,0.45,0.9]){const py=ey+f*pr,ly=py;const sl=(ey-ly)/(fx-lx),yr=fx<=rx?ly+sl*(rx-lx):ly+sl*(rx-lx);g.strokeStyle=`rgba(253,224,71,${la})`;g.lineWidth=1.3;g.beginPath();g.moveTo(ox+8,ey);g.lineTo(cx0-ER*0.2,py);g.lineTo(lx,ly);g.lineTo(rx,yr);g.stroke();}
+  const spot=Math.abs((ey-pr*0.9-ey)/(fx-lx)*(rx-fx));g.fillStyle=`rgba(253,224,71,${0.3+0.5*amb})`;g.beginPath();g.arc(rx-2,ey,Math.max(2.5,Math.min(30,spot)),0,7);g.fill();
+  T(g,'Cornea',cx0-ER*0.22,ey-ER*0.55,'#bae6fd',10,'center');T(g,'Iris / Pupil '+M3.pup.toFixed(1)+' mm',ix-6,ey+ER*0.82,'#fdba74',10,'right');T(g,'Lens',lx,ey+lh+12,'#e0f2fe',10,'center');T(g,'Ciliary body '+(A>2?'(หด)':'(คลาย)'),lx,ey-ER*0.78,A>2?'#fca5a5':'#fdba74',10,'center');
+  T(g,'Retina',ex+ER*0.7,ey-ER*0.78,'#f9a8d4',10,'center');T(g,'Fovea',rx+8,ey-8,'#f9a8d4',9.5);T(g,'Optic nerve / Blind spot',ex+ER*1.05,ey+ER*0.48,'#fde047',9.5,'center');T(g,'Vitreous humor',ex+ER*0.2,ey+ER*0.6,'#64748b',9.5,'center');
+  const st=Math.abs(e.D)<0.3?['ภาพคมชัด – โฟกัสบนเรตินา','#86efac']:e.D>0?['ภาพตกก่อนเรตินา → พร่ามัว','#fca5a5']:['ภาพตกหลังเรตินา → พร่ามัว','#fca5a5'];T(g,st[0],X(0.02),h-14,st[1],12,'left',true);
+  const px=UW+8,pw=w-px-8;panel(g,px,8,pw,h-16);T(g,'ภาพที่สมองรับรู้',px+10,24,'#5eead4',12,'left',true);scene(g,px+10,36,pw-20,h*0.3,e);let y=46+h*0.3;
+  T(g,e.cone<0.2&&e.lux>0?'แสงสลัว: Rod ทำงาน → เห็นเป็นขาว–ดำ':e.lux===0?'มืดสนิท: ไม่มีแสงกระตุ้น':'Cone ทำงาน → เห็นสีและรายละเอียด',px+10,y+4,'#fde68a',10.5,'left',true);y+=26;
+  if(S.toggle==='ant'){const icx=px+46,icy=y+44,IR=34;g.fillStyle='#92400e';g.beginPath();g.arc(icx,icy,IR,0,7);g.fill();const pp=IR*M3.pup/9;const circ=M3.pup<4;g.strokeStyle=circ?'#ef4444':'rgba(252,165,165,.4)';g.lineWidth=circ?4:2;g.beginPath();g.arc(icx,icy,pp+4,0,7);g.stroke();
+      for(let i=0;i<12;i++){const a=i/12*6.283;g.strokeStyle=!circ?'#3b82f6':'rgba(147,197,253,.4)';g.lineWidth=!circ?2.5:1.2;g.beginPath();g.moveTo(icx+Math.cos(a)*(pp+8),icy+Math.sin(a)*(pp+8));g.lineTo(icx+Math.cos(a)*(IR-3),icy+Math.sin(a)*(IR-3));g.stroke();}
+      g.fillStyle='#000';g.beginPath();g.arc(icx,icy,pp,0,7);g.fill();
+      wrap(g,circ?'แสงมาก: กล้ามเนื้อวงกลมของม่านตาหด (Parasympathetic) → รูม่านตาเล็ก':'แสงน้อย: กล้ามเนื้อแนวรัศมีหด (Sympathetic) → รูม่านตาขยาย',px+90,y+14,pw-100,14,'#e6fbf7',10.5);
+      wrap(g,A>2?'มองใกล้: Ciliary muscle หด → Suspensory ligament หย่อน → เลนส์หนาขึ้น (กำลังหักเหเพิ่ม)':'มองไกล: Ciliary muscle คลาย → Suspensory ligament ตึง → เลนส์แบนบาง',px+10,y+96,pw-20,14,'#fde68a',10.5);}
+  else{for(let i=0;i<10;i++){const xx=px+16+i*((pw-32)/9),isC=i%3===1;if(isC){g.fillStyle=['#ef4444','#22c55e','#3b82f6'][i%3===1?(i/3|0)%3:0];g.beginPath();g.moveTo(xx-6,y+6);g.lineTo(xx+6,y+6);g.lineTo(xx,y+40);g.closePath();g.globalAlpha=0.3+0.7*e.cone;g.fill();g.globalAlpha=1;}else{g.fillStyle=`rgba(167,139,250,${0.25+0.75*M3.rho})`;g.fillRect(xx-3,y,6,46);}}
+    y+=58;bar(g,px+10,y,pw-20,9,M3.rho,'#a78bfa','Rhodopsin (Rod)',Math.round(M3.rho*100)+'%');y+=30;bar(g,px+10,y,pw-20,9,e.rod,'#cbd5e1','สัญญาณ Rod',Math.round(e.rod*100)+'%');y+=30;bar(g,px+10,y,pw-20,9,e.cone,'#22c55e','สัญญาณ Cone (R/G/B)',Math.round(e.cone*100)+'%');y+=22;
+    wrap(g,'แสงสลาย Rhodopsin → Retinal + Opsin (Bleaching) · สร้างกลับต้องใช้วิตามิน A ในที่มืด',px+10,y,pw-20,14,'#c4b5fd',10);}}
+
+/* ================= MODE 4 : EAR ================= */
+let M4;function initM4(){M4={head:0,endo:0};}
+const terh=f=>{const k=f/1000;return clamp(3.64*Math.pow(k,-0.8)-6.5*Math.exp(-0.6*(k-3.3)*(k-3.3))+1e-3*Math.pow(k,4),-5,140);};
+function lossF(f,t){if(t==='oto')return 40;if(t==='noise'){const q=Math.log2(f/4000);return 45*Math.exp(-q*q/0.5);}if(t==='age')return 10*Math.pow(Math.max(0,Math.log2(f/1000)),1.6);return 0;}
+function earM(){const f=20*Math.pow(1000,V('freq')/1000),dB=V('db'),ty=$('#hear').value,t0=terh(f),thr=t0+lossF(f,ty),heard=dB>thr,ap=Math.round(clamp((dB-thr)*3,0,300)),pos=1-Math.log10(f/20)/3;return{f,dB,ty,t0,thr,heard,ap,pos,lam:343/f};}
+function stepM4(dt){M4.head+=(V('tilt')-M4.head)*Math.min(1,dt*3);M4.endo+=(M4.head-M4.endo)*Math.min(1,dt*0.8);}
+const fmtF=f=>f>=1000?(f/1000).toFixed(f>=10000?0:1)+' kHz':Math.round(f)+' Hz';
+function spiral(cx,cy,R0,R1,turns,u){const a=u*turns*6.283,r=lerp(R0,R1,u);return[cx+Math.cos(a+Math.PI)*r,cy+Math.sin(a+Math.PI)*r*0.9];}
+function drawM4(g,w,h){g.fillStyle='#050f0e';g.fillRect(0,0,w,h);const e=earM(),UW=w*0.62,X=f=>f*UW,Y=f=>f*h,fv=8+5*Math.log10(e.f/20),loud=clamp(e.dB/100,0,1.2),oto=e.ty==='oto',vib=3.5*loud*Math.sin(S.time*fv);
+  const sp=lerp(40,8,(Math.log10(e.f)-1.3)/3);g.save();g.beginPath();g.rect(0,0,X(0.08),h);g.clip();for(let i=0;i<12;i++){const r=((S.time*30)%sp)+i*sp;g.strokeStyle=`rgba(125,211,252,${0.12+0.5*loud*(1-i/12)})`;g.lineWidth=2;g.beginPath();g.arc(-X(0.12),Y(0.42),r,-0.6,0.6);g.stroke();}g.restore();
+  T(g,'หูชั้นนอก',X(0.14),Y(0.05),'#fbbf24',11.5,'center',true);T(g,'หูชั้นกลาง',X(0.37),Y(0.05),'#fbbf24',11.5,'center',true);T(g,'หูชั้นใน',X(0.6),Y(0.05),'#fbbf24',11.5,'center',true);
+  g.strokeStyle='#fdba74';g.lineWidth=7;g.beginPath();g.moveTo(X(0.09),Y(0.2));g.bezierCurveTo(X(0.0),Y(0.18),X(-0.01),Y(0.6),X(0.08),Y(0.64));g.stroke();
+  g.fillStyle='rgba(253,186,116,.12)';g.fillRect(X(0.08),Y(0.38),X(0.22),Y(0.08));g.strokeStyle='#fdba74';g.lineWidth=2;g.strokeRect(X(0.08),Y(0.38),X(0.22),Y(0.08));
+  g.fillStyle='rgba(30,58,138,.3)';rr(g,X(0.3),Y(0.26),X(0.14),Y(0.32),8);g.fill();g.strokeStyle='#334155';g.stroke();
+  const dx=X(0.3)+vib;g.strokeStyle='#f9a8d4';g.lineWidth=3;g.beginPath();g.moveTo(X(0.3),Y(0.33));g.quadraticCurveTo(dx+4,Y(0.42),X(0.3),Y(0.51));g.stroke();
+  const ov=oto?vib*0.08:vib*0.7,m1=[dx+2,Y(0.42)],m2=[X(0.335),Y(0.32)],i1=[X(0.385),Y(0.34)],i2=[X(0.395)+ov*0.5,Y(0.42)],st=[X(0.44)+ov,Y(0.42)];
+  line(g,[m1,m2],'#e7e5e4',5);g.fillStyle='#e7e5e4';g.beginPath();g.arc(m2[0],m2[1],6,0,7);g.fill();line(g,[m2,i1,i2],'#d6d3d1',5);line(g,[i2,[st[0]-4,st[1]-8],st,[st[0]-4,st[1]+8],i2],oto?'#64748b':'#a8a29e',3.5);
+  g.fillStyle=oto?'#64748b':'#e7e5e4';g.fillRect(st[0]-2,st[1]-11,4,22);
+  T(g,'ค้อน',m2[0]-6,m2[1]-14,'#e7e5e4',9.5,'center');T(g,'ทั่ง',i1[0]+4,i1[1]-12,'#e7e5e4',9.5,'center');T(g,'โกลน'+(oto?' (ยึดติด)':''),st[0]-8,st[1]+22,oto?'#fca5a5':'#e7e5e4',9.5,'center');
+  T(g,'ใบหู',X(0.03),Y(0.7),'#fdba74',10);T(g,'ช่องหู',X(0.18),Y(0.35),'#fdba74',10,'center');T(g,'เยื่อแก้วหู',X(0.3),Y(0.56)+10,'#f9a8d4',9.5,'center');
+  line(g,[[X(0.39),Y(0.58)],[X(0.39),Y(0.75)],[X(0.36),Y(0.92)]],'rgba(148,163,184,.6)',8);T(g,'ท่อยูสเตเชียน → คอหอย',X(0.38),Y(0.97),'#94a3b8',9.5,'center');
+  g.fillStyle='rgba(94,234,212,.2)';g.beginPath();g.ellipse(X(0.5),Y(0.42),X(0.05),Y(0.08),0,0,7);g.fill();T(g,'Utricle / Saccule',X(0.5),Y(0.42),'#99f6e4',9,'center');
+  g.strokeStyle='#5eead4';g.lineWidth=5;[[X(0.5),Y(0.25),X(0.03),Y(0.07),0],[X(0.545),Y(0.27),X(0.022),Y(0.06),0.9],[X(0.465),Y(0.28),X(0.025),Y(0.045),-0.5]].forEach(([a,b,c,d,r])=>{g.beginPath();g.ellipse(a,b,c,d,r,0,7);g.stroke();});T(g,'Semicircular canals',X(0.56),Y(0.15),'#5eead4',9.5,'left');
+  const cc=[X(0.6),Y(0.66)];g.strokeStyle='#fb923c';g.lineWidth=7;g.beginPath();for(let i=0;i<=80;i++){const p=spiral(cc[0],cc[1],X(0.11),X(0.015),2.6,i/80);i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]);}g.stroke();
+  if(e.heard){const p=spiral(cc[0],cc[1],X(0.11),X(0.015),2.6,e.pos);g.fillStyle=`rgba(253,224,71,${0.5+0.4*Math.sin(S.time*10)})`;g.beginPath();g.arc(p[0],p[1],8,0,7);g.fill();}
+  T(g,'Cochlea (Organ of Corti)',cc[0],cc[1]+X(0.11)+10,'#fb923c',10,'center',true);
+  const nerve=[[cc[0],cc[1]],[X(0.8),Y(0.6)],[X(0.97),Y(0.5)]];line(g,nerve,'#fde047',4);if(e.ap>0)flow(g,nerve,Math.max(1,Math.round(e.ap/40)),0.6,'#fef08a',3.5);T(g,'เส้นประสาทคู่ที่ 8 → Temporal lobe',X(0.98),Y(0.45),'#fde047',9.5,'right');
+  if(S.toggle==='ant'){arrow(g,X(0.3)+4,Y(0.2),X(0.44),Y(0.2),'#fbbf24',2);T(g,'การขยายเสียงในหูชั้นกลาง:',X(0.01),Y(0.82),'#fbbf24',10.5,'left',true);T(g,'คานกระดูก ×1.3 · พื้นที่เยื่อแก้วหู/Oval window ≈ 17×',X(0.01),Y(0.87),'#fbbf24',10);T(g,'→ แรงดันเพิ่ม ~22 เท่า',X(0.01),Y(0.92),'#fbbf24',10);}
+  else{const bx=6,by=Y(0.7),bw=X(0.24),bh=h-by-6;g.fillStyle='rgba(8,24,23,.95)';rr(g,bx,by,bw,bh,8);g.fill();g.strokeStyle='#1f3b39';g.stroke();const bend=e.heard?0.35*Math.sin(S.time*fv):0;
+    g.fillStyle='#0f766e';rr(g,bx+bw*0.3,by+bh*0.45,bw*0.4,bh*0.4,6);g.fill();T(g,'Hair cell',bx+bw*0.5,by+bh*0.65,'#ccfbf1',9.5,'center');
+    for(let i=0;i<5;i++){const sx=bx+bw*0.36+i*bw*0.07,sh2=bh*(0.12+i*0.04);line(g,[[sx,by+bh*0.45],[sx+Math.sin(bend)*sh2,by+bh*0.45-Math.cos(bend)*sh2]],'#a5f3fc',2.5);}
+    g.fillStyle='rgba(203,213,225,.3)';g.fillRect(bx+bw*0.2,by+bh*0.08,bw*0.6,6);T(g,'Tectorial membrane',bx+bw*0.5,by+6,'#cbd5e1',8.5,'center');
+    if(e.heard&&bend>0.1)for(let i=0;i<3;i++){g.fillStyle='#fde047';g.beginPath();g.arc(bx+bw*0.5+(i-1)*8,by+bh*0.5+((S.time*30+i*8)%20),2.5,0,7);g.fill();}
+    T(g,e.heard?'Stereocilia โค้ง → K⁺ เข้า → ส่งสัญญาณ':'สั่นไม่พอ → Stereocilia ไม่โค้ง',bx+6,by+bh-8,'#fde68a',8.5);}
+  const px=UW+8,pw=w-px-8;panel(g,px,8,pw,h-16);T(g,'Basilar membrane (คลี่ออก)',px+10,24,'#5eead4',11.5,'left',true);
+  const bx0=px+14,bx1=px+pw-14,byy=78,A=(oto?0.3:1)*clamp((e.dB-e.t0+30)/70,0,1)*16;
+  g.fillStyle='rgba(251,146,60,.25)';g.beginPath();g.moveTo(bx0,byy-4);g.lineTo(bx1,byy-12);g.lineTo(bx1,byy+12);g.lineTo(bx0,byy+4);g.closePath();g.fill();
+  g.strokeStyle='#fb923c';g.lineWidth=2;g.beginPath();for(let i=0;i<=120;i++){const u=i/120,env=u<e.pos?Math.exp(-(((u-e.pos)/0.2)**2)):Math.exp(-(((u-e.pos)/0.04)**2)),yy=byy+A*env*Math.sin(u*40-S.time*fv);i?g.lineTo(lerp(bx0,bx1,u),yy):g.moveTo(lerp(bx0,bx1,u),yy);}g.stroke();
+  [[20000,'20k'],[2000,'2k'],[200,'200'],[20,'20 Hz']].forEach(([f,s])=>{const u=1-Math.log10(f/20)/3,xx=lerp(bx0,bx1,u);g.strokeStyle='#475569';g.beginPath();g.moveTo(xx,byy+16);g.lineTo(xx,byy+22);g.stroke();T(g,s,xx,byy+30,'#94bdb6',9.5,'center');});
+  T(g,'ฐาน: แคบ แข็ง → เสียงสูง',bx0,byy-28,'#fdba74',9.5);T(g,'ยอด: กว้าง → เสียงต่ำ',bx1,byy-28,'#fdba74',9.5,'right');
+  let y=byy+52;T(g,`${fmtF(e.f)} · ${e.dB} dB → ${e.heard?'ได้ยิน':'ไม่ได้ยิน'}`,px+10,y,e.heard?'#86efac':'#fca5a5',12,'left',true);y+=18;T(g,`เกณฑ์การได้ยิน ${e.thr.toFixed(0)} dB · AP ${e.ap} Hz`,px+10,y,'#cdeee8',10.5);if(e.dB>=85){y+=16;T(g,e.dB>=120?'⚠ ≥120 dB: ระดับเจ็บปวด':'⚠ ≥85 dB นาน ๆ ทำลาย Hair cell',px+10,y,'#fca5a5',10.5,'left',true);}
+  const vy=h*0.6;T(g,'การทรงตัว (Vestibular)',px+10,vy-24,'#5eead4',11.5,'left',true);const hx=px+pw*0.27,hy=vy+56,HR=Math.min(46,pw*0.2),ha=M4.head*Math.PI/180;
+  g.save();g.translate(hx,hy);g.rotate(ha);g.fillStyle='rgba(253,186,116,.2)';g.beginPath();g.arc(0,0,HR,0,7);g.fill();g.strokeStyle='#fdba74';g.lineWidth=2;g.stroke();g.fillStyle='#fdba74';g.beginPath();g.arc(-HR*0.35,-HR*0.15,3,0,7);g.arc(HR*0.35,-HR*0.15,3,0,7);g.fill();
+  g.strokeStyle='#5eead4';g.lineWidth=4;g.beginPath();g.arc(0,0,HR*0.55,0,7);g.stroke();const cup=(M4.head-M4.endo)*Math.PI/180;g.restore();
+  const ea=-Math.PI/2+M4.endo*Math.PI/180;g.fillStyle='#22d3ee';g.beginPath();g.arc(hx+Math.cos(ea)*HR*0.55,hy+Math.sin(ea)*HR*0.55,4,0,7);g.fill();
+  T(g,`Cupula โค้ง ${(M4.head-M4.endo).toFixed(0)}°`,hx,hy+HR+14,Math.abs(cup)>0.05?'#fde68a':'#94bdb6',10,'center',true);
+  const ux=px+pw*0.58,uy=hy-26,uw=pw*0.36;g.fillStyle='#0f766e';g.fillRect(ux,uy+30,uw,14);for(let i=0;i<6;i++){const sx=ux+6+i*(uw-12)/5,bd=Math.sin(ha)*10;line(g,[[sx,uy+30],[sx+bd,uy+14]],'#a5f3fc',2);}
+  g.fillStyle='rgba(203,213,225,.5)';g.fillRect(ux+Math.sin(ha)*10,uy+4,uw,10);for(let i=0;i<8;i++){g.fillStyle='#f8fafc';g.beginPath();g.arc(ux+Math.sin(ha)*10+6+i*(uw-12)/7,uy+4,2.2,0,7);g.fill();}
+  T(g,'Utricle: Otolith',ux+uw/2,uy-8,'#cbd5e1',9.5,'center');T(g,'เอียง '+M4.head.toFixed(0)+'°',ux+uw/2,uy+58,'#fde68a',10,'center',true);
+  wrap(g,'ท่อครึ่งวงกลม: Endolymph ไหลช้ากว่าศีรษะ → Cupula โค้ง → รับรู้การหมุน · Utricle/Saccule: Otolith เลื่อนตามแรงโน้มถ่วง → รับรู้ตำแหน่งศีรษะ',px+10,hy+HR+32,pw-20,13,'#cdeee8',9.5);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#173230';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#94bdb6',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#94bdb6',10,'center');}
+  g.strokeStyle='#4b6b67';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#94bdb6',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#94bdb6',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#e6fbf7',10);});}
+const LK=Object.keys(LOCO),LS=['อะมีบา','พารามีเซียม','แมงกะพรุน','ดาวทะเล','ไส้เดือน','แมลง','ปลา','นก','มนุษย์'];
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const A=axes(g,w,h,0,9,-6,2,'','log₁₀ ความเร็ว (m/s)',9,4,()=>'');const cur=$('#loco').value;LK.forEach((k,i)=>{const v=Math.log10(LOCO[k].sp),x=A.X(i)+3,bw=A.X(1)-A.X(0)-6;g.fillStyle=k===cur?'#fbbf24':'#0f766e';g.fillRect(x,A.Y(v),bw,A.Y(-6)-A.Y(v));
+      g.save();g.translate(x+bw/2,h-A.B+6);g.rotate(-0.7);T(g,LS[i],0,0,k===cur?'#fbbf24':'#cdeee8',9.5,'right');g.restore();});T(g,LOCO[cur].n+' ≈ '+LOCO[cur].sp+' m/s',A.L+8,A.Tm+8,'#fbbf24',10.5,'left',true);}
+  else if(m===2){const A=axes(g,w,h,1.2,3.8,0,100,'ความยาว Sarcomere (µm)','แรงตึงสูงสุด (%)',5,4);g.fillStyle='rgba(94,234,212,.1)';g.fillRect(A.X(2.0),A.Tm,A.X(2.25)-A.X(2.0),h-A.B-A.Tm);plot(g,A,L=>LT(L)*100,1.2,3.8,'#5eead4',2.6);
+    const L=M2.L;g.fillStyle='#fbbf24';g.beginPath();g.arc(A.X(L),A.Y(LT(L)*100),6,0,7);g.fill();g.fillStyle='#ef4444';g.beginPath();g.arc(A.X(L),A.Y(LT(L)*100*(M2.rig?1:M2.act)),4.5,0,7);g.fill();
+    T(g,'Optimal 2.0–2.25 µm',A.X(2.12),A.Tm+8,'#5eead4',9.5,'center');T(g,'ซ้อนทับมากเกิน',A.X(1.5),A.Y(20),'#94bdb6',9.5,'center');T(g,'ซ้อนทับน้อย',A.X(3.3),A.Y(40),'#94bdb6',9.5,'center');legend(g,[['แรงตึงสูงสุดที่ความยาวนี้','#fbbf24'],['แรงตึงขณะนี้ (× Activation)','#ef4444']],A.L+8,A.Tm+26);}
+  else if(m===3){const A=axes(g,w,h,380,700,0,1,'ความยาวคลื่นแสง (nm)','ความไวสัมพัทธ์',4,4);const e=eyeM();for(let i=0;i<64;i++){const nm=380+i*5;g.fillStyle=`hsl(${clamp(270-(nm-380)*0.85,0,270)},90%,50%)`;g.fillRect(A.X(nm),h-A.B-5,A.X(385)-A.X(380)+1,5);}
+    const gs=(c,s)=>nm=>Math.exp(-(((nm-c)/s)**2));g.globalAlpha=0.35+0.65*clamp(e.rod*1.5,0,1);plot(g,A,gs(498,48),380,700,'#e2e8f0',2.6,[5,3]);g.globalAlpha=0.35+0.65*e.cone;plot(g,A,gs(420,32),380,700,'#3b82f6',2.2);plot(g,A,gs(534,44),380,700,'#22c55e',2.2);plot(g,A,gs(564,48),380,700,'#ef4444',2.2);g.globalAlpha=1;
+    legend(g,[['Rod (Rhodopsin 498 nm)','#e2e8f0'],['S-cone 420','#3b82f6'],['M-cone 534','#22c55e'],['L-cone 564','#ef4444']],w-150,18);}
+  else{const e=earM(),fx=v=>{const f=10**v;return f>=1000?Math.round(f/1000)+'k':Math.round(f)+'';},A=axes(g,w,h,Math.log10(20),Math.log10(20000),0,130,'ความถี่ (Hz, log)','ระดับเสียง (dB)',3,5,fx);
+    plot(g,A,v=>clamp(terh(10**v),0,130),Math.log10(20),Math.log10(20000),'#94a3b8',1.8,[5,4]);if(e.ty!=='normal')plot(g,A,v=>clamp(terh(10**v)+lossF(10**v,e.ty),0,130),Math.log10(20),Math.log10(20000),'#f472b6',2.4);
+    g.strokeStyle='#ef4444';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.L,A.Y(120));g.lineTo(w-A.Rm,A.Y(120));g.stroke();g.setLineDash([]);T(g,'เจ็บปวด 120 dB',w-14,A.Y(120)-8,'#fca5a5',9.5,'right');
+    g.fillStyle=e.heard?'#4ade80':'#ef4444';g.beginPath();g.arc(A.X(Math.log10(e.f)),A.Y(e.dB),6,0,7);g.fill();legend(g,[['เกณฑ์การได้ยินปกติ','#94a3b8'],['เกณฑ์เมื่อหูเสื่อม','#f472b6']],A.L+8,A.Tm+8);}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TL='<table><tr><th>สิ่งมีชีวิต</th><th>โครงสร้าง</th><th>โครงร่าง</th></tr>'+LK.map(k=>`<tr><td>${LOCO[k].n}</td><td>${LOCO[k].how.split(' —')[0]}</td><td>${LOCO[k].sk.split(' (')[0].split(' —')[0]}</td></tr>`).join('')+'</table><table style="margin-top:6px"><tr><th>ชนิดโครงร่าง</th><th>ตัวอย่าง</th></tr><tr><td>Hydrostatic skeleton</td><td>ไส้เดือน แมงกะพรุน</td></tr><tr><td>Exoskeleton</td><td>แมลง กุ้ง ปู</td></tr><tr><td>Endoskeleton</td><td>ดาวทะเล สัตว์มีกระดูกสันหลัง</td></tr></table>';
+const TM='<table><tr><th>ชนิด</th><th>ลาย</th><th>นิวเคลียส</th><th>การควบคุม</th><th>พบที่</th></tr><tr><td>กล้ามเนื้อลาย (Skeletal)</td><td>มี</td><td>หลาย</td><td>อยู่ใต้อำนาจจิตใจ</td><td>ยึดกระดูก</td></tr><tr><td>กล้ามเนื้อเรียบ (Smooth)</td><td>ไม่มี</td><td>1</td><td>นอกอำนาจจิตใจ</td><td>ผนังอวัยวะภายใน</td></tr><tr><td>กล้ามเนื้อหัวใจ (Cardiac)</td><td>มี</td><td>1–2</td><td>นอกอำนาจจิตใจ</td><td>หัวใจ (Intercalated disc)</td></tr></table><table style="margin-top:6px"><tr><th>ข้อต่อ</th><th>การเคลื่อนไหว</th><th>ตัวอย่าง</th></tr><tr><td>บานพับ (Hinge)</td><td>ระนาบเดียว</td><td>ศอก เข่า นิ้ว</td></tr><tr><td>ลูกกลมในเบ้า (Ball-and-socket)</td><td>หลายทิศทาง</td><td>ไหล่ สะโพก</td></tr><tr><td>เดือย (Pivot)</td><td>หมุนรอบแกน</td><td>Atlas–Axis (คอ)</td></tr><tr><td>ราบ/เลื่อน (Gliding)</td><td>เลื่อนไถล</td><td>ข้อมือ ข้อเท้า</td></tr><tr><td>อานม้า (Saddle)</td><td>2 ระนาบ</td><td>โคนนิ้วหัวแม่มือ</td></tr></table>';
+const TE='<table><tr><th>ลักษณะ</th><th>Rod (เซลล์รูปแท่ง)</th><th>Cone (เซลล์รูปกรวย)</th></tr><tr><td>จำนวน</td><td>~120 ล้าน</td><td>~6 ล้าน</td></tr><tr><td>ตำแหน่ง</td><td>ขอบเรตินา</td><td>หนาแน่นที่ Fovea</td></tr><tr><td>สารสี</td><td>Rhodopsin (Retinal + Opsin, ต้องใช้วิตามิน A)</td><td>Iodopsin 3 ชนิด (แดง เขียว น้ำเงิน)</td></tr><tr><td>ไวต่อแสง</td><td>สูง (แสงสลัว)</td><td>ต่ำ (แสงสว่าง)</td></tr><tr><td>การเห็นสี</td><td>ไม่เห็นสี (ขาว–ดำ)</td><td>เห็นสี</td></tr><tr><td>ความคมชัด</td><td>ต่ำ</td><td>สูง</td></tr></table><table style="margin-top:6px"><tr><th>โครงสร้าง</th><th>หน้าที่</th></tr><tr><td>Cornea</td><td>หักเหแสงมากที่สุด</td></tr><tr><td>Iris / Pupil</td><td>ปรับปริมาณแสง</td></tr><tr><td>Lens + Ciliary body</td><td>ปรับโฟกัส (Accommodation)</td></tr><tr><td>Retina</td><td>มีเซลล์รับแสง Rod และ Cone</td></tr><tr><td>Blind spot</td><td>จุดออกของเส้นประสาทตา ไม่มีเซลล์รับแสง</td></tr></table>';
+const TS='<table><tr><th>ส่วน</th><th>โครงสร้าง</th><th>หน้าที่</th></tr><tr><td>หูชั้นนอก</td><td>ใบหู ช่องหู</td><td>รวบรวมเสียง</td></tr><tr><td>หูชั้นกลาง</td><td>เยื่อแก้วหู ค้อน ทั่ง โกลน ท่อยูสเตเชียน</td><td>ขยายแรงสั่นสะเทือน ปรับความดัน</td></tr><tr><td>หูชั้นใน: Cochlea</td><td>Organ of Corti (Hair cell)</td><td>เปลี่ยนการสั่นเป็นกระแสประสาท</td></tr><tr><td>หูชั้นใน: Vestibular</td><td>Semicircular canals, Utricle, Saccule</td><td>การทรงตัว</td></tr></table><table style="margin-top:6px"><tr><th>ประสาทสัมผัส</th><th>ตัวรับ</th><th>หมายเหตุ</th></tr><tr><td>กลิ่น</td><td>Olfactory receptor (Chemoreceptor)</td><td>ไปสมองโดย<b>ไม่ผ่าน Thalamus</b></td></tr><tr><td>รส</td><td>Taste bud</td><td>หวาน เค็ม เปรี้ยว ขม อูมามิ</td></tr><tr><td>ผิวหนัง</td><td>Meissner (สัมผัสเบา) · Pacinian (แรงกด/สั่น) · Thermoreceptor · Nociceptor (เจ็บปวด)</td><td>กระจายทั่วผิว</td></tr></table>';
+const ST2=['ACh ที่ Neuromuscular junction','AP ไปตาม T-tubule','SR ปล่อย Ca²⁺','Ca²⁺ จับ Troponin → Tropomyosin เลื่อน','Cross-bridge + Power stroke','ATP จับ → หัวไมโอซินหลุด'],ST3=['แสง','Cornea','Pupil / Lens','Retina (Rod/Cone)','Optic nerve','Thalamus','Occipital lobe'],ST4=['ใบหู','ช่องหู','เยื่อแก้วหู','ค้อน–ทั่ง–โกลน','Oval window','Cochlea','เส้นประสาทคู่ที่ 8','Temporal lobe'];
+function cards(apLabel,ap){const e=eyeM();return[['แรงตึงกล้ามเนื้อ',(M2.rig?M2.rigT:M2.T).toFixed(0)+' N'],['ความยาว Sarcomere',M2.L.toFixed(2)+' µm'],['กำลังหักเหของตา',(60+M3.A).toFixed(1)+' D'],[apLabel,ap+' Hz']];}
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#loco').value,o=LOCO[k];st=[['การเคลื่อนที่',o.how.split(' (')[0].split(' —')[0]],['โครงร่าง',o.sk.split(' (')[0].split(' —')[0]],['ความเร็วโดยประมาณ',o.sp>=0.01?o.sp+' m/s':(o.sp*1000)+' mm/s'],['กลไกหลัก',S.toggle==='ant'?'กล้ามเนื้อคู่ตรงข้าม':'Actin–Myosin / Microtubule']];
+    flowBar(o.steps,Math.floor(M1.t*0.8)%o.steps.length);eq=o.eq;an=`<p>${o.an}</p>`;
+    mis=(k==='human'?'<p><b>❌ "กระดูกเป็นเนื้อเยื่อที่ตายแล้ว"</b></p><p>✅ กระดูกเป็น<b>เนื้อเยื่อมีชีวิต</b> มีเส้นเลือดและเส้นประสาทใน Haversian canal · Osteoblast สร้าง Osteoclast สลาย ซ่อมแซมตัวเองได้เมื่อหัก</p><p><b>❌ "Tendon กับ Ligament คือสิ่งเดียวกัน"</b> ✅ Tendon ยึดกล้ามเนื้อกับกระดูก · Ligament ยึดกระดูกกับกระดูก</p>':'<p><b>❌ "สัตว์ไม่มีกระดูกสันหลังไม่มีโครงร่างค้ำจุน"</b></p><p>✅ มีโครงร่างหลายแบบ: <b>Hydrostatic skeleton</b> (ไส้เดือน แมงกะพรุน) <b>Exoskeleton</b> (แมลง กุ้ง) และ<b>Endoskeleton</b> (ดาวทะเล)</p>')+'<p><b>❌ "กล้ามเนื้อดันกระดูกได้"</b> ✅ กล้ามเนื้อทำได้แค่<b>หดตัวดึง</b> จึงต้องมีคู่ตรงข้ามดึงกลับ</p>';tb=TL;}
+  else if(m===2){const p=m2in(),L=M2.L,act=M2.rig?1:M2.act,F=M2.rig?M2.rigT:M2.T,Fl=Fload(p);st=cards('ความถี่ AP ประสาทสั่งการ',p.hz);
+    const cur=M2.rig?5:p.ca==='zero'&&p.hz>0?2:p.ca==='high'&&p.hz===0?4:act>0.05?Math.floor(S.time*1.2)%6:-1;flowBar(ST2,cur,M2.rig?5:p.ca==='zero'&&p.hz>0?2:-1);
+    eq=`Sarcomere L = ${L.toFixed(2)} µm · A band = 1.60 µm (คงที่) · I band = L − 1.6 = ${(L-1.6).toFixed(2)} µm · H zone = L − 2.0 = ${Math.max(0,L-2).toFixed(2)} µm\nแรงตึง F = Fmax × Activation × f(L) = 600 × ${act.toFixed(2)} × ${LT(L).toFixed(2)} = ${(600*act*LT(L)).toFixed(0)} N   (ภาระ ≈ ${Fl.toFixed(0)} N)\nความถี่กระตุ้น ${p.hz} Hz → ${p.hz>=30?'Tetanus (หดตัวเต็มที่ต่อเนื่อง)':p.hz>0?'Summation (รวมแรงบางส่วน)':'ไม่มีการกระตุ้น'}`;
+    const f=[];if(M2.rig)f.push('<span class="tag no">Rigor mortis</span> ไม่มี ATP → หัวไมโอซิน<b>หลุดจาก Actin ไม่ได้</b> และ SR สูบ Ca²⁺ กลับไม่ได้ กล้ามเนื้อจึงแข็งค้าง (เกิดหลังเสียชีวิต 2–6 ชั่วโมง)');
+    else if(p.ca==='zero')f.push('<span class="tag mid">ไม่หดตัว</span> แม้มีกระแสประสาท แต่ไม่มี Ca²⁺ มาจับ Troponin → Tropomyosin ยังปิดตำแหน่งจับบน Actin');
+    else if(p.ca==='high'&&p.hz===0)f.push('<span class="tag no">Spasm / ตะคริว</span> Ca²⁺ ค้างใน Sarcoplasm → Cross-bridge ทำงานต่อเนื่องแม้ไม่มีกระแสประสาท กล้ามเนื้อหดเกร็งค้าง');
+    else if(act>0.05&&600*act*LT(L)<Fl)f.push('<span class="tag mid">Isometric</span> แรงตึงไม่พอยกภาระ กล้ามเนื้อตึงแต่ความยาวไม่ลด — ลดน้ำหนักหรือเพิ่มความถี่กระตุ้น');
+    else if(p.hz>=30)f.push('<span class="tag ok">หดตัวสมบูรณ์ (Tetanus)</span> กระแสประสาทถี่จนแรงรวมกันเต็มที่ Biceps หด Triceps คลาย → งอแขน');
+    else if(p.hz>0)f.push('<span class="tag ok">Summation</span> กระแสประสาทยังไม่ถี่พอ แรงตึงจึงเพียงบางส่วน');
+    else f.push('<span class="tag ok">คลายตัว</span> ไม่มี ACh → SR สูบ Ca²⁺ กลับ (ใช้ ATP) → Tropomyosin ปิดตำแหน่งจับ Triceps ดึงแขนเหยียด');
+    an=f.map(x=>`<p>${x}</p>`).join('')+`<p>ขณะหดตัว: Sarcomere, I band และ H zone <b>สั้นลง</b> แต่ A band (ความยาวไมโอซิน) <b>คงที่</b> — เส้นใยเลื่อนผ่านกัน ไม่ได้หดสั้นเอง</p>`;
+    mis=(M2.rig?'<p><b>❌ "ATP ใช้เพื่อให้หัวไมโอซินจับ Actin"</b></p><p>✅ ATP จำเป็นต่อการ<b>ปลด</b>หัวไมโอซินออกจาก Actin และสูบ Ca²⁺ กลับ — ไม่มี ATP กล้ามเนื้อจึงแข็งค้าง</p>':'')+'<p><b>❌ "เส้นใย Actin และ Myosin หดสั้นลงเมื่อกล้ามเนื้อหดตัว"</b></p><p>✅ เส้นใยแต่ละเส้นยาวเท่าเดิม แต่<b>เลื่อนซ้อนกันมากขึ้น</b> (Sliding filament) — ดูแถบ A band คงที่ 1.60 µm</p>';tb=TM;}
+  else if(m===3){const e=eyeM();st=cards('ความถี่ AP เส้นประสาทตา',e.ap);flowBar(ST3,e.lux>0?Math.floor(S.time*1.5)%7:-1);
+    eq=`เลนส์บาง: 1/f = 1/dₒ + 1/dᵢ · กำลังเลนส์ P (ไดออปเตอร์) = 1/f (เมตร)\nต้องเพิ่มกำลังเลนส์ (Accommodation) = 1/${e.d.toFixed(2)} m${e.R+e.G?` − (${(e.R+e.G).toFixed(1)})`:''} = ${e.need.toFixed(2)} D → ตาปรับได้ ${M3.A.toFixed(2)} D (สูงสุด ${e.amp} D)\nกำลังหักเหรวม ≈ 60 + ${M3.A.toFixed(1)} = ${(60+M3.A).toFixed(1)} D · รูม่านตา ${M3.pup.toFixed(1)} mm · Rhodopsin ${Math.round(M3.rho*100)}%`;
+    const f=[];if(Math.abs(e.D)<0.3)f.push(`<span class="tag ok">โฟกัสชัด</span> ${e.need>0.5?'มองใกล้: Ciliary muscle หด เลนส์หนาขึ้น':'มองไกล: Ciliary muscle คลาย เลนส์บาง'}`);
+    else if(e.D>0)f.push(`<span class="tag no">${e.rf==='myo'?'สายตาสั้น (Myopia)':e.rf==='pres'?'แว่นอ่านหนังสือมองไกลไม่ชัด':'โฟกัสหน้าเรตินา'}</span> ลูกตายาวเกินหรือหักเหแสงมากเกิน ภาพตก<b>ก่อนเรตินา</b> → แก้ด้วย<b>เลนส์เว้า</b>`);
+    else f.push(`<span class="tag no">${e.rf==='hyp'?'สายตายาว (Hyperopia)':e.rf==='pres'?'สายตายาวตามอายุ (Presbyopia)':'โฟกัสหลังเรตินา'}</span> ${e.rf==='pres'?'เลนส์แข็ง ยืดหยุ่นน้อยลง ปรับให้หนาไม่ได้พอเมื่อมองใกล้':'ลูกตาสั้นเกินหรือหักเหแสงไม่พอ'} ภาพตก<b>หลังเรตินา</b> → แก้ด้วย<b>เลนส์นูน</b>`);
+    if(e.vitA&&M3.rho<0.45&&e.lux<30)f.push('<span class="tag no">ตาบอดกลางคืน (Night blindness)</span> ขาดวิตามิน A → สร้าง Rhodopsin ไม่พอ มองในที่สลัวไม่เห็น');
+    else if(e.lux<10&&e.lux>0)f.push(`<span class="tag mid">แสงสลัว</span> Rod ทำงานเป็นหลัก เห็นเป็นขาว–ดำ ความคมชัดต่ำ ${M3.rho<0.7?'(Rhodopsin ยังสร้างกลับไม่ครบ — Dark adaptation)':''}`);
+    an=f.map(x=>`<p>${x}</p>`).join('')+`<p>รูม่านตา ${M3.pup.toFixed(1)} mm: ${M3.pup<4?'แสงมาก → กล้ามเนื้อวงกลมหด (Parasympathetic)':'แสงน้อย → กล้ามเนื้อแนวรัศมีหด (Sympathetic)'}</p>`;
+    mis='<p><b>❌ "เลนส์ตาเลื่อนไปมาเพื่อโฟกัสเหมือนกล้อง"</b></p><p>✅ เลนส์ตา<b>เปลี่ยนความหนา</b> โดย Ciliary muscle และ Suspensory ligament (Accommodation)</p><p><b>❌ "ในที่มืดเรายังเห็นสีได้"</b> ✅ แสงสลัวมีแต่ Rod ทำงาน ซึ่ง<b>ไม่แยกสี</b></p><p><b>❌ "ตาเป็นอวัยวะที่มองเห็นภาพ"</b> ✅ ตาเปลี่ยนแสงเป็นกระแสประสาท การ<b>แปลภาพเกิดที่สมองส่วน Occipital</b></p>';tb=TE;}
+  else{const e=earM();st=cards('ความถี่ AP ประสาทการได้ยิน',e.ap);const cur=Math.floor(S.time*1.5)%8;flowBar(ST4,e.heard?cur:Math.min(cur,e.ty==='oto'?3:5),e.heard?-1:e.ty==='oto'?3:e.dB>0?5:-1);
+    const I=1e-12*Math.pow(10,e.dB/10);eq=`λ = v / f = 343 / ${e.f.toFixed(0)} = ${e.lam<1?e.lam.toFixed(3):e.lam.toFixed(2)} m\nระดับเสียง β = 10·log₁₀(I / I₀) = ${e.dB} dB → I = ${I.toExponential(1)} W/m² (I₀ = 10⁻¹² W/m²)\nเกณฑ์การได้ยินที่ ${fmtF(e.f)} = ${e.thr.toFixed(0)} dB → ${e.heard?'ได้ยิน':'ไม่ได้ยิน'} · ตำแหน่งบน Basilar membrane ${Math.round(e.pos*100)}% จากฐาน`;
+    const f=[];f.push(e.heard?`<span class="tag ok">ได้ยิน</span> ${fmtF(e.f)} กระตุ้น Hair cell ${e.pos<0.33?'ใกล้ฐาน Cochlea (เสียงสูง)':e.pos>0.66?'ใกล้ยอด Cochlea (เสียงต่ำ)':'ช่วงกลาง Cochlea'} — ความดังเข้ารหัสด้วย<b>ความถี่ของกระแสประสาท</b> (${e.ap} Hz)`:`<span class="tag no">ไม่ได้ยิน</span> เสียงเบากว่าเกณฑ์ ${e.thr.toFixed(0)} dB`);
+    if(e.ty==='oto')f.push('<span class="tag mid">Conductive hearing loss</span> กระดูกโกลนยึดติด ส่งแรงสั่นไป Oval window ได้น้อย เกณฑ์การได้ยินสูงขึ้น ~40 dB ทุกความถี่ (Hair cell ยังปกติ)');if(e.ty==='noise')f.push('<span class="tag mid">Noise-induced</span> Hair cell ช่วง ~4 kHz ถูกทำลายจากเสียงดังสะสม (ไม่งอกใหม่)');if(e.ty==='age')f.push('<span class="tag mid">Presbycusis</span> Hair cell ที่ฐาน Cochlea (เสียงสูง) เสื่อมตามอายุก่อน');
+    if(e.dB>=85)f.push('<span class="tag no">อันตราย</span> เสียง ≥ 85 dB นาน ๆ ทำลาย Hair cell ถาวร');if(Math.abs(M4.head-M4.endo)>3)f.push('<span class="tag mid">กำลังหมุนศีรษะ</span> Endolymph ไหลตามไม่ทัน → Cupula โค้ง → สมองรับรู้การหมุน (ถ้าหมุนนานแล้วหยุดจะรู้สึกเวียนหัว)');else if(Math.abs(M4.head)>5)f.push(`<span class="tag ok">เอียงค้าง ${M4.head.toFixed(0)}°</span> Endolymph หยุดไหล Cupula ตั้งตรง แต่ Otolith ใน Utricle ยังเลื่อน → รับรู้ว่าศีรษะเอียง`);
+    an=f.map(x=>`<p>${x}</p>`).join('');
+    mis='<p><b>❌ "ประสาทสัมผัสทุกชนิดต้องผ่าน Thalamus ก่อนถึงสมองส่วน Cerebrum"</b></p><p>✅ <b>การดมกลิ่น</b>เป็นข้อยกเว้น: Olfactory bulb ส่งไปสมองส่วนรับกลิ่นโดยตรง <b>ไม่ผ่าน Thalamus</b></p><p><b>❌ "ท่อครึ่งวงกลมใช้ในการได้ยิน"</b> ✅ ท่อครึ่งวงกลม Utricle และ Saccule ใช้<b>การทรงตัว</b> ส่วน Cochlea ใช้ได้ยิน</p><p><b>❌ "เสียงดังขึ้น = กระแสประสาทแรงขึ้น"</b> ✅ AP มีขนาดคงที่ (All-or-none) ความดังเข้ารหัสด้วย<b>ความถี่</b>และจำนวนเซลล์ที่ถูกกระตุ้น</p>';tb=TS;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','การเคลื่อนที่ของสิ่งมีชีวิตกลุ่มต่าง ๆ','การหดตัวของกล้ามเนื้อลาย: แขน · Sarcomere · Cross-bridge','ตา: การปรับโฟกัส รูม่านตา และเซลล์รับแสง','หู: การได้ยินและการทรงตัว'][m];
+  $('#chartTitle').textContent=['','ความเร็วการเคลื่อนที่ (สเกล log)','Length–Tension relationship','ความไวของเซลล์รับแสงต่อความยาวคลื่น','Audiogram: เกณฑ์การได้ยิน'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('hz',v=>v+' Hz');bind('load',v=>v+' kg');bind('lux',v=>v+' lux');bind('dist',v=>v>=100?(v/100).toFixed(2)+' m':v+' cm');bind('freq',v=>fmtF(20*Math.pow(1000,v/1000)));bind('db',v=>v+' dB');bind('tilt',v=>v+'°');
+['loco','ca','atp','refr','corr','vitA','hear'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgAnt:'ant',tgTrop:'trop'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

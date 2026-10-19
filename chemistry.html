@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เคมีของสิ่งมีชีวิต | ห้องแล็บชีววิทยา</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#07141c; --ink:#e8fff1; --muted:#8fb8a0; --line:rgba(120,190,180,.22); --green:#1ed39a; --green-d:#c8ffd9; --green-s:#10281a; --card:#0c1410; --amber:#2a210c; --shadow:0 10px 28px rgba(0,0,0,.45); }
+  * { box-sizing:border-box; } html,body { margin:0; height:100%; }
+  body { font-family:"Leelawadee UI", Tahoma, "Segoe UI", sans-serif; color:var(--ink); background:#050806; font-size:16.5px; line-height:1.6; }
+  header { height:64px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px; background:rgba(5,8,6,.9); border-bottom:1px solid var(--line); }
+  .brand { display:flex; align-items:center; gap:8px; text-decoration:none; font-weight:800; color:var(--green-d); }
+  .logo { width:32px; height:32px; border-radius:9px; background:#07140e; display:grid; place-items:center; }
+  nav { display:flex; gap:4px; overflow:auto; }
+  nav a { text-decoration:none; color:var(--green-d); padding:6px 10px; border-radius:999px; white-space:nowrap; font-size:14px; }
+  nav a:hover, nav a[aria-current="page"] { background:var(--green-s); }
+  .layout { height:calc(100% - 64px); display:grid; grid-template-columns:320px minmax(0,1fr) 340px; }
+  .panel { overflow:auto; padding:14px; } .left { background:#070d0a; } .right { background:#080d12; } .left { border-right:1px solid var(--line); } .right { border-left:1px solid var(--line); }
+  .center { background:#050806; }
+  h1 { font-size:1.25rem; margin:0 0 4px; color:var(--green-d); } h2 { font-size:1.02rem; margin:12px 0 8px; color:var(--green-d); }
+  .eyebrow { margin:0; color:var(--green); font-weight:700; font-size:13px; } .hint { color:var(--muted); font-size:14px; margin:0 0 10px; }
+  .modes,.subs { display:grid; gap:6px; margin-bottom:10px; } .subs { grid-template-columns:1fr 1fr; }
+  button, select, input[type="number"] { font-family:inherit; font-size:15px; }
+  button { word-break:keep-all; }
+  .mode,.sub,.btn,.switch { border:1px solid var(--line); background:#101814; color:var(--ink); border-radius:12px; padding:9px 10px; text-align:left; cursor:pointer; }
+  .mode.on,.sub.on,.switch.on { background:#07140d; color:#3dff8a; border-color:#3dff8a; }
+  .btn { background:linear-gradient(135deg,#3dff8a,#14f1c5); color:#04140c; border-color:#3dff8a; font-weight:700; text-align:center; }
+  .btn.alt { background:#101814; color:var(--green-d); }
+  .row { display:flex; gap:8px; margin:8px 0; } .row .btn,.row .switch { flex:1; }
+  label { display:block; margin:8px 0; font-size:14.5px; color:var(--green-d); font-weight:700; }
+  label span { font-weight:600; color:var(--ink); }
+  input[type="range"] { width:100%; accent-color:#3dff8a; }
+  select { width:100%; margin-top:4px; padding:8px; border-radius:10px; border:1px solid var(--line); }
+  .cvwrap { height:520px; background:#101814; border:1px solid #3dff8a; border-radius:18px; overflow:hidden; box-shadow:var(--shadow); }
+  .cvwrap.short { height:220px; background:#101814; border:1px solid var(--line); margin-top:8px; }
+  canvas { width:100%; height:100%; display:block; }
+  .formula,.analysis { margin-top:10px; background:#101814; border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:8px; }
+  .stat { background:#101814; border:1px solid var(--line); border-radius:14px; padding:8px 10px; }
+  .stat b { display:block; color:var(--green-d); font-size:1.02rem; } .stat span { color:var(--muted); font-size:13px; }
+  table { width:100%; border-collapse:collapse; background:#101814; font-size:14px; margin-top:8px; }
+  th,td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; } th { background:var(--green-s); color:var(--green-d); }
+  .mis { background:var(--amber); border-left:4px solid #e0a100; border-radius:12px; padding:10px 12px; margin-top:8px; }
+  @media (max-width:1100px) { .layout { height:auto; grid-template-columns:1fr; } .cvwrap { height:440px; } }
+
+  html{background-color:#07141c;}
+  html::before{content:"";position:fixed;left:-28%;top:-28%;width:156%;height:156%;z-index:-2;pointer-events:none;background:radial-gradient(circle at 22% 18%,rgba(30,211,154,.5),transparent 32%),radial-gradient(circle at 78% 14%,rgba(46,200,230,.38),transparent 28%),radial-gradient(circle at 60% 84%,rgba(20,140,90,.28),transparent 34%);background-repeat:no-repeat;background-size:130% 130%,120% 120%,140% 140%;animation:drift 8s ease-in-out infinite alternate,blobs 10s ease-in-out infinite alternate;}
+  body{background:transparent;}
+  body::before{content:"";position:fixed;left:-15%;top:-15%;right:-15%;bottom:-15%;width:auto;height:auto;z-index:-1;pointer-events:none;border-radius:0;filter:none;background:transparent;background-image:radial-gradient(1.2px 1.2px at 20px 30px,rgba(255,255,255,.75),transparent),radial-gradient(1px 1px at 90px 140px,rgba(180,255,230,.7),transparent),radial-gradient(1.3px 1.3px at 170px 70px,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40px 200px,rgba(160,230,255,.6),transparent);background-size:220px 220px;animation:stars 10s linear infinite,twinkle 2.8s ease-in-out infinite;}
+  body::after{content:none;}
+  header{position:sticky;top:0;z-index:4;background:rgba(7,11,9,.72);border-bottom:0;backdrop-filter:blur(12px);}
+  header::after{content:none;}
+  .logo{border:1px solid #1ed39a;box-shadow:0 0 14px rgba(30,211,154,.4);animation:floaty 4.2s ease-in-out infinite;}
+  .layout{grid-template-columns:270px minmax(0,1fr) 300px;}
+  .left,.right,.center{background:rgba(8,22,32,.72);box-shadow:none;}
+  .left{border-right:1px solid rgba(120,190,180,.18);}
+  .right{border-left:1px solid rgba(120,190,180,.18);}
+  .mode,.sub,.switch,.btn.alt,select,input[type="text"],input[type="number"],.formula,.analysis,.stat,table{background:rgba(10,24,34,.9);border-color:rgba(120,190,180,.22);color:#e7f6f1;}
+  .mode.on,.sub.on,.switch.on{background:rgba(30,180,120,.16);color:#e9fff4;border-color:#3dff8a;}
+  .btn:not(.alt){color:#fff;border:0;background:#14915f;box-shadow:0 8px 18px rgba(20,145,95,.28);}
+  .btn:hover{box-shadow:0 10px 24px rgba(46,200,230,.35);}
+  nav a{color:#c9ddd4;}
+  nav a:hover{color:#fff;background:transparent;}
+  nav a[aria-current="page"]{background:#1f8a5b;color:#fff;}
+  .cvwrap,.cvwrap.short{background:#f4fff8;border:1px solid rgba(46,200,180,.4);animation:screen 3.6s ease-in-out infinite;}
+  .mis{background:#1c2430;color:#d7fff2;border-left-color:#2ec8e6;}
+  .hint{color:#9dccc4;}
+  @keyframes stars{to{transform:translate3d(-220px,-220px,0);}}
+  @keyframes twinkle{0%,100%{opacity:.4;}50%{opacity:1;}}
+  @keyframes drift{from{transform:translate3d(-12%,-8%,0) scale(1);}to{transform:translate3d(14%,10%,0) scale(1.2);}}
+  @keyframes blobs{from{background-position:0% 0%,70% 10%,30% 100%;}to{background-position:40% 30%,0% 70%,80% 10%;}}
+  @keyframes hue{to{background-position:200% 0;}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,200,180,.2);}50%{box-shadow:0 0 16px 2px rgba(46,200,230,.45);}}
+  @keyframes edge{0%,100%{opacity:.7;}50%{opacity:1;}}
+  @keyframes screen{0%,100%{box-shadow:0 0 0 1px rgba(61,255,138,.2),0 0 16px rgba(30,211,154,.15);}50%{box-shadow:0 0 0 1px rgba(61,255,138,.45),0 0 22px rgba(30,211,154,.28);}}
+  @media (prefers-reduced-motion:reduce){.logo,.mode.on,.sub.on,.switch.on,.btn:not(.alt),.cvwrap,header::after,html::before,body::before,body::after{animation:none;}}
+  @media (max-width:1100px){
+    header{height:auto;flex-wrap:nowrap;padding:8px 14px;gap:8px;}
+    nav{min-width:0;-webkit-overflow-scrolling:touch;}
+    nav a{min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;}
+    .layout{height:auto;grid-template-columns:minmax(230px,300px) minmax(0,1fr);grid-template-areas:"controls view" "result view";}
+    .left{grid-area:controls;}
+    .center{grid-area:view;}
+    .right{grid-area:result;border-left:0;border-top:1px solid rgba(120,190,180,.18);}
+    .cvwrap{height:min(62vh,520px);}
+    .cvwrap.short{height:180px;}
+  }
+  @media (max-width:700px){
+    header{flex-wrap:wrap;}
+    nav{width:100%;}
+    .layout{grid-template-columns:1fr;grid-template-areas:"controls" "view" "result";}
+    .left,.right{border:0;}
+    .cvwrap{height:300px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .panel{padding:12px;}
+    .mode,.sub,.btn,.switch{min-height:44px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;}
+    .row>*{width:100%;min-width:0;}
+    table{display:block;overflow-x:auto;}
+  }
+
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html"><span class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M6 24c8-1 12-10 20-16-3 10-8 17-20 16z" fill="#3dff8a"/></svg></span>ห้องแล็บชีววิทยา</a>
+  <nav>
+    <a href="study.html">ธรรมชาติของสิ่งมีชีวิต</a>
+    <a href="chemistry.html" aria-current="page">เคมีของชีวิต</a>
+    <a href="cell.html">เซลล์</a>
+    <a href="genetics.html">พันธุกรรม</a>
+    <a href="genes.html">ยีนและโครโมโซม</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="panel left">
+    <p class="eyebrow">บทที่ 2</p>
+    <h1>เคมีที่เป็นพื้นฐานของสิ่งมีชีวิต</h1>
+    <div class="modes" id="modes"></div>
+    <div class="subs" id="subs"></div>
+    <div id="controls"></div>
+  </aside>
+  <main class="panel center">
+    <div class="cvwrap"><canvas id="cv"></canvas></div>
+    <div class="formula" id="formula"></div>
+    <div class="stats" id="stats"></div>
+  </main>
+  <aside class="panel right">
+    <h2>ผล</h2>
+    <div class="cvwrap short"><canvas id="graph"></canvas></div>
+    <div id="table"></div>
+    <div class="analysis" id="analysis"></div>
+    <div class="mis" id="mis"></div>
+  </aside>
+</div>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const FOODS = {
+  milk:{name:'นม', benedict:2, iodine:0, biuret:2, sudan:1, note:'มีแล็กโทสซึ่งเป็นน้ำตาลรีดิวซิง โปรตีน และไขมันเล็กน้อย'},
+  juice:{name:'น้ำผลไม้', benedict:4, iodine:0, biuret:0, sudan:0, note:'มีกลูโคสและฟรักโทส ซึ่งรีดิวซ์เบเนดิกต์ได้'},
+  starch:{name:'แป้งต้ม', benedict:0, iodine:3, biuret:0, sudan:0, note:'แป้งเป็นพอลิแซ็กคาไรด์ จับไอโอดีนได้สีน้ำเงินเข้ม'},
+  oil:{name:'น้ำมันพืช', benedict:0, iodine:0, biuret:0, sudan:3, note:'ไตรกลีเซอไรด์ไม่ละลายน้ำ จึงถูกซูดาน IV ย้อมในชั้นไขมัน'},
+  egg:{name:'ไข่ขาว', benedict:0, iodine:0, biuret:3, sudan:0, note:'อุดมด้วยโปรตีนอัลบูมิน ไบยูเรตจึงให้สีม่วง'},
+  sucrose:{name:'สารละลายซูโครส', benedict:0, iodine:0, biuret:0, sudan:0, note:'ซูโครสเป็นน้ำตาลนอนรีดิวซิง ไม่ทำปฏิกิริยากับเบเนดิกต์โดยตรง'}
+};
+const TESTS = { benedict:'เบเนดิกต์', iodine:'ไอโอดีน', biuret:'ไบยูเรต', sudan:'ซูดาน IV' };
+const POLY = {
+  carb:{name:'คาร์โบไฮเดรต', mono:'กลูโคส', bond:'พันธะไกลโคซิดิก', kcal:4, waterEach:1},
+  protein:{name:'โปรตีน', mono:'กรดอะมิโน', bond:'พันธะเพปไทด์', kcal:4, waterEach:1},
+  lipid:{name:'ลิพิด', mono:'กรดไขมัน', bond:'พันธะเอสเทอร์', kcal:9, waterEach:1, max:3},
+  nucleic:{name:'กรดนิวคลีอิก', mono:'นิวคลีโอไทด์', bond:'พันธะฟอสโฟไดเอสเทอร์', kcal:0, waterEach:1}
+};
+const IONS = {
+  na:{sym:'Na⁺', role:'สมดุลน้ำและกระแสประสาท'},
+  k:{sym:'K⁺', role:'ศักย์เยื่อหุ้มเซลล์'},
+  ca:{sym:'Ca²⁺', role:'กระดูก กล้ามเนื้อ และการแข็งตัวของเลือด'},
+  fe:{sym:'Fe²⁺', role:'เป็นส่วนของฮีโมโกลบิน'},
+  mg:{sym:'Mg²⁺', role:'อยู่ในคลอโรฟิลล์ และเป็นโคแฟกเตอร์ของเอนไซม์'},
+  po:{sym:'PO₄³⁻', role:'อยู่ใน ATP นิวคลีโอไทด์ และกระดูก'}
+};
+function defaults() {
+  return {
+    mode:1, sub:'water', playing:true, t:0,
+    food:'juice', test:'benedict', minutes:5, hydrolyzed:false, ran:{},
+    poly:'carb', count:1, saturated:true, show:'bond',
+    temp:37, pH:7, level:'tertiary',
+    ion:'na', pair:true
+  };
+}
+let state = defaults();
+function num(n,d){ return (isFinite(n)?n:0).toLocaleString('th-TH',{maximumFractionDigits:d,minimumFractionDigits:d}); }
+function profile() {
+  const p = Object.assign({}, FOODS[state.food]);
+  if (state.food==='sucrose' && state.hydrolyzed) p.benedict = 4;
+  return p;
+}
+function scoreOf() {
+  const p = profile();
+  return p[state.test] || 0;
+}
+function lerp(a,b,t){ return a+(b-a)*t; }
+function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function mix(c1,c2,t){ const a=hexToRgb(c1), b=hexToRgb(c2); return `rgb(${a.map((v,i)=>Math.round(lerp(v,b[i],t))).join(',')})`; }
+function liquidColor() {
+  const s = scoreOf();
+  const heat = state.test==='benedict' ? Math.min(1, state.minutes/3) : 1;
+  if (state.test==='benedict') {
+    const cols=['#2f6fed','#3d9b4f','#e1c84a','#ef8a1a','#c4451d'];
+    return mix('#2f6fed', cols[s], s===0?0:heat);
+  }
+  if (state.test==='iodine') return s? mix('#c9a227','#24124d', Math.min(1,s/3)) : '#c9a227';
+  if (state.test==='biuret') return s? mix('#5dade2','#7d3c98', Math.min(1,s/3)) : '#5dade2';
+  return '#f4e1c1';
+}
+function stability() {
+  const tScore = Math.exp(-Math.pow((state.temp-37)/18,2));
+  const pScore = Math.exp(-Math.pow((state.pH-7.4)/2,2));
+  return Math.max(0, Math.min(100, 100*tScore*pScore));
+}
+function resultLabel(test, score, minutes) {
+  if (test==='benedict' && minutes<1 && score>0) return 'ยังเป็นสีฟ้า เพราะยังให้ความร้อนไม่พอ';
+  if (test==='benedict') return ['ลบ (−) สีฟ้า','บวก (+) สีเขียว','บวก (++) สีเหลือง','บวก (+++) สีส้ม','บวก (++++) ตะกอนอิฐแดง'][score];
+  if (test==='iodine') return score? 'บวก (+) น้ำเงินเข้มหรือม่วงดำ' : 'ลบ (−) สีเหลืองน้ำตาล';
+  if (test==='biuret') return score? 'บวก (+) สีม่วง' : 'ลบ (−) สีฟ้า';
+  return score? 'บวก (+) สีย้อมอยู่ในชั้นไขมัน' : 'ลบ (−) ไม่แยกชั้นสีแดง';
+}
+function bonds() {
+  const spec = POLY[state.poly];
+  const n = state.count;
+  if (state.poly==='lipid') return {made:n, water:n, note:'กลีเซอรอล 1 โมเลกุลจับกรดไขมันได้สูงสุด 3 โมเลกุล'};
+  return {made:Math.max(0,n-1), water:Math.max(0,n-1), note:'ทุกครั้งที่ต่อโมโนเมอร์ 1 พันธะ จะคายน้ำ 1 โมเลกุล'};
+}
+
+function renderControls() {
+  const modes=[[1,'1. ทดสอบสารอาหาร'],[2,'2. สร้างและสลายพอลิเมอร์'],[3,'3. การพับของโปรตีน'],[4,'4. น้ำ DNA และเยื่อ']];
+  $('modes').innerHTML = modes.map(([id,n])=>`<button class="mode ${state.mode===id?'on':''}" data-act="mode" data-v="${id}">${n}</button>`).join('');
+  const subs = state.mode===4 ? [['water','น้ำ'],['ion','แร่ธาตุ'],['nucleic','DNA / RNA'],['lipid','ฟอสโฟลิพิด']] : [];
+  $('subs').innerHTML = subs.map(([id,n])=>`<button class="sub ${state.sub===id?'on':''}" data-act="sub" data-v="${id}">${n}</button>`).join('');
+  let html='';
+  if (state.mode===1) {
+    html += `<label>ตัวอย่างอาหาร<span></span><select data-key="food">${Object.entries(FOODS).map(([k,v])=>`<option value="${k}" ${state.food===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
+      <label>สารทดสอบ<span></span><select data-key="test">${Object.entries(TESTS).map(([k,v])=>`<option value="${k}" ${state.test===k?'selected':''}>${v}</option>`).join('')}</select></label>
+      ${state.test==='benedict'?`<label>เวลาต้มในน้ำร้อน <span data-for="minutes">${num(state.minutes,0)} นาที</span><input type="range" min="0" max="10" step="1" value="${state.minutes}" data-key="minutes"></label>`:''}
+      ${state.food==='sucrose'?`<button class="btn alt" data-act="hydro" style="width:100%">${state.hydrolyzed?'ย่อยซูโครสแล้ว':'ย่อยซูโครสด้วยกรดก่อนทดสอบ'}</button>`:''}
+      <button class="btn" data-act="record" style="width:100%;margin-top:8px">บันทึกลงตารางผล</button>`;
+  } else if (state.mode===2) {
+    html += `<label>ชนิดพอลิเมอร์<span></span><select data-key="poly">${Object.entries(POLY).map(([k,v])=>`<option value="${k}" ${state.poly===k?'selected':''}>${v.name}</option>`).join('')}</select></label>
+      <div class="row"><button class="btn" data-act="add">ต่อโมโนเมอร์ (ดึงน้ำออก)</button><button class="btn alt" data-act="cut">ไฮโดรไลซิส</button></div>
+      ${state.poly==='lipid'?`<button class="switch ${state.saturated?'on':''}" data-act="sat" style="width:100%">${state.saturated?'กรดไขมันอิ่มตัว':'กรดไขมันไม่อิ่มตัว'}</button>`:''}
+      <label>มวลสมมติเพื่อคิดพลังงาน <span data-for="grams">1 กรัม</span></label>`;
+  } else if (state.mode===3) {
+    html += `<label>อุณหภูมิ <span data-for="temp">${num(state.temp,0)} °C</span><input type="range" min="0" max="100" step="1" value="${state.temp}" data-key="temp"></label>
+      <label>pH <span data-for="pH">${num(state.pH,1)}</span><input type="range" min="1" max="14" step="0.5" value="${state.pH}" data-key="pH"></label>
+      <label>ระดับโครงสร้าง<span></span><select data-key="level">${[['primary','ปฐมภูมิ'],['secondary','ทุติยภูมิ'],['tertiary','ตติยภูมิ'],['quaternary','จตุรภูมิ']].map(([k,n])=>`<option value="${k}" ${state.level===k?'selected':''}>${n}</option>`).join('')}</select></label>`;
+  } else if (state.sub==='ion') {
+    html += `<label>ไอออน<span></span><select data-key="ion">${Object.entries(IONS).map(([k,v])=>`<option value="${k}" ${state.ion===k?'selected':''}>${v.sym} ${v.role}</option>`).join('')}</select></label>`;
+  } else if (state.sub==='nucleic') {
+    html += `<button class="switch ${state.pair?'on':''}" data-act="pair" style="width:100%">${state.pair?'แสดง DNA สายคู่':'แสดง RNA สายเดี่ยว'}</button>`;
+  } else if (state.sub==='water') {
+    html += `<label>อุณหภูมิของน้ำ <span data-for="temp">${num(state.temp,0)} °C</span><input type="range" min="0" max="100" step="1" value="${state.temp}" data-key="temp"></label>`;
+  } else {
+    html += `<button class="switch ${state.saturated?'on':''}" data-act="sat" style="width:100%">${state.saturated?'หางอิ่มตัว ตรง':'หางไม่อิ่มตัว มีข้อพับ'}</button>`;
+  }
+  if (state.mode!==1) {
+    html += `<div class="row"><button class="switch ${state.show==='bond'?'on':''}" data-act="show" data-v="bond">แสดงพันธะ</button><button class="switch ${state.show==='polar'?'on':''}" data-act="show" data-v="polar">แสดงขั้ว</button></div>`;
+  }
+  html += `<div class="row"><button class="btn alt" data-act="play">${state.playing?'หยุดภาพ':'เล่นภาพ'}</button><button class="btn alt" data-act="reset">รีเซ็ต</button></div>`;
+  $('controls').innerHTML = html;
+}
+function side() {
+  let formula='', stats='', analysis='', mis='', table='';
+  if (state.mode===1) {
+    const p = profile();
+    const label = resultLabel(state.test, p[state.test], state.minutes);
+    formula = state.test==='benedict' ? 'น้ำตาลรีดิวซิง + ความร้อน → ตะกอนอิฐ' : TESTS[state.test];
+    stats = [['ผล', label],['เวลาต้ม', state.test==='benedict'?state.minutes+' นาที':'ไม่ต้องต้ม'],['ตัวอย่าง', p.name]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = state.food==='sucrose' ? (state.hydrolyzed?'ซูโครสถูกย่อยแล้ว ให้ผลบวก':'ซูโครสยังไม่ย่อย ผลเป็นลบ') : p.name;
+    mis = '<strong>จำไว้:</strong> ซูโครสไม่ทำปฏิกิริยาเบเนดิกต์ จนกว่าจะถูกย่อย';
+    const rows = Object.entries(state.ran).map(([k,v])=>`<tr><td>${FOODS[k.split('|')[0]].name}</td><td>${TESTS[k.split('|')[1]]}</td><td>${v}</td></tr>`).join('');
+    table = `<table><tr><th>ตัวอย่าง</th><th>การทดสอบ</th><th>ผล</th></tr>${rows || '<tr><td colspan="3">ยังไม่มีผลที่บันทึก</td></tr>'}</table>`;
+  } else if (state.mode===2) {
+    const spec = POLY[state.poly]; const b = bonds();
+    formula = state.count<2 && state.poly!=='lipid'
+      ? 'โมโนเมอร์ยังไม่พอที่จะเกิดพันธะ'
+      : `โมโนเมอร์รวมกัน → พอลิเมอร์ + น้ำ · พันธะที่เกิดคือ${spec.bond}`;
+    stats = [['จำนวนหน่วย', state.count+(state.poly==='lipid'?' กรดไขมัน':' หน่วย')],['พันธะ', b.made+' '+spec.bond],['น้ำที่คายออก', b.water+' โมเลกุล']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = `${spec.name} · น้ำที่คาย ${b.water}`;
+    mis = '<strong>จำไว้:</strong> ต่อกันแล้วคายน้ำ สลายแล้วใช้น้ำ';
+    table = `<table><tr><th>สาร</th><th>พลังงาน</th></tr><tr><td>คาร์โบไฮเดรต</td><td>4 kcal/g</td></tr><tr><td>โปรตีน</td><td>4 kcal/g</td></tr><tr><td>ลิพิด</td><td>9 kcal/g</td></tr></table>`;
+  } else if (state.mode===3) {
+    const s = stability();
+    const intact = state.level==='primary' || s>45;
+    formula = 'เสียสภาพ = รูปร่างพัง แต่พันธะเพปไทด์ยังอยู่';
+    stats = [['การคงสภาพ', num(s,0)+' %'],['พันธะเพปไทด์', 'ยังครบ'],['พันธะไฮโดรเจน', Math.round(s)+' %']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    const names={primary:'ปฐมภูมิ',secondary:'ทุติยภูมิ',tertiary:'ตติยภูมิ',quaternary:'จตุรภูมิ'};
+    analysis = names[state.level] + (intact?' · ยังคงรูป':' · คลายตัว');
+    mis = '<strong>จำไว้:</strong> เสียสภาพไม่ตัดพันธะเพปไทด์';
+    table = `<table><tr><th>ระดับ</th><th>สิ่งที่ยึดไว้</th></tr><tr><td>ปฐมภูมิ</td><td>พันธะเพปไทด์</td></tr><tr><td>ทุติยภูมิ</td><td>พันธะไฮโดรเจนบนแกนหลัก</td></tr><tr><td>ตติยภูมิ</td><td>หมู่ R พันธะไอออนิก ไฮโดรเจน โควาเลนต์ S–S</td></tr><tr><td>จตุรภูมิ</td><td>หลายซับยูนิต</td></tr></table>`;
+  } else if (state.sub==='water') {
+    formula = 'น้ำมีขั้ว จึงเกิดพันธะไฮโดรเจน';
+    stats = [['ขั้ว', 'มีขั้ว'],['พันธะระหว่างน้ำ', 'ไฮโดรเจน'],['อุณหภูมิ', state.temp+' °C']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = 'น้ำเกาะกันเอง และเกาะผิวหลอด';
+    mis = '<strong>จำไว้:</strong> พันธะไฮโดรเจนอยู่ระหว่างโมเลกุล';
+    table = `<table><tr><th>สมบัติ</th><th>ผลต่อสิ่งมีชีวิต</th></tr><tr><td>ตัวทำละลายมีขั้ว</td><td>ละลายน้ำตาลและไอออน</td></tr><tr><td>โคฮีชัน</td><td>ลำเลียงน้ำในท่อลำเลียง</td></tr><tr><td>ความร้อนแฝงสูง</td><td>เหงื่อช่วยระบายความร้อน</td></tr></table>`;
+  } else if (state.sub==='ion') {
+    const ion = IONS[state.ion];
+    formula = 'แร่ธาตุทำงานในรูปไอออน';
+    stats = [['ไอออน', ion.sym],['บทบาท', ion.role],['ชนิด', 'สารอนินทรีย์']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = ion.role;
+    mis = '<strong>จำไว้:</strong> แร่ธาตุไม่ให้พลังงาน kcal';
+    table = `<table><tr><th>ไอออน</th><th>บทบาท</th></tr>${Object.values(IONS).map(i=>`<tr><td>${i.sym}</td><td>${i.role}</td></tr>`).join('')}</table>`;
+  } else if (state.sub==='nucleic') {
+    formula = state.pair ? 'DNA: น้ำตาลดีออกซีไรโบส เบส A T C G สายคู่ ทิศตรงกันข้าม' : 'RNA: น้ำตาลไรโบส เบส A U C G สายเดี่ยว';
+    stats = [['พันธะแกนหลัก', 'ฟอสโฟไดเอสเทอร์'],['คู่เบส', state.pair?'A–T 2 พันธะ, C–G 3 พันธะ':'A U C G'],['สาย', state.pair?'คู่':'เดี่ยว']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = state.pair ? 'DNA สายคู่ A–T, C–G' : 'RNA สายเดี่ยว มี U แทน T';
+    mis = '<strong>จำไว้:</strong> RNA ไม่มีไทมีน';
+    table = `<table><tr><th></th><th>DNA</th><th>RNA</th></tr><tr><td>น้ำตาล</td><td>ดีออกซีไรโบส</td><td>ไรโบส</td></tr><tr><td>เบส</td><td>A T C G</td><td>A U C G</td></tr><tr><td>สาย</td><td>คู่ เกลียวขวา</td><td>ส่วนใหญ่สายเดี่ยว</td></tr></table>`;
+  } else {
+    formula = 'หัวชอบน้ำออก หางไม่ชอบน้ำเข้า';
+    stats = [['หัว', 'ฟอสเฟต ชอบน้ำ'],['หาง', state.saturated?'อิ่มตัว':'ไม่อิ่มตัว'],['การจัดตัว', 'bilayer']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis = 'เรียงเป็นชั้นไขมันคู่';
+    mis = '<strong>จำไว้:</strong> เยื่อไม่แข็งตัว ไขมันขยับได้';
+    table = `<table><tr><th>ส่วน</th><th>สมบัติ</th></tr><tr><td>หัวฟอสเฟต</td><td>มีขั้ว ชอบน้ำ</td></tr><tr><td>หางกรดไขมัน</td><td>ไม่มีขั้ว ไม่ชอบน้ำ</td></tr><tr><td>สเตียรอยด์</td><td>ไขมันวงแหวน เช่น คอเลสเตอรอล</td></tr></table>`;
+  }
+  $('formula').innerHTML = formula; $('stats').innerHTML = stats; $('analysis').innerHTML = analysis; $('mis').innerHTML = mis; $('table').innerHTML = table;
+}
+function fit(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(2, devicePixelRatio||1);
+  const w = Math.max(10, rect.width), h = Math.max(10, rect.height);
+  const W = Math.floor(w*dpr), H = Math.floor(h*dpr);
+  if (canvas.width!==W || canvas.height!==H) { canvas.width=W; canvas.height=H; }
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return {ctx,w,h};
+}
+function paper(ctx,w,h){ ctx.fillStyle='#fff8fb'; ctx.fillRect(0,0,w,h); ctx.strokeStyle='rgba(80,160,110,.18)'; for(let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();} for(let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();} }
+function drawTube(ctx,w,h) {
+  paper(ctx,w,h);
+  const x=w*0.48, y=70;
+  if (state.test==='benedict') {
+    ctx.fillStyle='#f6d7a8'; ctx.fillRect(x-90, 300, 180, 70); ctx.fillStyle='#e67e22'; ctx.fillRect(x-70, 340, 140, 16);
+    ctx.fillStyle='#2f7a4e'; ctx.font='600 15px Leelawadee UI'; ctx.fillText('อ่างน้ำร้อน', x-40, 360);
+  }
+  ctx.strokeStyle='#9fb8b0'; ctx.lineWidth=8; ctx.strokeRect(x-36,y,72,250);
+  ctx.fillStyle=liquidColor(); ctx.fillRect(x-28, y+90, 56, 150);
+  const s=scoreOf(); const showPrecip = state.test==='benedict' && s>=3 && state.minutes>=3;
+  if (showPrecip) {
+    ctx.fillStyle='#8e2f12';
+    for (let i=0;i<12;i++){ ctx.beginPath(); ctx.arc(x-20+(i%6)*8, y+220+Math.floor(i/6)*8, 3, 0, Math.PI*2); ctx.fill(); }
+  }
+  if (state.test==='sudan') {
+    ctx.fillStyle = s? '#d32f2f':'#f4e1c1'; ctx.fillRect(x-28, y+90, 56, s? 48:20);
+    ctx.fillStyle='#f7f3ea'; ctx.fillRect(x-28, y+138, 56, 102);
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 20px Leelawadee UI';
+  ctx.fillText(FOODS[state.food].name+' + '+TESTS[state.test], 24, 40);
+  ctx.font='600 16px Leelawadee UI'; ctx.fillText(resultLabel(state.test, s, state.minutes), 24, 68);
+}
+function drawPolymer(ctx,w,h) {
+  paper(ctx,w,h);
+  const spec=POLY[state.poly]; const n=state.count;
+  const y=h*0.45;
+  for (let i=0;i<n;i++) {
+    const x=80+i*70;
+    const kink=!state.saturated && state.poly==='lipid' && i%2;
+    ctx.fillStyle = state.show==='polar' ? (state.poly==='lipid'?'#f0b429':'#2e9a62') : '#1f8f55';
+    ctx.beginPath();
+    if (kink) { ctx.moveTo(x,y); ctx.lineTo(x+20,y+20); ctx.lineTo(x+46,y-10); ctx.lineTo(x+46,y+16); ctx.fill(); }
+    else { ctx.arc(x,y,22,0,Math.PI*2); ctx.fill(); }
+    ctx.fillStyle='#fff'; ctx.font='700 13px Leelawadee UI'; ctx.textAlign='center';
+    ctx.fillText(state.poly==='carb'?'G':state.poly==='protein'?'AA':state.poly==='lipid'?'FA':'N', x, y+4);
+    if (i>0 && state.show==='bond') {
+      ctx.strokeStyle='#c4451d'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-48,y); ctx.lineTo(x-24,y); ctx.stroke();
+      ctx.fillStyle='#c4451d'; ctx.fillText(spec.bond.slice(0,6), x-36, y-28);
+    }
+    if (i>0) {
+      ctx.fillStyle='#2f6fed'; ctx.beginPath(); ctx.arc(x-36, y+50+Math.sin(state.t*2+i)*4, 8, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#2f7a4e'; ctx.font='13px Leelawadee UI'; ctx.fillText('H₂O', x-36, y+74);
+    }
+  }
+  ctx.textAlign='left'; ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI';
+  ctx.fillText(spec.name, 20, 36);
+}
+function drawProtein(ctx,w,h) {
+  paper(ctx,w,h);
+  const s = stability()/100;
+  const fold = state.level==='primary' ? 0 : s;
+  const n = state.level==='quaternary' ? 18 : 14;
+  const cx=w*0.55, cy=h*0.52;
+  function chain(ox, oy, phase) {
+    ctx.beginPath();
+    for (let i=0;i<n;i++) {
+      const spread = lerp(26, 8, fold);
+      const ang = lerp(i*0.15, i*0.7+phase, fold);
+      const x = ox + Math.cos(ang)*spread*i*0.15 + (i-n/2)*lerp(16, 2, fold);
+      const y = oy + Math.sin(ang)*lerp(8, 22, fold);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle='#7dcea0'; ctx.lineWidth=3; ctx.stroke();
+    for (let i=0;i<n;i++) {
+      const spread = lerp(26, 8, fold);
+      const ang = lerp(i*0.15, i*0.7+phase, fold);
+      const x = ox + Math.cos(ang)*spread*i*0.15 + (i-n/2)*lerp(16, 2, fold);
+      const y = oy + Math.sin(ang)*lerp(8, 22, fold);
+      const hydro = i%3===0;
+      ctx.fillStyle = state.show==='polar' ? (hydro?'#f0b429':'#2f6fed') : (i%2?'#2f7a4e':'#3dba7a');
+      ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.fill();
+      if (state.show==='bond' && i>0 && fold>0.4 && i%3===0) {
+        ctx.strokeStyle='rgba(47,111,237,.7)'; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-20,y-16); ctx.stroke(); ctx.setLineDash([]);
+      }
+    }
+  }
+  chain(cx, cy, 0);
+  if (state.level==='quaternary') chain(cx+30, cy+16, 2);
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI';
+  ctx.fillText(fold<0.45 && state.level!=='primary' ? 'โครงสร้างคลายตัว' : 'โครงสร้างยังอยู่', 20, 36);
+  ctx.font='15px Leelawadee UI'; ctx.fillText('เส้นเขียวคือแกนเพปไทด์ที่ยังไม่ขาด', 20, 60);
+}
+function drawWater(ctx,w,h) {
+  paper(ctx,w,h);
+  const shake = state.temp/100*6;
+  for (let i=0;i<8;i++) {
+    const x=70+(i%4)*110, y=120+Math.floor(i/4)*150;
+    const jx=Math.sin(state.t*2+i)*shake, jy=Math.cos(state.t*2+i)*shake;
+    ctx.fillStyle='#d32f2f'; ctx.beginPath(); ctx.arc(x+jx,y+jy,16,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#eceff1'; ctx.beginPath(); ctx.arc(x-18+jx,y+14+jy,9,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(x+18+jx,y+14+jy,9,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#2f7a4e'; ctx.font='13px Leelawadee UI'; ctx.fillText('δ−', x-8, y-18); ctx.fillText('δ+', x-28, y+36);
+    if (i%4!==3 && state.show==='bond') {
+      ctx.strokeStyle='#2f6fed'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(x+20,y); ctx.lineTo(x+70,y); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+  ctx.fillStyle='#b0bec5'; ctx.fillRect(w-70, 80, 16, 240);
+  ctx.fillStyle='rgba(47,111,237,.35)'; ctx.fillRect(w-86, 200, 14, 100);
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText('โมเลกุลน้ำและพันธะไฮโดรเจน', 20, 36);
+  ctx.font='15px Leelawadee UI'; ctx.fillText('แถบขวา: น้ำเกาะผนังหลอด (แอดฮีชัน)', 20, h-24);
+}
+function drawDNA(ctx,w,h) {
+  paper(ctx,w,h);
+  const bases=state.pair?['A','T','C','G','G','C','T','A']:['A','U','C','G','G','C','U','A'];
+  bases.forEach((b,i)=>{
+    const x=70+i*58, y=h*0.5+Math.sin(i*0.8+state.t)*18;
+    const y2=h*0.5+Math.sin(i*0.8+state.t+Math.PI)*18;
+    ctx.fillStyle = state.show==='polar'?'#f0b429':'#7dcea0';
+    ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='700 14px Leelawadee UI'; ctx.textAlign='center'; ctx.fillText(b,x,y+5);
+    if (state.pair) {
+      const comp={A:'T',T:'A',C:'G',G:'C'}[b];
+      ctx.fillStyle='#2f7a4e'; ctx.beginPath(); ctx.arc(x,y2,16,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.fillText(comp,x,y2+5);
+      const hb=b==='C'||b==='G'?3:2;
+      ctx.strokeStyle=state.show==='bond'?'#c4451d':'#90a4ae'; ctx.lineWidth=hb;
+      ctx.beginPath(); ctx.moveTo(x,y+16); ctx.lineTo(x,y2-16); ctx.stroke();
+    }
+  });
+  ctx.textAlign='left'; ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI';
+  ctx.fillText(state.pair?"DNA 5' → 3' คู่กับ 3' → 5'":"RNA มี U แทน T", 20, 36);
+}
+function drawBilayer(ctx,w,h) {
+  paper(ctx,w,h);
+  ctx.fillStyle='rgba(47,111,237,.15)'; ctx.fillRect(0,0,w,h*0.28); ctx.fillRect(0,h*0.72,w,h*0.28);
+  for (let i=0;i<10;i++) {
+    const x=40+i* (w-80)/9;
+    [h*0.34, h*0.66].forEach((y,idx)=>{
+      ctx.fillStyle=state.show==='polar'?'#2f6fed':'#7e57c2';
+      ctx.beginPath(); ctx.arc(x, y+(idx?18:-18), 14, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle=state.show==='polar'?'#f0b429':'#f9a825'; ctx.lineWidth=4;
+      ctx.beginPath();
+      if (state.saturated) { ctx.moveTo(x,y); ctx.lineTo(x, idx?y-28:y+28); }
+      else { ctx.moveTo(x,y+(idx?-10:10)); ctx.lineTo(x+8,y+(idx?-24:24)); ctx.lineTo(x-4,y+(idx?-36:36)); }
+      ctx.stroke();
+    });
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 18px Leelawadee UI'; ctx.fillText('ฟอสโฟลิพิดไบเลเยอร์ในน้ำ', 20, 32);
+}
+function drawMain() {
+  const {ctx,w,h}=fit($('cv'));
+  if (state.mode===1) drawTube(ctx,w,h);
+  else if (state.mode===2) drawPolymer(ctx,w,h);
+  else if (state.mode===3) drawProtein(ctx,w,h);
+  else if (state.sub==='water') drawWater(ctx,w,h);
+  else if (state.sub==='ion') { paper(ctx,w,h); ctx.fillStyle='#2f7a4e'; ctx.font='800 64px Leelawadee UI'; ctx.fillText(IONS[state.ion].sym, w*0.28, h*0.5); ctx.font='600 20px Leelawadee UI'; ctx.fillText(IONS[state.ion].role, 30, h*0.62); }
+  else if (state.sub==='nucleic') drawDNA(ctx,w,h);
+  else drawBilayer(ctx,w,h);
+}
+function drawGraph() {
+  const {ctx,w,h}=fit($('graph'));
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const pad={l:36,r:10,t:16,b:28}, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  ctx.strokeStyle='#e7b7cc'; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+ih); ctx.lineTo(pad.l+iw,pad.t+ih); ctx.stroke();
+  ctx.fillStyle='#4e6a5c'; ctx.font='12px Leelawadee UI';
+  if (state.mode===3) {
+    for (let i=0;i<=20;i++) {
+      const temp=i*5; const sc=Math.exp(-Math.pow((temp-37)/18,2))*Math.exp(-Math.pow((state.pH-7.4)/2,2));
+      const X=pad.l+i/20*iw, Y=pad.t+ih-sc*ih;
+      ctx.fillStyle='#7dcea0'; ctx.fillRect(X,Y,3,pad.t+ih-Y);
+    }
+    const X=pad.l+(state.temp/100)*iw;
+    ctx.strokeStyle='#c4451d'; ctx.beginPath(); ctx.moveTo(X,pad.t); ctx.lineTo(X,pad.t+ih); ctx.stroke();
+    ctx.fillText('ความคงสภาพเทียบอุณหภูมิ', pad.l, 12);
+  } else if (state.mode===1) {
+    const order=['benedict','iodine','biuret','sudan'];
+    const p=profile();
+    order.forEach((k,i)=>{
+      const x=pad.l+i*(iw/4)+10; const v=p[k]/4;
+      ctx.fillStyle='#7dcea0'; ctx.fillRect(x, pad.t+ih-v*(ih-8), 28, v*(ih-8));
+      ctx.fillStyle='#4e6a5c'; ctx.fillText(TESTS[k].slice(0,6), x-4, h-8);
+    });
+  } else {
+    ctx.fillText('พลังงาน kcal ต่อ 1 กรัม', pad.l, 12);
+    [['คาร์บ',4],['โปรตีน',4],['ลิพิด',9]].forEach((d,i)=>{
+      const x=pad.l+40+i*80; ctx.fillStyle=i===2?'#f0b429':'#7dcea0';
+      ctx.fillRect(x, pad.t+ih-(d[1]/9)*(ih-10), 36, (d[1]/9)*(ih-10));
+      ctx.fillStyle='#4e6a5c'; ctx.fillText(d[0], x, h-8);
+    });
+  }
+}
+document.addEventListener('input', (e)=>setKey(e.target));
+document.addEventListener('change', (e)=>setKey(e.target));
+function setKey(t){
+  if (!t.dataset || !t.dataset.key) return;
+  const key=t.dataset.key;
+  state[key] = t.type==='range'||t.type==='number' ? parseFloat(t.value) : t.value;
+  const lab=document.querySelector(`[data-for="${key}"]`);
+  if (lab) lab.textContent = key==='temp'? num(state.temp,0)+' °C' : key==='pH'? num(state.pH,1) : key==='minutes'? num(state.minutes,0)+' นาที' : state[key];
+  if (['food','test','poly','level','ion'].includes(key)) renderControls();
+  side();
+}
+document.addEventListener('click',(e)=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act, v=b.dataset.v;
+  if (act==='mode'){ state.mode=+v; renderControls(); side(); }
+  if (act==='sub'){ state.sub=v; renderControls(); side(); }
+  if (act==='play'){ state.playing=!state.playing; renderControls(); }
+  if (act==='reset'){ const m=state.mode,s=state.sub; state=defaults(); state.mode=m; state.sub=s; renderControls(); side(); }
+  if (act==='hydro'){ state.hydrolyzed=!state.hydrolyzed; renderControls(); side(); }
+  if (act==='record'){ const p=profile(); state.ran[state.food+'|'+state.test]=resultLabel(state.test,p[state.test],state.minutes); side(); }
+  if (act==='add'){ const max=POLY[state.poly].max||8; state.count=Math.min(max, state.count+1); side(); }
+  if (act==='cut'){ state.count=Math.max(1, state.count-1); side(); }
+  if (act==='sat'){ state.saturated=!state.saturated; renderControls(); side(); }
+  if (act==='show'){ state.show=v; renderControls(); side(); }
+  if (act==='pair'){ state.pair=!state.pair; renderControls(); side(); }
+});
+let last=0;
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000||0); last=now; if(state.playing) state.t+=dt; drawMain(); drawGraph(); requestAnimationFrame(loop); }
+renderControls(); side(); requestAnimationFrame(loop);
+document.documentElement.dataset.ready='chemistry';
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

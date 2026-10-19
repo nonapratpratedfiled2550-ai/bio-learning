@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>มนุษย์กับความยั่งยืนของทรัพยากรและสิ่งแวดล้อม – Interactive Biology Lab</title>
+<style>
+:root{--bg:#060b12;--panel:#0d1622;--panel2:#13202f;--line:#23384f;--txt:#eef6fd;--mut:#b3c6d8;--acc:#38bdf8;--acc2:#fbbf24;--on:#0c4a6e;--pri:#0369a1;--sw:#b45309;--deep:#070d15;--h1:#0c4a6e;--h2:#78350f;--btn:#14243a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,var(--h1),var(--h2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:#e0f2fe;opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:var(--on);border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--btn);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--pri);border-color:var(--acc)}.btn.ffon{background:#b45309;border-color:#fbbf24}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:var(--sw);color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:var(--deep);border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:var(--pri);color:#fff;border-color:var(--acc)}.flow span.done{color:var(--txt);border-color:var(--on)}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:var(--deep);padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#1f170b;border-color:#6b4a1e}.mis h3{color:#fbbf24}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.chart{height:250px;background:var(--deep);border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🌏 มนุษย์กับความยั่งยืนของทรัพยากรธรรมชาติและสิ่งแวดล้อม</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : คุณภาพน้ำ DO · BOD · COD</button>
+    <button data-mode="2">โหมด 2 : การสะสมสารพิษในห่วงโซ่อาหาร</button>
+    <button data-mode="3">โหมด 3 : ภาวะโลกร้อน โอโซน และฝนกรด</button>
+    <button data-mode="4">โหมด 4 : ความหลากหลายทางชีวภาพและการอนุรักษ์</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>แหล่งน้ำเสีย</label><select id="src"><option value="dom">ชุมชน (น้ำทิ้งบ้านเรือน)</option><option value="food">โรงงานอาหาร</option><option value="chem">โรงงานเคมี</option><option value="agri">เกษตรกรรม/ฟาร์มสุกร</option></select></div>
+      <div class="ctl"><label>BOD ของน้ำทิ้ง (Load) <b id="loadV"></b></label><input type="range" id="load" min="0" max="100" value="60"></div>
+      <div class="ctl"><label>อุณหภูมิน้ำ <b id="tempV"></b></label><input type="range" id="temp" min="20" max="35" value="28"></div>
+      <label class="chk"><input type="checkbox" id="treat"> บำบัดน้ำเสียก่อนปล่อย (ลด BOD 85%)</label>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>สารพิษ</label><select id="tox"><option value="ddt">DDT (ยาฆ่าแมลง)</option><option value="hg">ปรอท (Methylmercury)</option><option value="mp">ไมโครพลาสติก</option></select></div>
+      <div class="ctl"><label>ความเข้มข้นในแพลงก์ตอน (C₀) <b id="c0V"></b></label><input type="range" id="c0" min="0" max="100" value="33"></div>
+      <div class="ctl"><label>ตัวคูณการสะสม (BMF) <b id="bmfV"></b></label><input type="range" id="bmf" min="1" max="15" step="0.5" value="8"></div>
+      <label class="chk"><input type="checkbox" id="ban"> ห้ามใช้/หยุดปล่อยสารพิษ (ปีที่ 10)</label>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>การปล่อยแก๊สเรือนกระจก <b id="ghgV"></b></label><input type="range" id="ghg" min="1" max="5" step="0.1" value="2"></div>
+      <div class="ctl"><label>การปล่อย CFC</label><select id="cfc"><option value="off">ไม่มี (Off)</option><option value="low">ต่ำ (Low)</option><option value="high" selected>สูง (High)</option></select></div>
+      <div class="ctl"><label>SO₂ / NOx จากโรงไฟฟ้าถ่านหิน</label><select id="so2"><option value="none">ไม่มี</option><option value="low" selected>ต่ำ</option><option value="high">สูง</option></select></div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>การตัดไม้ทำลายป่า <b id="defV"></b></label><input type="range" id="def" min="0" max="90" value="55"></div>
+      <label class="chk"><input type="checkbox" id="inv" checked> ชนิดพันธุ์ต่างถิ่นรุกราน (ไมยราบยักษ์)</label>
+      <label class="chk"><input type="checkbox" id="hunt" checked> การล่าสัตว์</label>
+      <div class="ctl"><label>มาตรการอนุรักษ์</label><select id="cons"><option value="none">ไม่มี</option><option value="in">In-situ (เขตอนุรักษ์ในถิ่นกำเนิด)</option><option value="ex">Ex-situ (สวนสัตว์ ธนาคารเมล็ด)</option><option value="both" selected>In-situ + Ex-situ</option></select></div>
+      <div class="ctl"><label>พื้นที่คุ้มครอง <b id="paV"></b></label><input type="range" id="pa" min="5" max="80" value="25"></div>
+      <label class="chk"><input type="checkbox" id="corr"> สร้างทางเชื่อมป่า (Wildlife corridor)</label>
+      <label class="chk"><input type="checkbox" id="plant"> ปลูกป่าทดแทน</label>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset">↺ รีเซ็ต</button><button class="btn" id="ff">⏩ เร่งเวลา ×10</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgChem">ดัชนี / ระดับโมเลกุล</button><button id="tgEco" class="on">สุขภาพระบบนิเวศ</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#eef2f6',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function EM(g,e,x,y,s){g.fillStyle='#000';g.font=s+'px "Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e,x,y);}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'eco',time:0,ff:false};
+const CHEM=()=>S.toggle==='chem';
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='rgba(255,255,255,.09)';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#d5e6f5',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function panel(g,x,y,w,h){g.fillStyle='rgba(9,17,28,.92)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=1;g.stroke();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+const fmt=v=>v>=1e6?(v/1e6).toFixed(1)+' ล้าน':v>=100?Math.round(v).toLocaleString():v>=10?v.toFixed(1):v>=1?v.toFixed(2):v>=0.01?v.toFixed(3):(+v.toPrecision(2)).toString();
+function mix(c1,c2,t){const a=c1.match(/\w\w/g).map(x=>parseInt(x,16)),b=c2.match(/\w\w/g).map(x=>parseInt(x,16));return 'rgb('+a.map((v,i)=>Math.round(lerp(v,b[i],clamp(t,0,1)))).join(',')+')';}
+
+/* ================= MODE 1 : RIVER WATER QUALITY (Streeter–Phelps) ================= */
+const SRC={dom:{n:'ชุมชน',r:2.2,c:15},food:{n:'โรงงานอาหาร',r:1.7,c:8},chem:{n:'โรงงานเคมี',r:2,c:180},agri:{n:'เกษตรกรรม',r:2.5,c:25}};
+const U=25,TM=6;
+let M1;function initM1(){M1={t:0};}
+function river(){const Tw=V('temp'),Lw=V('load')*($('#treat').checked?0.15:1),src=SRC[$('#src').value],DOs=14.62-0.3898*Tw+0.006969*Tw*Tw-0.00005897*Tw*Tw*Tw,kd=0.35*1.047**(Tw-20),ka=0.6*1.024**(Tw-20),L0=(1.5+0.25*Lw)/1.25,DO0=((DOs-0.3)+0.25*1)/1.25,D0=DOs-DO0;
+  const Def=t=>kd*L0/(ka-kd)*(Math.exp(-kd*t)-Math.exp(-ka*t))+D0*Math.exp(-ka*t),DO=t=>Math.max(0,DOs-Def(t)),BOD=t=>L0*Math.exp(-kd*t),COD=t=>BOD(t)*src.r+0.2*src.c*V('load')/100*($('#treat').checked?0.4:1);
+  let tc=0,mn=99;for(let t=0;t<=TM;t+=0.02){const d=DO(t);if(d<mn){mn=d;tc=t;}}return{Tw,Lw,src,DOs,kd,ka,L0,D0,DO,BOD,COD,tc,mn};}
+const doCol=d=>d>=6?mix('1d4ed8','0284c7',(8-d)/2):d>=4?mix('0284c7','0d9488',(6-d)/2):d>=2?mix('0d9488','65a30d',(4-d)/2):mix('65a30d','57534e',(2-d)/2);
+const zone=d=>d>=6?0:d>=4?1:d>=2?2:3;
+const ZN=[['น้ำสะอาด (Clean)','🦐','ตัวอ่อนแมลงชีปะขาว กุ้ง ปลา','#38bdf8'],['ฟื้นตัว (Recovery)','🐌','หอย ปลิง ปลาทนทาน','#2dd4bf'],['ย่อยสลาย (Decomposition)','🪱','หนอนแดง (Tubifex) ลูกน้ำ','#a3e635'],['เสื่อมโทรมรุนแรง (Septic)','🦠','แบคทีเรียไร้ O₂ ไม่มีปลา','#a8a29e']];
+function wqi(d,b,DOs){return Math.round(100*(0.6*clamp(d/DOs,0,1)+0.4*clamp(1-b/12,0,1)));}
+function stepM1(dt){M1.t=(M1.t+dt*0.5)%TM;}
+function drawM1(g,w,h){const R=river(),x0=Math.round(w*0.14),X=t=>x0+t/TM*(w-x0-14),ry=x=>112+Math.sin(x/w*7.5)*22,rw=40;
+  g.fillStyle='#14532d';rr(g,4,4,w-8,214,10);g.fill();for(let i=0;i<60;i++){g.fillStyle='rgba(34,197,94,.35)';g.beginPath();g.arc(8+hash(i)*(w-16),10+hash(i+5)*200,2+hash(i+9)*3,0,7);g.fill();}
+  for(let x=4;x<w-4;x+=3){const t=(x-x0)/(w-x0-14)*TM,d=x<x0?R.DOs-0.3:R.DO(t);g.fillStyle=doCol(d);g.fillRect(x,ry(x)-rw/2,3.5,rw);}
+  for(let i=0;i<40;i++){const x=((S.time*40+hash(i)*w)%(w-10))+5,y=ry(x)+(hash(i+3)-0.5)*rw*0.8;g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(x+8,y);g.stroke();}
+  g.fillStyle='#78716c';g.fillRect(x0-34,ry(x0)-rw/2-46,40,26);g.fillStyle='#57534e';g.fillRect(x0-26,ry(x0)-rw/2-60,7,16);EM(g,R.src.n==='เกษตรกรรม'?'🐖':R.src.n==='ชุมชน'?'🏘️':'🏭',x0-14,ry(x0)-rw/2-33,16);
+  g.strokeStyle='#a8a29e';g.lineWidth=5;g.beginPath();g.moveTo(x0+4,ry(x0)-rw/2-30);g.lineTo(x0+4,ry(x0)-rw/2+2);g.stroke();if(V('load')>0)for(let i=0;i<6;i++){const k=(S.time*1.5+i/6)%1;g.fillStyle=$('#treat').checked?'rgba(186,230,253,.8)':'rgba(120,83,45,.9)';g.beginPath();g.arc(x0+4+k*8,ry(x0)-rw/2+2+k*14,2.5,0,7);g.fill();}
+  T(g,'จุดปล่อยน้ำทิ้ง',x0-34,ry(x0)-rw/2-72,'#fde68a',10,'left',true);T(g,'กระแสน้ำ → '+U+' km/วัน',w-14,22,'#bae6fd',10.5,'right',true);
+  for(let k=0;k<=6;k++){const x=X(k);T(g,(k*U)+' km',x,ry(x)+rw/2+12,'#d1fae5',9.5,'center');}
+  const xc=X(R.tc);g.strokeStyle='#ef4444';g.setLineDash([3,3]);g.lineWidth=1.5;g.beginPath();g.moveTo(xc,ry(xc)-rw/2-10);g.lineTo(xc,ry(xc)+rw/2+4);g.stroke();g.setLineDash([]);T(g,'จุดวิกฤต DO '+R.mn.toFixed(1),xc,ry(xc)-rw/2-18,'#fca5a5',10,'center',true);
+  const xp=X(M1.t),yp=ry(xp),dp=R.DO(M1.t),bp=R.BOD(M1.t);g.fillStyle='#fbbf24';g.beginPath();g.arc(xp,yp,6,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=1.5;g.stroke();g.strokeStyle='#fbbf24';g.beginPath();g.moveTo(xp,yp-6);g.lineTo(xp,yp-30);g.stroke();
+  panel(g,clamp(xp-58,6,w-122),yp-62,116,30);T(g,'DO '+dp.toFixed(1)+' · BOD '+bp.toFixed(1),clamp(xp-58,6,w-122)+58,yp-47,'#fde68a',10.5,'center',true);
+  if(!CHEM()){for(let i=0;i<46;i++){const x=6+hash(i+70)*(w-12),t=(x-x0)/(w-x0-14)*TM,d=x<x0?R.DOs:R.DO(t);if(d<4||hash(i+80)>d/8)continue;const sx=(x+S.time*12*(hash(i)>0.5?1:-1)+w)%w;EM(g,'🐟',sx,ry(sx)+(hash(i+90)-0.5)*rw*0.6,12);}
+    const zy=232,zh=74;panel(g,6,zy,w-12,zh+120);T(g,'โซนคุณภาพน้ำตามระยะทาง (Indicator species)',14,zy+12,'#7dd3fc',11.5,'left',true);
+    let px=x0,pz=zone(R.DO(0));const draw=(a,b,z)=>{g.fillStyle=ZN[z][3];g.globalAlpha=0.25;g.fillRect(a,zy+24,b-a,zh-10);g.globalAlpha=1;if(b-a>46){EM(g,ZN[z][1],(a+b)/2,zy+42,18);T(g,ZN[z][0].split(' ')[0],(a+b)/2,zy+62,ZN[z][3],10,'center',true);}};
+    g.fillStyle=ZN[0][3];g.globalAlpha=0.25;g.fillRect(10,zy+24,x0-10,zh-10);g.globalAlpha=1;EM(g,'🦐',(10+x0)/2,zy+42,18);T(g,'ต้นน้ำ',(10+x0)/2,zy+62,ZN[0][3],10,'center',true);
+    for(let t=0.05;t<=TM+1e-6;t+=0.05){const z=zone(R.DO(t)),x=X(t);if(z!==pz||t>=TM-0.01){draw(px,x,pz);px=x;pz=z;}}
+    ZN.forEach((z,i)=>{const yy=zy+zh+30+i*20;g.fillStyle=z[3];g.fillRect(16,yy-5,10,10);EM(g,z[1],40,yy,13);T(g,z[0]+': '+z[2],54,yy,'#e2e8f0',10.5);});
+    const W=wqi(dp,bp,R.DOs);T(g,'ดัชนีคุณภาพน้ำ (WQI) ที่หัววัด',w-200,zy+zh+30,'#7dd3fc',10.5,'left',true);T(g,W+' / 100',w-200,zy+zh+52,W>=70?'#4ade80':W>=50?'#facc15':W>=30?'#fb923c':'#ef4444',20,'left',true);T(g,W>=70?'ดี':W>=50?'พอใช้':W>=30?'เสื่อมโทรม':'เสื่อมโทรมมาก',w-200,zy+zh+76,'#e2e8f0',11,'left',true);}
+  else{const cx=130,cy=338,cr=100;panel(g,6,232,w-12,232);g.save();g.beginPath();g.arc(cx,cy,cr,0,7);g.clip();g.fillStyle=doCol(dp);g.fillRect(cx-cr,cy-cr,cr*2,cr*2);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(cx-cr,cy-cr,cr*2,cr*2);
+      const nO=Math.round(dp*4),nB=Math.round(bp*3),nb=Math.round(Math.min(30,bp*2));for(let i=0;i<nO;i++){const a=hash(i)*6.28+S.time*0.3*(hash(i+1)-0.5),r=hash(i+2)*cr*0.9,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;g.fillStyle='#93c5fd';g.beginPath();g.arc(x-3,y,3.2,0,7);g.arc(x+3,y,3.2,0,7);g.fill();}
+      for(let i=0;i<nB;i++){const a=hash(i+40)*6.28-S.time*0.2,r=hash(i+41)*cr*0.85,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;g.fillStyle='#92400e';g.beginPath();g.arc(x,y,4.5,0,7);g.fill();}
+      for(let i=0;i<nb;i++){const a=hash(i+90)*6.28+S.time*0.5,r=hash(i+91)*cr*0.8,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;g.save();g.translate(x,y);g.rotate(a);g.fillStyle='#4ade80';rr(g,-6,-2.5,12,5,2.5);g.fill();g.restore();}g.restore();
+      g.strokeStyle='#fbbf24';g.lineWidth=2;g.beginPath();g.arc(cx,cy,cr,0,7);g.stroke();g.fillStyle='rgba(15,23,42,.85)';rr(g,cx-38,cy-cr+8,76,18,9);g.fill();T(g,'ซูมที่หัววัด',cx,cy-cr+17,'#fde68a',10.5,'center',true);
+      const lx=250;[['● ● O₂ ละลายน้ำ','#93c5fd',dp.toFixed(1)+' mg/L'],['● สารอินทรีย์ (BOD)','#d97706',bp.toFixed(1)+' mg/L'],['▬ แบคทีเรียแอโรบิก','#4ade80','']].forEach(([a,c,v],i)=>{T(g,a,lx,262+i*22,c,11,'left',true);T(g,v,w-20,262+i*22,'#fde68a',11,'right',true);});
+      T(g,'(CH₂O)ₙ + O₂ —แบคทีเรีย→ CO₂ + H₂O',lx,340,'#e2e8f0',12,'left',true);T(g,'COD = '+R.COD(M1.t).toFixed(1)+' mg/L (ออกซิไดซ์ด้วย K₂Cr₂O₇)',lx,366,'#fca5a5',11,'left',true);T(g,'COD ≥ BOD เสมอ: รวมสารที่จุลินทรีย์ย่อยไม่ได้',lx,388,'#e2e8f0',10.5);
+      bar(g,lx,424,w-lx-20,9,dp/R.DOs,'#38bdf8','% ความอิ่มตัวของ O₂',Math.round(dp/R.DOs*100)+'%');}}
+
+/* ================= MODE 2 : BIOMAGNIFICATION ================= */
+const TOX={ddt:{n:'DDT',bmf:8,thr:5,f:'C₁₄H₉Cl₅',p:'ละลายในไขมันสูง (log Kow ≈ 6.9) สลายตัวยาก ครึ่งชีวิตในดิน 2–15 ปี',L:[['แพลงก์ตอน','🦠'],['ปลาเล็ก','🐟'],['ปลาใหญ่','🐠'],['นกกินปลา','🦅']],eff:'เปลือกไข่บาง ลูกนกตาย (Silent Spring)'},
+  hg:{n:'ปรอท (MeHg)',bmf:6,thr:0.5,f:'CH₃Hg⁺',p:'จับกับหมู่ –SH ของโปรตีน สะสมในกล้ามเนื้อ ผ่านรกและสมองได้',L:[['แพลงก์ตอน','🦠'],['ปลาเล็ก','🐟'],['ปลาทูน่า','🐟'],['มนุษย์','🧑']],eff:'โรคมินามาตะ: ระบบประสาทเสียหาย'},
+  mp:{n:'ไมโครพลาสติก',bmf:1.5,thr:1,f:'(C₂H₄)ₙ < 5 mm',p:'อนุภาคพลาสติกขนาด < 5 mm ดูดซับสารพิษ (POPs) ไว้ที่ผิว ส่วนใหญ่ถูกขับออก',L:[['แพลงก์ตอน','🦠'],['หอยแมลงภู่','🦪'],['ปลา','🐟'],['มนุษย์ / นกทะเล','🧑']],eff:'อุดตันทางเดินอาหาร นำพาสารพิษ'}};
+let M2;function initM2(){M2={t:0};}
+const C0=()=>10**(-3+3*V('c0')/100);
+function conc(n,t){const b=V('bmf'),c0=C0(),tau=1+2*n,ban=$('#ban').checked;let c=c0*b**n*(1-Math.exp(-t/tau));if(ban&&t>10)c=c0*b**n*(1-Math.exp(-10/tau))*Math.exp(-(t-10)/(tau*1.5));return c;}
+function stepM2(dt){M2.t=Math.min(30,M2.t+dt*1.2);}
+function drawM2(g,w,h){const X=TOX[$('#tox').value],aw=w-214,t=M2.t,thr=X.thr;
+  const sea=g.createLinearGradient(0,0,0,h);sea.addColorStop(0,'#0c4a6e');sea.addColorStop(1,'#082f49');g.fillStyle=sea;rr(g,4,4,aw,h-8,10);g.fill();
+  const c0=C0(),nW=Math.round(10+12*(Math.log10(c0)+3));for(let i=0;i<nW;i++){const x=10+hash(i)*(aw-20),y=(hash(i+3)*(h-20)+S.time*8*(0.5+hash(i+7)))%(h-20)+10;g.fillStyle='rgba(239,68,68,.6)';g.beginPath();g.arc(x,y,1.6,0,7);g.fill();}
+  const pos=[0,1,2,3].map(i=>({x:aw*(0.2+0.2*i),y:h-70-i*(h-150)/3}));
+  for(let i=0;i<3;i++){const a=pos[i],b=pos[i+1];arrow(g,a.x+30,a.y-24,b.x-30,b.y+24,'rgba(253,224,71,.6)',2);for(let j=0;j<3;j++){const q=(S.time*0.4+j/3+i*0.2)%1;g.fillStyle='#ef4444';g.beginPath();g.arc(lerp(a.x+30,b.x-30,q),lerp(a.y-24,b.y+24,q),2.6,0,7);g.fill();}T(g,'ถูกกิน',(a.x+b.x)/2-26,(a.y+b.y)/2-6,'#fde68a',10,'center');}
+  pos.forEach((p,i)=>{const c=conc(i,t),k=clamp((Math.log10(Math.max(c,1e-4))+3)/(Math.log10(thr*20)+3),0,1),R=26+i*4;glow(g,p.x,p.y,R+16,c>=thr?'rgba(239,68,68,.45)':'rgba(56,189,248,.25)');g.fillStyle='rgba(15,23,42,.85)';g.beginPath();g.arc(p.x,p.y,R,0,7);g.fill();g.strokeStyle=c>=thr?'#ef4444':'#38bdf8';g.lineWidth=2;g.stroke();
+    EM(g,X.L[i][1],p.x,p.y,R*0.95);const nd=Math.round(k*30);for(let j=0;j<nd;j++){const a=hash(j+i*50)*6.28+S.time*0.4,r=R*(0.55+0.4*hash(j+i*50+1));g.fillStyle='#ef4444';g.beginPath();g.arc(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,1.8,0,7);g.fill();}
+    T(g,X.L[i][0],p.x,p.y+R+12,'#e0f2fe',11,'center',true);T(g,fmt(c)+' ppm',p.x,p.y+R+26,c>=thr?'#fca5a5':'#fde68a',11,'center',true);T(g,'ลำดับขั้น '+(i+1),p.x,p.y-R-10,'#93c5fd',9.5,'center');});
+  const ix=aw+10,iw=w-ix-4;panel(g,ix,4,iw,h-8);T(g,X.n,ix+10,20,'#7dd3fc',13,'left',true);T(g,'ปีที่ '+t.toFixed(1)+($('#ban').checked&&t>10?' (หยุดใช้แล้ว)':''),ix+10,40,'#fde68a',11.5,'left',true);
+  const LX=v=>ix+10+(iw-20)*clamp((Math.log10(Math.max(v,1e-4))+4)/7,0,1);T(g,'ความเข้มข้น (สเกล log)',ix+10,62,'#a5b4c8',10);
+  for(let i=3;i>=0;i--){const c=conc(i,t),cs=V('bmf')**i*c0,y=86+(3-i)*34;g.fillStyle='rgba(255,255,255,.07)';g.fillRect(ix+10,y,iw-20,10);g.fillStyle='rgba(239,68,68,.3)';g.fillRect(ix+10,y,LX(cs)-ix-10,10);g.fillStyle=c>=thr?'#ef4444':'#fbbf24';g.fillRect(ix+10,y,LX(c)-ix-10,10);T(g,X.L[i][0],ix+10,y-7,'#d5e6f5',9.5);T(g,fmt(c),ix+iw-10,y-7,'#fde68a',9.5,'right',true);}
+  g.strokeStyle='#ef4444';g.setLineDash([3,3]);g.beginPath();g.moveTo(LX(thr),76);g.lineTo(LX(thr),222);g.stroke();g.setLineDash([]);T(g,'เกณฑ์ '+thr+' ppm',LX(thr),232,'#fca5a5',9.5,'center');
+  const top=conc(3,t);T(g,'ตัวคูณรวม C₄/C₀ = ×'+fmt(top/c0),ix+10,256,'#e0f2fe',11,'left',true);
+  if(CHEM()){T(g,'ระดับโมเลกุล',ix+10,282,'#7dd3fc',11,'left',true);T(g,X.f,ix+10,302,'#fde68a',13,'left',true);const ws=X.p.split(' ');let line='',yy=324;ws.forEach(wd=>{if((line+' '+wd).length>34){T(g,line,ix+10,yy,'#e2e8f0',10);yy+=16;line=wd;}else line=line?line+' '+wd:wd;});T(g,line,ix+10,yy,'#e2e8f0',10);}
+  else{T(g,'ผลต่อระบบนิเวศ',ix+10,282,'#86efac',11,'left',true);T(g,X.eff,ix+10,302,'#fde68a',10.5,'left',true);T(g,top>=thr?'⚠ ผู้บริโภคลำดับสูงสุดเกินเกณฑ์':'✔ ยังต่ำกว่าเกณฑ์',ix+10,326,top>=thr?'#fca5a5':'#86efac',11,'left',true);T(g,'ผู้ล่าลำดับสูงอายุยืน กินเหยื่อมาก',ix+10,350,'#e2e8f0',10);T(g,'สารพิษไม่ถูกขับออก จึงสะสมสูงสุด',ix+10,366,'#e2e8f0',10);}}
+
+/* ================= MODE 3 : CLIMATE, OZONE, ACID RAIN ================= */
+let M3;function initM3(){M3={y:1950};}
+const CFC={off:0,low:0.45,high:1},PH={none:5.6,low:4.8,high:4.2};
+function clim(y){const g=V('ghg'),s=sm((y-1950)/150),co2=280*(1+(g-1)*s)+30*sm((y-1900)/80),dT=0.8*5.35*Math.log(co2/280),ee=CFC[$('#cfc').value]*sm((y-1950)/50),du=300-180*ee,uv=8*(300/du)**1.2;return{co2,dT,du,uv,ph:PH[$('#so2').value],sea:0.18*dT*sm((y-1950)/150)*1.6};}
+function stepM3(dt){M3.y=Math.min(2100,M3.y+dt*5);}
+function drawM3(g,w,h){const C=clim(M3.y),aw=w-214,yO=100,oz=clamp(C.du/300,0.2,1)*26,yT=160,yG=370;
+  g.fillStyle='#020617';rr(g,4,4,aw,h-8,10);g.fill();const sk=g.createLinearGradient(0,yT,0,yG);sk.addColorStop(0,'#0c4a6e');sk.addColorStop(1,'#38bdf8');g.fillStyle=sk;g.fillRect(4,yT,aw,yG-yT);g.fillStyle='#0f172a';g.fillRect(4,40,aw,yT-40);
+  g.fillStyle=`rgba(56,189,248,${0.25+0.5*C.du/300})`;g.fillRect(4,yO-oz/2,aw,oz);if(C.du<220){g.fillStyle='rgba(2,6,23,.9)';g.beginPath();g.ellipse(aw*0.22,yO,aw*0.12*(220-C.du)/100+10,oz/2+1,0,0,7);g.fill();T(g,'รูโหว่โอโซน',aw*0.22,yO-oz/2-10,'#c4b5fd',10,'center',true);}
+  T(g,'ชั้นโอโซน '+Math.round(C.du)+' DU (สตราโทสเฟียร์)',aw-10,yO-oz/2-10,'#7dd3fc',10.5,'right',true);T(g,'โทรโพสเฟียร์',aw-10,yT+12,'#e0f2fe',10,'right');
+  glow(g,40,26,40,'rgba(253,224,71,.6)');g.fillStyle='#fde047';g.beginPath();g.arc(40,26,16,0,7);g.fill();
+  for(let i=0;i<5;i++){const x=aw*0.36+i*aw*0.08,k=(S.time*0.6+i/5)%1;arrow(g,x,40,x+k*30,40+k*(yG-50),'rgba(253,224,71,.7)',1.6);}
+  const pass=clamp(1-C.du/340,0.05,0.7);for(let i=0;i<8;i++){const x=aw*0.06+i*aw*0.035,k=(S.time*0.7+i/8)%1,stop=hash(i+3)>pass,yy=40+k*(stop?yO-40:yG-40);g.strokeStyle='#a855f7';g.lineWidth=1.6;g.beginPath();for(let j=0;j<=8;j++){const py=yy-j*3,px=x+(yy-40)*0.2+Math.sin(j*1.6)*2;j?g.lineTo(px,py):g.moveTo(px,py);}g.stroke();if(stop&&k>0.9){glow(g,x+(yO-40)*0.2,yO,8,'rgba(168,85,247,.8)');}}
+  T(g,'UV-B',aw*0.06,52,'#c4b5fd',10,'left',true);
+  const trap=clamp(0.25+0.3*Math.log(V('ghg')),0.2,0.8),nG=Math.round(12+18*Math.log(V('ghg'))*1.4);for(let i=0;i<nG;i++){const x=10+hash(i+20)*(aw-20),y=yT+20+hash(i+21)*(yG-yT-60);g.fillStyle='#64748b';g.beginPath();g.arc(x-3,y,2.4,0,7);g.arc(x+3,y,2.4,0,7);g.fill();g.fillStyle='#1e293b';g.beginPath();g.arc(x,y,2.6,0,7);g.fill();}
+  for(let i=0;i<10;i++){const x=aw*0.5+i*aw*0.045,k=(S.time*0.5+i/10)%1,tr=hash(i+60)<trap,hb=yT+30+hash(i+61)*60,up=tr?(k<0.5?yG-(yG-hb)*k*2:hb+(yG-hb)*(k-0.5)*2):yG-(yG-30)*k;g.strokeStyle='#ef4444';g.lineWidth=1.6;g.beginPath();for(let j=0;j<=6;j++){const py=up+j*3,px=x+Math.sin(j*1.8+S.time*8)*2.5;j?g.lineTo(px,py):g.moveTo(px,py);}g.stroke();}
+  T(g,'IR (ความร้อน) ถูกแก๊สเรือนกระจกดูดกลืน '+Math.round(trap*100)+'%',aw*0.5,yT+12,'#fca5a5',10,'left',true);
+  if(CFC[$('#cfc').value]>0){const n=Math.round(CFC[$('#cfc').value]*10);for(let i=0;i<n;i++){const k=(S.time*0.15+i/n)%1,x=aw*0.12+hash(i+30)*aw*0.25,y=yG-k*(yG-yO);g.fillStyle='#e2e8f0';g.beginPath();g.arc(x,y,3,0,7);g.fill();g.fillStyle='#22c55e';g.beginPath();g.arc(x+4,y-2,2,0,7);g.arc(x-4,y-2,2,0,7);g.fill();if(k>0.92)T(g,'Cl·',x+6,y,'#86efac',10,'left',true);}}
+  const ice=Math.max(10,120*(1-C.dT/8));g.fillStyle='#1e3a8a';g.fillRect(4,yG,aw,h-yG-4);g.fillStyle='#e0f2fe';g.beginPath();g.moveTo(4,yG);g.lineTo(4+ice,yG);g.lineTo(4+ice-14,yG+30);g.lineTo(4,yG+30);g.fill();T(g,'น้ำแข็งขั้วโลก',8,yG+44,'#e0f2fe',9.5);
+  g.fillStyle='#365314';g.fillRect(aw*0.3,yG-4,aw*0.7-4,h-yG);g.fillStyle='#4d7c0f';for(let i=0;i<10;i++)EM(g,C.ph<5?'🥀':'🌳',aw*0.34+i*aw*0.04,yG-10,16);
+  EM(g,'🏙️',aw*0.18,yG-12,22);if($('#so2').value!=='none'){const fx=aw*0.86;g.fillStyle='#57534e';g.fillRect(fx,yG-60,12,56);g.fillRect(fx+18,yG-44,10,40);for(let i=0;i<6;i++){const k=(S.time*0.3+i/6)%1;g.fillStyle=`rgba(120,113,108,${0.7-k*0.5})`;g.beginPath();g.arc(fx+6-k*80,yG-62-k*90,8+k*14,0,7);g.fill();}
+    g.fillStyle='rgba(87,83,78,.9)';g.beginPath();g.ellipse(aw*0.66,yT+50,70,22,0,0,7);g.fill();for(let i=0;i<16;i++){const k=(S.time*1.2+hash(i))%1,x=aw*0.6+hash(i+7)*120,y=yT+70+k*(yG-yT-80);g.strokeStyle=C.ph<4.5?'#f97316':'#facc15';g.lineWidth=1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x-2,y+7);g.stroke();}T(g,'ฝนกรด pH '+C.ph,aw*0.66,yT+50,'#fde68a',11,'center',true);}
+  const ix=aw+10,iw=w-ix-4;panel(g,ix,4,iw,h-8);T(g,'ปี ค.ศ. '+Math.round(M3.y),ix+10,20,'#fde68a',14,'left',true);
+  bar(g,ix+10,52,iw-20,9,(C.co2-280)/1200,'#94a3b8','CO₂',Math.round(C.co2)+' ppm');bar(g,ix+10,84,iw-20,9,C.dT/7,C.dT>2?'#ef4444':'#f97316','อุณหภูมิเพิ่มขึ้น ΔT','+'+C.dT.toFixed(2)+' °C');bar(g,ix+10,116,iw-20,9,C.du/350,'#38bdf8','โอโซน (Antarctic spring)',Math.round(C.du)+' DU');bar(g,ix+10,148,iw-20,9,C.uv/20,'#a855f7','ดัชนี UV-B',C.uv.toFixed(1));bar(g,ix+10,180,iw-20,9,(7-C.ph)/3,'#facc15','ความเป็นกรดของฝน','pH '+C.ph);bar(g,ix+10,212,iw-20,9,C.sea/1.5,'#0ea5e9','ระดับน้ำทะเลเพิ่ม','+'+C.sea.toFixed(2)+' m');
+  if(CHEM()){T(g,'ปฏิกิริยาเคมี',ix+10,240,'#7dd3fc',11,'left',true);['CFCl₃ + UV → CFCl₂· + Cl·','Cl· + O₃ → ClO· + O₂','ClO· + O → Cl· + O₂','(Cl 1 อะตอมทำลาย O₃ ~100,000)','SO₂ + H₂O → H₂SO₃','2NO₂ + H₂O → HNO₃ + HNO₂','CO₂ + H₂O ⇌ H₂CO₃ (pH ~5.6)'].forEach((s,i)=>T(g,s,ix+10,262+i*18,i===3?'#fca5a5':'#e2e8f0',10));}
+  else{T(g,'ผลต่อระบบนิเวศ',ix+10,240,'#86efac',11,'left',true);[[C.dT>1.5,'🪸 ปะการังฟอกขาว'],[C.dT>2,'🐻‍❄️ ถิ่นที่อยู่ขั้วโลกหาย'],[C.dT>1,'🌾 ผลผลิตพืชเปลี่ยน ฤดูกาลเลื่อน'],[C.uv>10,'☀ UV-B ทำลาย DNA แพลงก์ตอน มะเร็งผิวหนัง'],[C.ph<5,'🌲 ฝนกรด: ป่าเสื่อม ดินเป็นกรด'],[C.ph<5,'🐟 ปลาในทะเลสาบตาย']].forEach(([on,s],i)=>T(g,s,ix+10,262+i*20,on?'#fca5a5':'#64748b',10.5));}}
+
+/* ================= MODE 4 : BIODIVERSITY ================= */
+const GW=36,GH=20;
+const SP=[{n:'เสือโคร่ง',e:'🐅',r:0.15,K:24,a:1,b:1.6,h:0.12,ex:1},{n:'ชะนี',e:'🐒',r:0.18,K:60,a:1.3,b:1.1,h:0.05,ex:1},{n:'นกเงือก',e:'🦜',r:0.2,K:50,a:1,b:0.8,h:0.07,ex:1},{n:'กวางป่า',e:'🦌',r:0.35,K:150,a:0.6,b:0.3,h:0.14,iv:0.5},{n:'กบป่า',e:'🐸',r:0.5,K:200,a:0.5,b:0.2,h:0,iv:0.8},{n:'กล้วยไม้ป่า',e:'🌸',r:0.3,K:120,a:1,b:0.5,h:0.06,ex:1,iv:0.4}];
+let M4;function initM4(){M4={t:0,N:SP.map(s=>s.K),I:0,map:new Uint8Array(GW*GH).fill(1),f:1,Lp:1,hist:[],ht:0,mt:0};upMap();}
+const consIn=()=>['in','both'].includes($('#cons').value),consEx=()=>['ex','both'].includes($('#cons').value);
+function paRect(){const A=GW*GH*V('pa')/100,pw=Math.min(GW-2,Math.round(Math.sqrt(A*1.8))),ph=Math.min(GH-2,Math.round(A/pw));return{x:GW-pw-1,y:Math.round((GH-ph)/2),w:pw,h:ph};}
+function upMap(){const t=M4.t,P=consIn()?paRect():null,def=V('def')/100,pr=sm(t/12),cor=$('#corr').checked,pl=$('#plant').checked;let s=0;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x;let c=1;const inP=P&&x>=P.x&&x<P.x+P.w&&y>=P.y&&y<P.y+P.h,inC=cor&&(y===GH/2||y===GH/2-1);
+    if(!inP&&!inC&&hash(i*1.7+3)<def*pr){c=0;if(pl&&hash(i*2.3+7)<0.8*sm((t-6)/25))c=2;}M4.map[i]=c;s+=c===1?1:c===2?0.5:0;}
+  M4.f=s/(GW*GH);const seen=new Uint8Array(GW*GH);let best=0;for(let i=0;i<GW*GH;i++){if(!M4.map[i]||seen[i])continue;let n=0;const st=[i];seen[i]=1;while(st.length){const j=st.pop();n+=M4.map[j]===1?1:0.5;const x=j%GW,y=(j/GW)|0;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=GW||ny>=GH)return;const k=ny*GW+nx;if(M4.map[k]&&!seen[k]){seen[k]=1;st.push(k);}});}if(n>best)best=n;}M4.Lp=best/(GW*GH);}
+function shannon(){const v=M4.N.concat([M4.I]).filter(x=>x>=1),tot=v.reduce((a,b)=>a+b,0);let H=0;v.forEach(x=>{const p=x/tot;H-=p*Math.log(p);});return{H,S:v.length,E:v.length>1?H/Math.log(v.length):0,tot};}
+function stepM4(dt){const d=dt*0.6,n=Math.ceil(d/0.02),hh=d/n;for(let k=0;k<n;k++){M4.t+=hh;M4.mt+=hh;if(M4.mt>0.25){M4.mt=0;upMap();}
+    const huntF=$('#hunt').checked?(consIn()?1-Math.min(0.9,V('pa')/100*1.6):1):0,Ki=400*(1-M4.f)+20;
+    if($('#inv').checked){if(M4.I<1)M4.I=3;M4.I+=0.6*M4.I*(1-M4.I/Ki)*hh;}else M4.I=Math.max(0,M4.I-0.5*M4.I*hh);
+    SP.forEach((s,i)=>{let N=M4.N[i];const Hs=M4.f**s.a*M4.Lp**s.b,K=Math.max(0.01,s.K*Hs*(1-(s.iv||0)*M4.I/450));if(N>0){N+=(s.r*N*(1-N/K)-s.h*huntF*N)*hh;if(N<1)N=0;}if(consEx()&&s.ex&&N<3&&Hs>0.35)N+=3*hh;M4.N[i]=Math.max(0,N);});}
+  M4.ht+=d;if(M4.ht>0.25){M4.ht=0;const sh=shannon();M4.hist.push([M4.t,sh.H,M4.f,sh.S]);if(M4.hist.length>800)M4.hist.shift();}}
+function drawM4(g,w,h){const aw=w-214,cs=Math.min((aw-16)/GW,(h-54)/GH),ox=4+(aw-cs*GW)/2,oy=36,sh=shannon(),P=consIn()?paRect():null;
+  panel(g,4,4,aw,h-8);
+  if(!CHEM()){T(g,'แผนที่ถิ่นที่อยู่ · ปีที่ '+M4.t.toFixed(1),14,20,'#7dd3fc',12,'left',true);T(g,'■ ป่าดั้งเดิม  ■ ป่าปลูกใหม่  ■ พื้นที่ถูกทำลาย',aw-8,20,'#cbd5e1',10,'right');
+    const cl=[];for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=y*GW+x,c=M4.map[i];g.fillStyle=c===1?(hash(i)>0.5?'#166534':'#15803d'):c===2?'#65a30d':(hash(i)>0.5?'#a16207':'#92400e');g.fillRect(ox+x*cs,oy+y*cs,cs+0.5,cs+0.5);if(!c)cl.push(i);}
+    const nI=Math.min(cl.length,Math.round(M4.I/8));for(let j=0;j<nI;j++){const i=cl[Math.floor(hash(j*3+1)*cl.length)];EM(g,'🌿',ox+(i%GW+0.5)*cs,oy+(((i/GW)|0)+0.5)*cs,cs*0.9);}
+    if(P){g.strokeStyle='#fde047';g.lineWidth=2;g.setLineDash([5,4]);g.strokeRect(ox+P.x*cs,oy+P.y*cs,P.w*cs,P.h*cs);g.setLineDash([]);T(g,'เขตอนุรักษ์',ox+(P.x+P.w/2)*cs,oy+P.y*cs-7,'#fde047',10,'center',true);}
+    if($('#corr').checked){g.strokeStyle='#22d3ee';g.lineWidth=1.5;g.strokeRect(ox,oy+(GH/2-1)*cs,GW*cs,2*cs);T(g,'ทางเชื่อมป่า',ox+4,oy+(GH/2-1)*cs-7,'#67e8f9',9.5,'left',true);}
+    const fc=[];for(let i=0;i<GW*GH;i++)if(M4.map[i])fc.push(i);if(fc.length)SP.forEach((s,k)=>{const n=Math.round(6*M4.N[k]/s.K);for(let j=0;j<n;j++){const i=fc[Math.floor(hash(k*97+j*13+5)*fc.length)];EM(g,s.e,ox+(i%GW+0.5)*cs+Math.sin(S.time+j)*1.5,oy+(((i/GW)|0)+0.5)*cs,cs*1.25);}});
+    if($('#hunt').checked)for(let j=0;j<3;j++){const i=cl.length?cl[Math.floor(hash(j+300)*cl.length)]:0;EM(g,'🎯',ox+(i%GW+0.5)*cs,oy+(((i/GW)|0)+0.5)*cs,cs*1.1);}}
+  else{T(g,"ดัชนีความหลากหลายของแชนนอน  H' = −Σ pᵢ ln pᵢ",14,20,'#7dd3fc',12,'left',true);const rows=SP.map((s,i)=>[s.e+' '+s.n,M4.N[i]]).concat([['🌿 ไมยราบยักษ์ (ต่างถิ่น)',M4.I]]),y0=50,rh=Math.min(44,(h-120)/rows.length);
+    T(g,'ชนิด',14,y0-8,'#93c5fd',10.5,'left',true);T(g,'nᵢ',aw*0.42,y0-8,'#93c5fd',10.5,'center',true);T(g,'pᵢ',aw*0.52,y0-8,'#93c5fd',10.5,'center',true);T(g,'−pᵢ ln pᵢ',aw*0.62,y0-8,'#93c5fd',10.5,'left',true);
+    rows.forEach(([nm,n],i)=>{const y=y0+10+i*rh,p=n>=1?n/sh.tot:0,c=p>0?-p*Math.log(p):0;T(g,nm,14,y,n>=1?'#e2e8f0':'#64748b',11.5);T(g,n>=1?Math.round(n)+'':'0',aw*0.42,y,'#fde68a',11.5,'center',true);T(g,p.toFixed(3),aw*0.52,y,'#e2e8f0',11.5,'center');g.fillStyle=i===rows.length-1?'#a3e635':'#a855f7';g.fillRect(aw*0.62,y-6,(aw*0.3)*c/0.37,12);T(g,c.toFixed(3),aw-14,y,'#e2e8f0',11,'right');});
+    const yb=y0+10+rows.length*rh+6;g.strokeStyle='rgba(255,255,255,.3)';g.beginPath();g.moveTo(14,yb);g.lineTo(aw-10,yb);g.stroke();T(g,"H' = "+sh.H.toFixed(3)+"   H'max = ln S = ln "+sh.S+' = '+Math.log(Math.max(1,sh.S)).toFixed(3)+'   E = '+sh.E.toFixed(2),14,yb+18,'#fde68a',12.5,'left',true);}
+  const ix=aw+10,iw=w-ix-4;panel(g,ix,4,iw,h-8);T(g,"H' = "+sh.H.toFixed(2)+'  ·  ชนิดที่เหลือ '+sh.S,ix+10,20,'#fde68a',12.5,'left',true);
+  SP.forEach((s,i)=>{const y=52+i*40,N=M4.N[i],q=N/s.K,st=N<1?(consEx()&&s.ex?['สูญพันธุ์ในธรรมชาติ (มีใน Ex-situ)','#fbbf24']:['สูญพันธุ์','#ef4444']):q<0.2?['ใกล้สูญพันธุ์','#fb923c']:q<0.5?['มีแนวโน้มถูกคุกคาม','#facc15']:['ปลอดภัย','#4ade80'];EM(g,s.e,ix+18,y+2,16);T(g,s.n,ix+32,y-6,'#e2e8f0',10.5,'left',true);T(g,Math.round(N)+'',ix+iw-10,y-6,'#fde68a',10.5,'right',true);g.fillStyle='rgba(255,255,255,.08)';g.fillRect(ix+32,y+4,iw-42,6);g.fillStyle=st[1];g.fillRect(ix+32,y+4,(iw-42)*clamp(q,0,1),6);T(g,st[0],ix+32,y+18,st[1],9.5);});
+  T(g,'ป่าคงเหลือ '+Math.round(M4.f*100)+'% · ผืนใหญ่สุด '+Math.round(M4.Lp*100)+'%',ix+10,h-40,'#86efac',10.5,'left',true);T(g,'ไมยราบยักษ์ '+Math.round(M4.I),ix+10,h-22,'#bef264',10.5,'left',true);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#a5b4c8',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#a5b4c8',10,'center');}
+  g.strokeStyle='rgba(255,255,255,.3)';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#a5b4c8',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#a5b4c8',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(2)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#e0f2fe',10);});}
+function plot(g,A,H,ix,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();H.forEach((r,i)=>{const y=A.Y(r[ix]);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();}
+function fn(g,A,x0,x1,f,col,lw,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=150;i++){const x=x0+(x1-x0)*i/150;i?g.lineTo(A.X(x),A.Y(f(x))):g.moveTo(A.X(x),A.Y(f(x)));}g.stroke();g.setLineDash([]);}
+function vmark(g,A,x,h,col){g.strokeStyle=col;g.setLineDash([3,3]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.X(x),A.Tm);g.lineTo(A.X(x),h-A.B);g.stroke();g.setLineDash([]);}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const R=river(),ym=Math.max(12,R.L0*1.15),A=axes(g,w,h,0,TM*U,0,ym,'ระยะทางท้ายน้ำ (km)','mg/L',6,4,v=>Math.round(v)+'');g.fillStyle='rgba(239,68,68,.1)';g.fillRect(A.L,A.Y(4),w-A.L-A.Rm,A.Y(0)-A.Y(4));T(g,'DO < 4: ปลาอยู่ไม่ได้',w-A.Rm-4,A.Y(2),'#fca5a5',9.5,'right');
+    fn(g,A,0,TM*U,x=>R.DOs,'rgba(56,189,248,.5)',1.2,[5,4]);fn(g,A,0,TM*U,x=>R.BOD(x/U),'#d97706',2.2);fn(g,A,0,TM*U,x=>R.DO(x/U),'#38bdf8',2.6);g.fillStyle='#ef4444';g.beginPath();g.arc(A.X(R.tc*U),A.Y(R.mn),5,0,7);g.fill();vmark(g,A,M1.t*U,h,'#fbbf24');
+    legend(g,[['DO (Streeter–Phelps)','#38bdf8'],['BOD','#d97706'],['DO อิ่มตัว','rgba(56,189,248,.5)'],['จุดวิกฤต (DO ต่ำสุด)','#ef4444']],A.X(TM*U*0.55),A.Tm+8);}
+  else if(m===2){const X=TOX[$('#tox').value],A=axes(g,w,h,0,30,-4,3,'เวลา (ปี)','log₁₀ ppm',6,7,v=>Math.round(v)+'',v=>'10^'+Math.round(v));const cols=['#38bdf8','#a3e635','#fbbf24','#ef4444'];
+    for(let i=0;i<4;i++)fn(g,A,0,30,t=>Math.log10(Math.max(1e-4,conc(i,t))),cols[i],2.2);g.strokeStyle='#ef4444';g.setLineDash([6,4]);g.beginPath();g.moveTo(A.L,A.Y(Math.log10(X.thr)));g.lineTo(w-A.Rm,A.Y(Math.log10(X.thr)));g.stroke();g.setLineDash([]);T(g,'เกณฑ์ '+X.thr+' ppm',w-A.Rm-4,A.Y(Math.log10(X.thr))-8,'#fca5a5',9.5,'right');
+    if($('#ban').checked)vmark(g,A,10,h,'#4ade80');vmark(g,A,M2.t,h,'#e5e7eb');legend(g,X.L.map((l,i)=>[l[0],cols[i]]),A.L+8,A.Tm+8);}
+  else if(m===3){const A=axes(g,w,h,1950,2100,0,6,'ปี ค.ศ.','ΔT (°C) / โอโซน (×100 DU)',6,6,v=>Math.round(v)+'');fn(g,A,1950,2100,y=>Math.min(6,clim(y).dT),'#ef4444',2.6);fn(g,A,1950,2100,y=>clim(y).du/100,'#38bdf8',2.4);fn(g,A,1950,2100,y=>Math.min(6,clim(y).uv/4),'#a855f7',1.6,[5,4]);
+    g.fillStyle='rgba(239,68,68,.08)';g.fillRect(A.L,A.Y(6),w-A.L-A.Rm,A.Y(1.5)-A.Y(6));T(g,'เป้าหมาย Paris 1.5 °C',A.L+4,A.Y(1.5)-7,'#fca5a5',9.5);vmark(g,A,M3.y,h,'#fbbf24');legend(g,[['ΔT (°C)','#ef4444'],['โอโซน (×100 DU)','#38bdf8'],['ดัชนี UV-B ÷ 4','#a855f7']],A.X(2030),A.Tm+8);}
+  else{const t1=Math.max(30,M4.t),t0=Math.max(0,t1-60),A=axes(g,w,h,t0,t1,0,2,'เวลา (ปี)',"H' / สัดส่วนป่า",4,4,v=>Math.round(v)+'');const H=M4.hist.filter(p=>p[0]>=t0);plot(g,A,H,1,'#a855f7',2.6);plot(g,A,H.map(p=>[p[0],p[2]*2]),1,'#4ade80',2);plot(g,A,H.map(p=>[p[0],p[3]/4]),1,'rgba(251,191,36,.8)',1.5);
+    g.strokeStyle='rgba(168,85,247,.5)';g.setLineDash([5,4]);g.beginPath();g.moveTo(A.L,A.Y(Math.log(7)));g.lineTo(w-A.Rm,A.Y(Math.log(7)));g.stroke();g.setLineDash([]);T(g,"H'max = ln 7",w-A.Rm-4,A.Y(Math.log(7))-8,'#c4b5fd',9.5,'right');legend(g,[["H' (Shannon)",'#a855f7'],['ป่าคงเหลือ (×2)','#4ade80'],['จำนวนชนิด ÷ 4','rgba(251,191,36,.8)']],A.L+8,A.Tm+8);}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TB1='<table><tr><th>ประเภทแหล่งน้ำ</th><th>DO (mg/L)</th><th>BOD (mg/L)</th><th>การใช้ประโยชน์</th></tr><tr><td>1 ดีมาก</td><td>ตามธรรมชาติ</td><td>ตามธรรมชาติ</td><td>อนุรักษ์ระบบนิเวศ</td></tr><tr><td>2 ดี</td><td>≥ 6</td><td>≤ 1.5</td><td>ประปา (ผ่านการบำบัดปกติ) ว่ายน้ำ ประมง</td></tr><tr><td>3 พอใช้</td><td>≥ 4</td><td>≤ 2</td><td>ประปา (ผ่านการบำบัดพิเศษ) เกษตร</td></tr><tr><td>4 เสื่อมโทรม</td><td>≥ 2</td><td>≤ 4</td><td>อุตสาหกรรม</td></tr><tr><td>5 เสื่อมโทรมมาก</td><td>&lt; 2</td><td>&gt; 4</td><td>การคมนาคม</td></tr></table><p style="font-size:11.5px;color:var(--mut);margin:6px 0 0">อ้างอิงเกณฑ์มาตรฐานคุณภาพน้ำผิวดินของไทย (กรมควบคุมมลพิษ)</p>';
+const TB2='<table><tr><th></th><th>Bioaccumulation</th><th>Biomagnification</th></tr><tr><td>ความหมาย</td><td>สะสมในสิ่งมีชีวิต<b>ตัวเดียว</b>เพิ่มขึ้นตามเวลา</td><td>ความเข้มข้น<b>เพิ่มขึ้นตามลำดับขั้นอาหาร</b></td></tr><tr><td>สาเหตุ</td><td>รับเข้าเร็วกว่าขับออก</td><td>ผู้ล่ากินเหยื่อจำนวนมาก</td></tr></table><table style="margin-top:6px"><tr><th>สาร</th><th>สมบัติ</th><th>BMF</th><th>ผลกระทบ</th></tr><tr><td>DDT</td><td>ละลายในไขมัน คงทน</td><td>สูง</td><td>เปลือกไข่นกบาง</td></tr><tr><td>MeHg</td><td>จับโปรตีน</td><td>สูง</td><td>มินามาตะ</td></tr><tr><td>ไมโครพลาสติก</td><td>อนุภาค ขับออกได้บางส่วน</td><td>ต่ำ</td><td>นำพาสารพิษ อุดตัน</td></tr></table>';
+const TB3='<table><tr><th></th><th>ภาวะโลกร้อน</th><th>โอโซนถูกทำลาย</th><th>ฝนกรด</th></tr><tr><td>สารสาเหตุ</td><td>CO₂, CH₄, N₂O</td><td>CFC, Halon</td><td>SO₂, NOx</td></tr><tr><td>บรรยากาศชั้น</td><td>โทรโพสเฟียร์</td><td>สตราโทสเฟียร์</td><td>โทรโพสเฟียร์</td></tr><tr><td>กลไก</td><td>ดูดกลืนรังสีอินฟราเรด</td><td>Cl ทำลาย O₃ แบบลูกโซ่</td><td>เกิด H₂SO₄, HNO₃</td></tr><tr><td>ผลกระทบ</td><td>อุณหภูมิ ระดับน้ำทะเลสูงขึ้น</td><td>UV-B เพิ่ม มะเร็งผิวหนัง</td><td>ป่าเสื่อม ดิน/น้ำเป็นกรด</td></tr><tr><td>ข้อตกลง</td><td>Paris Agreement</td><td>Montreal Protocol</td><td>ติดตั้งเครื่องกำจัด SO₂</td></tr></table>';
+const TB4='<table><tr><th></th><th>In-situ</th><th>Ex-situ</th></tr><tr><td>ความหมาย</td><td>อนุรักษ์ในถิ่นกำเนิด</td><td>อนุรักษ์นอกถิ่นกำเนิด</td></tr><tr><td>ตัวอย่าง</td><td>อุทยานแห่งชาติ เขตรักษาพันธุ์สัตว์ป่า ห้วยขาแข้ง</td><td>สวนสัตว์ สวนพฤกษศาสตร์ ธนาคารเมล็ดพันธุ์ เพาะเลี้ยงเนื้อเยื่อ</td></tr><tr><td>ข้อดี</td><td>รักษาทั้งระบบนิเวศและวิวัฒนาการตามธรรมชาติ</td><td>ช่วยชนิดที่ใกล้สูญพันธุ์มาก เก็บพันธุกรรม</td></tr><tr><td>ข้อจำกัด</td><td>ต้องการพื้นที่ใหญ่ ป้องกันการล่ายาก</td><td>ประชากรเล็ก ความหลากหลายทางพันธุกรรมต่ำ ไม่ได้รักษาถิ่นที่อยู่</td></tr></table>';
+const MIS1='<p><b>❌ "BOD สูง แปลว่าน้ำมีออกซิเจนมาก คุณภาพดี"</b></p><p>✅ BOD คือปริมาณ O₂ ที่<b>จุลินทรีย์ต้องใช้</b>ย่อยสารอินทรีย์ใน 5 วัน BOD สูง = สารอินทรีย์มาก = น้ำเสีย DO จะลดลง · ส่วน COD ใช้สารเคมีออกซิไดซ์ จึงมีค่า ≥ BOD เสมอ</p>';
+const MIS2='<p><b>❌ "สารพิษในน้ำมีความเข้มข้นต่ำมาก จึงไม่อันตราย"</b></p><p>✅ สารที่ละลายในไขมันและสลายตัวยาก <b>สะสมเพิ่มเป็นทวีคูณ</b>ตามลำดับขั้นอาหาร ผู้บริโภคลำดับสูงสุด (รวมถึงมนุษย์) อาจได้รับมากกว่าในน้ำหลายพันเท่า</p>';
+const MIS3='<p><b>❌ "รูโหว่โอโซนเป็นสาเหตุหลักของภาวะโลกร้อน"</b></p><p>✅ เป็นคนละปัญหา: โลกร้อนเกิดจาก<b>แก๊สเรือนกระจกดูดกลืนรังสีอินฟราเรด</b> ส่วนรูโหว่โอโซนเกิดจาก <b>CFC</b> ทำให้ UV-B ผ่านมามากขึ้น</p><p><b>❌ "ฝนกรดเกิดจาก CO₂"</b> ✅ น้ำฝนปกติมี pH ≈ 5.6 จาก CO₂ อยู่แล้ว ฝนกรด (pH &lt; 5.6) เกิดจาก <b>SO₂ และ NOx</b> จากการเผาถ่านหินและไอเสียรถยนต์</p>';
+const MIS4='<p><b>❌ "ปลูกป่าทดแทนก็ได้ความหลากหลายกลับคืนเหมือนเดิม"</b></p><p>✅ ป่าปลูกใหม่ (มักเป็นพืชชนิดเดียว) มีโครงสร้างและถิ่นที่อยู่น้อยกว่าป่าดั้งเดิม ต้องใช้เวลานานมาก · การรักษา<b>ผืนป่าขนาดใหญ่ที่เชื่อมต่อกัน</b>สำคัญกว่า เพราะสัตว์ใหญ่อย่างเสือต้องการพื้นที่กว้าง</p>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='',tt='',ct='';
+  if(m===1){const R=river(),t=M1.t,d=R.DO(t),b=R.BOD(t),c=R.COD(t),dd=R.ka*(R.DOs-d)-R.kd*b;tt='คุณภาพน้ำในแม่น้ำท้ายจุดปล่อยน้ำทิ้ง ('+R.src.n+')';ct='DO sag curve: DO และ BOD ตามระยะทาง';
+    st=[['DO ที่หัววัด',d.toFixed(2)+' mg/L'],['BOD',b.toFixed(2)+' mg/L'],['COD',c.toFixed(1)+' mg/L'],['DO ต่ำสุด (จุดวิกฤต)',R.mn.toFixed(1)+' @ '+Math.round(R.tc*U)+' km']];
+    flowBar(['น้ำสะอาด','ปล่อยน้ำทิ้ง','จุลินทรีย์ย่อย ใช้ O₂','DO ต่ำสุด','ฟื้นตัว (Reaeration)','น้ำสะอาด'],t<0.05?1:t<R.tc*0.6?2:t<R.tc*1.2?3:d<R.DOs-0.5?4:5,R.mn<2?3:-1);
+    eq=`dDO/dt = Ka(DOsat − DO) − Kd·BOD\n= ${R.ka.toFixed(2)}(${R.DOs.toFixed(2)} − ${d.toFixed(2)}) − ${R.kd.toFixed(2)}×${b.toFixed(2)} = ${dd>=0?'+':''}${dd.toFixed(2)} mg/L/วัน\nDeficit D(t) = KdL₀/(Ka − Kd)·(e^(−Kd·t) − e^(−Ka·t)) + D₀e^(−Ka·t),  L₀ = ${R.L0.toFixed(1)} mg/L, t = ${t.toFixed(2)} วัน`;
+    an=`<p><span class="tag ${R.mn>=4?'ok':R.mn>=2?'mid':'no'}">DO ต่ำสุด ${R.mn.toFixed(1)} mg/L</span> ห่างจุดปล่อย ${Math.round(R.tc*U)} km · `+(R.mn>=4?'แม่น้ำฟอกตัวเองได้ (Self-purification)':R.mn>=2?'ปลาส่วนใหญ่อยู่ไม่ได้ในช่วงวิกฤต':'เกิดสภาพไร้ออกซิเจน มีกลิ่นเหม็นจาก H₂S')+'</p>'+
+      `<p>อุณหภูมิ ${R.Tw}°C: O₂ ละลายได้สูงสุด ${R.DOs.toFixed(2)} mg/L และจุลินทรีย์ย่อยเร็วขึ้น (Kd = ${R.kd.toFixed(2)}/วัน) <b>น้ำอุ่นจึงวิกฤตกว่า</b></p>`+($('#treat').checked?'<p><span class="tag ok">บำบัดน้ำเสีย</span> BOD ของน้ำทิ้งลดลง 85% เป็นวิธีแก้ที่ต้นเหตุ</p>':'')+(R.src.c>100?'<p><span class="tag mid">โรงงานเคมี</span> COD สูงกว่า BOD มาก แปลว่ามีสารที่จุลินทรีย์ย่อยไม่ได้ (อาจเป็นพิษ)</p>':'');mis=MIS1;tb=TB1;}
+  else if(m===2){const X=TOX[$('#tox').value],t=M2.t,c0=C0(),C=[0,1,2,3].map(i=>conc(i,t));tt='การสะสมสารพิษ: '+X.n;ct='ความเข้มข้นในแต่ละลำดับขั้นตามเวลา (สเกล log)';
+    st=[['C₀ (แพลงก์ตอน)',fmt(c0)+' ppm'],['C₄ ('+X.L[3][0]+')',fmt(C[3])+' ppm'],['BMF',V('bmf')],['เกินเกณฑ์?',C[3]>=X.thr?'เกิน ('+X.thr+' ppm)':'ไม่เกิน']];
+    flowBar(X.L.map(l=>l[0]),Math.floor(S.time/1.2)%4,C[3]>=X.thr?3:-1);
+    eq=`BMF = C_ผู้บริโภค / C_เหยื่อ = ${V('bmf')}\nC_n = C₀ × BMF^(n−1)  →  C₄ = ${fmt(c0)} × ${V('bmf')}³ = ${fmt(c0*V('bmf')**3)} ppm (สภาวะคงตัว)\nปีที่ ${t.toFixed(1)}: C₄(t) = C₄·(1 − e^(−t/7)) = ${fmt(C[3])} ppm`;
+    an=`<p><span class="tag ${C[3]>=X.thr?'no':'ok'}">${X.n}</span> เพิ่มขึ้น ×${fmt(c0*V('bmf')**3/c0)} จากแพลงก์ตอนถึง${X.L[3][0]} · ${X.p}</p>`+($('#tox').value==='mp'?'<p>ไมโครพลาสติกถูกขับออกได้บางส่วน BMF จึงต่ำ แต่เป็นตัวนำพาสารพิษอื่นเข้าสู่ห่วงโซ่อาหาร</p>':'<p>ผู้บริโภคลำดับสูงสะสมช้ากว่าแต่ได้ค่าสูงสุด เพราะอายุยืนและกินเหยื่อจำนวนมาก</p>')+($('#ban').checked?'<p><span class="tag ok">ห้ามใช้</span> หลังหยุดปล่อย ความเข้มข้นลดลงช้ามาก โดยเฉพาะในผู้ล่าลำดับสูงสุด</p>':'');mis=MIS2;tb=TB2;}
+  else if(m===3){const C=clim(M3.y),dF=5.35*Math.log(C.co2/280);tt='ภาวะโลกร้อน การลดลงของโอโซน และฝนกรด (ปี '+Math.round(M3.y)+')';ct='ΔT และโอโซน ปี 1950–2100';
+    st=[['CO₂',Math.round(C.co2)+' ppm'],['ΔT','+'+C.dT.toFixed(2)+' °C'],['โอโซน',Math.round(C.du)+' DU'],['pH ฝน',C.ph]];
+    flowBar(['ปล่อยแก๊ส','สะสมในบรรยากาศ','ดูดกลืน IR / ทำลาย O₃','อุณหภูมิ ↑ / UV-B ↑','ผลต่อระบบนิเวศ'],Math.min(4,Math.floor((M3.y-1950)/30)),C.dT>2?3:-1);
+    eq=`ΔF = 5.35 ln(C/C₀) = 5.35 ln(${Math.round(C.co2)}/280) = ${dF.toFixed(2)} W/m²\nΔT = λ·ΔF = 0.8 × ${dF.toFixed(2)} = ${C.dT.toFixed(2)} °C\nCl· + O₃ → ClO· + O₂ ;  ClO· + O → Cl· + O₂   (โอโซน ${Math.round(C.du)} DU, UV-B ${C.uv.toFixed(1)})`;
+    an=`<p><span class="tag ${C.dT>2?'no':C.dT>1.5?'mid':'ok'}">ΔT +${C.dT.toFixed(1)} °C</span> ${C.dT>2?'เกินเป้าหมายข้อตกลงปารีส ปะการังฟอกขาว ระดับน้ำทะเลสูงขึ้น':'ยังอยู่ในเป้าหมาย'}</p><p><span class="tag ${C.du<220?'no':'ok'}">โอโซน ${Math.round(C.du)} DU</span> ${C.du<220?'ต่ำกว่า 220 DU = รูโหว่โอโซน UV-B ผ่านมามากขึ้น':'ชั้นโอโซนยังกรอง UV-B ได้ดี'}</p><p><span class="tag ${C.ph<5.6?'no':'ok'}">ฝน pH ${C.ph}</span> ${C.ph<5.6?'SO₂/NOx ทำให้เกิด H₂SO₄ และ HNO₃':'ฝนปกติ (pH 5.6 จาก CO₂ ละลายน้ำ)'}</p>`;mis=MIS3;tb=TB3;}
+  else{const sh=shannon(),lost=SP.filter((s,i)=>M4.N[i]<1).map(s=>s.n);tt='ความหลากหลายทางชีวภาพในผืนป่า (ปีที่ '+M4.t.toFixed(1)+')';ct="ดัชนีแชนนอน H' และป่าคงเหลือตามเวลา";
+    st=[["H' (Shannon)",sh.H.toFixed(2)],['ความสม่ำเสมอ (E)',sh.E.toFixed(2)],['ป่าคงเหลือ',Math.round(M4.f*100)+'%'],['ชนิดที่สูญพันธุ์ในธรรมชาติ',lost.length]];
+    flowBar(['ตัดไม้ทำลายป่า','ถิ่นที่อยู่แตกเป็นหย่อม','ประชากรลด','ชนิดต่างถิ่นรุกราน','สูญพันธุ์'],M4.f>0.9?-1:M4.Lp<0.3?1:lost.length?4:$('#inv').checked&&M4.I>50?3:2,lost.length?4:-1);
+    const p=M4.N.concat([M4.I]).filter(x=>x>=1).map(x=>x/sh.tot);eq=`H' = −Σ pᵢ ln pᵢ = ${p.slice(0,4).map(v=>'−('+v.toFixed(3)+'·ln '+v.toFixed(3)+')').join(' ')}${p.length>4?' …':''} = ${sh.H.toFixed(3)}\nH'max = ln S = ln ${sh.S} = ${Math.log(Math.max(1,sh.S)).toFixed(3)}  ·  E = H'/H'max = ${sh.E.toFixed(2)}`;
+    an=`<p><span class="tag ${lost.length?'no':'ok'}">${lost.length?'สูญพันธุ์ในธรรมชาติ: '+lost.join(', '):'ยังไม่มีชนิดสูญพันธุ์'}</span> ป่าเหลือ ${Math.round(M4.f*100)}% แต่ผืนใหญ่สุดเหลือ ${Math.round(M4.Lp*100)}% · <b>การแตกเป็นหย่อม (Fragmentation)</b> กระทบสัตว์ใหญ่อย่างเสือมากที่สุด</p>`+($('#inv').checked?`<p><span class="tag mid">ชนิดต่างถิ่น</span> ไมยราบยักษ์ขึ้นในพื้นที่ถูกทำลาย (${Math.round(M4.I)}) เพิ่ม nᵢ ของชนิดเดียวจน E และ H' ลดลง</p>`:'')+(consEx()?'<p><span class="tag ok">Ex-situ</span> สวนสัตว์และธนาคารเมล็ดเก็บพันธุกรรมไว้ ปล่อยคืนธรรมชาติได้เมื่อถิ่นที่อยู่ฟื้นตัว</p>':'')+($('#corr').checked?'<p><span class="tag ok">ทางเชื่อมป่า</span> เชื่อมผืนป่าเป็นผืนใหญ่ ช่วยให้สัตว์เคลื่อนย้ายและแลกเปลี่ยนยีน</p>':'');mis=MIS4;tb=TB4;}
+  $('#simTitle').textContent=tt;$('#chartTitle').textContent=ct;stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{const o=$('#'+id+'V');if(o)o.textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();if(S.mode===4)upMap();updateText();});f();return f;};
+bind('load',v=>v+' mg/L');bind('temp',v=>v+' °C');bind('c0',()=>fmt(C0())+' ppm');const fB=bind('bmf',v=>'×'+v);bind('ghg',v=>'×'+v.toFixed(1)+' (CO₂ '+Math.round(280*v+30)+' ppm ปี 2100)');bind('def',v=>v+'%');bind('pa',v=>v+'%');
+['src','treat','ban','cfc','so2','inv','hunt','cons','corr','plant'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(S.mode===4)upMap();updateText();}));
+$('#tox').addEventListener('change',()=>{$('#bmf').value=TOX[$('#tox').value].bmf;fB();M2.t=0;updateText();});
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#ff').onclick=()=>{S.ff=!S.ff;$('#ff').classList.toggle('ffon',S.ff);$('#ff').textContent=S.ff?'⏩ ×10 (กดเพื่อปกติ)':'⏩ เร่งเวลา ×10';};
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgChem:'chem',tgEco:'eco'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt*(S.ff?10:1));
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

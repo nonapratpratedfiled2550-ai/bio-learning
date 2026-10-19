@@ -1,0 +1,104 @@
+{
+  "v": 5,
+  "kind": "physics-learning-backup",
+  "exportedAt": 1792416129647,
+  "activeProfile": "default",
+  "profiles": {
+    "default": {
+      "name": "ผู้เรียนหลัก",
+      "solved": [],
+      "clears": 1,
+      "log": [],
+      "lessonDone": {},
+      "lessonQuiz": {},
+      "mistakes": [],
+      "scores": {
+        "total": 0,
+        "byTopic": {},
+        "byFormula": {}
+      },
+      "sr": {},
+      "missionsDone": [],
+      "missionIdx": 0,
+      "session": {
+        "step": 2,
+        "prompt": "โฟตอนตัวหนึ่งมีพลังงาน 2×10⁻³ จูล ค่าคงตัวพลังค์ในโจทย์นี้ใช้ 4×10⁻⁶ จูล·วินาที จงหาความถี่ของโฟตอน",
+        "problem": {
+          "id": "custom",
+          "title": "โจทย์ที่พิมพ์",
+          "text": "โฟตอนตัวหนึ่งมีพลังงาน 2×10⁻³ จูล ค่าคงตัวพลังค์ในโจทย์นี้ใช้ 4×10⁻⁶ จูล·วินาที จงหาความถี่ของโฟตอน",
+          "given": [
+            {
+              "key": "Emp",
+              "value": null,
+              "blank": true,
+              "found": 0.002,
+              "foundShow": "2×10⁻³"
+            },
+            {
+              "key": "hpk",
+              "value": null,
+              "blank": true,
+              "found": 0.000004,
+              "foundShow": "4×10⁻⁶"
+            },
+            {
+              "key": "En",
+              "value": null,
+              "blank": true,
+              "name": "พลังงาน"
+            }
+          ],
+          "unknown": "freq",
+          "answer": null,
+          "topic": "ch19",
+          "conditions": [],
+          "extraGoals": [],
+          "notes": []
+        },
+        "topicId": "ch19",
+        "formulaId": null,
+        "recommendId": null,
+        "reasons": [
+          "ตัวแปรที่กรอก E ≈ 2×10⁻³ (พบในโจทย์ ยังไม่กดใช้ค่า), h ≈ 4×10⁻⁶ (พบในโจทย์ ยังไม่กดใช้ค่า), E (ยังไม่ใส่ค่า)",
+          "เป้าหมายสุดท้าย: ความถี่ (f)",
+          "บทที่ 19 ฟิสิกส์อะตอม (ม.6 เล่ม 6)",
+          "ยังไม่มีสูตรที่ตรงกับตัวแปรชุดนี้"
+        ],
+        "exampleId": null,
+        "eq": null,
+        "undo": [],
+        "history": [],
+        "hintOn": false,
+        "result": null,
+        "message": {
+          "type": "good",
+          "text": "Rollback สำเร็จ"
+        },
+        "confidence": 98,
+        "ranked": [
+          {
+            "id": "ch19",
+            "score": 16
+          },
+          {
+            "id": "ch18",
+            "score": 8
+          }
+        ],
+        "goalUnknown": "freq",
+        "plan": [],
+        "planIndex": 0,
+        "chainLog": []
+      },
+      "view": "classroom",
+      "simId": null,
+      "simWide": true,
+      "role": "student",
+      "classroomId": null
+    }
+  },
+  "meta": {
+    "note": "synthetic/local only — do not mix real PII without approval plan"
+  }
+}

@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3D Cell Laboratory | ห้องแล็บชีววิทยา</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#07141c; --ink:#e8fff1; --muted:#9dccc4; --line:rgba(120,190,180,.22); --green:#1ed39a; --green-d:#c8ffd9; --green-s:#10281a; --acc:#3dff8a; --panel:rgba(8,22,32,.72); --card:rgba(10,24,34,.9); --shadow:0 10px 28px rgba(0,0,0,.45); --hdr:64px; }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html,body { margin:0; }
+  html { background:#07141c; }
+  html::before { content:""; position:fixed; left:-28%; top:-28%; width:156%; height:156%; z-index:-2; pointer-events:none; background:radial-gradient(circle at 22% 18%,rgba(30,211,154,.38),transparent 32%),radial-gradient(circle at 78% 14%,rgba(46,200,230,.28),transparent 28%),radial-gradient(circle at 60% 84%,rgba(20,140,90,.22),transparent 34%); animation:drift 16s ease-in-out infinite alternate; }
+  body { font-family:"Leelawadee UI", Tahoma, "Segoe UI", sans-serif; color:var(--ink); background:transparent; font-size:16px; line-height:1.6; overflow-x:hidden; }
+  body::before { content:""; position:fixed; inset:-15%; z-index:-1; pointer-events:none; background-image:radial-gradient(1.2px 1.2px at 20px 30px,rgba(255,255,255,.75),transparent),radial-gradient(1px 1px at 90px 140px,rgba(180,255,230,.7),transparent),radial-gradient(1.3px 1.3px at 170px 70px,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40px 200px,rgba(160,230,255,.6),transparent); background-size:220px 220px; animation:twinkle 2.8s ease-in-out infinite; }
+  :focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+
+  /* แบบจำลองเต็มจอ ส่วนอื่นทั้งหมดเป็นปุ่ม/แผงลอยทับบนภาพ */
+  .stage { position:fixed; inset:0; overflow:hidden; }
+  .float { position:absolute; z-index:10; display:flex; gap:8px; pointer-events:none; }
+  .float > * { pointer-events:auto; }
+  .glass { background:rgba(7,18,26,.78); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(120,190,180,.3); box-shadow:var(--shadow); }
+
+  .top-left { top:12px; left:12px; max-width:calc(50% - 140px); }
+  .title-pill { display:flex; align-items:center; gap:8px; min-width:0; padding:4px 14px 4px 4px; border-radius:16px; }
+  .brand { display:flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; flex:none; text-decoration:none; color:var(--green-d); }
+  .logo { width:34px; height:34px; border-radius:9px; background:#07140e; display:grid; place-items:center; flex:none; border:1px solid #1ed39a; box-shadow:0 0 14px rgba(30,211,154,.4); }
+  .titles { min-width:0; }
+  .titles h1 { margin:0; font-size:1.1rem; line-height:1.25; color:var(--green-d); white-space:nowrap; }
+  .titles p { margin:0; font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top-center { top:12px; left:50%; transform:translateX(-50%); }
+  .top-right { top:12px; right:12px; }
+  .fab-col { top:84px; left:12px; flex-direction:column; }
+
+  .fab { min-width:66px; min-height:58px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:6px 10px; border-radius:16px; font-family:inherit; color:var(--ink); text-decoration:none; cursor:pointer; background:rgba(7,18,26,.8); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(120,190,180,.32); box-shadow:var(--shadow); transition:border-color .15s, transform .15s; }
+  .fab .fi { font-size:19px; line-height:1.2; }
+  .fab .fl { font-size:11.5px; font-weight:700; line-height:1.25; white-space:nowrap; }
+  .fab:hover:not(:disabled) { border-color:var(--acc); transform:translateY(-1px); }
+  .fab[aria-expanded="true"], .fab[aria-pressed="true"] { border-color:var(--acc); color:var(--acc); background:rgba(16,52,40,.88); }
+  .fab:disabled { opacity:.45; cursor:not-allowed; }
+
+  .pop { position:absolute; z-index:12; top:84px; bottom:96px; width:350px; overflow:auto; overscroll-behavior:contain; padding:12px 14px 14px; border-radius:18px; background:rgba(7,18,26,.9); }
+  .pop.left { left:90px; }
+  .pop.right { right:12px; width:370px; top:72px; }
+  .pop-head { position:sticky; top:-12px; z-index:1; display:flex; align-items:flex-start; gap:8px; margin:-12px -14px 8px; padding:12px 14px 8px; background:rgba(7,18,26,.96); border-bottom:1px solid var(--line); }
+  .pop-head h2 { margin:0; }
+  h2 { font-size:1.02rem; margin:12px 0 8px; color:var(--green-d); }
+  .eyebrow { margin:0; color:var(--green); font-weight:700; font-size:13px; }
+  .hint { color:var(--muted); font-size:14px; margin:0 0 10px; }
+
+  .seg { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .seg button, .org-item, .tool, .btn, .icon-btn { font-family:inherit; cursor:pointer; color:var(--ink); }
+  .seg button { min-height:44px; border:1px solid var(--line); background:var(--card); border-radius:12px; padding:9px 10px; font-size:15px; }
+  .seg button[aria-pressed="true"] { background:rgba(30,180,120,.16); color:#e9fff4; border-color:var(--acc); font-weight:700; }
+
+  .search { width:100%; min-height:44px; padding:9px 12px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); font:inherit; font-size:15px; }
+  .search::placeholder { color:#7fa79f; }
+  .org-list { list-style:none; margin:8px 0 0; padding:0; display:grid; gap:6px; }
+  .org-item { width:100%; min-height:48px; display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); text-align:left; font-size:15px; }
+  .org-item:hover { border-color:rgba(61,255,138,.5); }
+  .org-item[aria-pressed="true"] { background:rgba(30,180,120,.16); border-color:var(--acc); }
+  .dot { width:14px; height:14px; border-radius:50%; flex:none; background:var(--c); box-shadow:0 0 8px var(--c); }
+  .names { display:flex; flex-direction:column; line-height:1.3; min-width:0; }
+  .names small { color:var(--muted); font-size:12.5px; }
+  .note { margin-top:12px; background:#1c2430; color:#d7fff2; border-left:4px solid #2ec8e6; border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; margin-top:8px; background:var(--card); border-radius:12px; overflow:hidden; }
+  th,td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top; }
+  th { background:var(--green-s); color:var(--green-d); }
+  td small { color:var(--muted); display:block; font-size:11.5px; }
+  .yes { color:#86efac; font-weight:700; } .no { color:#fca5a5; font-weight:700; }
+
+  .viewer { position:absolute; inset:0; z-index:0; overflow:hidden; background:radial-gradient(circle at 50% 42%,#163843 0%,#0a1a22 55%,#050b10 100%); }
+  .viewer canvas { display:block; width:100%; height:100%; touch-action:none; outline:none; }
+  .viewer canvas:focus-visible { outline:2px solid var(--acc); outline-offset:-3px; }
+  .badge small { font-size:inherit; }
+  .badge small::before { content:" · "; }
+  .seg.glass { padding:4px; border-radius:14px; gap:4px; }
+  .seg.glass button { min-width:112px; white-space:nowrap; border-color:transparent; background:transparent; }
+  .toolbar { bottom:14px; left:50%; transform:translateX(-50%); max-width:calc(100% - 24px); }
+  .perf { position:absolute; top:72px; left:50%; transform:translateX(-50%); z-index:5; width:min(330px,calc(100% - 20px)); display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; background:rgba(40,28,6,.94); border:1px solid #f59e0b; color:#fff7e0; font-size:13.5px; box-shadow:0 8px 20px rgba(0,0,0,.4); }
+  .perf p { margin:0; flex:1 1 100%; }
+  .perf .btn { min-height:44px; padding:6px 12px; font-size:14px; }
+  .perf .icon-btn { margin-left:auto; }
+  .hintbar { position:absolute; left:50%; bottom:86px; transform:translateX(-50%); z-index:3; padding:6px 12px; border-radius:999px; background:rgba(7,20,28,.85); border:1px solid var(--line); font-size:13px; color:#e7f6f1; white-space:nowrap; pointer-events:none; transition:opacity .4s; max-width:calc(100% - 20px); overflow:hidden; text-overflow:ellipsis; }
+  .viewer.touched .hintbar { opacity:.5; }
+  .touch-only { display:none; }
+  @media (hover:none) and (pointer:coarse) { .touch-only { display:inline; } .mouse-only { display:none; } }
+  .tag3d { position:absolute; z-index:3; transform:translate(-50%,-100%); padding:4px 10px; border-radius:999px; background:rgba(255,224,102,.95); color:#2a2000; font-weight:700; font-size:13px; white-space:nowrap; pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.4); }
+  .overlay { position:absolute; inset:0; z-index:6; display:grid; place-content:center; justify-items:center; gap:10px; padding:20px; text-align:center; background:rgba(5,11,16,.82); }
+  .overlay p { margin:0; max-width:34rem; }
+  .overlay h3 { margin:0; color:#fecaca; }
+  .overlay.error { background:rgba(30,10,12,.92); }
+  .spinner { width:44px; height:44px; border-radius:50%; border:4px solid rgba(61,255,138,.2); border-top-color:var(--acc); animation:spin 1s linear infinite; }
+  .btn { min-height:44px; padding:9px 16px; border-radius:12px; border:0; background:#14915f; color:#fff; font-weight:700; font-size:15px; box-shadow:0 8px 18px rgba(20,145,95,.28); }
+
+  .help { display:grid; gap:8px; }
+  .help div { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:7px 10px; font-size:13.5px; }
+  .help b { color:var(--green-d); display:block; font-size:13px; }
+
+  .detail-empty { color:var(--muted); background:var(--card); border:1px dashed var(--line); border-radius:14px; padding:14px; }
+  .detail-head { display:flex; align-items:flex-start; gap:10px; }
+  .swatch { width:20px; height:20px; border-radius:6px; flex:none; margin-top:6px; background:var(--c); box-shadow:0 0 10px var(--c); }
+  .detail-head h2 { margin:0; font-size:1.25rem; }
+  .detail-head .en { margin:0; color:var(--muted); font-size:14px; }
+  .icon-btn { margin-left:auto; flex:none; width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--card); font-size:22px; line-height:1; }
+  .icon-btn:hover { border-color:var(--acc); }
+  .sec { margin-top:10px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+  .sec h3 { margin:0 0 4px; font-size:14px; color:var(--acc); }
+  .sec p { margin:0; }
+  .sec ul { margin:0; padding-left:20px; }
+  .sec li { margin:2px 0; }
+  .sec.fact { background:#1c2430; border-left:4px solid #2ec8e6; }
+  .sec.model { border-left:4px solid #a78bfa; }
+  .pick { margin:0 0 6px !important; padding:6px 8px; border-radius:10px; background:rgba(255,224,102,.12); color:#ffe9a8; font-size:14px; }
+  .found { margin-top:10px; font-size:14px; color:var(--muted); }
+  .chip { display:inline-block; padding:1px 8px; border-radius:999px; font-size:12.5px; margin:2px 4px 0 0; }
+  .chip.on { background:#14532d; color:#bbf7d0; } .chip.off { background:#3f1d1d; color:#fecaca; }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes twinkle { 0%,100% { opacity:.4; } 50% { opacity:1; } }
+  @keyframes drift { from { transform:translate3d(-6%,-4%,0); } to { transform:translate3d(6%,5%,0); } }
+  @media (prefers-reduced-motion:reduce) { html::before, body::before, .spinner { animation:none; } }
+
+  @media (max-width:1100px) {
+    .top-left { max-width:calc(50% - 130px); }
+    .titles p { display:none; }
+    .pop.right { width:330px; }
+  }
+  /* จอแคบ: ปุ่มเล็กลง แผงลอยกลายเป็นแผ่นเลื่อนขึ้นจากด้านล่าง */
+  @media (max-width:760px) {
+    .top-left { top:8px; left:8px; max-width:calc(100% - 96px); }
+    .titles h1 { font-size:1rem; }
+    .titles p { display:block; }
+    .top-right { top:8px; right:8px; }
+    .top-center { top:66px; }
+    .seg.glass button { min-width:96px; min-height:40px; padding:6px 8px; font-size:14px; }
+    .fab-col { top:120px; left:8px; }
+    .fab { min-width:56px; min-height:52px; padding:5px 6px; border-radius:14px; }
+    .fab .fi { font-size:17px; }
+    .fab .fl { font-size:10.5px; }
+    .toolbar { bottom:10px; left:8px; right:8px; transform:none; max-width:none; gap:6px; }
+    .toolbar .fab { min-width:0; flex:1 1 0; padding:5px 4px; }
+    .toolbar .fab .fl { font-size:10px; }
+    .pop, .pop.left, .pop.right { left:8px; right:8px; width:auto; top:auto; bottom:78px; max-height:min(45%, calc(100% - 200px)); }
+    .perf { top:116px; }
+    .hintbar { bottom:76px; font-size:12px; }
+  }
+  @media (max-width:360px) {
+    .toolbar .fab .fl { display:none; }
+    .toolbar .fab { min-height:46px; }
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div class="stage">
+  <div class="viewer" id="viewer">
+    <canvas id="scene" tabindex="0" aria-label="แบบจำลองเซลล์ 3 มิติ ลากเพื่อหมุน เลื่อนล้อเมาส์เพื่อซูม คลิกเพื่อเลือกออร์แกเนลล์ หรือใช้แป้นลูกศรหมุน และปุ่ม + − ซูม"></canvas>
+    <div class="perf" id="perf" role="status" hidden>
+      <p>ภาพแสดงผลค่อนข้างช้า (ประมาณ <b id="perfFps">–</b> FPS) ลองเปลี่ยนเป็น “คุณภาพ: ต่ำ” เพื่อให้หมุนลื่นขึ้น</p>
+      <button type="button" class="btn" id="perfLow">เปลี่ยนเป็นคุณภาพต่ำ</button>
+      <button type="button" class="icon-btn" id="perfClose" aria-label="ปิดข้อความแนะนำนี้">×</button>
+    </div>
+    <div class="hintbar" aria-hidden="true"><span class="mouse-only">ลากเพื่อหมุน · เลื่อนล้อเพื่อซูม · คลิกที่ออร์แกเนลล์</span><span class="touch-only">ลากนิ้วเพื่อหมุน · ถ่างสองนิ้วเพื่อซูม · แตะเพื่อเลือก</span></div>
+    <div class="tag3d" id="tag3d" hidden aria-hidden="true"></div>
+    <div class="overlay" id="loading" role="status" aria-live="polite"><div class="spinner" aria-hidden="true"></div><p id="loadingText">กำลังโหลด Three.js…</p></div>
+    <div class="overlay error" id="error" role="alert" hidden><h3>แสดงแบบจำลอง 3 มิติไม่ได้</h3><p id="errorText"></p><button type="button" class="btn" id="retry">ลองโหลดใหม่</button></div>
+  </div>
+
+  <header class="float top-left">
+    <div class="title-pill glass">
+      <a class="brand" href="index.html" aria-label="ไปหน้าแรก ห้องแล็บชีววิทยา"><span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="#b8ffd8" stroke-width="1.8"/><circle cx="15" cy="16" r="4.2" fill="#3dff8a"/><circle cx="22" cy="11" r="2" fill="#9dffc8"/></svg></span></a>
+      <div class="titles">
+        <h1>3D Cell Laboratory</h1>
+        <p class="badge" id="badge">เซลล์สัตว์<small>สัดส่วนขยายเพื่อการเรียนรู้</small></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="float top-center">
+    <div class="seg glass" role="group" aria-label="ชนิดเซลล์">
+      <button type="button" data-cell="animal" aria-pressed="true" aria-label="แสดงเซลล์สัตว์">🐾 เซลล์สัตว์</button>
+      <button type="button" data-cell="plant" aria-pressed="false" aria-label="แสดงเซลล์พืช">🌿 เซลล์พืช</button>
+    </div>
+  </div>
+
+  <div class="float top-right">
+    <a class="fab" href="cell.html" aria-label="กลับไปบทเรียนเซลล์และการทำงานของเซลล์"><span class="fi" aria-hidden="true">←</span><span class="fl">บทเซลล์</span></a>
+  </div>
+
+  <nav class="float fab-col" aria-label="เปิดแผงข้อมูล">
+    <button type="button" class="fab" data-pop="popList" aria-controls="popList" aria-expanded="false" aria-label="เปิดรายการออร์แกเนลล์และช่องค้นหา"><span class="fi" aria-hidden="true">📋</span><span class="fl">ออร์แกเนลล์</span></button>
+    <button type="button" class="fab" data-pop="popCompare" aria-controls="popCompare" aria-expanded="false" aria-label="เปิดตารางเปรียบเทียบเซลล์สัตว์และเซลล์พืช"><span class="fi" aria-hidden="true">⚖️</span><span class="fl">เปรียบเทียบ</span></button>
+    <button type="button" class="fab" data-pop="popHelp" aria-controls="popHelp" aria-expanded="false" aria-label="เปิดวิธีควบคุมแบบจำลอง"><span class="fi" aria-hidden="true">❓</span><span class="fl">วิธีใช้</span></button>
+  </nav>
+
+  <div class="float toolbar" role="toolbar" aria-label="เครื่องมือควบคุมแบบจำลอง">
+    <button type="button" class="fab" id="resetView" disabled aria-label="รีเซ็ตมุมมองกล้องกลับตำแหน่งเริ่มต้น"><span class="fi" aria-hidden="true">⟲</span><span class="fl">รีเซ็ตมุมมอง</span></button>
+    <button type="button" class="fab" id="autoRotate" disabled aria-pressed="false" aria-label="เปิดหรือปิดการหมุนอัตโนมัติ"><span class="fi" aria-hidden="true">↻</span><span class="fl">หมุนอัตโนมัติ</span></button>
+    <button type="button" class="fab" id="motion" disabled><span class="fi" aria-hidden="true">⏸</span><span class="fl">หยุดเคลื่อนไหว</span></button>
+    <button type="button" class="fab" id="cyto" disabled aria-pressed="true" aria-label="แสดงหรือซ่อนเส้นใยไซโทสเกเลตอน"><span class="fi" aria-hidden="true">🧵</span><span class="fl">ไซโทสเกเลตอน</span></button>
+    <button type="button" class="fab" id="quality" disabled><span class="fi" aria-hidden="true">⚙️</span><span class="fl">คุณภาพ: สูง</span></button>
+  </div>
+
+  <aside class="pop left glass" id="popList" aria-label="รายการออร์แกเนลล์" hidden>
+    <div class="pop-head">
+      <div><p class="eyebrow">บทที่ 3 · เซลล์</p><h2><label for="search">ออร์แกเนลล์ในเซลล์นี้ <span id="listCount" style="color:var(--muted);font-weight:400"></span></label></h2></div>
+      <button type="button" class="icon-btn" data-close aria-label="ปิดรายการออร์แกเนลล์">×</button>
+    </div>
+    <p class="hint" id="cellSummary"></p>
+    <input id="search" class="search" type="search" placeholder="ค้นหา เช่น ไมโท, golgi, ER" autocomplete="off" aria-label="ค้นหาออร์แกเนลล์ด้วยชื่อภาษาไทยหรือภาษาอังกฤษ">
+    <ul class="org-list" id="list" aria-label="รายการออร์แกเนลล์ กดเพื่อเลือกบนแบบจำลอง"></ul>
+    <p class="hint" id="noResult" hidden style="margin-top:8px">ไม่พบออร์แกเนลล์ที่ตรงกับคำค้นในเซลล์ชนิดนี้</p>
+    <div class="note"><strong>หมายเหตุ:</strong> ขนาด สัดส่วน จำนวน และตำแหน่งของออร์แกเนลล์ในแบบจำลองนี้ถูกขยายและจัดวางเพื่อการเรียนรู้ ไม่ใช่สัดส่วนจริง เช่น ไรโบโซมจริงเล็กกว่าไมโทคอนเดรียหลายสิบเท่า และสีเป็นสีสมมติเพื่อแยกแต่ละส่วน</div>
+  </aside>
+
+  <aside class="pop left glass" id="popCompare" aria-label="ตารางเปรียบเทียบเซลล์สัตว์และเซลล์พืช" hidden>
+    <div class="pop-head">
+      <h2>เปรียบเทียบเซลล์สัตว์–เซลล์พืช</h2>
+      <button type="button" class="icon-btn" data-close aria-label="ปิดตารางเปรียบเทียบ">×</button>
+    </div>
+    <table id="compare" aria-label="ตารางเปรียบเทียบเซลล์สัตว์และเซลล์พืช"></table>
+  </aside>
+
+  <aside class="pop left glass" id="popHelp" aria-label="วิธีควบคุม" hidden>
+    <div class="pop-head">
+      <h2>วิธีควบคุม</h2>
+      <button type="button" class="icon-btn" data-close aria-label="ปิดวิธีควบคุม">×</button>
+    </div>
+    <div class="help">
+      <div><b>🖱️ หมุน</b>กดเมาส์ซ้ายค้างแล้วลาก หรือใช้นิ้วเดียวลาก</div>
+      <div><b>🔍 ซูม</b>เลื่อนล้อเมาส์ หรือใช้สองนิ้วถ่าง/หุบ</div>
+      <div><b>👆 เลือก</b>คลิก/แตะออร์แกเนลล์โดยไม่ลาก · คลิกพื้นที่ว่างเพื่อยกเลิก</div>
+      <div><b>⌨️ แป้นพิมพ์</b>คลิกที่ภาพแล้วใช้ลูกศรหมุน, + / − ซูม, Esc ปิดแผงหรือยกเลิกการเลือก</div>
+      <div><b>📋 ปุ่มลอยด้านซ้าย</b>เปิดรายการออร์แกเนลล์ (มีช่องค้นหา) ตารางเปรียบเทียบ และวิธีใช้</div>
+      <div><b>⚙️ ปุ่มลอยด้านล่าง</b>รีเซ็ตมุมมอง · หมุนอัตโนมัติ · หยุด/เล่นการเคลื่อนไหว · เปิด/ปิดไซโทสเกเลตอน · ถ้าเครื่องช้าให้ตั้งคุณภาพเป็น “ต่ำ”</div>
+    </div>
+  </aside>
+
+  <aside class="pop right glass" id="detailPanel" aria-label="รายละเอียดออร์แกเนลล์" hidden>
+    <div id="detailEmpty" class="detail-empty" hidden>
+      <h2 style="margin-top:0">ยังไม่ได้เลือกออร์แกเนลล์</h2>
+      คลิกที่ส่วนใดของเซลล์ในแบบจำลอง หรือกดชื่อในรายการออร์แกเนลล์ เพื่อดูชื่อ หน้าที่ โครงสร้าง ตำแหน่ง และเกร็ดความรู้
+    </div>
+    <article id="detailBody" hidden aria-live="polite">
+      <div class="detail-head">
+        <span class="swatch" id="dSwatch" aria-hidden="true"></span>
+        <div><h2 id="dTitle"></h2><p class="en" id="dEn"></p></div>
+        <button type="button" class="icon-btn" id="closeDetail" aria-label="ปิดแผงรายละเอียดและยกเลิกการเลือก">×</button>
+      </div>
+      <section class="sec" id="secFunc"><h3>หน้าที่</h3><p id="dFunc"></p></section>
+      <section class="sec" id="secStruct"><h3>โครงสร้างสำคัญ</h3><ul id="dStruct"></ul></section>
+      <section class="sec" id="secLoc"><h3>ตำแหน่งในเซลล์</h3><p id="dLoc"></p></section>
+      <section class="sec model" id="secModel"><h3>🔬 ในแบบจำลองนี้</h3><p class="pick" id="dPick" hidden></p><p id="dModel"></p></section>
+      <section class="sec fact" id="secFact"><h3>💡 เกร็ดความรู้</h3><p id="dFact"></p></section>
+      <p class="found" id="dFound"></p>
+    </article>
+  </aside>
+</div>
+<p class="sr-only" id="sr" aria-live="polite"></p>
+
+<script nomodule>
+  document.getElementById('loading').hidden = true;
+  document.getElementById('errorText').textContent = 'เบราว์เซอร์นี้เก่าเกินไปและไม่รองรับ JavaScript module จึงแสดงแบบจำลอง 3 มิติไม่ได้ กรุณาใช้ Chrome, Edge, Firefox หรือ Safari รุ่นล่าสุด';
+  document.getElementById('error').hidden = false;
+</script>
+<script type="module">
+// =====================================================================
+// 1) ข้อมูลออร์แกเนลล์ (แยกจากโค้ด UI และโค้ดสร้างโมเดล)
+// =====================================================================
+const CELL_DATA = {
+  organelles: {
+    membrane: {
+      th: 'เยื่อหุ้มเซลล์', en: 'Cell membrane (Plasma membrane)', color: '#67e8f9',
+      aliases: ['plasma membrane', 'membrane', 'เยื่อหุ้ม'],
+      function: 'ควบคุมการผ่านเข้าออกของสารแบบเลือกผ่าน (selectively permeable) รักษาสภาพภายในเซลล์ให้เหมาะสม และรับสัญญาณจากภายนอกผ่านโปรตีนตัวรับ',
+      structure: ['ฟอสโฟลิพิดเรียงตัว 2 ชั้น (lipid bilayer) หันส่วนหางที่ไม่ชอบน้ำเข้าหากัน', 'โปรตีนแทรกอยู่ทั่วไป ทำหน้าที่เป็นช่อง ตัวพา และตัวรับสัญญาณ', 'คาร์โบไฮเดรตเกาะกับโปรตีนหรือลิพิดด้านนอก (ไกลโคโปรตีน/ไกลโคลิพิด) ใช้ในการจดจำเซลล์', 'อธิบายด้วยแบบจำลองฟลูอิดโมเซอิก (fluid mosaic model)'],
+      location: 'ชั้นนอกสุดของเซลล์สัตว์ ห่อหุ้มไซโทพลาซึมทั้งหมด',
+      model: 'ผิวโค้งเป็นคลื่นเล็กน้อย โปร่งใสแบบวุ้นและมีประกายรุ้งบาง ๆ เพื่อให้มองเห็นออร์แกเนลล์ด้านในได้ชัด (ของจริงหนาเพียงไม่กี่นาโนเมตร)',
+      fact: 'เยื่อหุ้มเซลล์หนาเพียงราว 7–10 นาโนเมตร กล้องจุลทรรศน์แบบใช้แสงจึงมองไม่เห็นรายละเอียดของชั้นนี้ ต้องใช้กล้องจุลทรรศน์อิเล็กตรอน'
+    },
+    wall: {
+      th: 'ผนังเซลล์', en: 'Cell wall', color: '#b5c95a',
+      aliases: ['wall', 'cellulose', 'เซลลูโลส'],
+      function: 'ให้ความแข็งแรงและคงรูปร่างของเซลล์พืช ต้านแรงดันเต่งไม่ให้เซลล์แตกเมื่อได้รับน้ำมาก และช่วยค้ำจุนโครงสร้างของพืช',
+      structure: ['เส้นใยเซลลูโลสเป็นองค์ประกอบหลัก', 'ผนังเซลล์ปฐมภูมิบางและยืดหยุ่น เซลล์บางชนิดสร้างผนังเซลล์ทุติยภูมิที่มีลิกนินเพิ่มความแข็งแรง', 'มิดเดิลลาเมลลา (สารเพกทิน) เชื่อมผนังเซลล์ข้างเคียงเข้าด้วยกัน', 'มีช่องพลาสโมเดสมาตาให้ไซโทพลาซึมของเซลล์ข้างเคียงติดต่อกัน'],
+      location: 'ชั้นนอกสุดของเซลล์พืช อยู่นอกเยื่อหุ้มเซลล์',
+      model: 'ชั้นสีเขียวอมเหลืองผิวด้าน มีผิวนอกและผิวในจึงหนากว่าเยื่อหุ้มเซลล์ชัดเจน ลายเส้นตาข่ายละเอียดบนผิวแทนเส้นใยเซลลูโลสที่วางไขว้กัน (สีเป็นสีสมมติ ผนังเซลล์จริงเกือบใส)',
+      fact: 'ผนังเซลล์ยอมให้สารเกือบทุกชนิดผ่านได้ (fully permeable) ส่วนที่ควบคุมการเข้าออกของสารจริง ๆ คือเยื่อหุ้มเซลล์ที่อยู่ถัดเข้าไป'
+    },
+    nucleus: {
+      th: 'นิวเคลียส', en: 'Nucleus', color: '#6366f1',
+      aliases: ['nuclear', 'นิวเคลียส'],
+      function: 'เก็บสารพันธุกรรม (DNA) และควบคุมการทำงานของเซลล์ผ่านการควบคุมการแสดงออกของยีน เป็นที่เกิดการจำลอง DNA และการถอดรหัสสร้าง RNA',
+      structure: ['เยื่อหุ้มนิวเคลียส 2 ชั้น เยื่อชั้นนอกต่อเนื่องกับร่างแหเอนโดพลาซึม', 'รูนิวเคลียส (nuclear pore) เป็นทางผ่านของ RNA และโปรตีน', 'โครมาทิน คือ DNA ที่พันรอบโปรตีนฮิสโตน จะขดแน่นเป็นโครโมโซมเมื่อแบ่งเซลล์', 'นิวคลีโอพลาซึม และนิวคลีโอลัส'],
+      location: 'มักอยู่บริเวณกลางเซลล์',
+      model: 'เปิดช่องด้านหน้าให้มองเข้าไปข้างใน: ขอบช่องเห็นเยื่อหุ้ม 2 ชั้น (ชั้นนอกโปร่งแสง ชั้นในผิวด้าน) วงแหวนเล็ก ๆ บนผิวคือรูนิวเคลียส เส้นขดสีม่วงอ่อนข้างในคือโครมาทิน',
+      fact: 'DNA ในนิวเคลียสของเซลล์มนุษย์หนึ่งเซลล์ ถ้านำมาต่อกันจะยาวราว 2 เมตร แต่ขดอัดอยู่ในนิวเคลียสที่กว้างเพียงประมาณ 6 ไมโครเมตร'
+    },
+    nucleolus: {
+      th: 'นิวคลีโอลัส', en: 'Nucleolus', color: '#ec4899',
+      aliases: ['nucleoli'],
+      function: 'สร้าง rRNA และประกอบหน่วยย่อยของไรโบโซม ก่อนส่งออกไปยังไซโทพลาซึมทางรูนิวเคลียส',
+      structure: ['บริเวณที่ติดสีเข้มภายในนิวเคลียส', 'ไม่มีเยื่อหุ้ม', 'ประกอบด้วย DNA ส่วนที่มียีนของ rRNA, RNA และโปรตีน'],
+      location: 'อยู่ภายในนิวเคลียส อาจมีมากกว่า 1 อัน',
+      model: 'ก้อนสีชมพูผิวขรุขระภายในนิวเคลียส มองเห็นได้ผ่านช่องที่เปิดไว้บนนิวเคลียส',
+      fact: 'เซลล์ที่สร้างโปรตีนมาก เช่น เซลล์ตับอ่อน มักมีนิวคลีโอลัสขนาดใหญ่ และนิวคลีโอลัสจะหายไปชั่วคราวระหว่างการแบ่งเซลล์'
+    },
+    mitochondrion: {
+      th: 'ไมโทคอนเดรีย', en: 'Mitochondrion (พหูพจน์: mitochondria)', color: '#f97316',
+      aliases: ['mitochondria', 'mito', 'ไมโท'],
+      function: 'เป็นแหล่งของการหายใจระดับเซลล์แบบใช้ออกซิเจน (วัฏจักรเครบส์และระบบถ่ายทอดอิเล็กตรอน) เพื่อสร้าง ATP ให้เซลล์ใช้',
+      structure: ['เยื่อหุ้ม 2 ชั้น', 'เยื่อชั้นในพับทบเป็นคริสตี (cristae) เพิ่มพื้นที่ผิวให้ระบบถ่ายทอดอิเล็กตรอน', 'ของเหลวภายในเรียกว่าเมทริกซ์ มีเอนไซม์ของวัฏจักรเครบส์', 'มี DNA และไรโบโซมเป็นของตนเอง'],
+      location: 'กระจายในไซโทพลาซึม พบมากในเซลล์ที่ใช้พลังงานสูง เช่น เซลล์กล้ามเนื้อ เซลล์ตับ',
+      model: 'แคปซูลยาวรี เยื่อชั้นนอกสีส้มแดงผิวมันโปร่งแสง ข้างในเป็นเมทริกซ์สีชมพูเข้ม และแผ่นพับเป็นคลื่นสีส้มอ่อนที่ยื่นสลับจากผนังคือคริสตี (เยื่อชั้นในที่พับเข้ามา แต่ละแผ่นมี 2 ชั้น) ไมโทคอนเดรียขยับช้า ๆ เพราะในเซลล์จริงก็เคลื่อนที่ไปตามไซโทสเกเลตอน',
+      fact: 'ไมโทคอนเดรียมี DNA ของตัวเองและแบ่งตัวได้ จึงเชื่อว่ามีต้นกำเนิดจากแบคทีเรียที่เข้ามาอยู่ร่วมในเซลล์ (ทฤษฎีเอนโดซิมไบโอซิส) และ DNA ไมโทคอนเดรียของคนเราได้รับมาจากแม่เป็นหลัก'
+    },
+    ribosome: {
+      th: 'ไรโบโซม', en: 'Ribosome', color: '#fde047',
+      aliases: ['ribosomes', 'ไรโบ'],
+      function: 'สังเคราะห์โปรตีน โดยแปลรหัสจาก mRNA แล้วต่อกรดอะมิโนเป็นสายพอลิเพปไทด์',
+      structure: ['ไม่มีเยื่อหุ้ม', 'ประกอบด้วย rRNA และโปรตีน', 'มี 2 หน่วยย่อย (หน่วยใหญ่และหน่วยเล็ก) ประกบกันขณะทำงาน'],
+      location: 'อยู่อิสระในไซโทพลาซึม (สร้างโปรตีนที่ใช้ภายในเซลล์) และเกาะบนร่างแหเอนโดพลาซึมแบบขรุขระ (สร้างโปรตีนส่งออกนอกเซลล์หรือโปรตีนของเยื่อ)',
+      model: 'เม็ดสีเหลืองเล็ก ๆ แต่ละเม็ดเป็นหน่วยย่อยใหญ่และหน่วยย่อยเล็กประกบกัน มีทั้งที่เกาะผิวถุง RER และที่ลอยอิสระ คลิกเลือกได้ทีละเม็ด เม็ดที่เลือกจะขยายใหญ่ขึ้น',
+      fact: 'ไรโบโซมพบในสิ่งมีชีวิตทุกชนิดรวมทั้งแบคทีเรีย ขนาดจริงเพียงราว 20–30 นาโนเมตร ในแบบจำลองนี้ขยายให้ใหญ่ขึ้นมากเพื่อให้มองเห็นได้'
+    },
+    rer: {
+      th: 'ร่างแหเอนโดพลาซึมแบบขรุขระ', en: 'Rough endoplasmic reticulum (RER)', color: '#2563eb',
+      aliases: ['rough er', 'er', 'endoplasmic reticulum', 'เอนโดพลาซึม', 'ร่างแห'],
+      function: 'สังเคราะห์และดัดแปลงโปรตีนที่จะส่งออกนอกเซลล์ โปรตีนของเยื่อหุ้มเซลล์ และเอนไซม์ในไลโซโซม แล้วส่งต่อไปยังกอลจิคอมเพล็กซ์ด้วยเวสิเคิล',
+      structure: ['เป็นถุงแบน (cisternae) ซ้อนกันเป็นชั้น', 'มีไรโบโซมเกาะที่ผิวด้านนอก ทำให้ดูขรุขระ', 'เยื่อต่อเนื่องกับเยื่อหุ้มนิวเคลียสชั้นนอก'],
+      location: 'อยู่รอบ ๆ นิวเคลียส',
+      model: 'ถุงแบนโค้ง (cisternae) ซ้อนกันหลายชั้นล้อมนิวเคลียส มีท่อสั้น ๆ เชื่อมระหว่างชั้นและเชื่อมกับเยื่อหุ้มนิวเคลียส ผิวถุงมีเม็ดไรโบโซมสีเหลืองเกาะอยู่',
+      fact: 'เซลล์ที่หลั่งโปรตีนจำนวนมาก เช่น เซลล์ตับอ่อนที่สร้างเอนไซม์ย่อยอาหาร และเซลล์พลาสมาที่สร้างแอนติบอดี จะมี RER มาก'
+    },
+    ser: {
+      th: 'ร่างแหเอนโดพลาซึมแบบเรียบ', en: 'Smooth endoplasmic reticulum (SER)', color: '#0d9488',
+      aliases: ['smooth er', 'er', 'endoplasmic reticulum', 'เอนโดพลาซึม', 'ร่างแห'],
+      function: 'สังเคราะห์ลิพิด ฟอสโฟลิพิด และฮอร์โมนสเตอรอยด์ กำจัดสารพิษและยาในเซลล์ตับ และเก็บแคลเซียมไอออนในเซลล์กล้ามเนื้อ',
+      structure: ['เป็นท่อกลมเชื่อมต่อกันเป็นร่างแห', 'ไม่มีไรโบโซมเกาะ ผิวจึงเรียบ', 'ต่อเนื่องกับ RER'],
+      location: 'อยู่ในไซโทพลาซึม ต่อเนื่องออกมาจาก RER',
+      model: 'ท่อกลมโค้งสีเขียวน้ำทะเลที่แตกแขนงและเชื่อมกันเป็นร่างแห ผิวเรียบไม่มีเม็ดไรโบโซม',
+      fact: 'ผู้ที่ได้รับยาหรือแอลกอฮอล์เป็นประจำ เซลล์ตับจะมี SER เพิ่มขึ้นเพื่อกำจัดสารเหล่านั้น จึงอาจทำให้ยาบางชนิดได้ผลน้อยลง'
+    },
+    golgi: {
+      th: 'กอลจิคอมเพล็กซ์', en: 'Golgi complex (Golgi apparatus)', color: '#f43f5e',
+      aliases: ['golgi body', 'golgi apparatus', 'กอลจิ', 'กอลจิบอดี'],
+      function: 'รับโปรตีนและลิพิดจากร่างแหเอนโดพลาซึมมาดัดแปลง คัดแยก และบรรจุลงในเวสิเคิล เพื่อส่งออกนอกเซลล์ (เอกโซไซโทซิส) ส่งไปที่เยื่อหุ้มเซลล์ หรือสร้างเป็นไลโซโซม',
+      structure: ['ถุงแบนโค้งซ้อนกันหลายชั้น', 'ด้าน cis หันเข้าหา ER รับเวสิเคิลเข้ามา ด้าน trans ปล่อยเวสิเคิลออกไป', 'มีเวสิเคิลขนาดเล็กอยู่รอบ ๆ'],
+      location: 'อยู่ใกล้นิวเคลียสและร่างแหเอนโดพลาซึม',
+      model: 'ถุงแบนโค้ง 6 ชั้นซ้อนเป็นรูปจาน ขอบถุงพองออก ด้านนูนหันเข้าหานิวเคลียส (ด้าน cis) ด้านเว้าคือด้าน trans มีเวสิเคิลเม็ดเล็กแตกหน่อออกจากปลายถุง สีชมพูอ่อน = เวสิเคิลขนส่ง สีเหลืองอำพัน = เวสิเคิลหลั่งสารออกนอกเซลล์',
+      fact: 'ตั้งชื่อตาม Camillo Golgi นักวิทยาศาสตร์ชาวอิตาลีที่รายงานโครงสร้างนี้ในปี ค.ศ. 1898 เซลล์ต่อมที่หลั่งสารมากจะมีกอลจิคอมเพล็กซ์ขนาดใหญ่'
+    },
+    lysosome: {
+      th: 'ไลโซโซม', en: 'Lysosome', color: '#a3e635',
+      aliases: ['lysosomes'],
+      function: 'ย่อยสลายสารที่เซลล์นำเข้ามา เชื้อโรค และออร์แกเนลล์ที่เสื่อมสภาพ แล้วนำสารที่ได้กลับมาใช้ใหม่',
+      structure: ['ถุงที่มีเยื่อหุ้มชั้นเดียว', 'ภายในมีเอนไซม์ย่อยสลาย (hydrolytic enzymes) หลายชนิด', 'ภายในเป็นกรด (pH ประมาณ 4.5–5) เหมาะกับการทำงานของเอนไซม์เหล่านี้'],
+      location: 'กระจายในไซโทพลาซึม สร้างมาจากกอลจิคอมเพล็กซ์ พบมากในเซลล์เม็ดเลือดขาว',
+      model: 'เม็ดกลมผิวมัน 2 แบบ: สีเขียวมะนาวทึบ = ไลโซโซมที่ยังไม่ได้รวมกับสิ่งที่จะย่อย, สีเขียวมะกอกโปร่งแสงที่มีก้อนสีน้ำตาลข้างใน = ไลโซโซมที่กำลังย่อยสารอยู่',
+      fact: 'การหดหายไปของหางลูกอ๊อดเมื่อเจริญเป็นกบเกี่ยวข้องกับการทำงานของไลโซโซม และถ้าเอนไซม์บางชนิดในไลโซโซมบกพร่อง สารจะสะสมจนเกิดโรค เช่น โรค Tay-Sachs'
+    },
+    centriole: {
+      th: 'เซนทริโอล', en: 'Centriole', color: '#e2e8f0',
+      aliases: ['centrioles', 'centrosome', 'เซนโทรโซม'],
+      function: 'เป็นส่วนประกอบของเซนโทรโซม ช่วยจัดระเบียบไมโครทิวบูลและสร้างเส้นใยสปินเดิลระหว่างการแบ่งเซลล์ และเป็นฐาน (basal body) ของซิเลียและแฟลเจลลัม',
+      structure: ['รูปทรงกระบอก ไม่มีเยื่อหุ้ม', 'ผนังประกอบด้วยไมโครทิวบูล 9 กลุ่ม กลุ่มละ 3 หลอด (9 triplets)', 'มักอยู่เป็นคู่ วางตั้งฉากกัน'],
+      location: 'อยู่ใกล้นิวเคลียส ในบริเวณที่เรียกว่าเซนโทรโซม',
+      model: 'ทรงกระบอก 2 อันวางตั้งฉากกัน แต่ละอันเป็นแท่งเล็ก 9 กลุ่ม กลุ่มละ 3 หลอด เมื่อเปิดไซโทสเกเลตอนจะเห็นเส้นไมโครทิวบูลแผ่ออกจากบริเวณนี้',
+      fact: 'เซลล์พืชชั้นสูงไม่มีเซนทริโอล แต่ยังสร้างเส้นใยสปินเดิลเพื่อแบ่งเซลล์ได้ตามปกติ'
+    },
+    chloroplast: {
+      th: 'คลอโรพลาสต์', en: 'Chloroplast', color: '#16a34a',
+      aliases: ['chloroplasts', 'คลอโร', 'plastid'],
+      function: 'สังเคราะห์ด้วยแสง เปลี่ยนพลังงานแสงเป็นพลังงานเคมีเก็บในรูปน้ำตาล โดยใช้ CO₂ และน้ำ และปล่อยแก๊สออกซิเจน',
+      structure: ['เยื่อหุ้ม 2 ชั้น', 'ไทลาคอยด์เป็นถุงแบนที่มีคลอโรฟิลล์ ซ้อนกันเป็นตั้งเรียกว่ากรานุม (granum) เป็นที่เกิดปฏิกิริยาที่ใช้แสง', 'สโตรมาเป็นของเหลวรอบไทลาคอยด์ เป็นที่เกิดวัฏจักรคัลวิน', 'มี DNA และไรโบโซมเป็นของตนเอง'],
+      location: 'อยู่ในไซโทพลาซึม มักเรียงชิดเยื่อหุ้มเซลล์เพราะแวคิวโอลใหญ่อยู่ตรงกลาง พบมากในเซลล์มีโซฟิลล์ของใบ',
+      model: 'รูปเลนส์สีเขียวเข้มผิวมันเล็กน้อยและโปร่งแสง ข้างในเห็นกรานุมเป็นตั้งเหรียญซ้อนกัน (ไทลาคอยด์) เชื่อมกันด้วยแผ่นบาง ๆ (สโตรมาลาเมลลา) วางเรียงชิดเยื่อหุ้มเซลล์',
+      fact: 'ไม่ใช่ทุกเซลล์พืชจะมีคลอโรพลาสต์ เช่น เซลล์รากที่อยู่ใต้ดินมักไม่มี และเชื่อว่าคลอโรพลาสต์มีต้นกำเนิดจากไซยาโนแบคทีเรีย (ทฤษฎีเอนโดซิมไบโอซิส)'
+    },
+    vacuole: {
+      th: 'แวคิวโอลขนาดใหญ่', en: 'Central vacuole', color: '#93c5fd',
+      aliases: ['vacuole', 'tonoplast', 'แวคิวโอล', 'โทโนพลาสต์'],
+      function: 'สะสมน้ำ แร่ธาตุ สารอาหาร ของเสีย และรงควัตถุ สร้างแรงดันเต่ง (turgor pressure) ดันเยื่อหุ้มเซลล์ให้แนบผนังเซลล์ ช่วยให้พืชตั้งตรงได้',
+      structure: ['ถุงขนาดใหญ่ ห่อด้วยเยื่อชั้นเดียวเรียกว่าโทโนพลาสต์ (tonoplast)', 'ภายในเป็นน้ำเลี้ยงเซลล์ (cell sap)', 'ในเซลล์ที่โตเต็มที่อาจกินพื้นที่ได้ถึงประมาณ 80–90% ของปริมาตรเซลล์'],
+      location: 'อยู่กลางเซลล์ ดันไซโทพลาซึมและออร์แกเนลล์อื่นให้ไปอยู่ชิดขอบเซลล์',
+      model: 'ถุงใหญ่สีฟ้าอ่อนโปร่งแสงกลางเซลล์ ผิวคือโทโนพลาสต์ ในโหมดคุณภาพสูงจะหักเหแสงคล้ายของเหลว',
+      fact: 'ต้นไม้เหี่ยวเมื่อขาดน้ำเพราะแวคิวโอลสูญเสียน้ำ แรงดันเต่งจึงลดลง และสีม่วงแดงของกลีบดอกหลายชนิดมาจากรงควัตถุแอนโทไซยานินในแวคิวโอล'
+    },
+    cytoskeleton: {
+      th: 'ไซโทสเกเลตอน', en: 'Cytoskeleton', color: '#e9d5ff',
+      aliases: ['microtubule', 'microtubules', 'microfilament', 'actin', 'ไมโครทิวบูล', 'ไมโครฟิลาเมนต์', 'โครงร่างเซลล์'],
+      function: 'เป็นโครงค้ำจุนรูปร่างของเซลล์ เป็นรางให้เวสิเคิลและออร์แกเนลล์เคลื่อนที่ไปยังตำแหน่งต่าง ๆ ช่วยในการเคลื่อนไหวของเซลล์ และสร้างเส้นใยสปินเดิลดึงโครโมโซมระหว่างการแบ่งเซลล์',
+      structure: ['ไมโครทิวบูล (microtubule): หลอดกลวงจากโปรตีนทิวบูลิน หนาที่สุด (~25 นาโนเมตร)', 'ไมโครฟิลาเมนต์ (microfilament): เส้นใยโปรตีนแอกทิน บางที่สุด (~7 นาโนเมตร)', 'อินเตอร์มีเดียตฟิลาเมนต์ (intermediate filament): ขนาดปานกลาง (~10 นาโนเมตร) ทนแรงดึง', 'ประกอบและแยกสลายได้ตลอดเวลาตามความต้องการของเซลล์'],
+      location: 'แผ่กระจายทั่วไซโทพลาซึม ไมโครทิวบูลแผ่ออกจากเซนโทรโซมใกล้นิวเคลียส',
+      model: 'เส้นใยบางโปร่งแสงแผ่ออกจากเซนโทรโซม (บริเวณเซนทริโอล) ไปยังขอบเซลล์ แสดงเฉพาะไมโครทิวบูลบางส่วนเพื่อไม่ให้บังออร์แกเนลล์อื่น กดปุ่ม “ไซโทสเกเลตอน” เพื่อซ่อน/แสดง',
+      fact: 'ยาเคมีบำบัดบางชนิด เช่น แพคลิแท็กเซล (paclitaxel) ทำให้ไมโครทิวบูลแยกสลายไม่ได้ เซลล์มะเร็งจึงแบ่งตัวต่อไม่ได้'
+    }
+  },
+  cells: {
+    animal: {
+      th: 'เซลล์สัตว์', en: 'Animal cell',
+      summary: 'เซลล์ยูแคริโอตที่ไม่มีผนังเซลล์ รูปร่างจึงยืดหยุ่น มีเซนทริโอลและไลโซโซม ไม่มีคลอโรพลาสต์ และไม่มีแวคิวโอลกลางขนาดใหญ่',
+      organelles: ['membrane', 'nucleus', 'nucleolus', 'mitochondrion', 'ribosome', 'rer', 'ser', 'golgi', 'lysosome', 'centriole', 'cytoskeleton'],
+      overrides: {},
+      compareNotes: { vacuole: 'มีเฉพาะแวคิวโอลขนาดเล็ก' }
+    },
+    plant: {
+      th: 'เซลล์พืช', en: 'Plant cell',
+      summary: 'เซลล์ยูแคริโอตที่มีผนังเซลล์ล้อมรอบ รูปร่างจึงค่อนข้างคงที่ มีคลอโรพลาสต์และแวคิวโอลกลางขนาดใหญ่ ไม่มีเซนทริโอล (พืชชั้นสูง)',
+      organelles: ['wall', 'membrane', 'nucleus', 'nucleolus', 'chloroplast', 'vacuole', 'mitochondrion', 'ribosome', 'rer', 'ser', 'golgi', 'cytoskeleton'],
+      overrides: {
+        cytoskeleton: {
+          location: 'แผ่กระจายทั่วไซโทพลาซึม ในเซลล์พืชไมโครทิวบูลจำนวนมากเรียงขนานกันอยู่ใต้เยื่อหุ้มเซลล์ (cortical microtubules) และกำหนดทิศการวางเส้นใยเซลลูโลสของผนังเซลล์',
+          model: 'เส้นใยบางโปร่งแสงเรียงเป็นวงขนานกันใต้เยื่อหุ้มเซลล์ แทนไมโครทิวบูลแบบคอร์ติคัล (เซลล์พืชไม่มีเซนทริโอล จึงไม่มีจุดศูนย์กลางแบบเซลล์สัตว์) กดปุ่ม “ไซโทสเกเลตอน” เพื่อซ่อน/แสดง'
+        },
+        membrane: { location: 'อยู่ถัดเข้ามาจากผนังเซลล์ แนบชิดผนังเมื่อเซลล์เต่ง และหดแยกออกจากผนังเมื่อเกิดพลาสโมไลซิส' },
+        nucleus: { location: 'ถูกแวคิวโอลขนาดใหญ่ดันไปอยู่ชิดด้านข้างของเซลล์' },
+        mitochondrion: { fact: 'เซลล์พืชก็มีไมโทคอนเดรีย! พืชสังเคราะห์ด้วยแสงในคลอโรพลาสต์ แต่ยังต้องหายใจระดับเซลล์ในไมโทคอนเดรียเพื่อสร้าง ATP ตลอดเวลา ทั้งกลางวันและกลางคืน' },
+        golgi: { fact: 'ในเซลล์พืช กอลจิคอมเพล็กซ์สร้างพอลิแซ็กคาไรด์ที่ไม่ใช่เซลลูโลส (เช่น เพกทิน) ส่งไปสร้างผนังเซลล์ และช่วยสร้างเซลล์เพลตเมื่อแบ่งเซลล์' }
+      },
+      compareNotes: { lysosome: 'พบน้อย แวคิวโอลทำหน้าที่ย่อยสลายแทน', centriole: 'ไม่มีในพืชชั้นสูง' }
+    }
+  },
+  compareRows: ['wall', 'chloroplast', 'vacuole', 'centriole', 'lysosome', 'mitochondrion']
+};
+
+// =====================================================================
+// 2) UI (ไม่ขึ้นกับ Three.js: รายการ ค้นหา แผงรายละเอียด ใช้ได้แม้โหลด 3D ไม่สำเร็จ)
+// =====================================================================
+const $ = (id) => document.getElementById(id);
+const ui = {
+  viewer: $('viewer'), canvas: $('scene'), list: $('list'), search: $('search'), noResult: $('noResult'), listCount: $('listCount'),
+  summary: $('cellSummary'), badge: $('badge'), compare: $('compare'),
+  loading: $('loading'), loadingText: $('loadingText'), error: $('error'), errorText: $('errorText'), retry: $('retry'),
+  resetView: $('resetView'), autoRotate: $('autoRotate'), tag: $('tag3d'), sr: $('sr'),
+  detailPanel: $('detailPanel'), detailEmpty: $('detailEmpty'), detailBody: $('detailBody'), dSwatch: $('dSwatch'), dTitle: $('dTitle'), dEn: $('dEn'),
+  dFunc: $('dFunc'), dStruct: $('dStruct'), dLoc: $('dLoc'), dFact: $('dFact'), dFound: $('dFound'),
+  secStruct: $('secStruct'), secLoc: $('secLoc'), secFact: $('secFact'), closeDetail: $('closeDetail'),
+  secModel: $('secModel'), dModel: $('dModel'), dPick: $('dPick'),
+  motion: $('motion'), cyto: $('cyto'), quality: $('quality'), perf: $('perf'), perfFps: $('perfFps'), perfLow: $('perfLow'), perfClose: $('perfClose')
+};
+const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 900);
+const state = { cell: 'animal', selected: null, quality: IS_MOBILE ? 'low' : 'high', motion: !REDUCED_MOTION, showCyto: true };
+
+function infoFor(id, cell = state.cell) {
+  const base = CELL_DATA.organelles[id];
+  if (!base) return null;
+  const ov = (CELL_DATA.cells[cell].overrides || {})[id] || {};
+  return { ...base, ...ov, id };
+}
+function announce(msg) { ui.sr.textContent = ''; requestAnimationFrame(() => { ui.sr.textContent = msg; }); }
+
+function renderCellUI() {
+  const c = CELL_DATA.cells[state.cell];
+  document.querySelectorAll('[data-cell]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cell === state.cell)));
+  ui.summary.textContent = c.summary;
+  ui.badge.firstChild.nodeValue = c.th + ' (' + c.en + ')';
+  renderList();
+}
+
+function renderList() {
+  const c = CELL_DATA.cells[state.cell];
+  ui.list.replaceChildren(...c.organelles.map(id => {
+    const o = CELL_DATA.organelles[id];
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'org-item'; b.dataset.id = id;
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', `เลือก${o.th} (${o.en}) บนแบบจำลอง`);
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.setAttribute('aria-hidden', 'true'); dot.style.setProperty('--c', o.color);
+    const names = document.createElement('span'); names.className = 'names';
+    const th = document.createElement('b'); th.textContent = o.th;
+    const en = document.createElement('small'); en.textContent = o.en;
+    names.append(th, en); b.append(dot, names); li.append(b);
+    return li;
+  }));
+  applyFilter();
+  markList();
+}
+
+function matches(id, q) {
+  if (!q) return true;
+  const o = CELL_DATA.organelles[id];
+  return [o.th, o.en, id, ...(o.aliases || [])].some(s => s.toLowerCase().includes(q));
+}
+function applyFilter() {
+  const q = ui.search.value.trim().toLowerCase();
+  let shown = 0;
+  ui.list.querySelectorAll('li').forEach(li => {
+    const ok = matches(li.firstChild.dataset.id, q);
+    li.hidden = !ok; if (ok) shown++;
+  });
+  ui.noResult.hidden = shown > 0;
+  ui.listCount.textContent = q ? `(${shown})` : `(${CELL_DATA.cells[state.cell].organelles.length})`;
+}
+function markList() {
+  ui.list.querySelectorAll('.org-item').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === state.selected)));
+}
+
+function renderCompare() {
+  const a = CELL_DATA.cells.animal, p = CELL_DATA.cells.plant;
+  const cell = (c, id) => {
+    const has = c.organelles.includes(id), note = (c.compareNotes || {})[id];
+    return `<td><span class="${has ? 'yes' : 'no'}">${has ? 'มี' : 'ไม่มี'}</span>${note ? `<small>${note}</small>` : ''}</td>`;
+  };
+  ui.compare.innerHTML = `<tr><th scope="col">โครงสร้าง</th><th scope="col">สัตว์</th><th scope="col">พืช</th></tr>` +
+    CELL_DATA.compareRows.map(id => `<tr><th scope="row" style="background:none;color:var(--ink);font-weight:600">${CELL_DATA.organelles[id].th}</th>${cell(a, id)}${cell(p, id)}</tr>`).join('');
+}
+
+function renderDetail(id, pick) {
+  ui.detailPanel.hidden = !id;
+  if (!id) { ui.detailBody.hidden = true; return; }
+  ui.detailBody.hidden = false;
+  if (isNarrow()) closePop();
+  const info = infoFor(id);
+  const full = !!info;
+  ui.secStruct.hidden = ui.secLoc.hidden = ui.secFact.hidden = ui.dFound.hidden = ui.secModel.hidden = !full;
+  if (!full) {
+    ui.dSwatch.style.setProperty('--c', '#64748b');
+    ui.dTitle.textContent = 'ไม่พบข้อมูลของส่วนนี้';
+    ui.dEn.textContent = 'Unknown part';
+    ui.dFunc.textContent = 'ส่วนที่เลือกยังไม่มีข้อมูลในหน้านี้ ลองคลิกออร์แกเนลล์อื่น หรือเลือกจากรายการออร์แกเนลล์';
+    return;
+  }
+  ui.dSwatch.style.setProperty('--c', info.color);
+  ui.dTitle.textContent = info.th;
+  ui.dEn.textContent = info.en;
+  ui.dFunc.textContent = info.function;
+  ui.dStruct.replaceChildren(...info.structure.map(s => { const li = document.createElement('li'); li.textContent = s; return li; }));
+  ui.dLoc.textContent = info.location;
+  ui.dModel.textContent = info.model || '';
+  ui.dPick.hidden = !(pick && pick.part);
+  if (pick && pick.part) ui.dPick.textContent = 'ส่วนที่เลือก: ' + pick.part + (pick.note ? ' — ' + pick.note : '');
+  ui.dFact.textContent = info.fact;
+  ui.dFound.replaceChildren('พบใน: ', ...['animal', 'plant'].map(c => {
+    const has = CELL_DATA.cells[c].organelles.includes(id);
+    const s = document.createElement('span'); s.className = 'chip ' + (has ? 'on' : 'off');
+    s.textContent = (has ? '✓ ' : '✗ ') + CELL_DATA.cells[c].th; return s;
+  }));
+}
+
+function select(id, opts = {}) {
+  state.selected = id;
+  markList();
+  const pick = scene3d.onSelect(id, opts) || { part: opts.part, note: opts.note };
+  renderDetail(id, pick);
+  const info = infoFor(id);
+  announce(info ? `เลือก ${info.th} แล้ว` : 'เลือกส่วนที่ไม่มีข้อมูล');
+}
+function deselect() {
+  if (state.selected === null && ui.detailBody.hidden) return;
+  state.selected = null;
+  markList(); renderDetail(null);
+  scene3d.onSelect(null, {});
+  ui.dPick.hidden = true;
+  announce('ยกเลิกการเลือกแล้ว');
+}
+
+// --- event listeners (ผูกครั้งเดียว) ---
+document.querySelectorAll('[data-cell]').forEach(b => b.addEventListener('click', () => switchCell(b.dataset.cell)));
+ui.list.addEventListener('click', e => {
+  const b = e.target.closest('.org-item'); if (!b) return;
+  if (state.selected === b.dataset.id) { deselect(); return; }
+  select(b.dataset.id, { source: 'list' });
+});
+ui.search.addEventListener('input', applyFilter);
+ui.search.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const first = [...ui.list.querySelectorAll('li')].find(li => !li.hidden);
+    if (first) select(first.firstChild.dataset.id, { source: 'list' });
+  } else if (e.key === 'Escape') {
+    if (ui.search.value) { ui.search.value = ''; applyFilter(); } else closePop(true);
+  }
+});
+ui.closeDetail.addEventListener('click', () => { deselect(); ui.canvas.focus({ preventScroll: true }); });
+ui.retry.addEventListener('click', () => location.reload());
+
+// --- แผงลอยด้านซ้าย (เปิดได้ทีละแผง) ---
+const isNarrow = () => matchMedia('(max-width:760px)').matches;
+const POP_BUTTONS = [...document.querySelectorAll('[data-pop]')];
+function openPop(id) {
+  POP_BUTTONS.forEach(b => {
+    const on = b.dataset.pop === id;
+    b.setAttribute('aria-expanded', String(on));
+    $(b.dataset.pop).hidden = !on;
+  });
+  // จอแคบมีที่ให้แผ่นเลื่อนได้แผงเดียว
+  if (id && isNarrow() && state.selected !== null) deselect();
+  const pop = id && $(id);
+  if (pop) (pop.querySelector('.search') || pop.querySelector('[data-close]')).focus({ preventScroll: true });
+}
+function closePop(returnFocus) {
+  const btn = POP_BUTTONS.find(b => b.getAttribute('aria-expanded') === 'true');
+  if (!btn) return false;
+  openPop(null);
+  if (returnFocus) btn.focus({ preventScroll: true });
+  return true;
+}
+POP_BUTTONS.forEach(b => b.addEventListener('click', () => {
+  if (b.getAttribute('aria-expanded') === 'true') closePop(); else openPop(b.dataset.pop);
+}));
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closePop(true)));
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape' || e.target === ui.search) return;
+  if (!closePop(true)) deselect();
+});
+
+async function switchCell(type) {
+  if (type === state.cell || !CELL_DATA.cells[type]) return;
+  state.cell = type;
+  deselect();
+  renderCellUI();
+  await scene3d.showCell(type);
+  announce('แสดง' + CELL_DATA.cells[type].th + 'แล้ว');
+}
+
+// =====================================================================
+// 3) สร้างโมเดล 3 มิติแบบ procedural จาก geometry ของ Three.js (ไม่ใช้ไฟล์โมเดลหรือ texture ภายนอก)
+// =====================================================================
+let THREE = null, OrbitControls = null, RoomEnvironment = null, BGU = null;
+
+const VIEW_CONFIG = {
+  animal: { camera: [9.5, 6, 12.5], radius: 5.9, minDistance: 8, maxDistance: 32, groundY: -5.2 },
+  plant: { camera: [-7, 7, 13], radius: 6.6, minDistance: 9, maxDistance: 34, groundY: -4.3 }
+};
+const QUALITY = {
+  high: { th: 'สูง', memDetail: 30, nucDetail: 22, smallDetail: 4, seg: 1, shadows: true, maxDpr: 2, particles: 260, transmission: true, texSize: 512 },
+  low: { th: 'ต่ำ', memDetail: 12, nucDetail: 9, smallDetail: 2, seg: 0.5, shadows: false, maxDpr: 1, particles: 110, transmission: false, texSize: 256 }
+};
+const RIBO_PART = {
+  bound: ['ไรโบโซมบน RER', 'เม็ดนี้เกาะบนผิวถุง RER สร้างโปรตีนที่จะส่งออกนอกเซลล์หรือเป็นโปรตีนของเยื่อ'],
+  free: ['ไรโบโซมอิสระ', 'เม็ดนี้ลอยอิสระในไซโทพลาซึม สร้างโปรตีนที่ใช้ภายในเซลล์']
+};
+
+function rngFrom(seed) {
+  let a = seed >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+// Perlin noise 3 มิติแบบสั้น + fbm
+function makeNoise(seed) {
+  const rnd = rngFrom(seed), perm = [...Array(256).keys()], p = new Uint8Array(512);
+  for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [perm[i], perm[j]] = [perm[j], perm[i]]; }
+  for (let i = 0; i < 512; i++) p[i] = perm[i & 255];
+  const fade = t => t * t * t * (t * (t * 6 - 15) + 10), lerp = (a, b, t) => a + (b - a) * t;
+  const grad = (h, x, y, z) => { const u = h < 8 ? x : y, v = h < 4 ? y : (h === 12 || h === 14 ? x : z); return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); };
+  const noise = (x, y, z) => {
+    const fx = Math.floor(x), fy = Math.floor(y), fz = Math.floor(z);
+    const X = fx & 255, Y = fy & 255, Z = fz & 255;
+    x -= fx; y -= fy; z -= fz;
+    const u = fade(x), v = fade(y), w = fade(z);
+    const A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
+    return lerp(
+      lerp(lerp(grad(p[AA] & 15, x, y, z), grad(p[BA] & 15, x - 1, y, z), u), lerp(grad(p[AB] & 15, x, y - 1, z), grad(p[BB] & 15, x - 1, y - 1, z), u), v),
+      lerp(lerp(grad(p[AA + 1] & 15, x, y, z - 1), grad(p[BA + 1] & 15, x - 1, y, z - 1), u), lerp(grad(p[AB + 1] & 15, x, y - 1, z - 1), grad(p[BB + 1] & 15, x - 1, y - 1, z - 1), u), v), w);
+  };
+  const fbm = (x, y, z, oct = 3) => { let s = 0, a = 0.6, f = 1; for (let i = 0; i < oct; i++) { s += a * noise(x * f, y * f, z * f); a *= 0.5; f *= 2.03; } return s; };
+  return { noise, fbm };
+}
+function sdRoundBox(p, c, h, r) {
+  const qx = Math.abs(p.x - c.x) - (h[0] - r), qy = Math.abs(p.y - c.y) - (h[1] - r), qz = Math.abs(p.z - c.z) - (h[2] - r);
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qy, qz), 0) - r;
+}
+function roundedBoxGeo(hx, hy, hz, r, seg = 20) {
+  const g = new THREE.BoxGeometry(2, 2, 2, seg, seg, seg);
+  const pos = g.attributes.position, nor = g.attributes.normal;
+  const map = (u, h) => { const a = Math.abs(u), k = 0.55; const v = a <= k ? a / k * (h - r) : (h - r) + (a - k) / (1 - k) * r; return Math.sign(u) * v; };
+  for (let i = 0; i < pos.count; i++) {
+    const x = map(pos.getX(i), hx), y = map(pos.getY(i), hy), z = map(pos.getZ(i), hz);
+    const cx = Math.max(-(hx - r), Math.min(hx - r, x)), cy = Math.max(-(hy - r), Math.min(hy - r, y)), cz = Math.max(-(hz - r), Math.min(hz - r, z));
+    let dx = x - cx, dy = y - cy, dz = z - cz; const L = Math.hypot(dx, dy, dz) || 1; dx /= L; dy /= L; dz /= L;
+    pos.setXYZ(i, cx + dx * r, cy + dy * r, cz + dz * r); nor.setXYZ(i, dx, dy, dz);
+  }
+  g.computeBoundingSphere(); g.computeBoundingBox();
+  return g;
+}
+function mergeParts(parts) {
+  const g = BGU.mergeGeometries(parts, false);
+  parts.forEach(p => p.dispose());
+  if (!g) throw new Error('รวม geometry ไม่สำเร็จ');
+  return g;
+}
+// ผิวอินทรีย์: IcosahedronGeometry → รวม vertex ซ้ำ → ดันตามรูปร่าง + noise → คำนวณ normal ใหม่
+function organicGeo(detail, shape, amp, freq, seed) {
+  const ico = new THREE.IcosahedronGeometry(1, detail);
+  ico.deleteAttribute('normal'); ico.deleteAttribute('uv');
+  const g = BGU.mergeVertices(ico); ico.dispose();
+  const { fbm } = makeNoise(seed), p = g.attributes.position, v = new THREE.Vector3(), s = new THREE.Vector3();
+  const factor = d => 1 + amp * fbm(d.x * freq + 7.3, d.y * freq + 1.9, d.z * freq + 4.1);
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i).normalize();
+    shape(v, s); s.multiplyScalar(factor(v));
+    p.setXYZ(i, s.x, s.y, s.z);
+  }
+  g.computeVertexNormals(); g.computeBoundingSphere(); g.computeBoundingBox();
+  g.userData.factor = factor;
+  return g;
+}
+const sphereShape = r => (v, s) => s.copy(v).multiplyScalar(r);
+const ellipsoidShape = (a, b, c) => (v, s) => s.set(v.x * a, v.y * b, v.z * c);
+function roundBoxShape(h, r) {
+  const t = new THREE.Vector3(), O = new THREE.Vector3(), far = Math.hypot(...h);
+  return (v, s) => {
+    let lo = 0, hi = far;
+    for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; t.copy(v).multiplyScalar(m); if (sdRoundBox(t, O, h, r) < 0) lo = m; else hi = m; }
+    s.copy(v).multiplyScalar(lo);
+  };
+}
+// ตัดผิวเป็นช่องวงกลม (มองเห็นด้านใน) ในทิศ dir
+function cutCap(g, dir, cosA) {
+  const idx = g.index.array, p = g.attributes.position, out = [], c = new THREE.Vector3(), t = new THREE.Vector3();
+  for (let i = 0; i < idx.length; i += 3) {
+    c.set(0, 0, 0);
+    for (let k = 0; k < 3; k++) c.add(t.fromBufferAttribute(p, idx[i + k]));
+    if (c.normalize().dot(dir) < cosA) out.push(idx[i], idx[i + 1], idx[i + 2]);
+  }
+  g.setIndex(out);
+  return g;
+}
+// ถุงแบนปิด (cisterna ของ ER) ที่โค้งตามเปลือกทรงกลมรัศมี r ขอบเป็นแฉกไม่สม่ำเสมอ
+function sacGeo(r, ph0, phL, th0, thL, h, seed, seg) {
+  const g = new THREE.SphereGeometry(1, seg, Math.max(8, seg >> 1)), p = g.attributes.position;
+  const { noise } = makeNoise(seed), side = new Float32Array(p.count);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), ang = Math.atan2(y, x);
+    const lobe = 1 + 0.16 * noise(Math.cos(ang) * 1.7 + 0.5, Math.sin(ang) * 1.7 + 0.5, seed * 0.31);
+    const u = x * lobe, v = y * lobe;
+    const ph = ph0 + (u * 0.5 + 0.5) * phL, th = th0 + (v * 0.5 + 0.5) * thL;
+    const rr = r + z * h + 0.06 * noise(u * 2.3 + 3.1, v * 2.3 + 1.7, seed * 0.17 + 0.5);
+    const st = Math.sin(th);
+    p.setXYZ(i, -rr * Math.cos(ph) * st, rr * Math.cos(th), rr * Math.sin(ph) * st);
+    side[i] = z;
+  }
+  g.computeVertexNormals();
+  g.userData.side = side;
+  return g;
+}
+// ถุงแบนโค้งของกอลจิ ขอบปลายพองออก
+function cisternaGeo(rx, ry, thick, bend, seg) {
+  const g = new THREE.SphereGeometry(1, seg, Math.max(8, seg >> 1)), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x0 = p.getX(i), y0 = p.getY(i), z0 = p.getZ(i);
+    const x = x0 * rx, y = y0 * ry;
+    p.setXYZ(i, x, y, z0 * thick * (0.4 + 2.2 * x0 ** 4) - bend * (x * x) / (rx * rx));
+  }
+  g.computeVertexNormals();
+  return g;
+}
+// คริสตี: แผ่นพับเป็นคลื่น ยึดกับผนังด้านหนึ่งแล้วยื่นเลยกึ่งกลาง
+function cristaGeo(r, y0, side, k, seg) {
+  const pos = [], idx = [];
+  for (let i = 0; i <= seg; i++) {
+    const a = i / seg, x = side * r * (1 - 1.6 * a);
+    const half = Math.sqrt(Math.max(r * r - x * x, 0)) * 0.92;
+    for (let j = 0; j <= seg; j++) {
+      const b = j / seg * 2 - 1;
+      pos.push(x, y0 + 0.03 * Math.sin(b * Math.PI * 1.5 + k) * a + 0.018 * Math.sin(a * Math.PI * 2 + k), b * half);
+    }
+  }
+  for (let i = 0; i < seg; i++) for (let j = 0; j < seg; j++) {
+    const a = i * (seg + 1) + j, b = a + seg + 1;
+    idx.push(a, b, a + 1, b, b + 1, a + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+function mitoGeos(S) {
+  const outer = new THREE.CapsuleGeometry(0.3, 0.9, S(10, 4), S(28, 10)); outer.scale(1, 1, 0.82);
+  const matrix = new THREE.CapsuleGeometry(0.262, 0.86, S(8, 4), S(24, 10)); matrix.scale(1, 1, 0.8);
+  const parts = [];
+  for (let k = 0; k < 7; k++) {
+    for (const off of [-0.012, 0.012]) parts.push(cristaGeo(0.25, -0.42 + k * 0.14 + off, k % 2 ? 1 : -1, k, S(14, 6)));
+  }
+  const cristae = mergeParts(parts); cristae.scale(1, 1, 0.8);
+  return { outer, matrix, cristae };
+}
+function canvasTexture(size, draw, isColor = true) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  draw(c.getContext('2d'), size);
+  const t = new THREE.CanvasTexture(c);
+  if (isColor) t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+// bump map ลายเส้นใยเซลลูโลสไขว้กัน (ต่อกันได้ไร้รอยต่อ)
+function fiberTexture(size) {
+  const t = canvasTexture(size, (x, s) => {
+    const rnd = rngFrom(4242);
+    x.fillStyle = '#7f7f7f'; x.fillRect(0, 0, s, s);
+    x.lineCap = 'round';
+    for (let i = 0; i < 420; i++) {
+      const a = (i % 2 ? 0.45 : -1.05) + (rnd() - 0.5) * 0.35, L = s * (0.2 + rnd() * 0.45);
+      const cx = rnd() * s, cy = rnd() * s, dx = Math.cos(a) * L / 2, dy = Math.sin(a) * L / 2;
+      x.strokeStyle = rnd() < 0.65 ? 'rgba(255,255,255,0.32)' : 'rgba(0,0,0,0.28)';
+      x.lineWidth = (0.5 + rnd() * 1.3) * s / 512;
+      for (let ox = -s; ox <= s; ox += s) for (let oy = -s; oy <= s; oy += s) {
+        x.beginPath(); x.moveTo(cx - dx + ox, cy - dy + oy); x.lineTo(cx + dx + ox, cy + dy + oy); x.stroke();
+      }
+    }
+    x.fillStyle = 'rgba(0,0,0,0.45)';
+    for (let i = 0; i < 14; i++) { x.beginPath(); x.arc(s * (0.05 + rnd() * 0.9), s * (0.05 + rnd() * 0.9), s * 0.012, 0, Math.PI * 2); x.fill(); }
+  }, false);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); t.anisotropy = 4;
+  return t;
+}
+function dotTexture() {
+  return canvasTexture(64, (x, s) => {
+    const g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+  });
+}
+function backdropTexture() {
+  return canvasTexture(256, (x, s) => {
+    const g = x.createRadialGradient(s * 0.5, s * 0.42, s * 0.04, s * 0.5, s * 0.5, s * 0.78);
+    g.addColorStop(0, '#183c62'); g.addColorStop(0.5, '#0b1f3b'); g.addColorStop(1, '#02060d');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+    const img = x.getImageData(0, 0, s, s), d = img.data, rnd = rngFrom(9);
+    for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 4; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+    x.putImageData(img, 0, 0);
+  });
+}
+
+function buildCell(type, q) {
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  const S = (n, min = 3) => Math.max(min, Math.round(n * q.seg));
+  const col = c => new THREE.Color(c);
+  const rand = rngFrom(type === 'animal' ? 20240611 : 7771);
+  const R = (a, b) => a + (b - a) * rand();
+  const rand3 = () => V3(R(-1, 1), R(-1, 1), R(-1, 1));
+  const plant = type === 'plant', cfg = VIEW_CONFIG[type];
+  const group = new THREE.Group(); group.name = 'cell-' + type;
+  const byId = new Map(), pickables = [], occupied = [], animated = [];
+  const ORIGIN = V3(0, 0, 0), d = new THREE.Object3D();
+
+  const entry = id => { if (!byId.has(id)) byId.set(id, { meshes: [], materials: new Set() }); return byId.get(id); };
+  const material = (id, o = {}) => {
+    const opacity = o.opacity ?? 1;
+    const m = new THREE.MeshPhysicalMaterial({
+      color: col(o.color || CELL_DATA.organelles[id].color),
+      roughness: o.roughness ?? 0.5, metalness: 0, clearcoat: o.clearcoat ?? 0.25, clearcoatRoughness: o.clearcoatRoughness ?? 0.4,
+      transparent: opacity < 1, opacity, side: o.side ?? THREE.FrontSide, depthWrite: o.depthWrite ?? opacity >= 1,
+      ...(o.phys || {})
+    });
+    m.userData.baseOpacity = opacity;
+    m.userData.glow = col(CELL_DATA.organelles[id].color);
+    entry(id).materials.add(m);
+    return m;
+  };
+  // container = เปลือกเซลล์ (เยื่อหุ้ม/ผนัง), shell = เปลือกโปร่งแสงของออร์แกเนลล์ที่คลิกทะลุไปยังส่วนข้างในได้
+  const add = (id, obj, o = {}) => {
+    Object.assign(obj.userData, { organelleId: id, container: !!o.container, shell: !!o.shell, minor: !!o.minor });
+    if (o.part) obj.userData.part = o.part;
+    if (o.note) obj.userData.note = o.note;
+    obj.castShadow = q.shadows && (o.cast ?? true);
+    obj.receiveShadow = q.shadows && (o.receive ?? true);
+    if (o.order) obj.renderOrder = o.order;
+    (o.parent || group).add(obj);
+    entry(id).meshes.push(obj); pickables.push(obj);
+    return obj;
+  };
+  const animate = (obj, amp, rot, speed) => animated.push({ obj, base: obj.position.clone(), q0: obj.quaternion.clone(), amp, rot, speed, ph: R(0, 100) });
+  const occupy = (p, r) => occupied.push({ p: p.clone(), r });
+  const free = (p, r) => occupied.every(o => o.p.distanceTo(p) > o.r + r);
+
+  const A = [5.6, 4.3, 4.9];
+  const memH = [4.6, 3.2, 3.2], memR = 0.6;
+  const vacC = V3(0.9, -0.1, 0), vacH = [2.5, 1.65, 1.65], vacR = 1.1;
+  const inside = (p, m) => plant
+    ? sdRoundBox(p, ORIGIN, memH, memR) < -m && sdRoundBox(p, vacC, vacH, vacR) > m * 0.5 + 0.12
+    : (p.x / (A[0] - m - 0.15)) ** 2 + (p.y / (A[1] - m - 0.15)) ** 2 + (p.z / (A[2] - m - 0.15)) ** 2 < 1;
+  const sample = () => plant ? V3(R(-4.6, 4.6), R(-3.2, 3.2), R(-3.2, 3.2)) : V3(R(-5.6, 5.6), R(-4.3, 4.3), R(-4.9, 4.9));
+  const spot = (r, tries = 900) => { for (let i = 0; i < tries; i++) { const p = sample(); if (inside(p, r) && free(p, r)) return p; } return null; };
+
+  // --- ผนังเซลล์ / เยื่อหุ้มเซลล์ / แวคิวโอล ---
+  const memOpts = {
+    opacity: 0.11, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06, side: THREE.DoubleSide,
+    phys: { ior: 1.3, thickness: 0.35, specularIntensity: 0.7, envMapIntensity: 0.65, iridescence: 0.3, iridescenceIOR: 1.3, iridescenceThicknessRange: [200, 450] }
+  };
+  const shellOpts = { container: true, cast: false, receive: false };
+  if (plant) {
+    const fib = fiberTexture(q.texSize);
+    const wallPhys = { bumpMap: fib, bumpScale: 3, sheen: 0.35, sheenColor: col('#eef7b0'), sheenRoughness: 0.8, envMapIntensity: 0.45 };
+    const wSeg = S(22, 10);
+    add('wall', new THREE.Mesh(roundedBoxGeo(4.95, 3.55, 3.55, 0.5, wSeg), material('wall', { opacity: 0.2, roughness: 0.9, clearcoat: 0, phys: wallPhys })), { ...shellOpts, order: 6, part: 'ผิวผนังด้านนอก' });
+    add('wall', new THREE.Mesh(roundedBoxGeo(4.72, 3.32, 3.32, 0.44, wSeg), material('wall', { opacity: 0.24, roughness: 0.9, clearcoat: 0, side: THREE.BackSide, phys: wallPhys })), { ...shellOpts, order: 6, part: 'ผิวผนังด้านใน' });
+    add('membrane', new THREE.Mesh(organicGeo(q.memDetail, roundBoxShape(memH, memR), 0.012, 1.6, 41), material('membrane', memOpts)), { ...shellOpts, order: 5 });
+    const vMat = material('vacuole', q.transmission
+      ? { roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide, phys: { transmission: 0.9, thickness: 1.4, ior: 1.33, attenuationColor: col('#a8d4ff'), attenuationDistance: 2.5, specularIntensity: 0.8 } }
+      : { opacity: 0.34, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide, phys: { ior: 1.33 } });
+    const vac = new THREE.Mesh(organicGeo(q.nucDetail + 4, roundBoxShape(vacH, vacR), 0.02, 1.8, 77), vMat);
+    vac.position.copy(vacC);
+    add('vacuole', vac, { shell: true, cast: false, receive: false, part: 'โทโนพลาสต์และน้ำเลี้ยงเซลล์' });
+  } else {
+    add('membrane', new THREE.Mesh(organicGeo(q.memDetail, ellipsoidShape(...A), 0.05, 1.3, 13), material('membrane', memOpts)), { ...shellOpts, order: 5 });
+  }
+
+  // --- นิวเคลียส: เยื่อหุ้ม 2 ชั้น เปิดช่องให้เห็นด้านใน + รูนิวเคลียส + โครมาทิน + นิวคลีโอลัส ---
+  const N = plant ? V3(-3.1, 0.6, 0.5) : V3(0.3, 0.3, 0);
+  const nr = plant ? 0.9 : 1.45;
+  const hole = V3(...cfg.camera).normalize(), cosHole = Math.cos(THREE.MathUtils.degToRad(46));
+  const outerGeo = cutCap(organicGeo(q.nucDetail, sphereShape(nr), 0.05, 2.2, 5), hole, cosHole);
+  const innerGeo = cutCap(organicGeo(q.nucDetail, sphereShape(nr * 0.92), 0.05, 2.2, 5), hole, cosHole);
+  const nOut = new THREE.Mesh(outerGeo, material('nucleus', { color: '#8b93f8', opacity: 0.42, roughness: 0.55, clearcoat: 0.15, side: THREE.DoubleSide, phys: { sheen: 0.7, sheenColor: col('#dbe2ff'), sheenRoughness: 0.6 } }));
+  nOut.position.copy(N);
+  add('nucleus', nOut, { shell: true, cast: false, order: 2, part: 'เยื่อหุ้มนิวเคลียสชั้นนอก', note: 'ชั้นนอกโปร่งแสงเล็กน้อย ต่อเนื่องกับ RER' });
+  const nIn = new THREE.Mesh(innerGeo, material('nucleus', { color: '#4338ca', roughness: 0.8, clearcoat: 0, side: THREE.DoubleSide, phys: { sheen: 0.8, sheenColor: col('#a5b4fc'), sheenRoughness: 0.5 } }));
+  nIn.position.copy(N);
+  add('nucleus', nIn, { part: 'เยื่อหุ้มนิวเคลียสชั้นใน', note: 'ผิวด้าน ด้านในคือนิวคลีโอพลาซึม' });
+
+  const nPores = plant ? 46 : 80, poreTotal = Math.round(nPores * 1.25);
+  const pores = new THREE.InstancedMesh(new THREE.TorusGeometry(nr * 0.055, nr * 0.018, S(6, 4), S(14, 8)), material('nucleus', { color: '#e0e7ff', roughness: 0.4, clearcoat: 0.4 }), nPores);
+  const Zax = V3(0, 0, 1);
+  let pc = 0;
+  for (let i = 0; i < poreTotal && pc < nPores; i++) {
+    const y = 1 - (i + 0.5) / poreTotal * 2, rr = Math.sqrt(1 - y * y), a = i * 2.39996;
+    const n = V3(Math.cos(a) * rr, y, Math.sin(a) * rr);
+    if (n.dot(hole) > cosHole - 0.06) continue;
+    d.position.copy(N).addScaledVector(n, nr * outerGeo.userData.factor(n)); d.quaternion.setFromUnitVectors(Zax, n); d.scale.setScalar(1); d.updateMatrix();
+    pores.setMatrixAt(pc++, d.matrix);
+  }
+  pores.count = pc; pores.computeBoundingSphere();
+  add('nucleus', pores, { cast: false, minor: true, part: 'รูนิวเคลียส', note: 'ทางผ่านของ RNA และโปรตีนเข้าออกนิวเคลียส' });
+
+  const chromParts = [];
+  for (let k = 0; k < 6; k++) {
+    const pts = [];
+    for (let j = 0; j < 7; j++) { const v = rand3(); if (v.length() > 1) v.setLength(1); pts.push(v.multiplyScalar(nr * 0.6).add(N)); }
+    chromParts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), S(56, 16), nr * 0.028, S(6, 4), false));
+  }
+  add('nucleus', new THREE.Mesh(mergeParts(chromParts), material('nucleus', { color: '#c4b5fd', roughness: 0.6 })), { cast: false, minor: true, part: 'โครมาทิน', note: 'DNA ที่พันรอบโปรตีนฮิสโตน' });
+
+  const side1 = V3(0, 1, 0).cross(hole).normalize();
+  const nl = new THREE.Mesh(organicGeo(q.smallDetail, sphereShape(plant ? 0.34 : 0.5), 0.14, 3, 9), material('nucleolus', { roughness: 0.65, clearcoat: 0.2 }));
+  nl.position.copy(N).addScaledVector(hole, nr * 0.18).addScaledVector(side1, nr * 0.12).add(V3(0, nr * 0.1, 0));
+  add('nucleolus', nl);
+  occupy(N, nr + 0.15);
+
+  // --- RER: ถุงแบนโค้งซ้อนเป็นชั้นรอบนิวเคลียส + ท่อเชื่อม + ไรโบโซมเกาะผิว ---
+  const rerMat = material('rer', { roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.3, side: THREE.DoubleSide });
+  const layers = plant ? [nr + 0.24, nr + 0.42] : [nr + 0.42, nr + 0.64, nr + 0.86];
+  const phBase = plant ? 0.85 * Math.PI : -1.0, phSpan = plant ? 0.9 * Math.PI : 2.0;
+  const thBase = plant ? 0.22 * Math.PI : 0.27 * Math.PI, thSpan = plant ? 0.56 * Math.PI : 0.5 * Math.PI;
+  const boundRibo = [];
+  layers.forEach((r, i) => {
+    for (let s = 0; s < 2; s++) {
+      const g = sacGeo(r, phBase + s * phSpan * 0.52 + (i - 1) * 0.05 * phSpan, phSpan * 0.47, thBase + 0.03 * i, thSpan - 0.06 * i, plant ? 0.045 : 0.06, 3.1 + i * 2.3 + s, S(48, 16));
+      const m = new THREE.Mesh(g, rerMat); m.position.copy(N);
+      add('rer', m, { part: 'ถุงแบน (cisterna)', note: 'ผิวถุงมีไรโบโซมเกาะ จึงดูขรุขระ' });
+      const p = g.attributes.position, nn = g.attributes.normal, sd = g.userData.side, v = V3(0, 0, 0), nv = V3(0, 0, 0);
+      let placed = 0;
+      for (let t = 0; t < 4000 && placed < (plant ? 22 : 36); t++) {
+        const k = Math.floor(R(0, p.count)); if (Math.abs(sd[k]) < 0.55) continue;
+        v.fromBufferAttribute(p, k); nv.fromBufferAttribute(nn, k);
+        boundRibo.push(v.clone().addScaledVector(nv, 0.06).add(N)); placed++;
+      }
+      for (let k = 0; k < 30; k++) occupy(v.fromBufferAttribute(p, Math.floor(R(0, p.count))).clone().add(N), 0.28);
+    }
+  });
+  const sacDir = (ph, th) => V3(-Math.cos(ph) * Math.sin(th), Math.cos(th), Math.sin(ph) * Math.sin(th));
+  const linkParts = [], linkR = plant ? 0.035 : 0.045;
+  const linkBetween = (r0, r1, n) => {
+    for (let k = 0; k < n; k++) {
+      const uf = rand() < 0.5 ? R(0.15, 0.4) : R(0.6, 0.85);
+      const ph = phBase + uf * phSpan, th = thBase + R(0.25, 0.75) * thSpan;
+      const a = sacDir(ph, th), b = sacDir(ph + R(-0.06, 0.06), th + R(-0.06, 0.06));
+      const p0 = a.clone().multiplyScalar(r0).add(N), p1 = b.clone().multiplyScalar(r1).add(N);
+      const mid = p0.clone().lerp(p1, 0.5).addScaledVector(V3(R(-1, 1), R(-1, 1), R(-1, 1)), 0.04);
+      linkParts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([p0, mid, p1]), S(10, 4), linkR, S(8, 4), false));
+    }
+  };
+  linkBetween(nr, layers[0], plant ? 3 : 4);
+  for (let i = 0; i < layers.length - 1; i++) linkBetween(layers[i], layers[i + 1], plant ? 3 : 5);
+  add('rer', new THREE.Mesh(mergeParts(linkParts), rerMat), { minor: true, part: 'ท่อเชื่อมของ ER', note: 'เชื่อมถุงแต่ละชั้นเข้าด้วยกันและต่อกับเยื่อหุ้มนิวเคลียส' });
+
+  // --- SER: ท่อโค้งแตกแขนงเป็นร่างแห ---
+  const C = plant ? V3(-3.25, -1.35, -1.55) : V3(3.4, -1.5, 1.0);
+  const cs = plant ? 0.75 : 1.0, tubeR = plant ? 0.06 : 0.075;
+  const serParts = [];
+  const walk = (start, steps, len) => {
+    const pts = [start.clone()], p = start.clone(), dir = rand3().normalize();
+    for (let j = 0; j < steps; j++) {
+      dir.add(rand3().multiplyScalar(0.8)).normalize();
+      p.addScaledVector(dir, len);
+      if (p.distanceTo(C) > cs) p.sub(C).setLength(cs * 0.85).add(C);
+      pts.push(p.clone());
+    }
+    return pts;
+  };
+  const tube = pts => serParts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), S(48, 12), tubeR, S(8, 5), false));
+  const joint = p => { const s = new THREE.SphereGeometry(tubeR * 1.15, S(10, 6), S(8, 4)); s.translate(p.x, p.y, p.z); serParts.push(s); };
+  for (let k = 0; k < (plant ? 4 : 5); k++) {
+    const pts = walk(C.clone().add(rand3().multiplyScalar(cs * 0.5)), 6, cs * 0.42);
+    tube(pts); joint(pts[0]); joint(pts[pts.length - 1]);
+    for (const b of [2, 4]) {
+      if (rand() > 0.75) continue;
+      const br = walk(pts[b], 3, cs * 0.34);
+      tube(br); joint(pts[b]); joint(br[br.length - 1]);
+    }
+  }
+  add('ser', new THREE.Mesh(mergeParts(serParts), material('ser', { roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.2 })), { part: 'ท่อ SER', note: 'ผิวเรียบ ไม่มีไรโบโซมเกาะ' });
+  occupy(C, cs + 0.15);
+
+  // --- กอลจิคอมเพล็กซ์: ถุงแบนโค้ง 6 ชั้น + เวสิเคิลแตกหน่อจากปลายถุง ---
+  const G = plant ? V3(-3.0, -1.95, 1.15) : V3(1.0, -1.6, -2.9);
+  const gs = plant ? 0.62 : 1;
+  const gg = new THREE.Group(); gg.position.copy(G); group.add(gg); gg.lookAt(N);
+  const gMat = material('golgi', { roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.25 });
+  const tvMat = material('golgi', { color: '#fda4af', roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.1 });
+  const svMat = material('golgi', { color: '#fbbf24', roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.1 });
+  const bend = 0.32 * gs;
+  const cist = [0.8, 0.95, 1.04, 1.08, 1.0, 0.84].map((rx, i, arr) => {
+    const m = new THREE.Mesh(cisternaGeo(rx * gs, rx * gs * 0.5, 0.05 * gs + 0.012, bend, S(40, 14)), gMat);
+    m.position.z = (0.4 - i * 0.16) * gs;
+    add('golgi', m, { parent: gg, part: i === 0 ? 'ถุงด้าน cis' : i === arr.length - 1 ? 'ถุงด้าน trans' : 'ถุงแบน (cisterna)', note: i === 0 ? 'หันเข้าหา ER และนิวเคลียส รับเวสิเคิลเข้ามา' : i === arr.length - 1 ? 'ด้านเว้า ปล่อยเวสิเคิลออกไป' : 'สารถูกดัดแปลงขณะส่งต่อจากถุงหนึ่งไปอีกถุง' });
+    return { rx: rx * gs, z: m.position.z };
+  });
+  const vesGeo = new THREE.SphereGeometry(1, S(16, 8), S(12, 6));
+  const vesicle = (pos, r, secretory, part, note) => {
+    const v = new THREE.Mesh(vesGeo, secretory ? svMat : tvMat);
+    v.scale.setScalar(r); v.position.copy(pos);
+    add('golgi', v, { parent: gg, minor: true, part, note });
+    animate(v, 0.035 * gs, 0, R(0.4, 0.7));
+  };
+  const TV = ['เวสิเคิลขนส่ง', 'ถุงเล็กที่ขนส่งโปรตีน/ลิพิดไปยังส่วนอื่นของเซลล์'], SV = ['เวสิเคิลหลั่งสาร', 'จะไปรวมกับเยื่อหุ้มเซลล์แล้วปล่อยสารออกนอกเซลล์ (เอกโซไซโทซิส)'];
+  for (let i = 3; i < 6; i++) for (const sx of [-1, 1]) {
+    if (rand() < 0.25) continue;
+    const c = cist[i], r = (0.07 + R(0, 0.03)) * gs + 0.012, sec = i === 5 && rand() < 0.5;
+    vesicle(V3(sx * (c.rx + r * 0.6), R(-0.12, 0.12) * gs, c.z - bend + R(-0.03, 0.03)), r, sec, ...(sec ? SV : TV));
+  }
+  for (let k = 0; k < 9; k++) {
+    const sec = k % 3 === 0;
+    vesicle(V3(R(-0.7, 0.7) * gs, R(-0.32, 0.32) * gs, cist[5].z - R(0.3, 0.6) * gs), (0.065 + R(0, 0.035)) * gs + 0.012, sec, ...(sec ? SV : TV));
+  }
+  for (let k = 0; k < 3; k++) vesicle(V3(R(-0.5, 0.5) * gs, R(-0.25, 0.25) * gs, cist[0].z + R(0.15, 0.3) * gs), 0.06 * gs + 0.012, false, 'เวสิเคิลจาก ER', 'นำโปรตีนจาก ER มาส่งที่ด้าน cis');
+  occupy(G, 1.3 * gs);
+
+  // --- เซนทริโอล (เฉพาะเซลล์สัตว์): 9 กลุ่ม × 3 หลอด, 2 อันตั้งฉากกัน ---
+  const P = V3(1.6, 2.0, -1.2);
+  if (!plant) {
+    const cMat = material('centriole', { roughness: 0.35, clearcoat: 0.6 });
+    const rod = new THREE.CylinderGeometry(0.024, 0.024, 0.5, S(6, 4));
+    const makeCentriole = (pos, rot) => {
+      const g = new THREE.Group(); g.position.copy(pos); g.rotation.copy(rot); group.add(g);
+      const im = new THREE.InstancedMesh(rod, cMat, 27); let n = 0;
+      for (let k = 0; k < 9; k++) {
+        const a = k / 9 * Math.PI * 2;
+        for (let j = 0; j < 3; j++) {
+          const rad = 0.15 + j * 0.042, tan = j * 0.03 - 0.03;
+          d.position.set(Math.cos(a) * rad - Math.sin(a) * tan, 0, Math.sin(a) * rad + Math.cos(a) * tan);
+          d.quaternion.identity(); d.scale.setScalar(1); d.updateMatrix(); im.setMatrixAt(n++, d.matrix);
+        }
+      }
+      im.computeBoundingSphere();
+      add('centriole', im, { parent: g, part: 'ไมโครทิวบูลแบบ 9 × 3', note: '9 กลุ่ม กลุ่มละ 3 หลอด' });
+    };
+    makeCentriole(P, new THREE.Euler(0, 0, 0));
+    makeCentriole(P.clone().add(V3(0.42, -0.3, 0)), new THREE.Euler(0, 0, Math.PI / 2));
+    occupy(P, 0.75);
+  }
+
+  // --- คลอโรพลาสต์ (เฉพาะเซลล์พืช): รูปเลนส์ชิดเยื่อหุ้มเซลล์ มีกรานุม + สโตรมาลาเมลลา ---
+  if (plant) {
+    const chlGeo = new THREE.SphereGeometry(1, S(40, 12), S(24, 8)); chlGeo.scale(0.62, 0.24, 0.38);
+    const granaParts = [];
+    for (let gi = 0; gi < 5; gi++) {
+      const gx = -0.36 + gi * 0.18, gz = gi % 2 ? 0.08 : -0.08;
+      for (let k = 0; k < 5; k++) { const c = new THREE.CylinderGeometry(0.075, 0.075, 0.02, S(18, 8)); c.translate(gx, -0.06 + k * 0.028, gz); granaParts.push(c); }
+      if (gi < 4) {
+        const nx = gx + 0.18, nz = -gz;
+        const l = new THREE.BoxGeometry(Math.hypot(0.18, nz - gz), 0.008, 0.035);
+        l.rotateY(-Math.atan2(nz - gz, 0.18)); l.translate((gx + nx) / 2, gi % 2 ? 0.0 : 0.028, (gz + nz) / 2);
+        granaParts.push(l);
+      }
+    }
+    const granaGeo = mergeParts(granaParts);
+    const chlMat = material('chloroplast', { color: '#15803d', opacity: 0.55, roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.2, side: THREE.DoubleSide });
+    const granaMat = material('chloroplast', { color: '#14532d', roughness: 0.5, clearcoat: 0.2 });
+    const Y = V3(0, 1, 0), e = 0.01;
+    const sd = p => sdRoundBox(p, ORIGIN, memH, memR);
+    let placed = 0;
+    for (let t = 0; t < 6000 && placed < 16; t++) {
+      const p = sample(), dm = sd(p);
+      if (dm > -0.32 || dm < -0.8) continue;
+      if (sdRoundBox(p, vacC, vacH, vacR) < 0.3 || !free(p, 0.55)) continue;
+      const n = V3(sd(V3(p.x + e, p.y, p.z)) - sd(V3(p.x - e, p.y, p.z)), sd(V3(p.x, p.y + e, p.z)) - sd(V3(p.x, p.y - e, p.z)), sd(V3(p.x, p.y, p.z + e)) - sd(V3(p.x, p.y, p.z - e))).normalize();
+      const g = new THREE.Group(); g.position.copy(p);
+      g.quaternion.setFromUnitVectors(Y, n).multiply(new THREE.Quaternion().setFromAxisAngle(Y, R(0, Math.PI * 2)));
+      group.add(g);
+      add('chloroplast', new THREE.Mesh(granaGeo, granaMat), { parent: g, cast: false, part: 'กรานุม (ตั้งไทลาคอยด์)', note: 'ที่เกิดปฏิกิริยาที่ใช้แสง เชื่อมกันด้วยสโตรมาลาเมลลา' });
+      add('chloroplast', new THREE.Mesh(chlGeo, chlMat), { parent: g, shell: true, order: 1, part: 'เยื่อหุ้ม 2 ชั้นและสโตรมา', note: 'สโตรมาเป็นที่เกิดวัฏจักรคัลวิน' });
+      occupy(p, 0.6); placed++;
+    }
+  }
+
+  // --- ไมโทคอนเดรีย: แคปซูล เยื่อชั้นนอกโปร่งแสง + เมทริกซ์ + คริสตีพับซ้อน (ใช้ geometry ร่วมกัน) ---
+  const mg = mitoGeos(S);
+  const mOuter = material('mitochondrion', { color: '#ff4a26', opacity: 0.34, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.06, side: THREE.DoubleSide, phys: { specularIntensity: 1 } });
+  const mMatrix = material('mitochondrion', { color: '#d11d4f', opacity: 0.5, roughness: 0.35, clearcoat: 0.4, side: THREE.DoubleSide });
+  const mCristae = material('mitochondrion', { color: '#ffa86b', roughness: 0.3, clearcoat: 0.6, side: THREE.DoubleSide });
+  const ms = plant ? 0.8 : 1;
+  for (let k = 0; k < (plant ? 6 : 9); k++) {
+    const p = spot(0.8 * ms); if (!p) continue;
+    const g = new THREE.Group(); g.position.copy(p); g.scale.setScalar(ms);
+    g.rotation.set(R(0, Math.PI), R(0, Math.PI), R(0, Math.PI)); group.add(g);
+    add('mitochondrion', new THREE.Mesh(mg.cristae, mCristae), { parent: g, cast: false, part: 'คริสตี (cristae)', note: 'เยื่อชั้นในที่พับเข้ามาเป็นแผ่นซ้อน เพิ่มพื้นที่ให้ระบบถ่ายทอดอิเล็กตรอน' });
+    add('mitochondrion', new THREE.Mesh(mg.matrix, mMatrix), { parent: g, shell: true, cast: false, order: 1, part: 'เมทริกซ์', note: 'ของเหลวภายในที่มีเอนไซม์ของวัฏจักรเครบส์' });
+    add('mitochondrion', new THREE.Mesh(mg.outer, mOuter), { parent: g, shell: true, order: 2, part: 'เยื่อชั้นนอก', note: 'เยื่อเรียบที่ห่อหุ้มไมโทคอนเดรียทั้งหมด' });
+    animate(g, 0.06 * ms, 0.1, R(0.3, 0.5));
+    occupy(p, 0.78 * ms);
+  }
+
+  // --- ไลโซโซม (เฉพาะเซลล์สัตว์): เม็ดกลมมัน 2 แบบ ---
+  if (!plant) {
+    const lyGeo = new THREE.SphereGeometry(1, S(28, 10), S(18, 8));
+    const lyA = material('lysosome', { roughness: 0.14, clearcoat: 1, clearcoatRoughness: 0.08 });
+    const lyB = material('lysosome', { color: '#8fae3e', opacity: 0.7, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.08, side: THREE.DoubleSide });
+    const coreMat = material('lysosome', { color: '#5b4421', roughness: 0.85, clearcoat: 0 });
+    for (let k = 0; k < 8; k++) {
+      const r = R(0.18, 0.27), p = spot(r + 0.08); if (!p) continue;
+      const busy = k % 3 === 2;
+      const m = new THREE.Mesh(lyGeo, busy ? lyB : lyA); m.position.copy(p); m.scale.setScalar(r);
+      add('lysosome', m, busy ? { shell: true, part: 'ไลโซโซมที่กำลังย่อยสาร', note: 'รวมกับถุงที่นำสารเข้ามาแล้ว เอนไซม์กำลังย่อยสารข้างใน' } : { part: 'ไลโซโซมพร้อมทำงาน', note: 'ยังไม่ได้รวมกับสิ่งที่จะย่อย' });
+      if (busy) {
+        const core = new THREE.Mesh(lyGeo, coreMat); core.scale.setScalar(0.5); core.position.set(0.15, -0.1, 0.05);
+        add('lysosome', core, { parent: m, cast: false, minor: true, part: 'สารที่กำลังถูกย่อย', note: 'เช่น เชื้อโรคหรือออร์แกเนลล์ที่เสื่อมสภาพ' });
+      }
+      animate(m, 0.05, 0, R(0.35, 0.6));
+      occupy(p, r + 0.08);
+    }
+  }
+
+  // --- ไรโบโซม: InstancedMesh (หน่วยย่อยใหญ่ + เล็ก) ทั้งเกาะบน RER และอิสระ ---
+  const freeRibo = [];
+  for (let t = 0; t < 6000 && freeRibo.length < (plant ? 110 : 170); t++) {
+    const p = sample(); if (inside(p, 0.12) && free(p, 0.06)) freeRibo.push(p);
+  }
+  const big = new THREE.SphereGeometry(0.052, S(10, 6), S(8, 4)), small = new THREE.SphereGeometry(0.04, S(10, 6), S(8, 4));
+  small.scale(1.15, 0.7, 1); small.translate(0, 0.055, 0);
+  const allRibo = boundRibo.concat(freeRibo), kinds = allRibo.map((_, i) => i < boundRibo.length ? 'bound' : 'free');
+  const ribo = new THREE.InstancedMesh(mergeParts([big, small]), material('ribosome', { roughness: 0.4, clearcoat: 0.4 }), allRibo.length);
+  const eul = new THREE.Euler();
+  allRibo.forEach((p, i) => {
+    d.position.copy(p); d.quaternion.setFromEuler(eul.set(R(0, 6.3), R(0, 6.3), R(0, 6.3))); d.scale.setScalar(R(0.9, 1.15)); d.updateMatrix();
+    ribo.setMatrixAt(i, d.matrix);
+  });
+  ribo.computeBoundingSphere();
+  ribo.userData.kinds = kinds;
+  add('ribosome', ribo, { cast: false });
+
+  // --- ไซโทสเกเลตอน: เส้นใยบางโปร่งแสง (ไมโครทิวบูล) ---
+  const cytoParts = [], fr = 0.017;
+  let cytoAnchor;
+  if (!plant) {
+    for (let k = 0; k < 26; k++) {
+      const dir = rand3().normalize(), E = V3(dir.x * (A[0] - 0.4), dir.y * (A[1] - 0.4), dir.z * (A[2] - 0.4));
+      const pts = [];
+      for (let j = 0; j <= 6; j++) {
+        const p = P.clone().lerp(E, j / 6);
+        if (j > 0 && j < 6) p.add(rand3().multiplyScalar(0.18));
+        if (p.distanceTo(N) < nr + 0.35) p.sub(N).setLength(nr + 0.35).add(N);
+        pts.push(p);
+      }
+      cytoParts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), S(40, 12), fr, S(5, 3), false));
+    }
+    cytoAnchor = P.clone().add(V3(0.2, 0.35, 0.2));
+  } else {
+    const t = V3(0, 0, 0);
+    for (let x = -3.9; x <= 3.91; x += 0.78) {
+      const tilt = R(-0.25, 0.25), pts = [];
+      for (let j = 0; j < 36; j++) {
+        const a = j / 36 * Math.PI * 2, cy = Math.cos(a), cz = Math.sin(a), xx = x + tilt * Math.sin(a);
+        let lo = 0, hi = 5;
+        for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; t.set(xx, cy * m, cz * m); if (sdRoundBox(t, ORIGIN, memH, memR) < -0.14) lo = m; else hi = m; }
+        pts.push(V3(xx, cy * lo, cz * lo));
+      }
+      cytoParts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), S(90, 30), fr, S(5, 3), true));
+    }
+    cytoAnchor = V3(0, memH[1] - 0.2, 0);
+  }
+  const cyto = new THREE.Mesh(mergeParts(cytoParts), material('cytoskeleton', { opacity: 0.3, roughness: 0.35, clearcoat: 0.3 }));
+  cyto.userData.anchor = cytoAnchor;
+  add('cytoskeleton', cyto, { cast: false, receive: false, part: 'ไมโครทิวบูล', note: plant ? 'เรียงเป็นวงใต้เยื่อหุ้มเซลล์ (cortical microtubules)' : 'แผ่ออกจากเซนโทรโซมไปยังขอบเซลล์' });
+
+  // --- อนุภาคโปรตีนลอยในไซโทพลาซึม (ไม่รับการคลิก) ---
+  const np = q.particles, base = new Float32Array(np * 3), phase = new Float32Array(np);
+  let cnt = 0;
+  for (let t = 0; t < np * 60 && cnt < np; t++) {
+    const p = sample(); if (!inside(p, 0.2) || !free(p, 0.03)) continue;
+    base[cnt * 3] = p.x; base[cnt * 3 + 1] = p.y; base[cnt * 3 + 2] = p.z; phase[cnt++] = R(0, 100);
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(base.slice(), 3));
+  pGeo.setDrawRange(0, cnt);
+  const points = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.075, map: dotTexture(), color: 0xcfe6ff, transparent: true, opacity: 0.5, depthWrite: false }));
+  points.raycast = () => {}; points.frustumCulled = false; points.renderOrder = 4;
+  group.add(points);
+
+  return { group, byId, pickables, animated, cyto, ribo, particles: { geo: pGeo, base, phase, count: cnt } };
+}
+
+// =====================================================================
+// 4) ฉาก กล้อง การควบคุม การคลิกเลือก
+// =====================================================================
+const view = {
+  ready: false, renderer: null, scene: null, camera: null, controls: null, cell: null, pickables: [], ground: null, marker: null, key: null,
+  tween: null, highlightId: null, buildToken: 0, glowMat: null, glows: [], riboFocus: null, markerObj: null, markerLocal: null, motionT: 0,
+  fps: { frames: 0, last: 0, low: 0, value: 0, skipUntil: 0, dismissed: false }, resize: null
+};
+const TOOL_BUTTONS = () => [ui.resetView, ui.autoRotate, ui.motion, ui.cyto, ui.quality];
+
+function setLoading(on, text) { ui.loading.hidden = !on; if (text) ui.loadingText.textContent = text; }
+function fail(kind, err) {
+  if (err) console.error(err);
+  const msg = {
+    webgl: 'เบราว์เซอร์หรืออุปกรณ์นี้ไม่รองรับ WebGL หรือปิด “การเร่งความเร็วด้วยฮาร์ดแวร์” ไว้ จึงแสดงภาพ 3 มิติไม่ได้ ลองใช้ Chrome, Edge, Firefox หรือ Safari รุ่นล่าสุด และเปิดการเร่งความเร็วด้วยฮาร์ดแวร์ในการตั้งค่าเบราว์เซอร์',
+    net: 'โหลดไลบรารี Three.js จากอินเทอร์เน็ต (cdn.jsdelivr.net) ไม่สำเร็จ ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต หรือปิดโปรแกรมบล็อกโฆษณา/ไฟร์วอลล์ที่อาจบล็อก CDN แล้วกด “ลองโหลดใหม่”',
+    lost: 'การแสดงผล 3 มิติหยุดทำงาน (WebGL context lost) อาจเพราะหน่วยความจำกราฟิกไม่พอ ลองตั้งคุณภาพเป็น “ต่ำ” แล้วกด “ลองโหลดใหม่”',
+    build: 'เกิดข้อผิดพลาดระหว่างสร้างแบบจำลอง: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ')
+  }[kind];
+  setLoading(false);
+  ui.errorText.textContent = msg + ' (ยังเปิดรายการและข้อมูลออร์แกเนลล์จากปุ่มลอย “ออร์แกเนลล์” ด้านซ้ายได้)';
+  ui.error.hidden = false;
+  TOOL_BUTTONS().forEach(b => { b.disabled = true; });
+  view.ready = false;
+  if (view.renderer) view.renderer.setAnimationLoop(null);
+}
+function hasWebGL() {
+  try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); }
+  catch { return false; }
+}
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+function setFab(btn, icon, label) {
+  btn.querySelector('.fi').textContent = icon;
+  btn.querySelector('.fl').textContent = label;
+}
+function renderToolButtons() {
+  setFab(ui.motion, state.motion ? '⏸' : '▶', state.motion ? 'หยุดเคลื่อนไหว' : 'เคลื่อนไหวต่อ');
+  ui.motion.setAttribute('aria-label', state.motion ? 'หยุดการเคลื่อนไหวของออร์แกเนลล์และอนุภาค' : 'ให้ออร์แกเนลล์และอนุภาคเคลื่อนไหวต่อ');
+  ui.cyto.setAttribute('aria-pressed', String(state.showCyto));
+  setFab(ui.quality, '⚙️', 'คุณภาพ: ' + QUALITY[state.quality].th);
+  ui.quality.setAttribute('aria-label', 'คุณภาพการแสดงผลตอนนี้: ' + QUALITY[state.quality].th + ' กดเพื่อเปลี่ยนเป็น' + (state.quality === 'high' ? 'ต่ำ' : 'สูง'));
+}
+
+function makeGlowMaterial() {
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color('#fff2b0') }, uAlpha: { value: 0.7 }, uWidth: { value: 0.012 } },
+    vertexShader: `
+      uniform float uWidth; varying vec3 vN; varying vec3 vV;
+      void main() {
+        vec4 p = vec4(position + normal * uWidth, 1.0); vec3 n = normal;
+        #ifdef USE_INSTANCING
+          p = instanceMatrix * p; n = mat3(instanceMatrix) * n;
+        #endif
+        vec4 mv = modelViewMatrix * p;
+        vN = normalize(normalMatrix * n); vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 uColor; uniform float uAlpha; varying vec3 vN; varying vec3 vV;
+      void main() {
+        float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.2);
+        gl_FragColor = vec4(uColor, uAlpha * (0.12 + 0.88 * f));
+      }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+  });
+  m.userData.keep = true;
+  return m;
+}
+
+function applyRendererQuality() {
+  const q = QUALITY[state.quality];
+  view.renderer.shadowMap.enabled = q.shadows;
+  view.key.castShadow = q.shadows;
+  view.ground.visible = q.shadows;
+  view.resize();
+  view.scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); });
+}
+async function setQuality(qName) {
+  if (!view.ready || qName === state.quality) return;
+  state.quality = qName;
+  ui.perf.hidden = true;
+  renderToolButtons();
+  // ทิ้งโมเดลเดิมก่อนเปลี่ยนค่าเงา มิฉะนั้นเฟรมถัดไปจะคอมไพล์ shader ของโมเดลเก่าใหม่ทั้งหมดแบบค้างหน้าจอ
+  setLoading(true, 'กำลังสร้างแบบจำลองใหม่ (คุณภาพ' + QUALITY[qName].th + ')…');
+  disposeCell();
+  applyRendererQuality();
+  await showCell(state.cell, { keepView: true });
+  announce('เปลี่ยนคุณภาพการแสดงผลเป็น' + QUALITY[qName].th + 'แล้ว');
+}
+function setCyto(on, silent) {
+  state.showCyto = on;
+  renderToolButtons();
+  if (view.cell) view.cell.cyto.visible = on;
+  if (!on && state.selected === 'cytoskeleton') deselect();
+  if (!silent) announce(on ? 'แสดงไซโทสเกเลตอน' : 'ซ่อนไซโทสเกเลตอน');
+}
+
+function initScene() {
+  const renderer = new THREE.WebGLRenderer({ canvas: ui.canvas, antialias: true, powerPreference: 'high-performance' });
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  scene.background = backdropTexture();
+  scene.fog = new THREE.FogExp2(0x0b1a30, 0.018);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+  pmrem.dispose();
+
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+  scene.add(camera);
+  scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x0a1220, 0.35));
+  const key = new THREE.DirectionalLight(0xfff4e6, 2.3);
+  key.position.set(6, 12, 8);
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 40 });
+  key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
+  scene.add(key);
+  // rim และ fill ติดกับกล้อง: rim อยู่ด้านหลังแบบจำลองเสมอไม่ว่าจะหมุนไปทางไหน
+  const rim = new THREE.DirectionalLight(0xb4a7ff, 1.8); rim.position.set(-2, 6, -40); camera.add(rim);
+  const fill = new THREE.DirectionalLight(0x9fd8ff, 0.45); fill.position.set(-25, -6, 10); camera.add(fill);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.35 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+  const controls = new OrbitControls(camera, ui.canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.enablePan = false; controls.rotateSpeed = 0.8; controls.zoomSpeed = 0.9; controls.autoRotateSpeed = 1.2;
+  controls.addEventListener('start', () => { view.tween = null; ui.viewer.classList.add('touched'); });
+
+  // marker ชี้ตำแหน่งออร์แกเนลล์ที่เลือก (มองเห็นได้แม้อยู่หลังเยื่อหุ้ม)
+  const markerMat = new THREE.MeshBasicMaterial({ color: 0xffe066, depthTest: false, transparent: true, fog: false });
+  const marker = new THREE.Group();
+  const pin = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 20), markerMat); pin.rotation.x = Math.PI;
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.28, 40), new THREE.MeshBasicMaterial({ color: 0xffe066, depthTest: false, transparent: true, opacity: 0.9, side: THREE.DoubleSide, fog: false }));
+  pin.renderOrder = ring.renderOrder = 999;
+  marker.add(pin, ring); marker.visible = false; marker.userData = { pin, ring };
+  scene.add(marker);
+
+  const resize = () => {
+    const w = Math.max(1, ui.viewer.clientWidth), h = Math.max(1, ui.viewer.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUALITY[state.quality].maxDpr));
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    // จอแนวตั้งแคบ: ขยายมุมมองแนวตั้งเพื่อให้เซลล์ซึ่งกว้างกว่าสูงไม่ต้องถอยกล้องไปไกลจนจมหมอก
+    const t = Math.tan(THREE.MathUtils.degToRad(19));
+    camera.fov = camera.aspect < 1 ? Math.min(66, THREE.MathUtils.radToDeg(2 * Math.atan(t * 0.78 / camera.aspect))) : 38;
+    camera.updateProjectionMatrix();
+  };
+  Object.assign(view, { renderer, scene, camera, controls, ground, marker, key, resize, glowMat: makeGlowMaterial() });
+  new ResizeObserver(resize).observe(ui.viewer);
+  applyRendererQuality();
+
+  ui.canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fail('lost'); });
+  bindPointer();
+  bindKeys();
+  ui.resetView.addEventListener('click', () => resetView(false));
+  ui.autoRotate.addEventListener('click', () => {
+    controls.autoRotate = !controls.autoRotate;
+    ui.autoRotate.setAttribute('aria-pressed', String(controls.autoRotate));
+    announce(controls.autoRotate ? 'เปิดการหมุนอัตโนมัติ' : 'ปิดการหมุนอัตโนมัติ');
+  });
+  ui.motion.addEventListener('click', () => {
+    state.motion = !state.motion; renderToolButtons();
+    announce(state.motion ? 'ออร์แกเนลล์เคลื่อนไหวต่อ' : 'หยุดการเคลื่อนไหวแล้ว');
+  });
+  ui.cyto.addEventListener('click', () => setCyto(!state.showCyto));
+  ui.quality.addEventListener('click', () => setQuality(state.quality === 'high' ? 'low' : 'high'));
+  ui.perfLow.addEventListener('click', () => setQuality('low'));
+  ui.perfClose.addEventListener('click', () => { view.fps.dismissed = true; ui.perf.hidden = true; });
+
+  const clock = new THREE.Clock();
+  view.fps.last = performance.now();
+  renderer.setAnimationLoop(() => {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    if (state.motion) view.motionT += dt;
+    stepTween(dt);
+    controls.update(dt);
+    if (view.cell && state.motion) animateCell(view.motionT);
+    animateHighlight(view.motionT);
+    updateViewShift();
+    updateMarker(view.motionT);
+    renderer.render(scene, camera);
+    trackFps(performance.now());
+  });
+}
+
+// จอแคบ: เมื่อแผ่นข้อมูลเลื่อนขึ้นจากด้านล่าง ให้เลื่อนภาพขึ้นไปอยู่กลางพื้นที่ที่ยังมองเห็น (ใช้ view offset จึงคลิกเลือกได้ตรงตำแหน่งเดิม)
+const NARROW_TOP_UI = 130;
+function updateViewShift() {
+  const cam = view.camera, w = ui.viewer.clientWidth, h = ui.viewer.clientHeight;
+  let want = 0;
+  if (isNarrow()) {
+    const sheet = [ui.detailPanel, ...POP_BUTTONS.map(b => $(b.dataset.pop))].find(p => !p.hidden);
+    if (sheet) want = Math.max(0, h / 2 - (NARROW_TOP_UI + sheet.getBoundingClientRect().top) / 2);
+  }
+  const cur = view.shiftY || 0;
+  view.shiftY = REDUCED_MOTION ? want : cur + (want - cur) * 0.15;
+  if (want === 0 && Math.abs(view.shiftY) < 0.5) {
+    view.shiftY = 0;
+    if (cam.view && cam.view.enabled) cam.clearViewOffset();
+    return;
+  }
+  cam.setViewOffset(w, h, 0, view.shiftY, w, h);
+}
+
+// ตรวจ FPS: ถ้าต่ำกว่า 30 ต่อเนื่อง 4 วินาทีในโหมดคุณภาพสูง ให้แสดงข้อความแนะนำ (ไม่เปลี่ยนให้เอง)
+function trackFps(now) {
+  const f = view.fps; f.frames++;
+  const el = now - f.last;
+  if (el < 1000) return;
+  f.value = f.frames * 1000 / el; f.frames = 0; f.last = now;
+  if (el > 2500 || document.hidden || now < f.skipUntil || state.quality !== 'high' || f.dismissed) { f.low = 0; return; }
+  f.low = f.value < 30 ? f.low + 1 : 0;
+  if (f.low >= 4 && ui.perf.hidden) { ui.perfFps.textContent = String(Math.round(f.value)); ui.perf.hidden = false; }
+}
+
+const tmpQ = { q: null, e: null };
+function animateCell(T) {
+  const c = view.cell;
+  if (!tmpQ.q) { tmpQ.q = new THREE.Quaternion(); tmpQ.e = new THREE.Euler(); }
+  for (const a of c.animated) {
+    const s = a.speed, p = a.ph;
+    a.obj.position.set(a.base.x + a.amp * Math.sin(T * s + p), a.base.y + a.amp * Math.sin(T * s * 0.83 + p * 1.7), a.base.z + a.amp * Math.sin(T * s * 0.67 + p * 2.3));
+    if (a.rot) {
+      tmpQ.e.set(a.rot * Math.sin(T * s * 0.7 + p), a.rot * Math.sin(T * s * 0.53 + p * 0.6), a.rot * 0.6 * Math.sin(T * s * 0.41 + p * 1.3));
+      a.obj.quaternion.copy(a.q0).multiply(tmpQ.q.setFromEuler(tmpQ.e));
+    }
+  }
+  const P = c.particles, arr = P.geo.attributes.position.array;
+  for (let i = 0; i < P.count; i++) {
+    const k = i * 3, f = P.phase[i];
+    arr[k] = P.base[k] + 0.14 * Math.sin(T * 0.25 + f);
+    arr[k + 1] = P.base[k + 1] + 0.14 * Math.sin(T * 0.21 + f * 1.3);
+    arr[k + 2] = P.base[k + 2] + 0.14 * Math.sin(T * 0.17 + f * 0.7);
+  }
+  P.geo.attributes.position.needsUpdate = true;
+}
+
+function disposeCell() {
+  const c = view.cell; if (!c) return;
+  setHighlight(null);
+  view.scene.remove(c.group);
+  disposeGroup(c.group);
+  view.cell = null; view.pickables = []; view.highlightId = null; view.markerObj = null;
+}
+function disposeGroup(group) {
+  const geos = new Set(), mats = new Set(), texs = new Set();
+  group.traverse(o => {
+    if (o.geometry) geos.add(o.geometry);
+    if (o.material) [].concat(o.material).forEach(m => {
+      if (m.userData.keep) return;
+      mats.add(m);
+      for (const k in m) { const v = m[k]; if (v && v.isTexture) texs.add(v); }
+    });
+    if (o.isInstancedMesh) o.dispose();
+  });
+  geos.forEach(g => g.dispose());
+  mats.forEach(m => m.dispose());
+  texs.forEach(t => t.dispose());
+}
+
+async function showCell(type, opts = {}) {
+  if (!view.ready) return;
+  const token = ++view.buildToken;
+  setLoading(true, opts.keepView ? 'กำลังสร้างแบบจำลองใหม่ (คุณภาพ' + QUALITY[state.quality].th + ')…' : 'กำลังสร้างแบบจำลอง' + CELL_DATA.cells[type].th + '…');
+  ui.quality.disabled = true;
+  await nextFrame(); await nextFrame();
+  if (token !== view.buildToken) return;
+  try {
+    disposeCell();
+    const c = buildCell(type, QUALITY[state.quality]);
+    c.cyto.visible = state.showCyto;
+    // คอมไพล์ shader แบบขนานก่อนใส่เข้าฉาก มิฉะนั้นเฟรมแรกจะค้างหลายวินาทีบนบางเครื่อง (เช่น Windows/D3D11)
+    if (view.renderer.compileAsync) {
+      setLoading(true, 'กำลังเตรียมวัสดุและแสงเงา…');
+      const r = view.renderer, jobs = [r.compileAsync(c.group, view.camera, view.scene)];
+      if (QUALITY[state.quality].transmission) {
+        // วัตถุทึบจะถูกวาดลง render target ของ transmission อีกรอบ (ไม่มี tone mapping, สีแบบ linear) จึงต้องคอมไพล์ shader รุ่นนั้นล่วงหน้าด้วย
+        const tm = r.toneMapping, cs = r.outputColorSpace;
+        r.toneMapping = THREE.NoToneMapping; r.outputColorSpace = THREE.LinearSRGBColorSpace;
+        try { jobs.push(r.compileAsync(c.group, view.camera, view.scene)); }
+        finally { r.toneMapping = tm; r.outputColorSpace = cs; }
+      }
+      await Promise.all(jobs);
+      if (token !== view.buildToken) { disposeGroup(c.group); return; }
+    }
+    view.scene.add(c.group);
+    view.cell = c; view.pickables = c.pickables;
+    c.hull = [];
+    c.group.updateMatrixWorld(true);
+    c.group.traverse(o => {
+      if (!o.isMesh || !o.userData.container) return;
+      const p = o.geometry.attributes.position, step = Math.max(1, Math.floor(p.count / 700));
+      for (let i = 0; i < p.count; i += step) c.hull.push(new THREE.Vector3().fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld));
+    });
+    const cfg = VIEW_CONFIG[type];
+    view.controls.minDistance = cfg.minDistance; view.controls.maxDistance = cfg.maxDistance;
+    view.ground.position.y = cfg.groundY;
+    placeMarker(null);
+    if (!opts.keepView) resetView(true);
+    if (state.motion) animateCell(view.motionT);
+    if (state.selected) scene3d.onSelect(state.selected, { source: 'rebuild' });
+  } catch (e) { fail('build', e); return; }
+  view.fps.skipUntil = performance.now() + 2500; view.fps.low = 0;
+  ui.quality.disabled = false;
+  setLoading(false);
+}
+
+function resetView(immediate) {
+  const cfg = VIEW_CONFIG[state.cell], cam = view.camera;
+  const fit = fitDistance(new THREE.Vector3(...cfg.camera).normalize());
+  const to = new THREE.Vector3(...cfg.camera).setLength(fit);
+  if (immediate) { view.tween = null; view.controls.target.set(0, 0, 0); view.camera.position.copy(to); view.controls.update(); return; }
+  startTween(to.clone().normalize(), fit, REDUCED_MOTION ? 0.01 : 0.8, new THREE.Vector3());
+}
+// หาระยะกล้องที่ทำให้ขอบเซลล์จริง (จุดบนเยื่อหุ้ม/ผนัง) เต็มพื้นที่ว่างระหว่างปุ่มลอยพอดี
+function fitDistance(dir) {
+  const cfg = VIEW_CONFIG[state.cell], cam = view.camera.clone();
+  cam.clearViewOffset();
+  const rect = ui.canvas.getBoundingClientRect(), W = rect.width || 1, H = rect.height || 1;
+  const padY = isNarrow() ? 190 : 165, padX = isNarrow() ? 20 : 190;
+  const limY = H > padY * 2 ? (H - padY) / H : 0.9, limX = W > padX * 2 ? (W - padX) / W : 0.9;
+  const tv = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
+  let d = cfg.radius / Math.sin(Math.atan(Math.min(tv * limY, tv * cam.aspect * limX)));
+  const pts = view.cell && view.cell.hull, v = new THREE.Vector3();
+  if (pts && pts.length) {
+    for (let k = 0; k < 5; k++) {
+      cam.position.copy(dir).multiplyScalar(d); cam.lookAt(0, 0, 0); cam.updateMatrixWorld();
+      let ex = 0, ey = 0;
+      for (const p of pts) { v.copy(p).project(cam); ex = Math.max(ex, Math.abs(v.x)); ey = Math.max(ey, Math.abs(v.y)); }
+      d *= Math.max(ex / limX, ey / limY);
+    }
+  }
+  return Math.min(cfg.maxDistance, Math.max(cfg.minDistance, d));
+}
+function startTween(toDir, toDist, dur, toTarget) {
+  const ctl = view.controls, off = view.camera.position.clone().sub(ctl.target);
+  const fromDist = off.length(), fromDir = off.normalize();
+  view.tween = {
+    fromDir, q: new THREE.Quaternion().setFromUnitVectors(fromDir, toDir.clone().normalize()), fromDist, toDist, t: 0, dur: Math.max(dur, 0.01),
+    fromTarget: ctl.target.clone(), toTarget: (toTarget || ctl.target).clone()
+  };
+}
+function stepTween(dt) {
+  const tw = view.tween; if (!tw) return;
+  tw.t = Math.min(1, tw.t + dt / tw.dur);
+  const e = tw.t < 0.5 ? 4 * tw.t ** 3 : 1 - Math.pow(2 - 2 * tw.t, 3) / 2;
+  view.controls.target.lerpVectors(tw.fromTarget, tw.toTarget, e);
+  const dir = tw.fromDir.clone().applyQuaternion(new THREE.Quaternion().slerp(tw.q, e));
+  view.camera.position.copy(view.controls.target).addScaledVector(dir, tw.fromDist + (tw.toDist - tw.fromDist) * e);
+  if (tw.t >= 1) view.tween = null;
+}
+
+// แยก "คลิก" ออกจาก "ลากหมุน": ขยับเกิน 5px หรือใช้หลายนิ้ว = ไม่ใช่คลิก
+function bindPointer() {
+  const downs = new Map(); let multi = false;
+  const c = ui.canvas;
+  c.addEventListener('pointerdown', e => {
+    downs.set(e.pointerId, { x: e.clientX, y: e.clientY, moved: 0 });
+    if (downs.size > 1) multi = true;
+    ui.viewer.classList.add('touched');
+  });
+  c.addEventListener('pointermove', e => {
+    const d = downs.get(e.pointerId); if (d) d.moved = Math.max(d.moved, Math.hypot(e.clientX - d.x, e.clientY - d.y));
+  });
+  const end = (e, cancelled) => {
+    const d = downs.get(e.pointerId); downs.delete(e.pointerId);
+    const wasMulti = multi; if (downs.size === 0) multi = false;
+    if (cancelled || !d || wasMulti) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (Math.max(d.moved, Math.hypot(e.clientX - d.x, e.clientY - d.y)) > 5) return;
+    pickAt(e.clientX, e.clientY);
+  };
+  c.addEventListener('pointerup', e => end(e, false));
+  c.addEventListener('pointercancel', e => end(e, true));
+}
+
+const shown = o => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+const raycaster = { obj: null };
+function hitAt(x, y) {
+  if (!raycaster.obj) raycaster.obj = new THREE.Raycaster();
+  const r = ui.canvas.getBoundingClientRect();
+  const ndc = new THREE.Vector2((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+  raycaster.obj.setFromCamera(ndc, view.camera);
+  return resolvePick(raycaster.obj.intersectObjects(view.pickables.filter(shown), false));
+}
+function pickAt(x, y) {
+  if (!view.ready || !view.cell) return;
+  const hit = hitAt(x, y);
+  if (!hit) { deselect(); return; }
+  const o = hit.object, id = o.userData.organelleId;
+  select(id && CELL_DATA.organelles[id] ? id : (id || 'unknown'), {
+    source: 'click', point: hit.point.clone(), object: o, instanceId: hit.instanceId, part: o.userData.part, note: o.userData.note
+  });
+}
+// container (เยื่อหุ้มเซลล์/ผนังเซลล์) และ shell (เปลือกโปร่งแสงของออร์แกเนลล์) ให้คลิกทะลุไปยังของที่อยู่ข้างใน
+// ถ้ารังสีออกจากเปลือกโดยไม่โดนอะไรข้างใน จึงเลือกตัวเปลือกเอง
+function resolvePick(hits) {
+  const open = [];
+  for (const h of hits) {
+    const o = h.object;
+    if (!o.userData.organelleId) continue;
+    if (o.userData.container || o.userData.shell) {
+      const i = open.findIndex(e => e.object === o);
+      if (i === -1) { open.push(h); continue; }
+      return open[i];
+    }
+    return h;
+  }
+  return open.length ? open[open.length - 1] : null;
+}
+
+function bindKeys() {
+  ui.canvas.addEventListener('keydown', e => {
+    if (!view.ready) return;
+    const off = view.camera.position.clone().sub(view.controls.target);
+    const s = new THREE.Spherical().setFromVector3(off);
+    switch (e.key) {
+      case 'ArrowLeft': s.theta -= 0.15; break;
+      case 'ArrowRight': s.theta += 0.15; break;
+      case 'ArrowUp': s.phi -= 0.12; break;
+      case 'ArrowDown': s.phi += 0.12; break;
+      case '+': case '=': s.radius *= 0.9; break;
+      case '-': case '_': s.radius *= 1.1; break;
+      default: return;
+    }
+    e.preventDefault();
+    view.tween = null;
+    s.phi = Math.min(Math.PI - 0.1, Math.max(0.1, s.phi));
+    s.radius = Math.min(view.controls.maxDistance, Math.max(view.controls.minDistance, s.radius));
+    view.camera.position.copy(view.controls.target).add(off.setFromSpherical(s));
+  });
+}
+
+// ไฮไลต์: emissive pulse บนวัสดุ + เปลือกเรืองแสงแบบ fresnel (ใช้ geometry เดิมร่วมกัน ไม่สร้างใหม่)
+function setRiboFocus(i) {
+  const c = view.cell, f = view.riboFocus;
+  if (f && c && f.mesh === c.ribo) { c.ribo.setMatrixAt(f.i, f.m); c.ribo.instanceMatrix.needsUpdate = true; }
+  view.riboFocus = null;
+  if (i == null || !c) return;
+  const m = new THREE.Matrix4(), pos = new THREE.Vector3(), rot = new THREE.Quaternion(), scl = new THREE.Vector3();
+  c.ribo.getMatrixAt(i, m); m.decompose(pos, rot, scl);
+  c.ribo.setMatrixAt(i, new THREE.Matrix4().compose(pos, rot, scl.multiplyScalar(1.9)));
+  c.ribo.instanceMatrix.needsUpdate = true;
+  view.riboFocus = { mesh: c.ribo, i, m };
+}
+function setHighlight(id, instanceId) {
+  const c = view.cell;
+  const prev = view.highlightId && c && c.byId.get(view.highlightId);
+  if (prev) prev.materials.forEach(m => { m.emissive.setRGB(0, 0, 0); m.emissiveIntensity = 1; m.opacity = m.userData.baseOpacity; });
+  view.glows.forEach(g => { if (g.parent) g.parent.remove(g); });
+  view.glows = [];
+  setRiboFocus(null);
+  view.highlightId = id && c && c.byId.has(id) ? id : null;
+  if (!view.highlightId) return;
+  for (const o of c.byId.get(id).meshes) {
+    if (!o.isMesh) continue;
+    const g = o.isInstancedMesh ? new THREE.InstancedMesh(o.geometry, view.glowMat, o.count) : new THREE.Mesh(o.geometry, view.glowMat);
+    if (o.isInstancedMesh) { g.instanceMatrix = o.instanceMatrix; g.count = o.count; g.frustumCulled = false; }
+    g.raycast = () => {}; g.renderOrder = 20;
+    o.add(g); view.glows.push(g);
+  }
+  view.glowMat.uniforms.uColor.value.set(CELL_DATA.organelles[id].color).lerp(new THREE.Color('#fff6d5'), 0.45);
+  if (id === 'ribosome' && instanceId != null) setRiboFocus(instanceId);
+}
+function animateHighlight(T) {
+  if (!view.highlightId || !view.cell) return;
+  const e = view.cell.byId.get(view.highlightId); if (!e) return;
+  const s = state.motion ? Math.sin(T * 2.6) : 0;
+  const k = 0.38 + 0.2 * s;
+  e.materials.forEach(m => {
+    m.emissive.copy(m.userData.glow); m.emissiveIntensity = k;
+    if (m.userData.baseOpacity < 1) m.opacity = Math.min(1, m.userData.baseOpacity + 0.14);
+  });
+  view.glowMat.uniforms.uAlpha.value = 0.6 + 0.25 * s;
+}
+
+function representative(id) {
+  const e = view.cell && view.cell.byId.get(id); if (!e) return null;
+  const cam = view.camera.position, v = new THREE.Vector3(), m = new THREE.Matrix4();
+  const visible = e.meshes.filter(shown);
+  const majors = visible.filter(o => !o.userData.minor);
+  let best = null, bd = Infinity;
+  for (const o of (majors.length ? majors : visible)) {
+    o.updateWorldMatrix(true, false);
+    if (o.userData.container) {
+      const b = new THREE.Box3().setFromObject(o);
+      return { point: new THREE.Vector3((b.min.x + b.max.x) / 2, b.max.y, (b.min.z + b.max.z) / 2), obj: o };
+    }
+    if (o.userData.anchor) return { point: o.userData.anchor.clone().applyMatrix4(o.matrixWorld), obj: o };
+    if (o.isInstancedMesh) {
+      for (let i = 0; i < o.count; i++) {
+        o.getMatrixAt(i, m); v.setFromMatrixPosition(m).applyMatrix4(o.matrixWorld);
+        const dd = v.distanceTo(cam); if (dd < bd) { bd = dd; best = { point: v.clone(), obj: o, instanceId: i }; }
+      }
+    } else {
+      new THREE.Box3().setFromObject(o).getCenter(v);
+      const dd = v.distanceTo(cam); if (dd < bd) { bd = dd; best = { point: v.clone(), obj: o }; }
+    }
+  }
+  return best;
+}
+const representativePoint = id => { const r = representative(id); return r && r.point; };
+function placeMarker(point, id, obj, part) {
+  if (!view.marker) return;
+  view.marker.visible = !!point;
+  view.markerObj = point && obj ? obj : null;
+  if (view.markerObj) { obj.updateWorldMatrix(true, false); view.markerLocal = obj.worldToLocal(point.clone()); }
+  if (point) { view.marker.position.copy(point); view.marker.userData.id = id; }
+  ui.tag.hidden = !point;
+  if (point) { const info = infoFor(id); ui.tag.textContent = info ? info.th + (part ? ' · ' + part : '') : 'ไม่พบข้อมูล'; }
+}
+function updateMarker(T) {
+  const mk = view.marker; if (!mk || !mk.visible) return;
+  if (view.markerObj) mk.position.copy(view.markerLocal).applyMatrix4(view.markerObj.matrixWorld);
+  const s = mk.position.distanceTo(view.camera.position) / 16;
+  const b = state.motion ? Math.sin(T * 4) : 0;
+  mk.scale.setScalar(s);
+  mk.userData.pin.position.y = 0.3 + 0.08 * b;
+  mk.userData.ring.quaternion.copy(view.camera.quaternion);
+  mk.userData.ring.scale.setScalar(1 + 0.15 * b);
+  const p = mk.position.clone(); p.y += 0.7 * s;
+  p.project(view.camera);
+  if (p.z > 1) { ui.tag.hidden = true; return; }
+  ui.tag.hidden = false;
+  const w = ui.viewer.clientWidth, h = ui.viewer.clientHeight;
+  ui.tag.style.left = Math.min(w - 60, Math.max(60, (p.x + 1) / 2 * w)) + 'px';
+  ui.tag.style.top = Math.min(h - 8, Math.max(34, (1 - p.y) / 2 * h)) + 'px';
+}
+// กล้องเลื่อนเข้าหาชิ้นที่เลือกเบา ๆ (ยกเลิกทันทีเมื่อผู้ใช้ลาก/ซูม/กดแป้น)
+function focusOn(point) {
+  const ctl = view.controls, cam = view.camera;
+  const toTarget = ctl.target.clone().lerp(point, 0.4);
+  const toDir = cam.position.clone().sub(ctl.target).normalize();
+  const out = point.clone().sub(toTarget);
+  if (out.lengthSq() > 0.04) {
+    const want = out.normalize().add(new THREE.Vector3(0, 0.3, 0)).normalize(), ang = toDir.angleTo(want);
+    if (ang > 1e-3) toDir.applyQuaternion(new THREE.Quaternion().slerp(new THREE.Quaternion().setFromUnitVectors(toDir, want), Math.min(0.4, 0.52 / ang)));
+  }
+  const dist = cam.position.distanceTo(ctl.target);
+  const toDist = Math.min(dist, Math.max(ctl.minDistance + 0.5, dist * 0.88));
+  startTween(toDir, toDist, REDUCED_MOTION ? 0.01 : 1.2, toTarget);
+}
+
+// สะพานเชื่อม UI ↔ 3D (ทำงานได้แม้ 3D ยังไม่พร้อม)
+const scene3d = {
+  onSelect(id, opts) {
+    if (!view.ready || !view.cell) return null;
+    if (id === 'cytoskeleton' && !state.showCyto) setCyto(true, true);
+    setHighlight(id, opts.instanceId);
+    if (!id) { placeMarker(null); return null; }
+    const rep = opts.point ? { point: opts.point, obj: opts.object, instanceId: opts.instanceId } : representative(id);
+    let part = opts.part || '', note = opts.note || '';
+    if (id === 'ribosome' && rep && rep.instanceId != null) {
+      if (opts.instanceId == null) setRiboFocus(rep.instanceId);
+      [part, note] = RIBO_PART[rep.obj.userData.kinds[rep.instanceId]];
+    }
+    placeMarker(rep && rep.point, id, rep && rep.obj, part);
+    if (opts.source !== 'rebuild' && rep && rep.obj && !rep.obj.userData.container) focusOn(rep.point);
+    return { part, note };
+  },
+  showCell
+};
+
+async function boot3D() {
+  setLoading(true, 'กำลังโหลด Three.js…');
+  if (!hasWebGL()) return fail('webgl');
+  try {
+    const [three, oc, re, bgu] = await withTimeout(Promise.all([
+      import('three'),
+      import('three/addons/controls/OrbitControls.js'),
+      import('three/addons/environments/RoomEnvironment.js'),
+      import('three/addons/utils/BufferGeometryUtils.js')
+    ]), 20000);
+    THREE = three; OrbitControls = oc.OrbitControls; RoomEnvironment = re.RoomEnvironment; BGU = bgu;
+  } catch (e) { return fail('net', e); }
+  try { initScene(); } catch (e) { return fail('webgl', e); }
+  view.ready = true;
+  TOOL_BUTTONS().forEach(b => { b.disabled = false; });
+  await showCell(state.cell);
+  if (new URLSearchParams(location.search).has('debug')) {
+    window.__cell3d = {
+      view, state,
+      memory: () => ({ ...view.renderer.info.memory }),
+      fps: () => Math.round(view.fps.value),
+      probe(x, y) { const h = hitAt(x, y); return h ? { id: h.object.userData.organelleId, part: h.object.userData.part || '', instanceId: h.instanceId } : null; },
+      screenPoint(id) {
+        const p = representativePoint(id); if (!p) return null;
+        p.project(view.camera); const r = ui.canvas.getBoundingClientRect();
+        return { x: r.left + (p.x + 1) / 2 * r.width, y: r.top + (1 - p.y) / 2 * r.height };
+      }
+    };
+  }
+}
+
+renderToolButtons();
+renderCompare();
+renderCellUI();
+boot3D();
+</script>
+</body>
+</html>

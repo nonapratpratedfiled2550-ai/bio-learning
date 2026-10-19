@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบขับถ่ายและการรักษาสมดุลของเหลว – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0d0d06;--panel:#18170c;--panel2:#212011;--line:#3a3820;--txt:#f6f3e0;--mut:#b5b08a;--acc:#fde047;--acc2:#fb923c}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#713f12,#164e63);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#854d0e;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#2b2914;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#a16207;border-color:#fde047}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#0e7490;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#090904;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.spec{margin-top:10px;font-size:12px;color:var(--mut)}.specbar{position:relative;height:16px;border-radius:8px;background:linear-gradient(90deg,#fefce8,#fef08a,#facc15,#f59e0b,#c2410c);margin-top:4px}
+#specMark{position:absolute;top:-4px;width:4px;height:24px;background:#fff;border:1px solid #000;border-radius:2px;transform:translateX(-2px)}
+.specl{display:flex;justify-content:space-between;margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#0b0a04;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#0b0a04;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>💧 ระบบขับถ่ายและการรักษาสมดุลของเหลว (Excretory System &amp; Osmoregulation)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : เปรียบเทียบการขับถ่ายและของเสียไนโตรเจนในสัตว์</button>
+    <button data-mode="2">โหมด 2 : หน่วยไต (Nephron) และการสร้างปัสสาวะ</button>
+    <button data-mode="3">โหมด 3 : ฮอร์โมน ADH / RAAS / ANP กับสมดุลน้ำ</button>
+    <button data-mode="4">โหมด 4 : โรคไตและการฟอกเลือด (Hemodialysis)</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="org"><option value="amoeba">อะมีบา / พารามีเซียม – Contractile vacuole</option><option value="planaria">พลานาเรีย – Protonephridia (Flame cell)</option><option value="earthworm">ไส้เดือนดิน – Metanephridia</option><option value="insect">แมลง – Malpighian tubules</option><option value="fwfish">ปลาน้ำจืด</option><option value="swfish">ปลาน้ำเค็ม</option><option value="human" selected>มนุษย์ – ไต (Nephron)</option></select></div>
+    </div>
+    <div data-m="2 3">
+      <div class="ctl"><label>สภาวะน้ำในร่างกาย (Hydration)</label><select id="hyd"><option value="dehyd">ขาดน้ำ (Dehydrated)</option><option value="norm" selected>ปกติ (Normal)</option><option value="over">น้ำเกิน (Overhydrated)</option></select></div>
+      <div class="ctl"><label>การทำงานของฮอร์โมน</label><select id="horm"><option value="norm">ปกติ (Normal)</option><option value="adh">ขาด ADH (เบาจืด)</option><option value="ald">ยับยั้ง Aldosterone</option></select></div>
+    </div>
+    <div data-m="2 4">
+      <div class="ctl"><label>ความดันในโกลเมอรูลัส (Pg) <b id="pgV"></b></label><input type="range" id="pg" min="30" max="80" step="1" value="55"></div>
+      <div class="ctl"><label>ระดับน้ำตาลในเลือด <b id="gluV"></b></label><input type="range" id="glu" min="70" max="400" step="5" value="100"></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ความดันเลือดเฉลี่ย (MAP) <b id="mapV"></b></label><input type="range" id="map" min="60" max="140" step="1" value="93"></div>
+      <button class="btn" id="drink" style="width:100%">🥤 ดื่มน้ำ 1 ลิตร</button>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>สภาวะทางคลินิก</label><select id="cond"><option value="normal">ไตปกติ</option><option value="dm">เบาหวาน (Diabetes mellitus)</option><option value="di">เบาจืด (Diabetes insipidus)</option><option value="gn">ไตอักเสบ (Glomerulonephritis)</option><option value="stone">นิ่วอุดตันท่อไต (Kidney stone)</option><option value="ckd">ไตวายเรื้อรัง (CKD)</option><option value="hd">ฟอกเลือดด้วยเครื่องไตเทียม (Hemodialysis)</option></select></div>
+      <div class="ctl" id="qbBox"><label>อัตราเลือดผ่านเครื่องไตเทียม <b id="qbV"></b></label><input type="range" id="qb" min="100" max="400" step="10" value="300"></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgTr" class="on">ทิศทางการขนส่ง (Active vs Passive)</button><button id="tgOsm">ออสโมลาริตี Cortex vs Medulla</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="spec"><span>สเปกตรัมความเข้มข้นปัสสาวะ: <b id="specTxt" style="color:var(--acc)"></b></span><div class="specbar"><div id="specMark"></div></div><div class="specl"><span>เหลืองอ่อน – เจือจาง (50)</span><span>เหลืองเข้ม (600)</span><span>ส้มเข้มจัด (1200 mOsm/L)</span></div></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#f6f3e0',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'tr',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#2b2914';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#e7e3c4',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t)];}
+function flow(g,P,n,speed,col,r=3,off=0){for(let j=0;j<n;j++){const s=(S.time*speed+j/n+off)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();}}
+function panel(g,x,y,w,h){g.fillStyle='rgba(20,19,9,.93)';rr(g,x,y,w,h,10);g.fill();}
+function line(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+const urineCol=o=>{const t=clamp((o-50)/1150,0,1);const st=[[254,252,232],[254,240,138],[250,204,21],[245,158,11],[194,65,12]];const k=t*4,i=Math.min(3,Math.floor(k)),f=k-i;return`rgb(${st[i].map((c,j)=>Math.round(lerp(c,st[i+1][j],f))).join(',')})`;};
+
+/* ============ KIDNEY MODEL ============ */
+const HYD={dehyd:{adh:1,posm:300},norm:{adh:0.66,posm:288},over:{adh:0.1,posm:278}};
+function kidney(o){const Pb=o.Pb??15,pi=o.pi??30,Kf=o.Kf??12.5;const NFP=o.Pg-(Pb+pi),GFR=Math.max(0,Kf*NFP);const filtG=GFR*o.glu/100;
+  const excG=filtG<=225?0:filtG<375?(filtG-225)*(filtG-225)/300:filtG-300;const reabG=filtG-excG;
+  const lowAld=o.aldo<0.2;const solute=GFR>0?(0.6*(lowAld?1.5:1)*Math.min(1,GFR/60)+excG/180):0;
+  let urine=GFR>0?15*Math.exp(-4.1*o.adh)*GFR/125*(lowAld?1.3:1)+excG/180*0.9:0;if(GFR>0)urine=clamp(urine,solute/1.2,Math.min(solute/0.05,0.2*GFR));
+  const Uosm=urine>0?solute/urine*1000:0;const maxMed=600+600*Math.min(1,o.adh*1.5);
+  return{NFP,GFR,filtG,excG,reabG,urine,Uosm,solute,maxMed,Pb,pi,Kf,uG:urine>0?excG/urine*100:0};}
+function k2(){const h=HYD[$('#hyd').value],hm=$('#horm').value;return kidney({Pg:V('pg'),glu:V('glu'),adh:hm==='adh'?0:h.adh,aldo:hm==='ald'?0:1});}
+
+/* ================= MODE 1 ================= */
+const ORG={amoeba:{n:'อะมีบา / พารามีเซียม',st:'Contractile vacuole',w:'แอมโมเนีย (NH₃) แพร่ออกทางเยื่อหุ้มเซลล์',env:'น้ำจืด (Hypotonic) น้ำออสโมซิสเข้าเซลล์ตลอด',mech:'Contractile vacuole รวบรวมน้ำส่วนเกินแล้วบีบตัวขับออก (ใช้ ATP – Active transport)'},
+  planaria:{n:'พลานาเรีย',st:'Protonephridia + Flame cell',w:'แอมโมเนีย (NH₃) แพร่ผ่านผิวลำตัว',env:'น้ำจืด',mech:'Flame cell มี Cilia โบกพัด ดึงของเหลวเข้าท่อ → ออกทาง Nephridiopore (ขับน้ำส่วนเกินเป็นหลัก)'},
+  earthworm:{n:'ไส้เดือนดิน',st:'Metanephridia (ปล้องละ 1 คู่)',w:'แอมโมเนีย + ยูเรีย',env:'ดินชื้น',mech:'Nephrostome รับของเหลวจากช่องลำตัว → ท่อขดที่มีเส้นเลือดฝอยพันรอบดูดกลับสารที่มีประโยชน์ → Nephridiopore'},
+  insect:{n:'แมลง',st:'Malpighian tubules',w:'กรดยูริก (Uric acid)',env:'บนบก (ต้องประหยัดน้ำ)',mech:'ท่อดึงของเสียจาก Hemolymph → ลำไส้ส่วนท้าย ดูดน้ำกลับที่ Rectum → กรดยูริกตกตะกอนออกพร้อมอุจจาระ'},
+  fwfish:{n:'ปลาน้ำจืด',st:'ไต + เหงือก',w:'แอมโมเนีย (ขับทางเหงือก)',env:'น้ำจืด: ร่างกายเข้มข้นกว่าน้ำ (Hypertonic)',mech:'น้ำออสโมซิสเข้า → ไม่ดื่มน้ำ ขับปัสสาวะเจือจางปริมาณมาก · เหงือกดูดเกลือเข้า (Active transport)'},
+  swfish:{n:'ปลาน้ำเค็ม (ปลากระดูกแข็ง)',st:'ไต + เหงือก (Chloride cell)',w:'แอมโมเนีย / ยูเรีย',env:'ทะเล: ร่างกายเจือจางกว่าน้ำ (Hypotonic)',mech:'เสียน้ำออก → ดื่มน้ำทะเล ขับเกลือออกทางเหงือก (Active transport) ปัสสาวะน้อย เข้มข้น'},
+  human:{n:'มนุษย์',st:'ไต 1 คู่ (~1 ล้าน Nephron/ข้าง)',w:'ยูเรีย (สร้างที่ตับ – Urea cycle)',env:'บนบก',mech:'Nephron: กรอง → ดูดกลับ → หลั่งสาร ปรับปริมาตร/ความเข้มข้นปัสสาวะด้วยฮอร์โมน'}};
+let M1;function initM1(){M1={t:0};}
+function stepM1(dt){M1.t+=dt;}
+function drawM1(g,w,h){g.fillStyle='#090904';g.fillRect(0,0,w,h);const k=$('#org').value,o=ORG[k],UW=w*0.64,X=f=>10+f*(UW-10),Y=f=>f*h,t=M1.t;const W='#38bdf8',NH='#a3e635';
+  if(k==='amoeba'){const cx=X(0.45),cy=Y(0.5),R=Math.min(UW*0.3,h*0.34);g.fillStyle='rgba(56,189,248,.08)';g.fillRect(0,0,UW,h);T(g,'น้ำจืด (Hypotonic)',X(0.02),Y(0.05),'#7dd3fc',11,'left',true);
+    g.fillStyle='rgba(190,242,100,.18)';g.strokeStyle='#bef264';g.lineWidth=2;g.beginPath();for(let i=0;i<=60;i++){const a=i/60*6.283,r=R*(1+0.07*Math.sin(a*5+t));const x=cx+Math.cos(a)*r*1.2,y=cy+Math.sin(a)*r;i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();g.fill();g.stroke();
+    g.fillStyle='#365314';g.beginPath();g.ellipse(cx-R*0.3,cy+R*0.1,22,16,0,0,7);g.fill();T(g,'นิวเคลียส',cx-R*0.3,cy+R*0.1+26,'#d9f99d',10,'center');
+    const ph=(t%4)/4,vr=ph<0.8?8+ph/0.8*R*0.28:R*0.28*(1-(ph-0.8)/0.2)+8;const vx=cx+R*0.5,vy=cy-R*0.3;g.fillStyle='rgba(56,189,248,.5)';g.beginPath();g.arc(vx,vy,vr,0,7);g.fill();g.strokeStyle='#38bdf8';g.stroke();T(g,'Contractile vacuole',vx+R*0.3,vy-R*0.35,'#7dd3fc',11,'center',true);
+    for(let i=0;i<8;i++){const a=i/8*6.283;flow(g,[[cx+Math.cos(a)*R*1.6,cy+Math.sin(a)*R*1.3],[cx+Math.cos(a)*R*0.9,cy+Math.sin(a)*R*0.75],[vx,vy]],1,0.22,W,2.6,hash(i));}
+    if(ph>0.8){for(let i=0;i<6;i++){const s=(ph-0.8)/0.2;g.fillStyle=W;g.beginPath();g.arc(vx+(R*0.9)*s+i*4,vy-(R*0.5)*s+(i-3)*5,3,0,7);g.fill();}T(g,'บีบตัวขับน้ำออก (ใช้ ATP)',vx+R*0.6,vy-R*0.8,'#fde047',11,'left',true);}
+    for(let i=0;i<6;i++){const a=i/6*6.283+0.4;flow(g,[[cx+Math.cos(a)*R*0.5,cy+Math.sin(a)*R*0.4],[cx+Math.cos(a)*R*1.7,cy+Math.sin(a)*R*1.4]],1,0.18,NH,2.6,hash(i+9));}T(g,'● น้ำออสโมซิสเข้า  ● NH₃ แพร่ออก',X(0.02),Y(0.95),'#e7e3c4',11);}
+  else if(k==='planaria'){const cy=Y(0.5),x0=X(0.06),x1=X(0.94);g.fillStyle='rgba(161,98,7,.35)';g.beginPath();g.moveTo(x0,cy);g.bezierCurveTo(x0+30,cy-h*0.22,x1-60,cy-h*0.16,x1,cy);g.bezierCurveTo(x1-60,cy+h*0.16,x0+30,cy+h*0.22,x0,cy);g.fill();
+    [-1,1].forEach(s=>{const yy=cy+s*h*0.1;line(g,[[x0+40,yy],[x1-40,yy]],'#fde68a',2.5);for(let i=0;i<7;i++){const bx=x0+70+i*(x1-x0-140)/6,by=yy+s*h*0.07;line(g,[[bx,yy],[bx,by]],'#fde68a',1.5);
+      g.fillStyle='#f59e0b';g.beginPath();g.arc(bx,by,7,0,7);g.fill();g.strokeStyle='#fef3c7';g.lineWidth=1;for(let c=0;c<4;c++){const ph=Math.sin(t*12+c+i);g.beginPath();g.moveTo(bx-3+c*2,by);g.lineTo(bx-3+c*2+ph*2,by-s*12);g.stroke();}}
+      for(let p=0;p<3;p++){const px=x0+120+p*(x1-x0-240)/2;g.fillStyle='#0ea5e9';g.beginPath();g.arc(px,cy+s*h*0.19,4,0,7);g.fill();}});
+    flow(g,[[x0+40,cy-h*0.1],[x1-40,cy-h*0.1]],10,0.12,W,2.3);flow(g,[[x0+40,cy+h*0.1],[x1-40,cy+h*0.1]],10,0.12,W,2.3,0.5);
+    T(g,'● Flame cell (Cilia โบกพัดคล้ายเปลวไฟ)',X(0.02),Y(0.06),'#fbbf24',11,'left',true);T(g,'— ท่อขับถ่าย (Excretory canal)   ● Nephridiopore (รูขับถ่าย)',X(0.02),Y(0.11),'#fde68a',11);T(g,'NH₃ ส่วนใหญ่แพร่ออกทางผิวลำตัว',X(0.02),Y(0.94),NH,11);}
+  else if(k==='earthworm'){const cy=Y(0.5),sw=(UW-40)/4;for(let i=0;i<4;i++){const x=X(0.02)+i*sw;g.fillStyle='rgba(194,65,12,.25)';rr(g,x,cy-h*0.28,sw-6,h*0.56,14);g.fill();}
+    for(let i=0;i<3;i++){const x=X(0.02)+i*sw;g.strokeStyle='#fdba74';g.lineWidth=3;g.beginPath();g.moveTo(x+sw-3,cy-h*0.28);g.lineTo(x+sw-3,cy+h*0.28);g.stroke();
+      const P=[[x+sw*0.7,cy-h*0.1],[x+sw-3,cy-h*0.05],[x+sw*1.15,cy-h*0.12],[x+sw*1.3,cy],[x+sw*1.15,cy+h*0.1],[x+sw*1.35,cy+h*0.18],[x+sw*1.4,cy+h*0.28]];line(g,P.map(([a,b])=>[a+4,b]),'rgba(239,68,68,.7)',3);line(g,P,'#fde68a',3);
+      g.fillStyle='#fde68a';g.beginPath();g.moveTo(x+sw*0.62,cy-h*0.15);g.lineTo(x+sw*0.62,cy-h*0.05);g.lineTo(x+sw*0.7,cy-h*0.1);g.closePath();g.fill();flow(g,P,4,0.25,W,2.4,i*0.2);}
+    T(g,'▶ Nephrostome (ปากกรวยมี Cilia)  — ท่อขด + เส้นเลือดฝอย (ดูดกลับ)  ↓ Nephridiopore',X(0.02),Y(0.08),'#fde68a',11);T(g,'ผนังกั้นปล้อง (Septum)',X(0.02)+sw,cy-h*0.31,'#fdba74',10,'center');}
+  else if(k==='insect'){const cy=Y(0.45);g.fillStyle='rgba(120,53,15,.3)';g.beginPath();g.ellipse(X(0.5),cy,UW*0.46,h*0.32,0,0,7);g.fill();T(g,'Hemolymph (ช่องลำตัว)',X(0.1),cy-h*0.27,'#fdba74',11);
+    line(g,[[X(0.05),cy],[X(0.95),cy]],'#a16207',16);T(g,'ลำไส้ส่วนกลาง',X(0.28),cy,'#fef3c7',10,'center',true);T(g,'ลำไส้ส่วนท้าย → Rectum',X(0.72),cy,'#fef3c7',10,'center',true);
+    for(let i=0;i<6;i++){const a=-2.6+i*0.35+(i>2?2.1:0),bx=X(0.5),P=[[bx,cy]];for(let s=1;s<=8;s++)P.push([bx+Math.cos(a+Math.sin(s+t*0.6)*0.25)*s*UW*0.045,cy+Math.sin(a)*s*h*0.032+Math.sin(s*1.3+i)*6]);line(g,P,'#facc15',3);flow(g,P.slice().reverse(),3,0.2,'#fef9c3',2.2,i*0.17);}
+    for(let i=0;i<10;i++){const s=(t*0.08+i/10)%1;g.fillStyle='#f8fafc';g.fillRect(lerp(X(0.52),X(0.95),s)-2,cy-2+Math.sin(i)*3,4,4);}flow(g,[[X(0.86),cy-6],[X(0.86),cy-h*0.16]],4,0.4,W,2.4);
+    T(g,'น้ำถูกดูดกลับที่ Rectum →',X(0.86),cy-h*0.19,'#7dd3fc',10,'center');T(g,'■ กรดยูริกตกตะกอน (ประหยัดน้ำ)',X(0.62),cy+h*0.36,'#f8fafc',11);T(g,'— Malpighian tubules ดึงของเสียจาก Hemolymph',X(0.02),Y(0.94),'#facc15',11);}
+  else if(k==='fwfish'||k==='swfish'){const fw=k==='fwfish';g.fillStyle=fw?'rgba(56,189,248,.1)':'rgba(14,116,144,.3)';g.fillRect(0,0,UW,h);T(g,fw?'น้ำจืด: เกลือ ~0 mOsm/L':'น้ำทะเล: ~1000 mOsm/L',X(0.02),Y(0.05),'#7dd3fc',11,'left',true);
+    const cx=X(0.46),cy=Y(0.5);g.fillStyle='#64748b';g.beginPath();g.ellipse(cx,cy,UW*0.3,h*0.17,0,0,7);g.fill();g.beginPath();g.moveTo(cx+UW*0.27,cy);g.lineTo(cx+UW*0.42,cy-h*0.13);g.lineTo(cx+UW*0.42,cy+h*0.13);g.closePath();g.fill();g.fillStyle='#0f172a';g.beginPath();g.arc(cx-UW*0.22,cy-h*0.04,6,0,7);g.fill();
+    g.strokeStyle='#ef4444';g.lineWidth=3;for(let i=0;i<3;i++){g.beginPath();g.arc(cx-UW*0.12+i*6,cy,h*0.1,-1,1);g.stroke();}T(g,'เหงือก',cx-UW*0.1,cy-h*0.13,'#fca5a5',10,'center');T(g,`ร่างกาย ~300 mOsm/L`,cx+UW*0.05,cy,'#e2e8f0',11,'center',true);
+    for(let i=0;i<6;i++){const a=-0.6+i*0.25;const o1=[cx+Math.cos(a+3.14)*UW*0.42,cy+Math.sin(a)*h*0.36],i1=[cx+Math.cos(a+3.14)*UW*0.2,cy+Math.sin(a)*h*0.1];fw?flow(g,[o1,i1],1,0.3,W,3,hash(i)):flow(g,[i1,o1],1,0.3,W,3,hash(i));}
+    T(g,fw?'● น้ำออสโมซิสเข้าทางผิว/เหงือก':'● น้ำออสโมซิสออก',X(0.02),Y(0.12),W,11);
+    for(let i=0;i<4;i++){const s=(t*0.3+i/4)%1;g.fillStyle='#fde047';g.beginPath();g.arc(cx-UW*0.12,fw?lerp(cy-h*0.35,cy-h*0.06,s):lerp(cy-h*0.06,cy-h*0.35,s),3,0,7);g.fill();}
+    T(g,fw?'● เหงือกดูดเกลือเข้า (Active transport)':'● Chloride cell ที่เหงือกขับเกลือออก (Active)',X(0.02),Y(0.17),'#fde047',11);
+    if(!fw){flow(g,[[cx-UW*0.4,cy-h*0.02],[cx-UW*0.28,cy-h*0.02]],3,0.4,W,3);T(g,'ดื่มน้ำทะเล',cx-UW*0.4,cy+h*0.05,'#7dd3fc',10);}
+    const ur=fw?14:4;for(let i=0;i<ur;i++){const s=(t*0.25+i/ur)%1;g.fillStyle=fw?'#fef9c3':'#f59e0b';g.beginPath();g.arc(cx+UW*0.14,lerp(cy+h*0.16,cy+h*0.4,s),fw?3:3.5,0,7);g.fill();}T(g,fw?'ปัสสาวะมาก เจือจาง':'ปัสสาวะน้อย เข้มข้น',cx+UW*0.16,cy+h*0.42,fw?'#fef9c3':'#fbbf24',11,'left',true);}
+  else{const cx=X(0.38);[-1,1].forEach(s=>{const kx=cx+s*UW*0.16,ky=Y(0.3);g.fillStyle='#9a3412';g.beginPath();g.ellipse(kx,ky,UW*0.08,h*0.16,s*0.15,0,7);g.fill();g.fillStyle='#fdba74';g.beginPath();g.ellipse(kx-s*UW*0.03,ky,UW*0.025,h*0.07,0,0,7);g.fill();line(g,[[kx-s*UW*0.05,ky+h*0.05],[cx+s*UW*0.03,Y(0.78)]],'#fde68a',4);});
+    g.fillStyle='#fde68a';g.beginPath();g.ellipse(cx,Y(0.84),UW*0.07,h*0.07,0,0,7);g.fill();T(g,'กระเพาะปัสสาวะ',cx,Y(0.95),'#fde68a',10,'center');T(g,'ไต (Kidney)',cx-UW*0.16,Y(0.08),'#fdba74',11,'center',true);T(g,'ท่อไต (Ureter)',cx+UW*0.14,Y(0.62),'#fde68a',10);
+    g.fillStyle='#7c2d12';g.beginPath();g.ellipse(X(0.84),Y(0.25),UW*0.1,h*0.08,0,0,7);g.fill();T(g,'ตับ: NH₃ + CO₂ → Urea',X(0.84),Y(0.37),'#fdba74',10.5,'center',true);T(g,'(Urea cycle)',X(0.84),Y(0.41),'#fdba74',10,'center');
+    flow(g,[[X(0.78),Y(0.3)],[X(0.6),Y(0.3)],[cx+UW*0.22,Y(0.3)]],6,0.25,'#86efac',3);for(let i=0;i<10;i++)flow(g,[[cx-UW*0.18,Y(0.38)],[cx-UW*0.03,Y(0.78)]],1,0.2,'#fef08a',2.4,i/10);}
+  const px=w*0.66,pw=w*0.33;panel(g,px,10,pw,h-20);T(g,o.n,px+10,30,'#fde047',15,'left',true);let y=54;
+  [['โครงสร้างขับถ่าย',o.st],['ของเสียไนโตรเจน',o.w],['สิ่งแวดล้อม',o.env],['กลไก',o.mech]].forEach(([a,b])=>{T(g,a,px+10,y,'#b5b08a',10.5);y=wrap(g,b,px+10,y+15,pw-20,14,'#f6f3e0',11.5,true)+8;});}
+
+/* ================= MODE 2 ================= */
+const NP=[[0.2,0.16],[0.26,0.07],[0.31,0.2],[0.36,0.08],[0.41,0.2],[0.41,0.36],[0.41,0.86],[0.485,0.94],[0.56,0.86],[0.56,0.36],[0.6,0.26],[0.66,0.34],[0.72,0.22],[0.8,0.3],[0.88,0.24],[0.88,0.97]];
+const SEGI=[[0,5,'PCT'],[5,7,'Descending'],[7,9,'Ascending'],[9,14,'DCT'],[14,15,'Collecting duct']];
+function nephron(UW,h){const P=NP.map(([a,b])=>[10+a*(UW-20),b*h]);const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const tot=L[L.length-1];return{P,seg:SEGI.map(([a,b,n])=>({a:L[a]/tot,b:L[b]/tot,n}))};}
+function probs(k,adh,aldo){const uf=k.GFR>0?k.urine/k.GFR:0;return{water:[0.65,0.43,0,0.25,clamp(1-uf/0.15,0,1)],na:[0.65,0,0.71,0.8*(aldo<0.2?0.4:1),0.5],glu:[k.filtG>0?k.reabG/k.filtG:1,0,0,0,0],urea:[0.5,0,0,0,0.3]};}
+const SP=[['water','#38bdf8',40,'H₂O'],['na','#fde047',22,'Na⁺'],['glu','#fb923c',12,'Glucose'],['urea','#86efac',12,'Urea']];
+function drawTubule(g,UW,h,k,pr,opt={}){const N=nephron(UW,h),P=N.P,gx=10+0.13*(UW-20),gy=0.16*h,R=Math.min(UW*0.042,h*0.06);
+  if(S.toggle==='osm'){const gr=g.createLinearGradient(0,h*0.4,0,h);gr.addColorStop(0,'rgba(250,204,21,.05)');gr.addColorStop(1,`rgba(234,88,12,${0.15+0.35*(k.maxMed-600)/600})`);g.fillStyle=gr;g.fillRect(0,h*0.4,UW,h*0.6);
+    for(let i=0;i<=3;i++){const y=h*(0.4+i*0.19);T(g,Math.round(300+(k.maxMed-300)*i/3)+' mOsm/L',8,y+8,'#fdba74',9.5,'left');}}
+  g.strokeStyle='#57534e';g.setLineDash([6,5]);g.lineWidth=1;g.beginPath();g.moveTo(0,h*0.4);g.lineTo(UW,h*0.4);g.stroke();g.setLineDash([]);T(g,'Cortex',6,h*0.37,'#a8a29e',10);T(g,'Medulla',6,h*0.43,'#a8a29e',10);
+  line(g,P.map(([x,y])=>[x+9,y+7]),'rgba(239,68,68,.35)',4);line(g,[[gx-R*2,gy-R*0.6],[gx,gy]],'#ef4444',5);line(g,[[gx,gy],[gx-R*1.8,gy+R*1.2]],'#b91c1c',4);T(g,'Afferent',gx-R*2,gy-R*0.6-8,'#fca5a5',9);T(g,'Efferent',gx-R*1.8,gy+R*1.2+9,'#fca5a5',9);
+  g.fillStyle='rgba(253,224,71,.12)';g.strokeStyle='#fde68a';g.lineWidth=2;g.beginPath();g.arc(gx,gy,R*1.3,0,7);g.fill();g.stroke();g.strokeStyle='#ef4444';g.lineWidth=2;for(let i=0;i<6;i++){g.beginPath();g.arc(gx+Math.cos(i)*R*0.35,gy+Math.sin(i*1.7)*R*0.35,R*0.32,0,7);g.stroke();}
+  T(g,'Glomerulus + Bowman\'s capsule',gx,gy+R*1.3+12,'#fde68a',9.5,'center',true);
+  line(g,P,'#a16207',12);line(g,P,'#2b2914',7);
+  N.seg.forEach(s=>{const lp=s.n==='Descending'||s.n==='Ascending'?0.22:0.5;const [x,y]=along(P,lerp(s.a,s.b,s.n==='Ascending'?1-lp:lp));const lab={PCT:'PCT',Descending:'Loop ขาลง',Ascending:'Loop ขาขึ้น',DCT:'DCT','Collecting duct':'ท่อรวม (CD)'}[s.n];T(g,lab,x+(s.n==='Descending'?-14:s.n==='Ascending'?14:0),y+(s.n==='PCT'?-20:s.n==='DCT'?-22:0),'#fef3c7',10,s.n==='Descending'?'right':s.n==='Ascending'?'left':'center',true);});
+  const tng=s=>{const a=along(P,Math.max(0,s-0.003)),b=along(P,Math.min(1,s+0.003));const d=Math.hypot(b[0]-a[0],b[1]-a[1])||1;return[-(b[1]-a[1])/d,(b[0]-a[0])/d];};
+  SP.forEach(([key,col,n0],ci)=>{let n=n0;if(key==='glu')n=clamp(Math.round(12*V('glu')/100),4,40);if(k.GFR<=0)return;n=Math.max(1,Math.round(n*Math.min(1,k.GFR/125)));
+    for(let i=0;i<n;i++){const s=(S.time*0.06+i/n+ci*0.13)%1;let ex=null;for(let j=0;j<5;j++){if(hash(i*7+j*31+ci*101)<pr[key][j]){const sg=N.seg[j];ex=sg.a+hash(i*3+j*17+ci*53)*(sg.b-sg.a);break;}}
+      if(ex!==null&&s>ex){const d=s-ex;if(d>0.08)continue;const [x,y]=along(P,ex),nn=tng(ex),sg=hash(i+ci)>0.5?1:-1;g.globalAlpha=1-d/0.08;g.fillStyle=col;g.beginPath();g.arc(x+nn[0]*sg*d*400,y+nn[1]*sg*d*400,2.6,0,7);g.fill();g.globalAlpha=1;}
+      else{const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x+(hash(i+ci*7)-0.5)*4,y+(hash(i+ci*9)-0.5)*4,2.6,0,7);g.fill();}}});
+  for(let i=0;i<6;i++){const sg=N.seg[i%2?3:0],sx=sg.a+hash(i+70)*(sg.b-sg.a),q=(S.time*0.5+i/6)%1,[x,y]=along(P,sx),nn=tng(sx);T(g,i%3?'H⁺':'K⁺',x+nn[0]*(1-q)*26,y+nn[1]*(1-q)*26,'#f472b6',9,'center',true);}
+  if(S.toggle==='tr'){const A=(s,txt,col,act,dir=1)=>{const [x,y]=along(P,s),nn=tng(s);arrow(g,x+nn[0]*7*dir,y+nn[1]*7*dir,x+nn[0]*30*dir,y+nn[1]*30*dir,col,act?2.5:1.8,act?null:[4,3]);T(g,txt,x+nn[0]*38*dir,y+nn[1]*38*dir,col,9,'center',true);};const sg=N.seg;
+    A(lerp(sg[0].a,sg[0].b,0.25),'Glucose, a.a., Na⁺ (Active)','#fb923c',true,-1);A(lerp(sg[0].a,sg[0].b,0.7),'H₂O (Passive)','#38bdf8',false);A(lerp(sg[1].a,sg[1].b,0.5),'H₂O','#38bdf8',false,-1);A(lerp(sg[2].a,sg[2].b,0.5),'NaCl (Active)','#fde047',true);
+    A(lerp(sg[3].a,sg[3].b,0.5),'Na⁺ (Aldosterone)','#fde047',true,-1);A(lerp(sg[4].a,sg[4].b,0.45),'H₂O (ADH)','#38bdf8',false,-1);T(g,'→ Active (ใช้ ATP)   ⇢ Passive',8,h-10,'#e7e3c4',10);}
+  const [ux,uy]=P[P.length-1];g.fillStyle=urineCol(k.Uosm);g.beginPath();g.moveTo(ux,uy-8);g.quadraticCurveTo(ux+9,uy+4,ux,uy+8);g.quadraticCurveTo(ux-9,uy+4,ux,uy-8);g.fill();
+  T(g,'● H₂O ● Na⁺ ● Glucose ● Urea ● H⁺/K⁺ (หลั่ง)',8,12,'#e7e3c4',10);return N;}
+let M2;function initM2(){M2={t:0};}
+function stepM2(dt){M2.t+=dt;}
+function drawM2(g,w,h){g.fillStyle='#090904';g.fillRect(0,0,w,h);const k=k2(),hm=$('#horm').value,pr=probs(k,0,hm==='ald'?0:1),UW=w*0.64;drawTubule(g,UW,h,k,pr);
+  const px=w*0.655,pw=w*0.335;panel(g,px,10,pw,h-20);let y=30;T(g,'ความเข้มข้นของ Filtrate ตามท่อ',px+10,y,'#fde047',12,'left',true);
+  const cx0=px+40,cx1=px+pw-34,cy0=y+16,cy1=y+150;g.strokeStyle='#44403c';g.lineWidth=1;[0,400,800,1200].forEach(v=>{const yy=lerp(cy1,cy0,v/1200);g.beginPath();g.moveTo(cx0,yy);g.lineTo(cx1,yy);g.stroke();T(g,String(v),cx0-4,yy,'#a8a29e',9,'right');});
+  const pts=[['Bowman',300],['สิ้นสุด PCT',300],['ปลาย Loop',k.maxMed],['สิ้นสุดขาขึ้น',100],['DCT',hm==='adh'?90:Math.min(300,100+200*HYD[$('#hyd').value].adh)],['ปัสสาวะ',k.Uosm]];
+  g.strokeStyle='#fb923c';g.lineWidth=2.4;g.beginPath();pts.forEach(([n,v],i)=>{const x=lerp(cx0,cx1,i/5),yy=lerp(cy1,cy0,clamp(v,0,1250)/1200);i?g.lineTo(x,yy):g.moveTo(x,yy);});g.stroke();
+  pts.forEach(([n,v],i)=>{const x=lerp(cx0,cx1,i/5),yy=lerp(cy1,cy0,clamp(v,0,1250)/1200);g.fillStyle='#fde047';g.beginPath();g.arc(x,yy,3.5,0,7);g.fill();g.save();g.translate(x,cy1+6);g.rotate(0.6);T(g,n,0,0,'#d6d3d1',9);g.restore();});
+  y=cy1+56;T(g,`NFP = ${k.NFP.toFixed(0)} mmHg → GFR = ${k.GFR.toFixed(0)} mL/min`,px+10,y,'#f6f3e0',11,'left',true);y+=26;
+  bar(g,px+10,y,pw-20,9,k.GFR/180,'#38bdf8','GFR',k.GFR.toFixed(0)+' mL/min');y+=30;bar(g,px+10,y,pw-20,9,k.urine/12,'#fde047','Urine flow',k.urine.toFixed(2)+' mL/min');y+=30;bar(g,px+10,y,pw-20,9,k.Uosm/1200,'#f97316','Urine osmolality',Math.round(k.Uosm)+' mOsm/L');y+=30;
+  bar(g,px+10,y,pw-20,9,k.reabG/Math.max(1,k.filtG),'#fb923c','Glucose ดูดกลับที่ PCT',(k.filtG>0?k.reabG/k.filtG*100:100).toFixed(0)+'%');}
+
+/* ================= MODE 3 ================= */
+let M3;function initM3(){M3={t:0,adh:0.66,ren:0.3,ald:0.3,anp:0.1,water:0,hist:[],lastH:-9};}
+function targets3(){const hy=$('#hyd').value,map=V('map'),hm=$('#horm').value;const posm=HYD[hy].posm-M3.water*12;const anp=clamp((map-95)/35+(hy==='over'?0.4:0)+M3.water*0.3,0,1);
+  const adh=clamp((posm-278)/15+(map<75?(75-map)/30:0)-0.3*anp,0,1);const ren=clamp(((95-map)/35+(hy==='dehyd'?0.25:0))*(1-0.5*anp)+0.15,0,1);return{posm,adh,ren,ald:ren,anp,hm};}
+function stepM3(dt){M3.t+=dt;const tg=targets3();const r=Math.min(1,dt*0.7);M3.adh+=(tg.adh-M3.adh)*r;M3.ren+=(tg.ren-M3.ren)*r;M3.ald+=(tg.ald-M3.ald)*r*0.6;M3.anp+=(tg.anp-M3.anp)*r;M3.water=Math.max(0,M3.water-dt*0.05);
+  if(M3.t-M3.lastH>=0.25){M3.lastH=M3.t;const k=k3();M3.hist.push([M3.t,M3.adh,M3.ald,M3.anp,k.urine]);while(M3.hist.length&&M3.t-M3.hist[0][0]>60)M3.hist.shift();}}
+function k3(){const hm=$('#horm').value;return kidney({Pg:clamp(55+(V('map')-93)*0.3,30,80),glu:100,adh:hm==='adh'?0:M3.adh,aldo:hm==='ald'?0:M3.ald+0.2});}
+function node(g,x,y,w,h,txt,lvl,col){g.fillStyle=`rgba(${col},${0.15+0.55*clamp(lvl,0,1)})`;rr(g,x-w/2,y-h/2,w,h,8);g.fill();g.strokeStyle=`rgb(${col})`;g.lineWidth=1.5;g.stroke();const ls=txt.split('\n');ls.forEach((l,i)=>T(g,l,x,y+(i-(ls.length-1)/2)*13,'#fff',10.5,'center',i===0));}
+function drawM3(g,w,h){g.fillStyle='#090904';g.fillRect(0,0,w,h);const tg=targets3(),hm=$('#horm').value,k=k3(),X=f=>f*w,Y=f=>f*h,adhE=hm==='adh'?0:M3.adh;
+  g.fillStyle='#4c1d95';g.beginPath();g.ellipse(X(0.12),Y(0.17),w*0.06,h*0.085,0,0,7);g.fill();g.fillStyle='#c084fc';g.beginPath();g.arc(X(0.14),Y(0.22),9,0,7);g.fill();g.fillStyle='#e879f9';g.beginPath();g.arc(X(0.14),Y(0.3),7,0,7);g.fill();
+  T(g,'Hypothalamus (สร้าง ADH, Osmoreceptor)',X(0.17),Y(0.21),'#e9d5ff',10,'left',true);T(g,'ต่อมใต้สมองส่วนหลัง (หลั่ง ADH)',X(0.17),Y(0.3),'#f5d0fe',10);T(g,`Posm ≈ ${tg.posm.toFixed(0)} mOsm/kg`,X(0.02),Y(0.03),'#fde68a',11,'left',true);
+  const vP=[[X(0.14),Y(0.32)],[X(0.14),Y(0.55)],[X(0.3),Y(0.62)]];line(g,vP,'rgba(239,68,68,.5)',8);if(hm!=='adh')flow(g,vP,Math.round(adhE*10),0.35,'#e879f9',3.5);
+  const cx=X(0.3),cy=Y(0.54),cw=w*0.2,ch=h*0.29;g.fillStyle='rgba(161,98,7,.25)';rr(g,cx,cy,cw,ch,10);g.fill();g.strokeStyle='#fde68a';g.lineWidth=1.5;g.stroke();T(g,'เซลล์ท่อรวม (Collecting duct)',cx+cw/2,cy-8,'#fde68a',10.5,'center',true);
+  g.fillStyle='#e879f9';g.beginPath();g.arc(cx+4,cy+ch*0.5,5,0,7);g.fill();T(g,'ตัวรับ ADH',cx+10,cy+ch*0.5,'#f5d0fe',9);
+  const naq=Math.round(adhE*8);for(let i=0;i<8;i++){const ay=cy+ch*0.12+i*ch*0.1;if(i<naq){g.fillStyle='#38bdf8';g.fillRect(cx+cw-6,ay,8,ch*0.06);}else{g.fillStyle='rgba(56,189,248,.35)';g.beginPath();g.arc(cx+cw*0.6,ay+ch*0.03,4,0,7);g.fill();}}
+  T(g,`Aquaporin-2 บนเยื่อหุ้ม: ${naq}/8`,cx+cw/2,cy+ch+12,'#7dd3fc',10,'center',true);T(g,'ของเหลวในท่อ →',cx+cw+6,cy-8,'#fde047',9.5);
+  for(let i=0;i<naq*2;i++){const s=(S.time*0.6+i/(naq*2))%1;g.fillStyle='#38bdf8';g.beginPath();g.arc(lerp(cx+cw+30,cx+cw*0.15,s),cy+ch*0.15+((i%naq)/Math.max(1,naq))*ch*0.75,3,0,7);g.fill();}
+  T(g,'H₂O ไหลกลับเข้าเลือด',cx+cw*0.2,cy+ch-10,'#7dd3fc',10,'center');
+  const rx=X(0.6),bw=w*0.17,bh=34;node(g,rx,Y(0.08),bw,bh,'ไต: JGA\nหลั่ง Renin',M3.ren,'234,88,12');node(g,rx+w*0.21,Y(0.08),bw,bh,'Angiotensinogen\n(จากตับ)',M3.ren,'161,98,7');node(g,rx+w*0.21,Y(0.24),bw,bh,'Angiotensin I',M3.ren,'161,98,7');node(g,rx+w*0.21,Y(0.4),bw,bh,'ACE (ปอด)\n→ Angiotensin II',M3.ren,'202,138,4');
+  node(g,rx,Y(0.4),bw,bh,'หลอดเลือดหดตัว\nความดัน ↑',M3.ren,'220,38,38');node(g,rx+w*0.21,Y(0.58),bw,bh,'ต่อมหมวกไตชั้นนอก\nหลั่ง Aldosterone',M3.ald,'22,163,74');node(g,rx+w*0.21,Y(0.75),bw,bh,'DCT ดูดกลับ Na⁺\n(น้ำตาม) ขับ K⁺',hm==='ald'?0:M3.ald,'21,128,61');
+  arrow(g,rx+bw/2,Y(0.08),rx+w*0.21-bw/2,Y(0.08),'#fdba74');arrow(g,rx+w*0.21,Y(0.08)+bh/2,rx+w*0.21,Y(0.24)-bh/2,'#fdba74');arrow(g,rx+w*0.21,Y(0.24)+bh/2,rx+w*0.21,Y(0.4)-bh/2,'#fdba74');arrow(g,rx+w*0.21-bw/2,Y(0.4),rx+bw/2,Y(0.4),'#fdba74');arrow(g,rx+w*0.21,Y(0.4)+bh/2,rx+w*0.21,Y(0.58)-bh/2,'#86efac');arrow(g,rx+w*0.21,Y(0.58)+bh/2,rx+w*0.21,Y(0.75)-bh/2,'#86efac');
+  T(g,`ความดันเลือดต่ำ → JGA ตรวจพบ (MAP ${V('map')})`,rx-bw/2,Y(0.16)+2,'#fdba74',9.5);
+  node(g,rx,Y(0.72),bw,bh+8,'หัวใจห้องบน\nหลั่ง ANP',M3.anp,'59,130,246');g.setLineDash([4,3]);g.strokeStyle='#93c5fd';g.lineWidth=1.5;g.beginPath();g.moveTo(rx,Y(0.72)-bh/2-4);g.lineTo(rx,Y(0.08)+bh/2);g.stroke();g.beginPath();g.moveTo(rx+bw/2,Y(0.72));g.lineTo(rx+w*0.21-bw/2,Y(0.6));g.stroke();g.setLineDash([]);
+  T(g,'⊣ ยับยั้ง',rx+4,Y(0.56),'#93c5fd',9.5);T(g,'ANP: ขับ Na⁺ + น้ำ ↑',rx-bw/2,Y(0.84),'#93c5fd',9.5);
+  const by=Y(0.935);[['ADH',adhE,'#e879f9'],['Renin',M3.ren,'#f97316'],['Aldosterone',hm==='ald'?0:M3.ald,'#22c55e'],['ANP',M3.anp,'#60a5fa']].forEach(([n,v,c],i)=>bar(g,X(0.02)+i*w*0.135,by,w*0.12,9,v,c,n,Math.round(v*100)+'%'));
+  T(g,`ปัสสาวะ ${k.urine.toFixed(2)} mL/min · ${Math.round(k.Uosm)} mOsm/L`,X(0.58),by+4,'#fde047',12,'left',true);
+  if(S.toggle==='osm'){T(g,`Medulla สูงสุด ~${Math.round(k.maxMed)} mOsm/L ดึงน้ำออกจากท่อรวม`,X(0.3),Y(0.45),'#fdba74',10);}}
+
+/* ================= MODE 4 ================= */
+const COND={normal:{},dm:{},di:{adh:0},gn:{Kf:7,prot:true},stone:{Pb:35},ckd:{Kf:3},hd:{Kf:0.6}};
+function k4(){const c=$('#cond').value,o=COND[c];return kidney({Pg:V('pg'),glu:V('glu'),adh:o.adh??0.66,aldo:1,Kf:o.Kf,Pb:o.Pb});}
+let M4;function initM4(){M4={min:0,C0:150,hist:[]};}
+const ureaAt=m=>{const K=0.8*V('qb'),Vd=40000;return M4.C0*Math.exp(-K*m/Vd);};
+function stepM4(dt){if($('#cond').value==='hd'&&M4.min<240){M4.min=Math.min(240,M4.min+dt*10);M4.hist.push([M4.min,ureaAt(M4.min)]);}}
+function drawM4(g,w,h){g.fillStyle='#090904';g.fillRect(0,0,w,h);const c=$('#cond').value,k=k4(),UW=w*0.64,X=f=>10+f*(UW-20),Y=f=>f*h;const px=w*0.655,pw=w*0.335;
+  if(c==='hd'){const dy=Y(0.45),dx0=X(0.28),dx1=X(0.82),dh=h*0.22;g.fillStyle='rgba(148,163,184,.12)';rr(g,dx0,dy-dh/2,dx1-dx0,dh,dh/2);g.fill();g.strokeStyle='#94a3b8';g.lineWidth=2;g.stroke();T(g,'ตัวกรองเครื่องไตเทียม (Dialyzer)',(dx0+dx1)/2,dy-dh/2-12,'#e2e8f0',11,'center',true);
+    for(let i=0;i<4;i++){const yy=dy-dh*0.3+i*dh*0.2;g.strokeStyle='rgba(239,68,68,.55)';g.lineWidth=6;g.beginPath();g.moveTo(dx0+10,yy);g.lineTo(dx1-10,yy);g.stroke();g.strokeStyle='#fef3c7';g.setLineDash([3,3]);g.lineWidth=1;g.beginPath();g.moveTo(dx0+10,yy-4);g.lineTo(dx1-10,yy-4);g.stroke();g.setLineDash([]);}
+    line(g,[[X(0.05),Y(0.85)],[X(0.05),dy],[dx0,dy]],'#dc2626',6);line(g,[[dx1,dy],[X(0.95),dy],[X(0.95),Y(0.85)]],'#dc2626',6);flow(g,[[X(0.05),Y(0.85)],[X(0.05),dy],[dx0,dy],[dx1,dy],[X(0.95),dy],[X(0.95),Y(0.85)]],14,0.12,'#fca5a5',3);
+    T(g,'เลือดจากผู้ป่วย →',X(0.02),Y(0.9),'#fca5a5',10.5);T(g,'→ เลือดที่ฟอกแล้วกลับเข้าร่างกาย',X(0.98),Y(0.9),'#fca5a5',10.5,'right');
+    line(g,[[dx1-30,dy+dh/2+30],[dx1-30,dy+dh/2]],'rgba(56,189,248,.7)',5);line(g,[[dx0+30,dy-dh/2],[dx0+30,dy-dh/2-30]],'rgba(56,189,248,.7)',5);
+    for(let i=0;i<3;i++){const yy=dy-dh*0.2+i*dh*0.2;flow(g,[[dx1-14,yy],[dx0+14,yy]],6,0.08,'rgba(125,211,252,.8)',2.2);}T(g,'น้ำยาไตเทียม (Dialysis fluid) ไหลสวนทาง ←',(dx0+dx1)/2,dy+dh/2+20,'#7dd3fc',10.5,'center');
+    const U=ureaAt(M4.min)/M4.C0;for(let i=0;i<Math.round(16*U)+2;i++){const s=(S.time*0.3+i/18)%1,x=lerp(dx0+20,dx1-20,hash(i)),y0=dy-dh*0.3+(i%4)*dh*0.2;g.fillStyle='#86efac';g.beginPath();g.arc(x,lerp(y0,y0-dh*0.08,s),2.6,0,7);g.fill();}
+    for(let i=0;i<5;i++){g.fillStyle='#60a5fa';g.beginPath();g.arc(dx0+40+i*(dx1-dx0-80)/4,dy-dh*0.3+(i%4)*dh*0.2,4.5,0,7);g.fill();}
+    T(g,'● ยูเรีย/K⁺/ครีเอตินีน แพร่ผ่านเยื่อเลือกผ่าน (Diffusion)  ● โปรตีน + เม็ดเลือด ผ่านไม่ได้',X(0.02),Y(0.05),'#e7e3c4',10.5);
+    panel(g,px,10,pw,h-20);let y=30;T(g,'การฟอกเลือด 4 ชั่วโมง',px+10,y,'#fde047',12,'left',true);y+=26;const C=ureaAt(M4.min);
+    bar(g,px+10,y,pw-20,10,C/160,'#86efac','ยูเรียในเลือด (BUN)',C.toFixed(0)+' mg/dL');y+=34;bar(g,px+10,y,pw-20,10,M4.min/240,'#38bdf8','เวลา',M4.min.toFixed(0)+' / 240 นาที');y+=34;
+    const ktv=0.8*V('qb')*M4.min/40000;bar(g,px+10,y,pw-20,10,ktv/1.8,'#fbbf24','Kt/V (เป้าหมาย ≥ 1.2)',ktv.toFixed(2));y+=34;
+    wrap(g,'ผู้ป่วยไตวายระยะสุดท้าย GFR < 15 mL/min ต้องฟอกเลือดสัปดาห์ละ ~3 ครั้ง เพื่อกำจัดของเสียและน้ำส่วนเกิน',px+10,y,pw-20,15,'#e7e3c4',11);return;}
+  const cx=X(0.38),cy=Y(0.5),R=Math.min(UW*0.3,h*0.36);g.fillStyle='rgba(253,224,71,.08)';g.beginPath();g.arc(cx,cy,R*1.25,0,7);g.fill();T(g,'Bowman\'s space (Filtrate)',cx,cy-R*1.25+14,'#fde68a',10.5,'center',true);
+  g.fillStyle='rgba(239,68,68,.35)';g.beginPath();g.arc(cx,cy,R*0.62,0,7);g.fill();g.strokeStyle='#fca5a5';g.lineWidth=3;g.setLineDash([10,4]);g.beginPath();g.arc(cx,cy,R*0.62,0,7);g.stroke();g.setLineDash([]);g.strokeStyle='#a3a3a3';g.lineWidth=3;g.beginPath();g.arc(cx,cy,R*0.68,0,7);g.stroke();
+  for(let i=0;i<14;i++){const a=i/14*6.283;g.fillStyle='#a3e635';g.beginPath();g.ellipse(cx+Math.cos(a)*R*0.8,cy+Math.sin(a)*R*0.8,10,5,a,0,7);g.fill();}
+  T(g,'เลือดในโกลเมอรูลัส',cx,cy,'#fecaca',11,'center',true);T(g,'Podocyte + ช่องกรอง (Filtration slit)',cx,cy+R*0.98,'#bef264',10,'center');
+  const dmg=c==='gn',scale=Math.min(1,k.GFR/125);const sm=[['#38bdf8',14],['#fde047',8],['#fb923c',Math.round(6*V('glu')/100)],['#86efac',6]];sm.forEach(([col,n],j)=>{for(let i=0;i<Math.round(n*scale);i++){const a=hash(i*5+j*19)*6.283,s=(S.time*0.4+hash(i+j*7))%1;g.fillStyle=col;g.beginPath();g.arc(cx+Math.cos(a)*lerp(R*0.3,R*1.15,s),cy+Math.sin(a)*lerp(R*0.3,R*1.15,s),2.6,0,7);g.fill();}});
+  for(let i=0;i<8;i++){const a=hash(i+40)*6.283,leak=dmg&&i<4,s=leak?(S.time*0.2+hash(i))%1:0.5+0.3*Math.sin(S.time+i);const r=leak?lerp(R*0.3,R*1.1,s):R*0.3+R*0.25*s;g.fillStyle='#3b82f6';g.beginPath();g.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r,6,0,7);g.fill();}
+  for(let i=0;i<5;i++){const a=hash(i+60)*6.283,leak=dmg&&i<2,s=leak?(S.time*0.15+hash(i+3))%1:0.5;const r=leak?lerp(R*0.25,R*1.1,s):R*0.35;g.fillStyle='#dc2626';g.beginPath();g.ellipse(cx+Math.cos(a)*r,cy+Math.sin(a)*r,9,6,a,0,7);g.fill();}
+  T(g,'● น้ำ ● Na⁺ ● กลูโคส ● ยูเรีย (ผ่านได้)   ● โปรตีน ● เม็ดเลือดแดง (ผ่านไม่ได้)',X(0.01),Y(0.04),'#e7e3c4',10.5);
+  if(dmg)T(g,'⚠ เยื่อกรองเสียหาย → โปรตีนและเม็ดเลือดแดงรั่ว',X(0.01),Y(0.96),'#fca5a5',11.5,'left',true);if(c==='stone')T(g,'⚠ นิ่วอุดท่อไต → ความดันใน Bowman\'s capsule (Pb) ↑ → การกรองลดลง',X(0.01),Y(0.96),'#fca5a5',11.5,'left',true);if(c==='ckd')T(g,'⚠ หน่วยไตถูกทำลายเป็นพังผืด → จำนวน Nephron ที่ทำงานลดลง (Kf ↓)',X(0.01),Y(0.96),'#fca5a5',11.5,'left',true);if(c==='di')T(g,'⚠ ไม่มี ADH → ท่อรวมไม่มี Aquaporin → ปัสสาวะมาก เจือจาง',X(0.01),Y(0.96),'#fca5a5',11.5,'left',true);
+  panel(g,px,10,pw,h-20);let y=30;T(g,'ผลตรวจปัสสาวะ (Urinalysis)',px+10,y,'#fde047',12,'left',true);y+=24;
+  const prot=dmg?3.5:0.1,rbc=dmg;[['ปริมาตร',(k.urine*1.44).toFixed(1)+' L/วัน',k.urine>3?'no':k.urine<0.35?'mid':'ok'],['ความเข้มข้น',Math.round(k.Uosm)+' mOsm/L',k.Uosm<150?'mid':'ok'],['กลูโคส',k.excG>0?'พบ (+'+Math.min(4,Math.ceil(k.uG/250))+')':'ไม่พบ',k.excG>0?'no':'ok'],['โปรตีน',dmg?'พบ ~3.5 g/วัน':'ไม่พบ (< 0.15 g/วัน)',dmg?'no':'ok'],['เม็ดเลือดแดง',rbc?'พบ (Hematuria)':'ไม่พบ',rbc?'no':'ok'],['GFR',k.GFR.toFixed(0)+' mL/min',k.GFR<60?'no':'ok']].forEach(([a,b,t])=>{T(g,a,px+10,y,'#e7e3c4',11);T(g,b,px+pw-10,y,t==='ok'?'#86efac':t==='mid'?'#fde68a':'#fca5a5',11,'right',true);y+=21;});
+  y+=6;g.fillStyle=urineCol(k.Uosm);rr(g,px+pw/2-22,y,44,60,8);g.fill();if(dmg){g.fillStyle='rgba(255,255,255,.6)';for(let i=0;i<6;i++){g.beginPath();g.arc(px+pw/2-14+i*6,y+6,2.5,0,7);g.fill();}}T(g,dmg?'ฟอง (โปรตีน)':'',px+pw/2+30,y+8,'#e7e3c4',9.5);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#2b2914';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fmtN(v),L-4,Y(v),'#b5b08a',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#b5b08a',10,'center');}
+  g.strokeStyle='#57534e';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#b5b08a',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#b5b08a',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#f6f3e0',10);});}
+function glucoseChart(g,w,h,k,Pg){const A=axes(g,w,h,0,400,0,500,'กลูโคสในเลือด (mg/dL)','อัตรา (mg/min)',8,5);const G=gl=>kidney({Pg,glu:gl,adh:0.66,aldo:1,Kf:k.Kf,Pb:k.Pb});
+  plot(g,A,gl=>G(gl).filtG,0,400,'#94a3b8',2,[5,4]);plot(g,A,gl=>G(gl).reabG,0,400,'#22c55e',2.6);plot(g,A,gl=>G(gl).excG,0,400,'#ef4444',2.6);
+  g.strokeStyle='#fde047';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(180),A.Tm);g.lineTo(A.X(180),h-A.B);g.stroke();g.setLineDash([]);T(g,'Renal threshold 180',A.X(180)+4,A.Tm+8,'#fde047',9.5);
+  const gl=V('glu');g.fillStyle='#fde047';g.beginPath();g.arc(A.X(gl),A.Y(k.excG),5,0,7);g.fill();legend(g,[['กรองออก (Filtered)','#94a3b8'],['ดูดกลับ (Reabsorbed)','#22c55e'],['ขับออก (Excreted)','#ef4444']],A.L+8,20);}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const A=axes(g,w,h,0,3,0,10,'','ระดับ (0–10)',3,5,()=>'');const W=['NH₃','Urea','Uric acid'],D=[[10,10,1],[5,5,5],[1,1,9]],C=['#ef4444','#38bdf8','#fbbf24'],cur={amoeba:0,planaria:0,earthworm:1,insect:2,fwfish:0,swfish:1,human:1}[$('#org').value];
+    W.forEach((n,i)=>{const x0=A.X(i)+8,bw=(A.X(1)-A.X(0)-16)/3;if(i===cur){g.fillStyle='rgba(253,224,71,.12)';g.fillRect(A.X(i)+2,A.Tm,A.X(1)-A.X(0)-4,h-A.B-A.Tm);}D[i].forEach((v,j)=>{g.fillStyle=C[j];g.fillRect(x0+j*bw,A.Y(v),bw-3,A.Y(0)-A.Y(v));});T(g,n,A.X(i+0.5),h-A.B+12,i===cur?'#fde047':'#e7e3c4',11,'center',true);});
+    legend(g,[['ความเป็นพิษ','#ef4444'],['น้ำที่ต้องใช้ขับ','#38bdf8'],['พลังงานที่ใช้สร้าง','#fbbf24']],w-120,18);}
+  else if(m===2){glucoseChart(g,w,h,k2(),V('pg'));}
+  else if(m===3){const H=M3.hist,t1=Math.max(30,M3.t),t0=Math.max(0,t1-60);const A=axes(g,w,h,t0,t1,0,100,'เวลา (วินาที)','ระดับ (%) / ปัสสาวะ',4,4);[[1,'#e879f9',100],[2,'#22c55e',100],[3,'#60a5fa',100],[4,'#fde047',8]].forEach(([i,c,k])=>{g.strokeStyle=c;g.lineWidth=2;g.beginPath();let f=1;H.forEach(r=>{if(r[0]<t0)return;const y=A.Y(clamp(r[i]*k,0,100));f?g.moveTo(A.X(r[0]),y):g.lineTo(A.X(r[0]),y);f=0;});g.stroke();});
+    legend(g,[['ADH','#e879f9'],['Aldosterone','#22c55e'],['ANP','#60a5fa'],['ปัสสาวะ (×8 mL/min)','#fde047']],w-140,18);}
+  else{const c=$('#cond').value;if(c==='hd'){const A=axes(g,w,h,0,240,0,160,'เวลาฟอกเลือด (นาที)','ยูเรียในเลือด (mg/dL)',4,4);plot(g,A,ureaAt,0,240,'#475569',1.5,[4,4]);g.strokeStyle='#86efac';g.lineWidth=2.6;g.beginPath();M4.hist.forEach((r,i)=>i?g.lineTo(A.X(r[0]),A.Y(r[1])):g.moveTo(A.X(r[0]),A.Y(r[1])));g.stroke();T(g,'C(t) = C₀·e^(−K·t/V)',A.L+10,A.Tm+10,'#86efac',11,'left',true);}
+    else glucoseChart(g,w,h,k4(),V('pg'));}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+function spec(o){$('#specMark').style.left=clamp((o-50)/1150*100,0,100)+'%';$('#specTxt').textContent=o<=0?'ไม่มีปัสสาวะ':o<200?'เหลืองอ่อนมาก – เจือจาง':o<500?'เหลืองอ่อน':o<800?'เหลืองเข้ม':'ส้มเข้มจัด – เข้มข้นมาก';}
+const TW='<table><tr><th>ของเสีย</th><th>ความเป็นพิษ</th><th>น้ำที่ใช้</th><th>พลังงานสร้าง</th><th>สัตว์</th></tr><tr><td>แอมโมเนีย (NH₃)</td><td>สูงมาก</td><td>มากมาก</td><td>น้อยสุด</td><td>สัตว์น้ำ สัตว์เซลล์เดียว ปลากระดูกแข็งส่วนใหญ่</td></tr><tr><td>ยูเรีย</td><td>ปานกลาง</td><td>ปานกลาง</td><td>ปานกลาง (Urea cycle ที่ตับ)</td><td>สัตว์เลี้ยงลูกด้วยนม สะเทินน้ำสะเทินบก ปลาฉลาม</td></tr><tr><td>กรดยูริก</td><td>ต่ำมาก</td><td>น้อยสุด</td><td>มากสุด</td><td>นก สัตว์เลื้อยคลาน แมลง</td></tr></table><table style="margin-top:6px"><tr><th></th><th>ปลาน้ำจืด</th><th>ปลาน้ำเค็ม</th></tr><tr><td>น้ำ</td><td>ไหลเข้าโดยออสโมซิส · ไม่ดื่มน้ำ</td><td>ไหลออก · ดื่มน้ำทะเล</td></tr><tr><td>เกลือ</td><td>เหงือกดูดเข้า (Active)</td><td>เหงือกขับออก (Active)</td></tr><tr><td>ปัสสาวะ</td><td>มาก เจือจาง</td><td>น้อย เข้มข้น</td></tr></table>';
+const TN='<table><tr><th>ส่วน</th><th>ดูดกลับ</th><th>หลั่ง / หมายเหตุ</th></tr><tr><td>Glomerulus</td><td>— (กรอง)</td><td>ไม่มีเซลล์เม็ดเลือด / โปรตีนใหญ่</td></tr><tr><td>PCT</td><td>Glucose, a.a. 100% · น้ำ ~65% · Na⁺, HCO₃⁻</td><td>หลั่ง H⁺, ยา, สารพิษ</td></tr><tr><td>Loop ขาลง</td><td>น้ำ (Passive)</td><td>ไม่ให้เกลือผ่าน</td></tr><tr><td>Loop ขาขึ้น</td><td>Na⁺, Cl⁻ (Active)</td><td>ไม่ให้น้ำผ่าน → Filtrate เจือจาง</td></tr><tr><td>DCT</td><td>Na⁺ (Aldosterone), น้ำ</td><td>หลั่ง K⁺, H⁺</td></tr><tr><td>Collecting duct</td><td>น้ำ (ADH + Aquaporin-2), ยูเรียบางส่วน</td><td>กำหนดความเข้มข้นสุดท้าย</td></tr></table>';
+const TH='<table><tr><th>ฮอร์โมน</th><th>แหล่งสร้าง/หลั่ง</th><th>สิ่งกระตุ้น</th><th>ผล</th></tr><tr><td>ADH (Vasopressin)</td><td>Hypothalamus → ต่อมใต้สมองส่วนหลัง</td><td>Posm สูง / ขาดน้ำ</td><td>Aquaporin-2 ที่ DCT, CD → ดูดน้ำกลับ ปัสสาวะน้อย เข้มข้น</td></tr><tr><td>Renin</td><td>JGA ในไต</td><td>ความดันเลือดต่ำ</td><td>Angiotensinogen → Ang I → (ACE) Ang II</td></tr><tr><td>Aldosterone</td><td>ต่อมหมวกไตชั้นนอก</td><td>Angiotensin II, K⁺ สูง</td><td>DCT ดูดกลับ Na⁺ (น้ำตาม) ขับ K⁺</td></tr><tr><td>ANP</td><td>หัวใจห้องบน</td><td>ความดัน/ปริมาตรเลือดสูง</td><td>ยับยั้ง Renin, Aldosterone, ADH → ขับ Na⁺ และน้ำ</td></tr></table>';
+const TD='<table><tr><th>โรค</th><th>สาเหตุ</th><th>ลักษณะปัสสาวะ</th></tr><tr><td>เบาหวาน (DM)</td><td>กลูโคสในเลือด > 180 mg/dL เกิน Renal threshold</td><td>มีกลูโคส ปริมาณมาก (Osmotic diuresis)</td></tr><tr><td>เบาจืด (DI)</td><td>ขาด ADH หรือไตไม่ตอบสนองต่อ ADH</td><td>มากมาก เจือจาง (Polyuria) ไม่มีกลูโคส</td></tr><tr><td>ไตอักเสบ (Glomerulonephritis)</td><td>เยื่อกรองเสียหาย</td><td>มีโปรตีน (Proteinuria) เม็ดเลือดแดง</td></tr><tr><td>นิ่วในไต</td><td>ผลึกแคลเซียม/ยูริกตกตะกอน อุดท่อ</td><td>ปวด อาจมีเลือดปน การกรองลด</td></tr><tr><td>ไตวายเรื้อรัง (CKD)</td><td>เบาหวาน ความดันสูง ทำลาย Nephron</td><td>GFR < 60 ของเสียคั่ง → ฟอกเลือด</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#org').value,o=ORG[k];st=[['ของเสียไนโตรเจน',o.w.split(' ')[0]],['โครงสร้างขับถ่าย',o.st.split(' (')[0]],['สิ่งแวดล้อม',o.env.split(':')[0].split(' (')[0]],['ปัสสาวะ',k==='fwfish'?'มาก เจือจาง':k==='swfish'?'น้อย เข้มข้น':k==='insect'?'ตะกอนกรดยูริก':k==='human'?'~1.5 L/วัน':'—']];spec(k==='fwfish'?80:k==='swfish'?900:k==='insect'?1150:k==='human'?600:60);
+    eq='NH₃ (พิษสูง ละลายน้ำดี) → ตับ: 2NH₃ + CO₂ → Urea (Urea cycle ใช้ ATP) → Uric acid (ไม่ละลายน้ำ ประหยัดน้ำที่สุด)\nการขับถ่าย (Excretion) = กำจัดของเสียจากเมแทบอลิซึม เช่น ยูเรีย CO₂ ≠ การถ่ายอุจจาระ (Egestion)';
+    an={amoeba:'<p>อะมีบาในน้ำจืดมีน้ำไหลเข้าเซลล์โดยออสโมซิสตลอด จึงต้องใช้ <b>Contractile vacuole</b> ขับน้ำส่วนเกินออก (ใช้พลังงาน) ส่วน NH₃ แพร่ออกทางเยื่อหุ้มเซลล์ได้เอง</p>',planaria:'<p><b>Flame cell</b> โบกพัด Cilia ดึงของเหลวเข้าสู่ท่อ Protonephridia — หน้าที่หลักคือ<b>รักษาสมดุลน้ำ</b> ของเสีย NH₃ ส่วนใหญ่แพร่ออกทางผิวลำตัว</p>',earthworm:'<p><b>Metanephridia</b> รับของเหลวจากช่องลำตัวทาง Nephrostome แล้วดูดสารที่มีประโยชน์กลับเข้าเส้นเลือดฝอยที่พันรอบท่อ — หลักการคล้ายหน่วยไต</p>',insect:'<p><b>Malpighian tubules</b> ดึงของเสียจาก Hemolymph เทลงลำไส้ น้ำถูกดูดกลับที่ Rectum เหลือ<b>กรดยูริก</b>เป็นผลึก — ประหยัดน้ำมาก เหมาะกับชีวิตบนบก</p>',fwfish:'<p>ปลาน้ำจืดเข้มข้นกว่าน้ำ (Hypertonic) <b>น้ำไหลเข้า</b> จึงไม่ดื่มน้ำ ขับปัสสาวะเจือจางปริมาณมาก และใช้เหงือกดูดเกลือกลับ</p>',swfish:'<p>ปลาน้ำเค็มเจือจางกว่าน้ำทะเล (Hypotonic) <b>เสียน้ำ</b> จึงดื่มน้ำทะเลและขับเกลือออกทางเหงือก ปัสสาวะน้อย</p>',human:'<p>ตับเปลี่ยน NH₃ เป็น<b>ยูเรีย</b> (พิษน้อยกว่า) ไตกรองยูเรียออกในปัสสาวะ — ใช้น้ำปานกลาง เหมาะกับสัตว์บกที่หาน้ำได้</p>'}[k];
+    mis='<p><b>❌ "การขับถ่าย (Excretion) คือการถ่ายอุจจาระ"</b></p><p>✅ การถ่ายอุจจาระคือการกำจัด<b>กากอาหารที่ย่อยไม่ได้</b> (Egestion) ซึ่งไม่เคยเข้าสู่เซลล์ ส่วนการขับถ่ายคือการกำจัด<b>ของเสียจากเมแทบอลิซึม</b>ภายในเซลล์ เช่น ยูเรีย CO₂</p><p><b>❌ "สัตว์ทุกชนิดขับยูเรีย"</b> ✅ ขึ้นกับแหล่งที่อยู่: สัตว์น้ำขับ NH₃ นก/แมลงขับกรดยูริก</p>';tb=TW;}
+  else if(m===2){const k=k2(),hm=$('#horm').value;st=[['อัตราการกรอง (GFR)',k.GFR.toFixed(0)+' mL/min'],['อัตราการไหลของปัสสาวะ',k.urine.toFixed(2)+' mL/min'],['ความเข้มข้นปัสสาวะ',Math.round(k.Uosm)+' mOsm/L'],['กลูโคสในปัสสาวะ',k.excG>0?k.excG.toFixed(0)+' mg/min':'0 (ไม่พบ)']];spec(k.urine>0?k.Uosm:0);
+    eq=`NFP = Pg − (Pb + πg) = ${V('pg')} − (15 + 30) = ${k.NFP.toFixed(0)} mmHg\nGFR = Kf × NFP = 12.5 × ${k.NFP.toFixed(0)} = ${k.GFR.toFixed(0)} mL/min (≈ ${(k.GFR*1.44).toFixed(0)} L/วัน)\nกลูโคส: Excretion = Filtered − Reabsorbed + Secreted = ${k.filtG.toFixed(0)} − ${k.reabG.toFixed(0)} + 0 = ${k.excG.toFixed(0)} mg/min`;
+    const flags=[];if(k.GFR<=0)flags.push('<span class="tag no">ไม่มีการกรอง</span> NFP ≤ 0 → ไตหยุดกรอง (Anuria)');else{if(k.Uosm>800)flags.push('<span class="tag mid">Concentrated urine</span> ร่างกายขาดน้ำ ADH สูง ดูดน้ำกลับมาก');if(k.urine>5)flags.push('<span class="tag no">Polyuria</span> ปัสสาวะมาก เจือจาง'+(hm==='adh'?' (ขาด ADH = เบาจืด)':''));if(k.excG>0)flags.push('<span class="tag no">Glucosuria</span> กลูโคสเกิน Renal threshold (~180 mg/dL) ตัวขนส่งที่ PCT อิ่มตัว');if(!flags.length)flags.push('<span class="tag ok">ปัสสาวะปกติ</span>');}
+    an=flags.map(f=>`<p>${f}</p>`).join('')+'<p>Loop of Henle สร้าง<b>ความเข้มข้นเกลือใน Medulla</b> (Countercurrent multiplier) ให้ท่อรวมดึงน้ำกลับได้เมื่อมี ADH</p>'+(hm==='ald'?'<p>ยับยั้ง Aldosterone → DCT ดูดกลับ Na⁺ น้อยลง ขับ Na⁺ และน้ำมากขึ้น</p>':'');
+    mis=(k.excG>0||V('glu')>150?'<p><b>❌ "ปัสสาวะคนปกติมีกลูโคสเล็กน้อยเสมอ"</b></p><p>✅ คนปกติกลูโคส<b>ถูกดูดกลับ 100%</b> ที่ PCT จะพบในปัสสาวะเมื่อเกิน Renal threshold ≈ 180 mg/dL เท่านั้น — ดูกราฟด้านขวา</p>':'')+'<p><b>❌ "ห่วงเฮนเลดูดกลับสารอาหารเป็นหลัก"</b></p><p>✅ สารอาหารดูดกลับที่ <b>PCT</b> ส่วน Loop of Henle สร้าง<b>ความเข้มข้นเกลือใน Medulla</b> เพื่อให้ท่อรวมดูดน้ำกลับได้ (เปิดโหมดออสโมลาริตี)</p>';tb=TN;}
+  else if(m===3){const k=k3(),hm=$('#horm').value,adhE=hm==='adh'?0:M3.adh;st=[['ADH',(adhE*10).toFixed(1)+' pg/mL'],['Aldosterone',hm==='ald'?'ถูกยับยั้ง':(3+M3.ald*27).toFixed(0)+' ng/dL'],['อัตราการไหลของปัสสาวะ',k.urine.toFixed(2)+' mL/min'],['ความเข้มข้นปัสสาวะ',Math.round(k.Uosm)+' mOsm/L']];spec(k.Uosm);
+    eq=`ขาดน้ำ → Posm ↑ → Osmoreceptor ใน Hypothalamus → ADH ↑ → Aquaporin-2 ↑ → ดูดน้ำกลับ ↑ → ปัสสาวะน้อย/เข้มข้น\nความดันต่ำ → JGA → Renin → Angiotensinogen → Ang I →(ACE)→ Ang II → Aldosterone → ดูดกลับ Na⁺ + น้ำ → ความดัน ↑\nความดันสูง → หัวใจห้องบนหลั่ง ANP ⊣ Renin, Aldosterone, ADH → ขับ Na⁺ + น้ำ`;
+    an=`<p><span class="tag ${k.Uosm>800?'mid':k.urine>5?'no':'ok'}">${k.Uosm>800?'ปัสสาวะเข้มข้น':k.urine>5?'ปัสสาวะมาก เจือจาง':'สมดุล'}</span> ADH ${Math.round(adhE*100)}% · Aldosterone ${hm==='ald'?0:Math.round(M3.ald*100)}% · ANP ${Math.round(M3.anp*100)}%</p>`+(V('map')<80?'<p>ความดันต่ำ: ระบบ <b>RAAS</b> ทำงาน Angiotensin II ทำให้หลอดเลือดหดตัวและกระตุ้นการหลั่ง Aldosterone</p>':'')+(V('map')>110?'<p>ความดันสูง: <b>ANP</b> จากหัวใจห้องบนยับยั้ง RAAS และ ADH → ขับน้ำและ Na⁺</p>':'')+(hm==='adh'?'<p>ขาด ADH → ไม่มี Aquaporin-2 ที่ท่อรวม แม้ขาดน้ำก็ยังปัสสาวะมาก (เบาจืด)</p>':'');
+    mis='<p><b>❌ "ADH ทำให้ปัสสาวะบ่อยและเจือจาง"</b></p><p>✅ ADH = <b>Anti-Diuretic</b> Hormone (ฮอร์โมนต้านการขับปัสสาวะ) <b>เพิ่มการดูดน้ำกลับ</b> ปัสสาวะจึงน้อยและเข้มข้น</p><p><b>❌ "ต่อมใต้สมองส่วนหลังสร้าง ADH"</b> ✅ ADH สร้างที่ Hypothalamus แล้วส่งไปเก็บ/หลั่งที่ต่อมใต้สมองส่วนหลัง</p>';tb=TH;}
+  else{const c=$('#cond').value,k=k4();if(c==='hd'){const C=ureaAt(M4.min);st=[['ยูเรียในเลือด (BUN)',C.toFixed(0)+' mg/dL'],['Kt/V',(0.8*V('qb')*M4.min/40000).toFixed(2)],['เวลาฟอกเลือด',M4.min.toFixed(0)+' นาที'],['ยูเรียถูกกำจัด',Math.round((1-C/M4.C0)*100)+' %']];spec(0);
+      eq=`C(t) = C₀ · e^(−K·t / V) = 150 · e^(−${(0.8*V('qb')).toFixed(0)}·${M4.min.toFixed(0)} / 40000) = ${C.toFixed(0)} mg/dL\nK (Clearance) ≈ 0.8 × อัตราเลือด ${V('qb')} mL/min · V = ปริมาตรน้ำในร่างกาย ~40 L`;
+      an=`<p><span class="tag ${C<70?'ok':'mid'}">${C<70?'ฟอกได้เพียงพอ':'กำลังฟอก'}</span> ของเสียโมเลกุลเล็ก (ยูเรีย ครีเอตินีน K⁺) <b>แพร่</b>จากเลือดผ่านเยื่อเลือกผ่านไปยังน้ำยาไตเทียมที่ไหลสวนทาง ส่วนโปรตีนและเม็ดเลือดผ่านไม่ได้</p><p>น้ำยาไตเทียมมีกลูโคสและแร่ธาตุเท่าเลือดปกติ จึงไม่สูญเสียสารที่จำเป็น</p>`;
+      mis='<p><b>❌ "เครื่องไตเทียมทำงานได้เหมือนไตจริงทุกอย่าง"</b></p><p>✅ เครื่องไตเทียมกำจัดของเสียและน้ำได้ด้วย<b>การแพร่</b> แต่ไม่สามารถดูดกลับแบบเลือกสรร หลั่ง Renin/EPO หรือกระตุ้น Vitamin D ได้</p>';}
+    else{st=[['อัตราการกรอง (GFR)',k.GFR.toFixed(0)+' mL/min'],['อัตราการไหลของปัสสาวะ',k.urine.toFixed(2)+' mL/min'],['ความเข้มข้นปัสสาวะ',Math.round(k.Uosm)+' mOsm/L'],['กลูโคสในปัสสาวะ',k.excG>0?k.excG.toFixed(0)+' mg/min':'0']];spec(k.urine>0?k.Uosm:0);
+      eq=`NFP = Pg − (Pb + πg) = ${V('pg')} − (${k.Pb} + 30) = ${k.NFP.toFixed(0)} mmHg  ·  GFR = Kf × NFP = ${k.Kf} × ${k.NFP.toFixed(0)} = ${k.GFR.toFixed(0)} mL/min\nกลูโคสขับออก = กรอง − ดูดกลับ = ${k.filtG.toFixed(0)} − ${k.reabG.toFixed(0)} = ${k.excG.toFixed(0)} mg/min`;
+      an={normal:'<p><span class="tag ok">ปัสสาวะปกติ</span> ไม่มีกลูโคส โปรตีน หรือเม็ดเลือดแดง</p>',dm:`<p><span class="tag ${k.excG>0?'no':'mid'}">${k.excG>0?'Glucosuria':'ยังไม่เกิน Threshold'}</span> เบาหวาน: กลูโคสในเลือดสูงเกิน 180 mg/dL → PCT ดูดกลับไม่หมด → กลูโคสดึงน้ำออกไปด้วย (ปัสสาวะมาก กระหายน้ำ) — ลองปรับกลูโคสในเลือด</p>`,di:'<p><span class="tag no">Polyuria</span> เบาจืด: ขาด ADH → ปัสสาวะมากและเจือจางมาก แต่<b>ไม่มีกลูโคส</b> (ต่างจากเบาหวาน)</p>',gn:'<p><span class="tag no">Proteinuria + Hematuria</span> เยื่อกรองเสียหาย โปรตีนและเม็ดเลือดแดงรั่ว → โปรตีนในเลือดต่ำ บวมน้ำ</p>',stone:'<p><span class="tag no">อุดตัน</span> นิ่วอุดท่อไต ความดันใน Bowman\'s capsule (Pb) สูงขึ้น → NFP และ GFR ลดลง ปวดบั้นเอวรุนแรง</p>',ckd:`<p><span class="tag no">CKD</span> Nephron ถูกทำลาย GFR = ${k.GFR.toFixed(0)} mL/min ของเสียคั่งในเลือด ${k.GFR<15?'→ ต้องฟอกเลือดหรือปลูกถ่ายไต':''}</p>`}[c];
+      mis=c==='dm'||c==='normal'?'<p><b>❌ "ปัสสาวะคนปกติมีกลูโคสเล็กน้อยเสมอ"</b></p><p>✅ คนปกติดูดกลับกลูโคส <b>100%</b> ที่ PCT จะพบเมื่อเกิน Renal threshold ≈ 180 mg/dL</p>':c==='di'?'<p><b>❌ "เบาจืดคือเบาหวานชนิดหนึ่ง มีน้ำตาลในปัสสาวะ"</b></p><p>✅ เบาจืดเกิดจาก<b>ขาด ADH</b> ปัสสาวะมากแต่ไม่มีกลูโคส</p>':'<p><b>❌ "โปรตีนในปัสสาวะเป็นเรื่องปกติหลังกินโปรตีนมาก"</b></p><p>✅ โปรตีนโมเลกุลใหญ่<b>กรองผ่าน Glomerulus ไม่ได้</b> การพบโปรตีนมากแสดงว่าเยื่อกรองเสียหาย</p>';}
+    tb=TD;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');$('#qbBox').style.display=$('#cond').value==='hd'?'':'none';
+  $('#simTitle').textContent=['','ระบบขับถ่ายของสิ่งมีชีวิตกลุ่มต่าง ๆ','หน่วยไต (Nephron): กรอง → ดูดกลับ → หลั่ง','ฮอร์โมนควบคุมสมดุลน้ำและความดันเลือด','โรคไตและการรักษา'][m];
+  $('#chartTitle').textContent=['','เปรียบเทียบของเสียไนโตรเจน','Blood glucose vs Glucose reabsorbed / excreted','ระดับฮอร์โมนและปัสสาวะตามเวลา','กราฟทางคลินิก'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('pg',v=>v+' mmHg');const fglu=bind('glu',v=>v+' mg/dL');bind('map',v=>v+' mmHg');bind('qb',v=>v+' mL/min');
+['org','hyd','horm'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#cond').addEventListener('change',()=>{const c=$('#cond').value;if(c==='dm'){$('#glu').value=260;fglu();}else if(c!=='hd'&&V('glu')>150){$('#glu').value=100;fglu();}$('#qbBox').style.display=c==='hd'?'':'none';initM4();updateText();});
+$('#drink').onclick=()=>{M3.water+=1;updateText();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgTr:'tr',tgOsm:'osm'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

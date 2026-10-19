@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>การสืบพันธุ์ของพืชดอก – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0f0d14;--panel:#17141f;--panel2:#201b2b;--line:#352c45;--txt:#efeaf7;--mut:#a89cbd;--acc:#f472b6;--acc2:#facc15;--good:#4ade80}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#3b0d2c,#14301f);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#701a4b;border-color:var(--acc)}
+.ctl{margin:9px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#2a2338;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#9d174d;border-color:#f472b6}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;margin:6px 0}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#7c3aed;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#08070c;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:17px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#0d0b12;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{border:1px solid var(--line);padding:4px 6px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#0b0a10;border-radius:8px}
+.stagebar{display:flex;gap:3px;margin-top:8px;flex-wrap:wrap}
+.stagebar span{flex:1;min-width:22px;text-align:center;font-size:11px;padding:3px 1px;border-radius:5px;background:var(--panel2);color:var(--mut);border:1px solid var(--line);cursor:pointer}
+.stagebar span.on{background:#701a4b;color:#fff;border-color:var(--acc)}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🌸 การสืบพันธุ์ของพืชดอก (Angiosperm Reproduction &amp; Development)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : ผ่าโครงสร้างดอกและชนิดของผล</button>
+    <button data-mode="2">โหมด 2 : การสร้างเซลล์สืบพันธุ์และการปฏิสนธิคู่</button>
+    <button data-mode="3">โหมด 3 : การงอกของเมล็ดและปัจจัยแวดล้อม</button>
+    <button data-mode="4">โหมด 4 : การขยายพันธุ์และการเพาะเลี้ยงเนื้อเยื่อ</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div class="ctl" data-m="1 3"><label>ชนิดพืชทดลอง</label><select id="species">
+      <option value="bean">ถั่ว (ใบเลี้ยงคู่ – Epigeal)</option><option value="corn">ข้าวโพด (ใบเลี้ยงเดี่ยว – Hypogeal)</option>
+      <option value="straw">สตรอเบอร์รี่ (ผลกลุ่ม)</option><option value="pine">สับปะรด (ผลรวม)</option><option value="lettuce">ผักกาดหอม (เมล็ดต้องการแสง)</option></select></div>
+    <div data-m="1">
+      <div class="ctl"><label>มุมมอง</label><div class="switch"><button id="vFlower" class="on">ดอก</button><button id="vFruit">ผล</button></div></div>
+      <div class="ctl" id="flowerSel"><label>ชนิดดอก</label><select id="ftype">
+        <option value="sup">ดอกสมบูรณ์ – รังไข่เหนือวงกลีบ (Superior) เช่น ชบา</option>
+        <option value="half">รังไข่กึ่งใต้วงกลีบ (Half-inferior) เช่น กุหลาบ</option>
+        <option value="inf">รังไข่ใต้วงกลีบ (Inferior) เช่น ฝรั่ง ฟักทอง</option>
+        <option value="male">ดอกเพศผู้ (Imperfect) – แยกเพศร่วมต้น เช่น ข้าวโพด ฟักทอง</option>
+        <option value="female">ดอกเพศเมีย (Imperfect) – แยกเพศต่างต้น เช่น มะละกอ</option>
+        <option value="nopetal">ดอกไม่สมบูรณ์ (ไม่มีกลีบดอก) เช่น หญ้า ข้าว</option></select></div>
+      <div class="ctl" id="fruitSel" style="display:none"><label>ชนิดผล</label><select id="fruit">
+        <option value="mango">มะม่วง – ผลเดี่ยว (ผลสด)</option><option value="pea">ฝักถั่ว – ผลเดี่ยว (ผลแห้งแตก)</option><option value="cornk">เมล็ดข้าวโพด – ผลเดี่ยว (ผลแห้งไม่แตก)</option>
+        <option value="straw">สตรอเบอร์รี่ – ผลกลุ่ม + ผลเทียม</option><option value="custard">น้อยหน่า – ผลกลุ่ม</option>
+        <option value="pine">สับปะรด – ผลรวม</option><option value="jack">ขนุน – ผลรวม</option><option value="apple">แอปเปิล – ผลเดี่ยวเทียม (Accessory)</option></select></div>
+      <label class="chk"><input type="checkbox" id="cut" checked> ผ่าครึ่งตามยาว (Longitudinal section)</label>
+      <label class="chk"><input type="checkbox" id="inflo"> แสดงเป็นดอกช่อ (Inflorescence)</label>
+      <p class="hint">คลิกส่วนประกอบของดอก/ผลบนภาพเพื่อดูรายละเอียด</p>
+    </div>
+    <div data-m="2"><div class="stagebar" id="stagebar"></div><p class="hint">คลิกหมายเลขขั้นเพื่อข้ามไปยังขั้นนั้น</p>
+      <div class="ctl"><label>ความเร็วแอนิเมชัน <b id="spV">1.0×</b></label><input type="range" id="sp" min="0.25" max="3" step="0.25" value="1"></div></div>
+    <div data-m="3">
+      <div class="ctl"><label>ระดับความชื้น/น้ำ <b id="wV">60 %</b></label><input type="range" id="water" min="0" max="100" step="5" value="60"></div>
+      <div class="ctl"><label>ออกซิเจน <b id="oV">21 %</b></label><input type="range" id="oxy" min="0" max="21" step="1" value="21"></div>
+      <div class="ctl"><label>อุณหภูมิ <b id="tV">25 °C</b></label><input type="range" id="temp" min="0" max="50" step="1" value="25"></div>
+      <label class="chk"><input type="checkbox" id="light"> เปิดแสง</label>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>วิธีการขยายพันธุ์</label><select id="method"><option value="tc">การเพาะเลี้ยงเนื้อเยื่อ (Tissue culture)</option><option value="cut">การปักชำ</option><option value="layer">การตอนกิ่ง</option><option value="graft">การทาบกิ่ง</option><option value="nat">การสืบพันธุ์ไม่อาศัยเพศตามธรรมชาติ</option></select></div>
+      <div id="tcBox">
+        <div class="ctl"><label>อัตราส่วนฮอร์โมน (ค่าตั้งต้น)</label><select id="preset"><option value="bal">Balanced → เกิด Callus</option><option value="aux">High Auxin → เร่งราก</option><option value="cyt">High Cytokinin → เร่งยอด</option></select></div>
+        <div class="ctl"><label>Auxin (NAA) <b id="auxV">2.0 mg/L</b></label><input type="range" id="aux" min="0" max="10" step="0.1" value="2"></div>
+        <div class="ctl"><label>Cytokinin (BA) <b id="cytV">1.0 mg/L</b></label><input type="range" id="cyt" min="0" max="10" step="0.1" value="1"></div>
+      </div>
+      <label class="chk" id="rootHormBox"><input type="checkbox" id="rootHorm" checked> จุ่มฮอร์โมนเร่งราก (Auxin) ก่อนปักชำ/ตอน</label>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="step">⏭ ทีละขั้น</button><button class="btn" id="reset">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgN" class="on">ชุดโครโมโซม 1n/2n/3n</button><button id="tgG">ทิศทางการเจริญหลังปฏิสนธิ</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height,d};}
+function rr(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function T(g,s,x,y,col='#efeaf7',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px "Sarabun","Leelawadee UI",Tahoma,sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-9*Math.cos(a-0.4),y2-9*Math.sin(a-0.4));g.lineTo(x2-9*Math.cos(a+0.4),y2-9*Math.sin(a+0.4));g.closePath();g.fill();}
+const PC={1:'#60a5fa',2:'#c084fc',3:'#fb923c'};
+const S={mode:1,running:false,time:0,toggle:'n',view:'flower',sel:null,hits:[]};
+
+/* ======== MODE 1 DATA ======== */
+const PART={
+ pedicel:{n:'ก้านดอก (Pedicel)',d:'ชูดอก ต่อกับฐานรองดอก',p:2},
+ receptacle:{n:'ฐานรองดอก (Receptacle)',d:'ที่ยึดของวงต่าง ๆ ของดอก ในสตรอเบอร์รี่และแอปเปิลเจริญเป็นเนื้อผล (ผลเทียม)',p:2},
+ sepal:{n:'กลีบเลี้ยง (Sepal) – วง Calyx',d:'วงนอกสุด สีเขียว ป้องกันดอกตูม',p:2},
+ petal:{n:'กลีบดอก (Petal) – วง Corolla',d:'มีสีและกลิ่นล่อแมลงช่วยถ่ายละอองเรณู',p:2},
+ filament:{n:'ก้านชูอับเรณู (Filament)',d:'ส่วนหนึ่งของเกสรเพศผู้ (Stamen) วง Androecium',p:2},
+ anther:{n:'อับเรณู (Anther)',d:'สร้าง Microspore mother cell (2n) → meiosis → ละอองเรณู (1n)',p:1},
+ stigma:{n:'ยอดเกสรเพศเมีย (Stigma)',d:'มีน้ำเหนียวรับละอองเรณู — ส่วนของ Pistil วง Gynoecium',p:2},
+ style:{n:'ก้านเกสรเพศเมีย (Style)',d:'ทางผ่านของหลอดเรณู (Pollen tube)',p:2},
+ ovary:{n:'รังไข่ (Ovary)',d:'ภายในมีออวุล → หลังปฏิสนธิเจริญเป็น "ผล" (ผนังรังไข่ → เปลือกผล Pericarp)',p:2},
+ ovule:{n:'ออวุล (Ovule)',d:'ภายในมีถุงเอ็มบริโอ (1n) → หลังปฏิสนธิเจริญเป็น "เมล็ด"; Integument → เปลือกเมล็ด',p:1},
+ hyp:{n:'ฐานดอกรูปถ้วย (Hypanthium)',d:'วงกลีบติดอยู่ขอบถ้วย รังไข่อยู่กึ่งกลาง',p:2}};
+const FRUIT={
+ mango:{n:'มะม่วง',type:'ผลเดี่ยว (Simple fruit) – ผลสด',from:'1 ดอก 1 รังไข่ (มี 1 คาร์เพล)',parts:{exo:'ผนังผลชั้นนอก (Exocarp) = เปลือก',meso:'ผนังผลชั้นกลาง (Mesocarp) = เนื้อที่กิน',endo:'ผนังผลชั้นใน (Endocarp) = กะลาแข็ง',seed:'เมล็ด (จากออวุล)'}},
+ pea:{n:'ฝักถั่ว',type:'ผลเดี่ยว (Simple fruit) – ผลแห้งแตก (Legume)',from:'1 ดอก 1 รังไข่',parts:{pod:'ฝัก = ผนังรังไข่ (Pericarp)',seed:'เมล็ด = ออวุลที่ได้รับการปฏิสนธิ'}},
+ cornk:{n:'เมล็ดข้าวโพด',type:'ผลเดี่ยว – ผลแห้งไม่แตก (Caryopsis)',from:'เปลือกผลเชื่อมติดกับเปลือกเมล็ด',parts:{peri:'Pericarp + Seed coat (เชื่อมกัน)',endo:'เอนโดสเปิร์ม (3n)',emb:'เอ็มบริโอ (2n) + Scutellum'}},
+ straw:{n:'สตรอเบอร์รี่',type:'ผลกลุ่ม (Aggregate) + ผลเทียม',from:'1 ดอก หลายรังไข่ แยกกัน บนฐานรองดอกเดียวกัน',parts:{rec:'เนื้อสีแดง = ฐานรองดอก (Receptacle) ไม่ใช่รังไข่',ach:'จุดเล็ก ๆ บนผิว = ผลย่อยจริง (Achene) แต่ละผลมี 1 เมล็ด'}},
+ custard:{n:'น้อยหน่า',type:'ผลกลุ่ม (Aggregate fruit)',from:'1 ดอก มีหลายรังไข่ แต่ละรังไข่เจริญเป็นผลย่อยแล้วเชื่อมกัน',parts:{seg:'แต่ละตา = 1 ผลย่อยจาก 1 รังไข่',seed:'เมล็ดในแต่ละผลย่อย'}},
+ pine:{n:'สับปะรด',type:'ผลรวม (Multiple fruit)',from:'ดอกช่อ (หลายดอก) แต่ละดอกเจริญเป็นผลย่อยแล้วเชื่อมรวมกันบนแกนช่อ',parts:{eye:'แต่ละตา = 1 ดอกในช่อดอก',core:'แกนกลาง = แกนช่อดอก (Inflorescence axis)',crown:'จุก = ยอดของช่อดอก'}},
+ jack:{n:'ขนุน',type:'ผลรวม (Multiple fruit)',from:'ช่อดอกเพศเมีย หลายดอกรวมกันเป็นผลเดียว',parts:{bulb:'ยวง = กลีบรวมของแต่ละดอกที่อวบน้ำ',seed:'เมล็ด',core:'ซังกลาง = แกนช่อดอก'}},
+ apple:{n:'แอปเปิล',type:'ผลเดี่ยวเทียม (Accessory fruit)',from:'รังไข่ใต้วงกลีบ เนื้อส่วนใหญ่เจริญจากฐานดอก (Hypanthium)',parts:{flesh:'เนื้อ = ฐานดอก (ไม่ใช่รังไข่)',core:'แกน (ไส้) = รังไข่จริง',seed:'เมล็ด'}}};
+const SPFRUIT={bean:'pea',corn:'cornk',straw:'straw',pine:'pine',lettuce:'mango'};
+
+/* ======== MODE 2 ======== */
+const ST2=['Microspore mother cell (2n)','Meiosis I','Meiosis II → 4 Microspores (1n)','Mitosis → ละอองเรณู','Megaspore mother cell (2n)','Meiosis → 4 Megaspores (สลาย 3)','Mitosis ครั้งที่ 1 (2 นิวเคลียส)','Mitosis ครั้งที่ 2 (4 นิวเคลียส)','Mitosis ครั้งที่ 3 → 8 นิวเคลียส 7 เซลล์','ถ่ายเรณู + หลอดเรณูงอก','Generative cell → 2 Sperms เข้าทาง Micropyle','ปฏิสนธิคู่ (Double fertilization)','Zygote→Embryo, Endosperm, ออวุล→เมล็ด, รังไข่→ผล'];
+const M2={stage:0,prog:0};
+
+/* ======== MODE 3 ======== */
+const SEEDN=50;
+const SPG={bean:{n:'ถั่ว',topt:25,tmin:5,tmax:42,epi:true,mono:false,light:'none'},corn:{n:'ข้าวโพด',topt:30,tmin:9,tmax:45,epi:false,mono:true,light:'none'},straw:{n:'สตรอเบอร์รี่',topt:22,tmin:8,tmax:35,epi:true,mono:false,light:'none'},pine:{n:'สับปะรด',topt:30,tmin:15,tmax:40,epi:false,mono:true,light:'none'},lettuce:{n:'ผักกาดหอม',topt:20,tmin:3,tmax:30,epi:true,mono:false,light:'need'}};
+const M3={day:0,dev:0,seeds:[],log:[]};
+function initM3(){M3.day=0;M3.dev=0;M3.seeds=Array.from({length:SEEDN},(_,i)=>({sp:0.65+hash(i*3.7)*0.7,dev:0,gday:null,x:hash(i*1.3),y:hash(i*2.9)}));M3.log=[];}
+function factors(spk,T,W,O,L){const sp=SPG[spk];let fT=0;if(T>sp.tmin&&T<sp.tmax){fT=T<=sp.topt?(T-sp.tmin)/(sp.topt-sp.tmin):(sp.tmax-T)/(sp.tmax-sp.topt);fT=Math.pow(clamp(fT,0,1),0.7);}
+  let fW=W<20?0:W<50?(W-20)/30:W<=85?1:1-(W-85)/15*0.6;const Oeff=O*(W>90?0.35:1);const fO=clamp(Oeff/10,0,1);const fL=sp.light==='need'?(L?1:0.08):1;return{fT,fW,fO,fL,r:fT*fW*fO*fL};}
+function curF(){return factors($('#species').value,+$('#temp').value,+$('#water').value,+$('#oxy').value,$('#light').checked);}
+function m3Step(dd){const f=curF();M3.day=Math.min(14,M3.day+dd);const rate=0.16*f.r;M3.dev+=rate*dd;M3.seeds.forEach(s=>{s.dev+=rate*s.sp*dd;if(s.gday===null&&s.dev>=0.4)s.gday=Math.ceil(M3.day);});if(M3.day>=14)S.running=false;}
+function m3Stats(){const g=M3.seeds.filter(s=>s.gday!==null);const pct=g.length/SEEDN*100;const md=g.length?g.reduce((a,s)=>a+s.gday,0)/g.length:0;const byDay={};g.forEach(s=>byDay[s.gday]=(byDay[s.gday]||0)+1);let GI=0;for(const d in byDay)GI+=byDay[d]/d;return{pct,md,GI,byDay};}
+function predictPct(spk,T,W,O,L){const f=factors(spk,T,W,O,L);const rate=0.16*f.r;let c=0;for(let i=0;i<SEEDN;i++){if(rate*(0.65+hash(i*3.7)*0.7)*14>=0.4)c++;}return c/SEEDN*100;}
+
+/* ======== MODE 4 ======== */
+const M4={day:0};
+function ratio(){const a=+$('#aux').value,c=+$('#cyt').value;return c===0?(a===0?1:Infinity):a/c;}
+function outcome(r){if(!isFinite(r)||r>10)return{k:'root',n:'เกิดราก (Rhizogenesis)',root:1,shoot:0,cal:0.25};if(r>5)return{k:'rootcal',n:'Callus + ราก',root:0.6,shoot:0,cal:0.6};if(r>=1)return{k:'cal',n:'Callus proliferation',root:0,shoot:0,cal:1};if(r>=0.1)return{k:'shootcal',n:'Callus + ยอด',root:0,shoot:0.6,cal:0.6};return{k:'shoot',n:'เกิดยอด (Caulogenesis)',root:0,shoot:1,cal:0.25};}
+
+/* ======== UI ======== */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;S.running=false;S.sel=null;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));
+  $$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','ห้องแล็บผ่าโครงสร้างดอกและชนิดของผล','การสร้างเซลล์สืบพันธุ์ (Micro/Megasporogenesis) และการปฏิสนธิคู่','สถานีจำลองการงอกของเมล็ด','การขยายพันธุ์พืชแบบไม่อาศัยเพศและการเพาะเลี้ยงเนื้อเยื่อ'][m];
+  $('#chartTitle').textContent=['','แผนผังจำแนกชนิดผล','จำนวนชุดโครโมโซมของโครงสร้างต่าง ๆ','อัตราการงอก (%) vs อุณหภูมิ และความชื้น','อัตราส่วน Auxin : Cytokinin กับการเกิดอวัยวะ'][m];
+  methodUI();updateText();}
+function methodUI(){const m=$('#method').value;$('#tcBox').style.display=m==='tc'?'':'none';$('#rootHormBox').style.display=(m==='cut'||m==='layer')?'':'none';}
+const bind=(id,lab,fmt,cb)=>{const el=$('#'+id);const f=()=>{$('#'+lab).textContent=fmt(+el.value);cb&&cb();};el.addEventListener('input',()=>{f();updateText();});f();};
+bind('sp','spV',v=>v.toFixed(2).replace(/0$/,'')+'×');bind('water','wV',v=>v+' %');bind('oxy','oV',v=>v+' %');bind('temp','tV',v=>v+' °C');
+bind('aux','auxV',v=>v.toFixed(1)+' mg/L');bind('cyt','cytV',v=>v.toFixed(1)+' mg/L');
+$('#preset').onchange=()=>{const p=$('#preset').value;const v={bal:[2,1],aux:[5,0.2],cyt:[0.1,4]}[p];$('#aux').value=v[0];$('#cyt').value=v[1];$('#auxV').textContent=v[0].toFixed(1)+' mg/L';$('#cytV').textContent=v[1].toFixed(1)+' mg/L';M4.day=0;updateText();};
+$('#method').onchange=()=>{methodUI();M4.day=0;updateText();};
+$('#species').onchange=()=>{$('#fruit').value=SPFRUIT[$('#species').value];S.sel=null;initM3();updateText();};
+['ftype','fruit','cut','inflo','light','rootHorm'].forEach(id=>$('#'+id).onchange=()=>{S.sel=null;updateText();});
+$('#vFlower').onclick=()=>{S.view='flower';$('#vFlower').classList.add('on');$('#vFruit').classList.remove('on');$('#flowerSel').style.display='';$('#fruitSel').style.display='none';S.sel=null;updateText();};
+$('#vFruit').onclick=()=>{S.view='fruit';$('#vFruit').classList.add('on');$('#vFlower').classList.remove('on');$('#flowerSel').style.display='none';$('#fruitSel').style.display='';S.sel=null;updateText();};
+$('#tgN').onclick=()=>{S.toggle='n';$('#tgN').classList.add('on');$('#tgG').classList.remove('on');updateText();};
+$('#tgG').onclick=()=>{S.toggle='g';$('#tgG').classList.add('on');$('#tgN').classList.remove('on');updateText();};
+$('#play').onclick=()=>{S.running=true;if(S.mode===2&&M2.stage===12&&M2.prog>=1){M2.stage=0;M2.prog=0;}if(S.mode===3&&M3.day>=14)initM3();};
+$('#pause').onclick=()=>S.running=false;
+$('#step').onclick=()=>{S.running=false;if(S.mode===2){if(M2.stage<12){M2.stage++;M2.prog=0;}}else if(S.mode===3)m3Step(1);else if(S.mode===4)M4.day=Math.min(42,M4.day+7);updateText();};
+$('#reset').onclick=()=>{S.running=false;if(S.mode===2){M2.stage=0;M2.prog=0;}if(S.mode===3)initM3();if(S.mode===4)M4.day=0;S.sel=null;updateText();};
+$('#main').addEventListener('click',e=>{if(S.mode!==1)return;const c=$('#main'),r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const g=c.getContext('2d');const x=(e.clientX-r.left)*d,y=(e.clientY-r.top)*d;
+  g.save();g.setTransform(d,0,0,d,0,0);let f=null;for(let i=S.hits.length-1;i>=0;i--){if(g.isPointInPath(S.hits[i].p,x,y)){f=S.hits[i].k;break;}}g.restore();S.sel=f;updateText();});
+function stagebar(){$('#stagebar').innerHTML=ST2.map((n,i)=>`<span title="${n}" class="${i===M2.stage?'on':''}" data-i="${i}">${i+1}</span>`).join('');$$('#stagebar span').forEach(s=>s.onclick=()=>{M2.stage=+s.dataset.i;M2.prog=0;updateText();});}
+
+/* ======== UPDATE ======== */
+let accT=0;
+function update(dt){S.time+=dt;if(S.mode===2){M2.prog=Math.min(1,M2.prog+dt*0.5*(+$('#sp').value));if(S.running&&M2.prog>=1){if(M2.stage<12){M2.stage++;M2.prog=0;updateText();}else S.running=false;}}
+  if(S.running&&S.mode===3)m3Step(dt*0.9);
+  if(S.running&&S.mode===4){M4.day=Math.min(42,M4.day+dt*4);if(M4.day>=42)S.running=false;}
+  accT+=dt;if(accT>0.3){accT=0;if(S.running)updateText();}}
+
+/* ======== DRAW MODE 1 ======== */
+function addHit(k,p){S.hits.push({k,p});}
+function partStyle(g,k,fill){const sel=S.sel===k;let f=fill;if(S.toggle==='n'&&S.mode===1&&PART[k]){f=PART[k].p===1?'rgba(96,165,250,0.85)':fill;}g.fillStyle=f;g.strokeStyle=sel?'#fff':'rgba(0,0,0,0.45)';g.lineWidth=sel?3:1;}
+function drawFlower(g,cx,ry,s,type,small){const cut=$('#cut').checked;const supT=type==='sup'||type==='male'||type==='female'||type==='nopetal';
+  const hasP=type!=='nopetal',hasSt=type!=='female',hasPi=type!=='male';
+  let oy,attach;if(supT){oy=ry-34*s;attach=ry-4*s;}else if(type==='inf'){oy=ry+22*s;attach=ry-14*s;}else{oy=ry-4*s;attach=ry-24*s;}
+  const P=(k,fn,fill)=>{const p=new Path2D();fn(p);partStyle(g,k,fill);g.fill(p);g.stroke(p);if(!small)addHit(k,p);};
+  P('pedicel',p=>{p.rect(cx-7*s,ry+(type==='inf'?50:10)*s,14*s,90*s);},'#4d7c0f');
+  P('receptacle',p=>{if(type==='inf'){p.ellipse(cx,ry+20*s,40*s,42*s,0,0,Math.PI*2);}else p.ellipse(cx,ry+6*s,34*s,14*s,0,0,Math.PI*2);},'#65a30d');
+  if(type==='half')P('hyp',p=>{p.moveTo(cx-48*s,attach);p.quadraticCurveTo(cx-44*s,ry+22*s,cx,ry+24*s);p.quadraticCurveTo(cx+44*s,ry+22*s,cx+48*s,attach);p.lineTo(cx+40*s,attach);p.quadraticCurveTo(cx+36*s,ry+12*s,cx,ry+14*s);p.quadraticCurveTo(cx-36*s,ry+12*s,cx-40*s,attach);p.closePath();},'#84cc16');
+  [-1,1].forEach(sd=>{P('sepal',p=>{p.moveTo(cx+sd*30*s,attach);p.quadraticCurveTo(cx+sd*85*s,attach-5*s,cx+sd*95*s,attach-50*s);p.quadraticCurveTo(cx+sd*60*s,attach-25*s,cx+sd*22*s,attach-8*s);p.closePath();},'#16a34a');});
+  if(hasP)[-1,1].forEach(sd=>{P('petal',p=>{p.moveTo(cx+sd*26*s,attach-4*s);p.bezierCurveTo(cx+sd*150*s,attach-40*s,cx+sd*165*s,attach-170*s,cx+sd*110*s,attach-190*s);p.bezierCurveTo(cx+sd*80*s,attach-140*s,cx+sd*50*s,attach-60*s,cx+sd*18*s,attach-14*s);p.closePath();},'#f472b6');});
+  if(!cut&&hasP){g.globalAlpha=0.5;P('petal',p=>{p.moveTo(cx-20*s,attach-6*s);p.bezierCurveTo(cx-60*s,attach-200*s,cx+60*s,attach-200*s,cx+20*s,attach-6*s);p.closePath();},'#ec4899');g.globalAlpha=1;}
+  if(hasSt)[-1,1].forEach(sd=>{[0,1].forEach(j=>{const tx=cx+sd*(48+j*22)*s,ty=attach-(125-j*20)*s;
+    P('filament',p=>{p.moveTo(cx+sd*(18+j*6)*s,attach-6*s);p.quadraticCurveTo(cx+sd*(30+j*14)*s,attach-60*s,tx,ty);p.lineTo(tx+sd*3*s,ty+3*s);p.quadraticCurveTo(cx+sd*(33+j*14)*s,attach-58*s,cx+sd*(21+j*6)*s,attach-6*s);p.closePath();},'#fde68a');
+    P('anther',p=>{p.ellipse(tx,ty-8*s,7*s,14*s,sd*0.3,0,Math.PI*2);},'#eab308');});});
+  if(hasPi){const top=oy-30*s,sty=type==='inf'?attach-120*s:oy-140*s;
+    P('style',p=>{p.moveTo(cx-4*s,top+4*s);p.lineTo(cx-4*s,sty);p.lineTo(cx+4*s,sty);p.lineTo(cx+4*s,top+4*s);p.closePath();},'#a3e635');
+    P('stigma',p=>{p.ellipse(cx,sty-6*s,14*s,9*s,0,0,Math.PI*2);},'#84cc16');
+    P('ovary',p=>{p.ellipse(cx,oy,26*s,32*s,0,0,Math.PI*2);},'#bef264');
+    if(cut)for(let r2=0;r2<3;r2++)for(let c2=0;c2<2;c2++){P('ovule',p=>{p.ellipse(cx+(c2?9:-9)*s,oy-16*s+r2*15*s,5*s,6*s,0,0,Math.PI*2);},'#fef9c3');}}
+  return{oy,attach};}
+function drawM1(g,w,h){S.hits=[];if(S.view==='fruit'){drawFruit(g,w,h);return;}const type=$('#ftype').value;const s=Math.min(w/520,h/430);const cx=w*0.42,ry=h*0.7;
+  if($('#inflo').checked){T(g,'ดอกช่อ (Inflorescence): หลายดอกบนก้านช่อเดียวกัน',w/2,18,'#fbcfe8',13,'center',true);g.strokeStyle='#4d7c0f';g.lineWidth=6;g.beginPath();g.moveTo(w/2,h);g.lineTo(w/2,h*0.25);g.stroke();
+    [[-1,0.75],[1,0.62],[-1,0.48],[1,0.36],[0,0.22]].forEach(([sd,yy],i)=>{const x=w/2+sd*w*0.17,y=h*yy;g.strokeStyle='#4d7c0f';g.lineWidth=3;g.beginPath();g.moveTo(w/2,y+30);g.lineTo(x,y+14);g.stroke();drawFlower(g,x,y,s*0.3,type,true);});return;}
+  const r=drawFlower(g,cx,ry,s,type,false);
+  const lab=(k,x,y,tx,ty)=>{g.strokeStyle='rgba(255,255,255,0.4)';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(tx,ty);g.stroke();T(g,PART[k].n.split(' (')[0]+(S.toggle==='n'?' ('+PART[k].p+'n)':''),tx+(tx>x?4:-4),ty,S.sel===k?'#fff':'#e9d5ff',11.5,tx>x?'left':'right',S.sel===k);};
+  const R=cx+190*s,Lx=cx-190*s;
+  if(type!=='female'){lab('anther',cx+70*s,r.attach-125*s,R,r.attach-150*s);lab('filament',cx+50*s,r.attach-70*s,R,r.attach-100*s);}
+  if(type!=='male'){const sty=type==='inf'?r.attach-120*s:r.oy-140*s;lab('stigma',cx,sty-6*s,Lx,sty-20*s);lab('style',cx,(sty+r.oy)/2,Lx,(sty+r.oy)/2);lab('ovary',cx-20*s,r.oy,Lx,r.oy+10*s);lab('ovule',cx-9*s,r.oy,Lx,r.oy+30*s);}
+  if(type!=='nopetal')lab('petal',cx+110*s,r.attach-120*s,R,r.attach-60*s);
+  lab('sepal',cx+80*s,r.attach-30*s,R,r.attach-20*s);lab('receptacle',cx+30*s,ry+8*s,R,ry+20*s);
+  if(S.toggle==='g'&&type!=='male'){arrow(g,cx+30*s,r.oy,w-130,r.oy-40,'#facc15');T(g,'รังไข่ → ผล',w-125,r.oy-48,'#fde047',13,'left',true);arrow(g,cx+12*s,r.oy+6*s,w-130,r.oy+10,'#fb923c');T(g,'ออวุล → เมล็ด',w-125,r.oy+4,'#fdba74',13,'left',true);T(g,'ผนังออวุล → เปลือกเมล็ด',w-125,r.oy+24,'#fdba74',11);}
+  const posTxt={sup:'รังไข่เหนือวงกลีบ: วงกลีบติดอยู่ "ใต้" รังไข่',half:'รังไข่กึ่งใต้วงกลีบ: วงกลีบติดที่ขอบฐานดอกรูปถ้วย',inf:'รังไข่ใต้วงกลีบ: รังไข่ฝังในฐานรองดอก วงกลีบติด "เหนือ" รังไข่',male:'ดอกเพศผู้: ไม่มีเกสรเพศเมีย',female:'ดอกเพศเมีย: ไม่มีเกสรเพศผู้',nopetal:'ไม่มีกลีบดอก → ดอกไม่สมบูรณ์'}[type];
+  T(g,posTxt,14,18,'#fbcfe8',13,'left',true);if(S.toggle==='n')T(g,'สีฟ้า = โครงสร้างที่สร้างเซลล์/แกมีโทไฟต์ 1n',14,38,'#93c5fd',11.5);}
+function drawFruit(g,w,h){const k=$('#fruit').value,F=FRUIT[k];const cx=w*0.4,cy=h*0.52,R=Math.min(w,h)*0.3;const P=(key,fn,fill,stroke)=>{const p=new Path2D();fn(p);g.fillStyle=fill;g.strokeStyle=S.sel===key?'#fff':(stroke||'rgba(0,0,0,0.4)');g.lineWidth=S.sel===key?3:1;g.fill(p);g.stroke(p);addHit(key,p);};
+  T(g,F.n+' : '+F.type,14,18,'#fbcfe8',14,'left',true);T(g,'เกิดจาก: '+F.from,14,40,'#e9d5ff',12);
+  if(k==='mango'){P('exo',p=>p.ellipse(cx,cy,R*0.75,R,0.2,0,7),'#65a30d');P('meso',p=>p.ellipse(cx,cy,R*0.69,R*0.93,0.2,0,7),'#facc15');P('endo',p=>p.ellipse(cx,cy,R*0.38,R*0.6,0.2,0,7),'#d6d3d1');P('seed',p=>p.ellipse(cx,cy,R*0.28,R*0.5,0.2,0,7),'#fef3c7');}
+  else if(k==='pea'){P('pod',p=>{p.moveTo(cx-R*1.1,cy);p.quadraticCurveTo(cx,cy-R*0.8,cx+R*1.1,cy-R*0.1);p.quadraticCurveTo(cx,cy+R*0.5,cx-R*1.1,cy);},'#4ade80');for(let i=0;i<5;i++)P('seed',p=>p.arc(cx-R*0.7+i*R*0.35,cy-R*0.12+Math.sin(i)*3,R*0.13,0,7),'#a3e635');}
+  else if(k==='cornk'){P('peri',p=>p.ellipse(cx,cy,R*0.6,R*0.8,0,0,7),'#f59e0b');P('endo',p=>p.ellipse(cx,cy-R*0.08,R*0.52,R*0.66,0,0,7),'#fef3c7');P('emb',p=>p.ellipse(cx+R*0.22,cy+R*0.25,R*0.2,R*0.42,0.3,0,7),'#fde68a');}
+  else if(k==='straw'){P('rec',p=>{p.moveTo(cx,cy+R);p.bezierCurveTo(cx-R*1.2,cy+R*0.1,cx-R*0.8,cy-R*0.9,cx,cy-R*0.8);p.bezierCurveTo(cx+R*0.8,cy-R*0.9,cx+R*1.2,cy+R*0.1,cx,cy+R);},'#dc2626');
+    for(let i=0;i<40;i++){const a=hash(i)*Math.PI*2,d=Math.sqrt(hash(i+5))*0.75;const x=cx+Math.cos(a)*d*R*0.75,y=cy+Math.sin(a)*d*R*0.75;P('ach',p=>p.ellipse(x,y,3,5,a,0,7),'#fde047');}
+    g.fillStyle='#16a34a';for(let i=0;i<6;i++){g.beginPath();g.ellipse(cx+Math.cos(i)*20,cy-R*0.85,22,7,i,0,7);g.fill();}}
+  else if(k==='custard'){P('seg',p=>p.arc(cx,cy,R,0,7),'#86efac');for(let i=0;i<30;i++){const a=hash(i*2)*Math.PI*2,d=Math.sqrt(hash(i*3))*0.85;const x=cx+Math.cos(a)*d*R,y=cy+Math.sin(a)*d*R;P('seg',p=>p.arc(x,y,R*0.15,0,7),'#4ade80');if(i%4===0)P('seed',p=>p.ellipse(x,y,4,7,a,0,7),'#1c1917');}}
+  else if(k==='pine'||k==='jack'){P('core',p=>p.ellipse(cx,cy,R*0.7,R,0,0,7),k==='pine'?'#eab308':'#84cc16');
+    for(let r2=-4;r2<=4;r2++)for(let c2=-3;c2<=3;c2++){const x=cx+c2*R*0.2+(r2%2)*R*0.1,y=cy+r2*R*0.21;if(((x-cx)/(R*0.7))**2+((y-cy)/R)**2>0.85)continue;P(k==='pine'?'eye':'bulb',p=>{for(let a=0;a<6;a++){const xx=x+Math.cos(a*Math.PI/3)*R*0.1,yy=y+Math.sin(a*Math.PI/3)*R*0.1;a?p.lineTo(xx,yy):p.moveTo(xx,yy);}p.closePath();},k==='pine'?'#ca8a04':'#65a30d');}
+    P('core',p=>p.rect(cx-R*0.08,cy-R*0.7,R*0.16,R*1.4),'#fef3c7');
+    if(k==='pine')P('crown',p=>{for(let i=-3;i<=3;i++){p.moveTo(cx+i*6,cy-R*0.95);p.lineTo(cx+i*R*0.15,cy-R*1.5);p.lineTo(cx+i*6+8,cy-R*0.95);}},'#16a34a');else P('seed',p=>p.ellipse(cx+R*0.3,cy,8,12,0,0,7),'#a16207');}
+  else if(k==='apple'){P('flesh',p=>p.ellipse(cx,cy,R,R*0.9,0,0,7),'#fef3c7','#dc2626');g.strokeStyle='#dc2626';g.lineWidth=6;g.beginPath();g.ellipse(cx,cy,R,R*0.9,0,0,7);g.stroke();P('core',p=>p.ellipse(cx,cy,R*0.35,R*0.42,0,0,7),'#fde68a');for(let i=0;i<5;i++){const a=i/5*Math.PI*2;P('seed',p=>p.ellipse(cx+Math.cos(a)*R*0.2,cy+Math.sin(a)*R*0.22,5,9,a,0,7),'#78350f');}}
+  let y=h*0.22;Object.entries(F.parts).forEach(([pk,txt])=>{T(g,'• '+txt,w*0.68,y,S.sel===pk?'#fff':'#e9d5ff',12,'left',S.sel===pk);y+=24;});
+  if(S.toggle==='g')T(g,'ทิศทางการเจริญ: '+(k==='straw'||k==='apple'?'ฐานรองดอก → เนื้อผล (ผลเทียม)':k==='pine'||k==='jack'?'ช่อดอกหลายดอก → ผลรวม':'รังไข่ → ผล, ออวุล → เมล็ด'),14,h-16,'#fde047',12.5,'left',true);
+  S.fruitParts=F.parts;}
+
+/* ======== DRAW MODE 2 ======== */
+function cell(g,x,y,r,pl,opt={}){g.fillStyle=opt.fill||'rgba(236,72,153,0.15)';g.strokeStyle=opt.stroke||'#f9a8d4';g.lineWidth=1.5;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();if(pl)nuc(g,x,y,r*0.42,pl,opt.alpha);}
+function nuc(g,x,y,r,pl,alpha=1){const show=S.toggle==='n';g.globalAlpha=alpha;g.fillStyle=show?PC[pl]:'#a78bfa';g.beginPath();g.arc(x,y,r,0,7);g.fill();
+  if(show&&r>6){g.strokeStyle='#0f172a';g.lineWidth=2;for(let i=0;i<pl*2;i++){const a=i/(pl*2)*Math.PI*2;g.beginPath();g.moveTo(x+Math.cos(a)*r*0.2,y+Math.sin(a)*r*0.2);g.lineTo(x+Math.cos(a)*r*0.65,y+Math.sin(a)*r*0.65);g.stroke();}T(g,pl+'n',x,y+r+9,PC[pl],10.5,'center',true);}g.globalAlpha=1;}
+function pollen(g,x,y,r,gen2){g.fillStyle='#fde68a';g.strokeStyle='#ca8a04';g.lineWidth=2;g.beginPath();for(let i=0;i<=40;i++){const a=i/40*Math.PI*2,rr2=r+(i%2?3:0);g.lineTo(x+Math.cos(a)*rr2,y+Math.sin(a)*rr2);}g.fill();g.stroke();
+  nuc(g,x-r*0.25,y,r*0.3,1);if(!gen2){g.fillStyle='rgba(192,132,252,0.3)';g.beginPath();g.ellipse(x+r*0.35,y,r*0.32,r*0.2,0,0,7);g.fill();nuc(g,x+r*0.35,y,r*0.14,1);}else{nuc(g,x+r*0.3,y-r*0.2,r*0.13,1);nuc(g,x+r*0.3,y+r*0.25,r*0.13,1);}}
+function ovuleShape(g,cx,cy,W,H){g.fillStyle='#365314';g.beginPath();g.ellipse(cx,cy,W,H,0,0,7);g.fill();g.fillStyle='#4d7c0f';g.beginPath();g.ellipse(cx,cy,W*0.82,H*0.88,0,0,7);g.fill();g.fillStyle='#08070c';g.fillRect(cx-5,cy+H*0.8,10,H*0.25);
+  g.fillStyle='#65a30d';g.beginPath();g.ellipse(cx,cy-H*0.05,W*0.62,H*0.74,0,0,7);g.fill();T(g,'Micropyle',cx,cy+H+10,'#a3e635',10.5,'center');T(g,'Integument',cx+W+6,cy,'#a3e635',10.5);}
+function embryoSac(g,cx,cy,W,H,n,state){g.fillStyle='rgba(254,249,195,0.85)';g.beginPath();g.ellipse(cx,cy,W,H,0,0,7);g.fill();g.strokeStyle='#ca8a04';g.stroke();const r=Math.min(W,H)*0.16;
+  if(n===1)nuc(g,cx,cy,r*1.4,1);else if(n===2){nuc(g,cx,cy-H*0.5,r,1);nuc(g,cx,cy+H*0.5,r,1);}else if(n===4){[-1,1].forEach(e=>{nuc(g,cx-r*1.4,cy+e*H*0.55,r,1);nuc(g,cx+r*1.4,cy+e*H*0.55,r,1);});}
+  else{const lab=(t,x,y)=>T(g,t,x,y,'#1c1917',10,'center',true);
+    [-1,0,1].forEach(i=>{g.strokeStyle='#a16207';g.beginPath();g.arc(cx+i*W*0.3,cy-H*0.68,r*1.6,0,7);g.stroke();nuc(g,cx+i*W*0.3,cy-H*0.68,r*0.8,1);});lab('Antipodal ×3',cx,cy-H*0.38);
+    if(state==='fert'){nuc(g,cx,cy,r*1.25,3);lab('Endosperm nucleus',cx,cy+r*2.6);}else{nuc(g,cx-r*0.9,cy,r,1);nuc(g,cx+r*0.9,cy,r,1);lab('Polar nuclei ×2 (Central cell)',cx,cy+r*2.4);}
+    [-1,1].forEach(i=>{g.strokeStyle='#a16207';g.beginPath();g.ellipse(cx+i*W*0.32,cy+H*0.7,r*1.3,r*2,0,0,7);g.stroke();nuc(g,cx+i*W*0.32,cy+H*0.62,r*0.7,1,state==='fert'?0.3:1);});
+    g.strokeStyle='#be185d';g.beginPath();g.ellipse(cx,cy+H*0.62,r*1.6,r*2.1,0,0,7);g.stroke();if(state==='fert'){nuc(g,cx,cy+H*0.62,r*1.1,2);lab('Zygote',cx,cy+H*0.36);}else{nuc(g,cx,cy+H*0.62,r,1);lab('Egg cell',cx,cy+H*0.36);}lab('Synergid',cx-W*0.6,cy+H*0.9);}}
+function drawM2(g,w,h){const st=M2.stage,p=M2.prog;stagebar();
+  if(st<=8){const mx=w*0.25,fx=w*0.72,cy=h*0.5;g.strokeStyle='#352c45';g.beginPath();g.moveTo(w*0.48,20);g.lineTo(w*0.48,h-20);g.stroke();
+    T(g,'♂ อับเรณู (Microsporogenesis)',mx,18,'#fbcfe8',13,'center',true);T(g,'♀ ออวุล (Megasporogenesis)',fx,18,'#fbcfe8',13,'center',true);
+    g.fillStyle='rgba(234,179,8,0.12)';g.beginPath();g.ellipse(mx,cy,w*0.2,h*0.38,0,0,7);g.fill();g.strokeStyle='#ca8a04';g.stroke();
+    const ms=Math.min(st,3),mp=st>3?1:p;
+    if(ms===0)cell(g,mx,cy,48,2);
+    else if(ms===1){const d=mp*42;cell(g,mx-d,cy,36,null);cell(g,mx+d,cy,36,null);nuc(g,mx-d,cy,14,1);nuc(g,mx+d,cy,14,1);T(g,'(แต่ละเซลล์มีโครโมโซมชุดเดียว แต่ละแท่งยังมี 2 โครมาทิด)',mx,cy+80,'#c4b5fd',10.5,'center');}
+    else if(ms===2){const d=lerp(42,50,mp);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>cell(g,mx+a*d*0.8,cy+b*d*0.8,30,1));T(g,'Tetrad: 4 Microspores (1n)',mx,cy+100,'#bfdbfe',12,'center',true);}
+    else{[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b],i)=>{if(i===0&&mp>0.3)pollen(g,mx+a*45,cy+b*45,lerp(28,36,mp),false);else pollen(g,mx+a*45,cy+b*45,28,false);});T(g,'ละอองเรณู = Tube cell (ใหญ่) + Generative cell (เล็ก)',mx,cy+110,'#fde68a',11.5,'center',true);}
+    if(st>=4){ovuleShape(g,fx,cy,w*0.17,h*0.36);const W=w*0.08,H=h*0.22;
+      if(st===4)cell(g,fx,cy,32,2,{fill:'rgba(254,249,195,0.6)',stroke:'#ca8a04'});
+      else if(st===5){for(let i=0;i<4;i++){const y=cy-54+i*36;const dead=i<3&&p>0.4;cell(g,fx,y,16,1,{fill:dead?'rgba(120,113,108,0.3)':'rgba(254,249,195,0.7)',stroke:dead?'#57534e':'#ca8a04',alpha:dead?lerp(1,0.15,(p-0.4)/0.6):1});}T(g,'3 เซลล์สลาย เหลือ 1 Megaspore (1n)',fx,cy+H+38,'#fde68a',11,'center',true);}
+      else embryoSac(g,fx,cy,W*lerp(0.7,1,st===8?1:p),H*lerp(0.7,1,st===8?1:p),[0,0,0,0,0,0,2,4,8][st]);}
+    else T(g,'(กดขั้นถัดไปเพื่อเริ่มฝั่งเพศเมีย)',fx,cy,'#6b5b80',12,'center');
+    T(g,'ขั้นที่ '+(st+1)+': '+ST2[st],w/2,h-14,'#fff',13.5,'center',true);return;}
+  // pistil view
+  const cx=w*0.42,top=40,ovY=h*0.72;g.fillStyle='#4d7c0f';g.beginPath();g.moveTo(cx-14,top+20);g.lineTo(cx-10,ovY-90);g.quadraticCurveTo(cx-120,ovY-60,cx-110,ovY+20);g.quadraticCurveTo(cx-90,ovY+110,cx,ovY+110);g.quadraticCurveTo(cx+90,ovY+110,cx+110,ovY+20);g.quadraticCurveTo(cx+120,ovY-60,cx+10,ovY-90);g.lineTo(cx+14,top+20);g.closePath();
+  const fr=st===12?p:0;g.fillStyle=st===12?`rgb(${Math.round(lerp(77,234,fr))},${Math.round(lerp(124,88,fr))},${Math.round(lerp(15,12,fr))})`:'#4d7c0f';g.fill();
+  g.fillStyle='#84cc16';g.beginPath();g.ellipse(cx,top+16,34,14,0,0,7);g.fill();T(g,'Stigma',cx+40,top+16,'#d9f99d',11);T(g,'Style',cx+18,top+110,'#d9f99d',11);T(g,st===12?'รังไข่ → ผล':'Ovary',cx+118,ovY-50,st===12?'#fde047':'#d9f99d',12,'left',st===12);
+  const ox=cx+10,oyc=ovY+20,OW=56,OH=72;g.fillStyle=st===12?'#a16207':'#365314';g.beginPath();g.ellipse(ox,oyc,OW,OH,0,0,7);g.fill();g.fillStyle='#4d7c0f';g.beginPath();g.ellipse(ox,oyc,OW*0.84,OH*0.9,0,0,7);g.fill();
+  const mic={x:ox,y:oyc+OH};
+  if(st<12)embryoSac(g,ox,oyc-4,OW*0.6,OH*0.66,8,st===11&&p>0.6?'fert':st>11?'fert':'normal');
+  else{g.fillStyle='rgba(254,243,199,'+lerp(0.5,0.95,p)+')';g.beginPath();g.ellipse(ox,oyc,OW*0.75,OH*0.8,0,0,7);g.fill();T(g,'Endosperm (3n)',ox,oyc-OH*0.45,S.toggle==='n'?PC[3]:'#78350f',11,'center',true);
+    const es=lerp(6,22,p);g.fillStyle=S.toggle==='n'?PC[2]:'#a3e635';g.beginPath();g.ellipse(ox,oyc+OH*0.35,es*0.8,es,0,0,7);g.fill();T(g,'Embryo (2n)',ox+es+30,oyc+OH*0.35,S.toggle==='n'?PC[2]:'#d9f99d',11,'left',true);
+    T(g,'ออวุล → เมล็ด  |  Integument → เปลือกเมล็ด',ox,oyc+OH+22,'#fdba74',12,'center',true);}
+  // pollen tube path
+  const path=t=>{if(t<0.15)return{x:cx-4,y:lerp(top+16,top+60,t/0.15)};if(t<0.7)return{x:cx-4+Math.sin(t*8)*3,y:lerp(top+60,ovY-80,(t-0.15)/0.55)};const u=(t-0.7)/0.3;const a=Math.PI*(1-u)*0.9+0.2;return{x:lerp(cx-60,mic.x,u)+Math.cos(a)*0,y:lerp(ovY-80,mic.y,u)};};
+  pollen(g,cx-4,top+8,13,st>=10);
+  const tl=st===9?p:1;g.strokeStyle='#fde68a';g.lineWidth=4;g.beginPath();for(let i=0;i<=60;i++){const t=i/60*tl;let q=path(t);if(t>0.7){const u=(t-0.7)/0.3;q={x:lerp(cx-4,mic.x-OW-10,Math.sin(u*Math.PI))+ (u>0.5?lerp(0,OW+10,(u-0.5)*2):0),y:lerp(ovY-80,mic.y+12,u)};}i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y);}g.stroke();
+  if(st===9)T(g,'Tube cell สร้างหลอดเรณูแทงลงไปตาม Style',w*0.78,h*0.3,'#fde68a',12,'center',true);
+  if(st===10){const u=p;const y=lerp(top+30,mic.y+10,u);const x=u<0.7?cx-4:lerp(cx-4,mic.x,(u-0.7)/0.3);nuc(g,x-5,y,6,1);nuc(g,x+5,y+10,6,1);T(g,'2 Sperm nuclei (1n) เคลื่อนลงหลอดเรณู → Micropyle',w*0.78,h*0.3,'#93c5fd',12,'center',true);}
+  if(st===11&&p<0.6){const u=p/0.6;nuc(g,lerp(mic.x,ox,u),lerp(mic.y,oyc-4+OH*0.66*0.62,u),6,1);nuc(g,lerp(mic.x,ox,u),lerp(mic.y,oyc-4,u),6,1);}
+  if(st>=11){const bx=w*0.62,by=h*0.18;rr(g,bx,by,w*0.36,96,10);g.fillStyle='rgba(0,0,0,0.6)';g.fill();T(g,'Sperm 1 (1n) + Egg (1n) → Zygote (2n)',bx+10,by+22,PC[2],12.5,'left',true);T(g,'Sperm 2 (1n) + Polar nuclei (1n+1n)',bx+10,by+48,PC[3],12.5,'left',true);T(g,'   → Primary endosperm nucleus (3n)',bx+10,by+70,PC[3],12.5,'left',true);}
+  T(g,'ขั้นที่ '+(st+1)+': '+ST2[st],w/2,h-12,'#fff',13.5,'center',true);}
+
+/* ======== DRAW MODE 3 ======== */
+function drawM3(g,w,h){const spk=$('#species').value,sp=SPG[spk];const soilY=h*0.42;const W=+$('#water').value,L=$('#light').checked;
+  g.fillStyle=L?'#1e3a5f':'#0b1020';g.fillRect(0,0,w,soilY);if(L){g.fillStyle='#fde047';g.beginPath();g.arc(w-60,40,22,0,7);g.fill();}
+  const wet=W/100;g.fillStyle=`rgb(${Math.round(lerp(150,70,wet))},${Math.round(lerp(110,55,wet))},${Math.round(lerp(70,35,wet))})`;g.fillRect(0,soilY,w,h-soilY);
+  for(let i=0;i<120;i++){g.fillStyle='rgba(0,0,0,0.15)';g.fillRect(hash(i)*w,soilY+hash(i+3)*(h-soilY),3,2);}
+  if(W>90){g.fillStyle='rgba(59,130,246,0.25)';g.fillRect(0,soilY,w,h-soilY);T(g,'ดินแฉะน้ำขัง → ขาดออกซิเจน',12,soilY+16,'#bfdbfe',12,'left',true);}
+  const D=M3.dev;const cx=w*0.36,sy=soilY+70;const swell=1+0.3*clamp(D/0.25,0,1);
+  const rad=clamp((D-0.35)/0.65,0,1);if(rad>0){g.strokeStyle='#fef3c7';g.lineWidth=4;g.beginPath();g.moveTo(cx,sy+10);g.bezierCurveTo(cx+5,sy+40,cx-8,sy+80*rad,cx+3,sy+20+140*rad);g.stroke();for(let i=0;i<8*rad;i++){const yy=sy+40+i*14;g.lineWidth=1.5;g.beginPath();g.moveTo(cx,yy);g.lineTo(cx+(i%2?-1:1)*20*rad,yy+10);g.stroke();}T(g,'Radicle → ราก',cx+20,sy+20+140*rad,'#fef3c7',11);}
+  const sh=clamp((D-0.5)/0.6,0,1);const shootTop=lerp(sy-10,soilY-110,sh);
+  if(sp.epi){if(sh>0){g.strokeStyle='#bbf7d0';g.lineWidth=5;g.beginPath();g.moveTo(cx,sy);const hook=sh<0.6;if(hook){g.quadraticCurveTo(cx+10,lerp(sy,shootTop,0.5),cx,shootTop);g.quadraticCurveTo(cx-14,shootTop-10,cx-18,shootTop+12);}else{g.lineTo(cx,shootTop);}g.stroke();T(g,hook?'Hypocotyl โค้งงอ (hook) ดันขึ้น':'Hypocotyl ยืดตัว ดึงใบเลี้ยงขึ้นเหนือดิน',cx+18,lerp(sy,shootTop,0.5),'#bbf7d0',11);}
+    const cotY=sh>0.6?shootTop:sy;const cotX=sh>0.6?cx:cx;g.fillStyle=sh>0.6?'#4ade80':'#fef3c7';[-1,1].forEach(sd=>{g.beginPath();g.ellipse(cotX+sd*14*swell,cotY,16*swell,10*swell,sd*0.3,0,7);g.fill();});if(sh>0.6)T(g,'ใบเลี้ยง (Cotyledon) อยู่เหนือดิน → Epigeal',cx+40,cotY-10,'#86efac',11.5,'left',true);
+    if(sh>0.85){g.strokeStyle='#4ade80';g.lineWidth=3;g.beginPath();g.moveTo(cx,shootTop);g.lineTo(cx,shootTop-30);g.stroke();g.fillStyle='#22c55e';g.beginPath();g.ellipse(cx-12,shootTop-34,13,6,-0.5,0,7);g.ellipse(cx+12,shootTop-34,13,6,0.5,0,7);g.fill();T(g,'Epicotyl + ใบแท้',cx+20,shootTop-34,'#86efac',11);}}
+  else{g.fillStyle='#fde68a';g.beginPath();g.ellipse(cx,sy,20*swell,26*swell,0,0,7);g.fill();g.fillStyle='#fef9c3';g.beginPath();g.ellipse(cx-4,sy-3,14*swell,18*swell,0,0,7);g.fill();T(g,'Endosperm + Scutellum อยู่ใต้ดิน → Hypogeal',cx+30,sy+4,'#fde68a',11.5,'left',true);
+    if(sh>0){g.strokeStyle='#d9f99d';g.lineWidth=6;g.beginPath();g.moveTo(cx+4,sy-20);g.lineTo(cx+4,shootTop);g.stroke();T(g,sh<0.75?'Coleoptile ห่อหุ้มยอดอ่อน ดันผ่านดิน':'Coleoptile',cx+14,lerp(sy,shootTop,0.6),'#d9f99d',11);if(sh>0.75){g.fillStyle='#22c55e';g.beginPath();g.moveTo(cx+4,shootTop);g.quadraticCurveTo(cx+30,shootTop-50,cx+10,shootTop-80);g.quadraticCurveTo(cx+10,shootTop-30,cx+4,shootTop);g.fill();T(g,'ใบแท้แรก',cx+32,shootTop-50,'#86efac',11);}}}
+  if(D>0.25&&D<0.45){g.strokeStyle='#78350f';g.lineWidth=2;g.beginPath();g.moveTo(cx-6,sy-18);g.lineTo(cx+2,sy-4);g.lineTo(cx-4,sy+10);g.stroke();T(g,'เปลือกเมล็ดปริ',cx-30,sy-28,'#fdba74',11,'right');}
+  if(D<0.3&&W>=20){for(let i=0;i<6;i++){const a=S.time*2+i;const r=40-((S.time*20+i*7)%30);g.fillStyle='#60a5fa';g.beginPath();g.arc(cx+Math.cos(a)*r,sy+Math.sin(a)*r,2.5,0,7);g.fill();}T(g,'Imbibition: เมล็ดดูดน้ำ พองตัว → กระตุ้นเอนไซม์ Amylase',cx,sy+60,'#93c5fd',11.5,'center',true);}
+  // tray
+  const tx=w*0.66,ty=soilY+20,tw=w*0.31,th2=h-soilY-40;rr(g,tx,ty,tw,th2,10);g.fillStyle='rgba(15,23,42,0.75)';g.fill();T(g,'ถาดทดลอง 50 เมล็ด',tx+tw/2,ty+14,'#e2e8f0',11.5,'center',true);
+  M3.seeds.forEach((s,i)=>{const col=i%10,row=Math.floor(i/10);const x=tx+14+col*(tw-28)/9,y=ty+38+row*(th2-56)/4;g.fillStyle=s.gday!==null?'#4ade80':'#d6d3d1';g.beginPath();g.ellipse(x,y,5,4,0,0,7);g.fill();if(s.gday!==null){g.strokeStyle='#bbf7d0';g.beginPath();g.moveTo(x,y);g.lineTo(x,y-clamp(s.dev-0.4,0,1)*18-3);g.stroke();}});
+  T(g,'วันที่ '+M3.day.toFixed(1)+' / 14',14,18,'#fff',14,'left',true);T(g,sp.n+(sp.light==='need'?' – เมล็ดต้องการแสง':''),14,38,'#fbcfe8',12);}
+
+/* ======== DRAW MODE 4 ======== */
+function drawM4(g,w,h){const m=$('#method').value,t=M4.day/42;T(g,'วันที่ '+Math.floor(M4.day)+' / 42',14,18,'#fff',14,'left',true);
+  if(m==='tc'){const o=outcome(ratio());const fx=w*0.38,fy=h*0.58;
+    g.strokeStyle='rgba(226,232,240,0.7)';g.lineWidth=3;g.beginPath();g.moveTo(fx-30,fy-170);g.lineTo(fx-30,fy-110);g.lineTo(fx-110,fy+120);g.quadraticCurveTo(fx,fy+150,fx+110,fy+120);g.lineTo(fx+30,fy-110);g.lineTo(fx+30,fy-170);g.stroke();
+    g.fillStyle='#fef3c7';g.fillRect(fx-36,fy-186,72,18);T(g,'จุกสำลี/ฝาปิดปลอดเชื้อ',fx+44,fy-178,'#94a3b8',10.5);
+    g.fillStyle='rgba(254,240,138,0.45)';g.beginPath();g.moveTo(fx-88,fy+60);g.lineTo(fx-110,fy+120);g.quadraticCurveTo(fx,fy+150,fx+110,fy+120);g.lineTo(fx+88,fy+60);g.closePath();g.fill();T(g,'อาหารวุ้น MS + ฮอร์โมน',fx,fy+105,'#78350f',11,'center',true);
+    const cal=o.cal*clamp(t*2,0,1);const base=fy+58;g.fillStyle='#d9f99d';g.fillRect(fx-18,base-6,36,8);
+    if(cal>0){g.fillStyle='#ecfccb';for(let i=0;i<14;i++){const a=hash(i)*Math.PI,r=12+cal*36*hash(i+2);g.beginPath();g.arc(fx+Math.cos(a)*r*0.9-0,base-Math.sin(a)*r*0.55,6+cal*8,0,7);g.fill();}T(g,'Callus',fx+70,base-30,'#ecfccb',12,'left',true);}
+    const sg=o.shoot*clamp((t-0.25)/0.75,0,1);for(let i=0;i<Math.ceil(sg*7);i++){const x=fx-40+i*14,len=20+sg*90*hash(i+9);g.strokeStyle='#22c55e';g.lineWidth=3;g.beginPath();g.moveTo(x,base-10);g.quadraticCurveTo(x+6,base-len/2,x+(hash(i)-0.5)*20,base-len);g.stroke();g.fillStyle='#4ade80';g.beginPath();g.ellipse(x+(hash(i)-0.5)*20-6,base-len,8,4,-0.6,0,7);g.ellipse(x+(hash(i)-0.5)*20+6,base-len+6,8,4,0.6,0,7);g.fill();}
+    if(sg>0)T(g,'ยอด (Shoot)',fx+70,base-90,'#86efac',12,'left',true);
+    const rg=o.root*clamp((t-0.2)/0.8,0,1);for(let i=0;i<Math.ceil(rg*10);i++){const x=fx-30+i*7,len=10+rg*55*hash(i+4);g.strokeStyle='#f8fafc';g.lineWidth=1.8;g.beginPath();g.moveTo(x,base);g.bezierCurveTo(x+5,base+len*0.3,x-6,base+len*0.6,x+(hash(i)-0.5)*16,base+len);g.stroke();}
+    if(rg>0)T(g,'ราก (Root)',fx+70,base+30,'#f8fafc',12,'left',true);
+    const r=ratio();T(g,'Auxin : Cytokinin = '+(isFinite(r)?r.toFixed(2):'∞')+'  →  '+o.n,w/2,h-16,'#facc15',13.5,'center',true);
+    const steps=['1. เลือกชิ้นส่วน (Explant) & ฟอกฆ่าเชื้อ','2. วางบนอาหารวุ้น MS ปลอดเชื้อ','3. เกิด Callus / ยอด / ราก ตามฮอร์โมน','4. ย้ายลงอาหารเร่งราก','5. ย้ายออกปลูก (Acclimatization)'];const si=Math.min(4,Math.floor(t*5));steps.forEach((s,i)=>T(g,s,w*0.66,60+i*26,i===si?'#facc15':'#a89cbd',12,'left',i===si));
+    T(g,'ข้อดี: ได้ต้นจำนวนมาก ลักษณะเหมือนต้นแม่ (Clone) ปลอดโรค',w*0.66,60+5*26+10,'#86efac',11.5);}
+  else if(m==='cut'||m==='layer'){const rh=$('#rootHorm').checked;const rg=clamp((t-(rh?0.15:0.35))/(rh?0.6:0.65),0,1);const soilY=h*0.62;
+    if(m==='cut'){g.fillStyle='#78350f';g.fillRect(w*0.2,soilY,w*0.35,h-soilY-20);g.strokeStyle='#65a30d';g.lineWidth=8;g.beginPath();g.moveTo(w*0.37,soilY+70);g.lineTo(w*0.37,soilY-140);g.stroke();
+      g.fillStyle='#22c55e';[[-1,-110],[1,-80],[-1,-50]].forEach(([sd,y])=>{g.beginPath();g.ellipse(w*0.37+sd*24,soilY+y,22,9,sd*0.4,0,7);g.fill();});
+      for(let i=0;i<Math.ceil(rg*12);i++){g.strokeStyle='#fef3c7';g.lineWidth=2;g.beginPath();g.moveTo(w*0.37,soilY+40+i*2);g.quadraticCurveTo(w*0.37+(i%2?-1:1)*30*rg,soilY+60+i*3,w*0.37+(i%2?-1:1)*(15+50*rg*hash(i)),soilY+70+rg*60*hash(i+3));g.stroke();}
+      T(g,'ตัดกิ่ง → '+(rh?'จุ่มฮอร์โมนออกซิน → ':'')+'ปักลงวัสดุชื้น → เกิดรากพิเศษ (Adventitious root)',w/2,40,'#fbcfe8',13,'center',true);}
+    else{const by=h*0.4;g.strokeStyle='#78350f';g.lineWidth=14;g.beginPath();g.moveTo(40,by+60);g.lineTo(w-60,by-40);g.stroke();const mx=w*0.48,my=by+60+(by-40-by-60)*((mx-40)/(w-100));
+      g.fillStyle='#854d0e';g.beginPath();g.ellipse(mx,my,42,48,0,0,7);g.fill();T(g,'ตุ้มขุยมะพร้าวชื้นหุ้มด้วยพลาสติก',mx,my+68,'#fde68a',11.5,'center');
+      for(let i=0;i<Math.ceil(rg*14);i++){const a=hash(i)*Math.PI*2;g.strokeStyle='#fef3c7';g.lineWidth=1.8;g.beginPath();g.moveTo(mx,my);g.lineTo(mx+Math.cos(a)*36*rg,my+Math.sin(a)*40*rg);g.stroke();}
+      T(g,'ควั่นเปลือกออก (ตัดท่อโฟลเอ็ม) → อาหาร/ออกซินสะสมเหนือรอยควั่น → เกิดราก → ตัดไปปลูก',w/2,30,'#fbcfe8',12.5,'center',true);}
+    T(g,'การเกิดราก: '+Math.round(rg*100)+' %',w/2,h-16,'#facc15',13.5,'center',true);}
+  else if(m==='graft'){const j=clamp(t*1.5,0,1);const x=w*0.42,y=h*0.6;g.fillStyle='#78350f';g.fillRect(x-60,y+70,120,h-y-80);
+    g.strokeStyle='#65a30d';g.lineWidth=12;g.beginPath();g.moveTo(x-30,y+90);g.lineTo(x-30,y-120);g.stroke();g.strokeStyle='#4d7c0f';g.beginPath();g.moveTo(x+lerp(60,30,j)+0,y+120);g.lineTo(x+lerp(60,30,j),y-30);g.lineTo(x+lerp(60,30,j)-10,y-160);g.stroke();
+    g.fillStyle='rgba(250,204,21,0.6)';g.fillRect(x-40,y-60,lerp(110,80,j),26);T(g,'รอยทาบ (พันพลาสติก)',x+80,y-47,'#fde68a',11.5);
+    T(g,'ต้นตอ (Stock): ระบบรากแข็งแรง',x-40,y+130,'#bef264',12,'right');T(g,'กิ่งพันธุ์ดี (Scion): ผลดก รสดี',x+50,y-170,'#bef264',12);
+    T(g,j>=1?'แคมเบียมเชื่อมกันสนิท → ตัดยอดต้นตอ/ตัดกิ่งพันธุ์ดีจากต้นแม่':'กำลังเชื่อมเนื้อเยื่อเจริญ (Vascular cambium)',w/2,h-16,'#facc15',13.5,'center',true);}
+  else{const items=[['เหง้า (Rhizome)','ขิง ข่า ขมิ้น','#ca8a04'],['หัว (Tuber)','มันฝรั่ง – มีตา (bud)','#a16207'],['หัวกลีบ (Bulb)','หอม กระเทียม','#e9d5ff'],['หัวแบบ Corm','เผือก แห้ว','#92400e'],['ไหล (Runner/Stolon)','สตรอเบอร์รี่ บัวบก','#22c55e']];
+    const cw=(w-40)/items.length;items.forEach((it,i)=>{const x=20+i*cw+cw/2,y=h*0.5,gr=clamp(t*1.4-i*0.1,0,1);g.fillStyle='#3f2a14';g.fillRect(20+i*cw+4,y,cw-8,h*0.3);
+      g.fillStyle=it[2];if(i===0){g.beginPath();g.ellipse(x,y+30,cw*0.38,14,0,0,7);g.fill();}else if(i===1){g.beginPath();g.ellipse(x,y+40,cw*0.25,cw*0.18,0,0,7);g.fill();}else if(i===2){for(let k=0;k<5;k++){g.beginPath();g.ellipse(x,y+40-k*4,cw*0.22-k*5,cw*0.18-k*3,0,0,7);g.globalAlpha=0.7;g.fill();}g.globalAlpha=1;}else if(i===3){g.beginPath();g.arc(x,y+40,cw*0.2,0,7);g.fill();}else{g.strokeStyle=it[2];g.lineWidth=3;g.beginPath();g.moveTo(x-cw*0.35,y-4);g.lineTo(x+cw*0.35,y-4);g.stroke();}
+      g.strokeStyle='#4ade80';g.lineWidth=3;g.beginPath();g.moveTo(x+(i===4?cw*0.3:0),y+(i===4?-4:20));g.lineTo(x+(i===4?cw*0.3:0),y-60*gr);g.stroke();if(gr>0.5){g.fillStyle='#22c55e';g.beginPath();g.ellipse(x+(i===4?cw*0.3:0)-8,y-60*gr,9,4,-0.5,0,7);g.fill();}
+      T(g,it[0],x,h*0.86,'#fbcfe8',11.5,'center',true);T(g,it[1],x,h*0.86+18,'#a89cbd',10.5,'center');});
+    T(g,'ลำต้น/ส่วนสะสมอาหารมีตา (Node/Bud) จึงงอกเป็นต้นใหม่ได้ → ลูกมีพันธุกรรมเหมือนต้นแม่',w/2,30,'#fbcfe8',12.5,'center',true);}}
+
+/* ======== RIGHT CHART ======== */
+function axes(g,x,y,w,h,xl,yl){g.strokeStyle='#6b5b80';g.beginPath();g.moveTo(x,y);g.lineTo(x,y+h);g.lineTo(x+w,y+h);g.stroke();T(g,xl,x+w/2,y+h+22,'#a89cbd',10.5,'center');g.save();g.translate(x-30,y+h/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#a89cbd',10.5,'center');g.restore();}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const nodes=[['ผล (Fruit)',0.5,0.1],['ผลเดี่ยว\n1 ดอก 1 รังไข่',0.17,0.45],['ผลกลุ่ม\n1 ดอก หลายรังไข่',0.5,0.45],['ผลรวม\nหลายดอก (ช่อดอก)',0.83,0.45]];const ex=[['มะม่วง ถั่ว ข้าวโพด',0.17],['สตรอเบอร์รี่ น้อยหน่า',0.5],['สับปะรด ขนุน',0.83]];
+    const k=S.view==='fruit'?$('#fruit').value:SPFRUIT[$('#species').value];const cur=['straw','custard'].includes(k)?2:['pine','jack'].includes(k)?3:1;
+    nodes.forEach((n,i)=>{const x=n[1]*w,y=n[2]*h;if(i>0){g.strokeStyle='#6b5b80';g.beginPath();g.moveTo(w/2,0.1*h+14);g.lineTo(x,y-22);g.stroke();}rr(g,x-w*0.15,y-20,w*0.3,40,8);g.fillStyle=i===cur?'#9d174d':'#201b2b';g.fill();g.strokeStyle='#f472b6';g.stroke();n[0].split('\n').forEach((l,j)=>T(g,l,x,y-7+j*14,'#fff',i?10.5:12,'center',j===0));});
+    ex.forEach((e,i)=>{T(g,e[0],e[1]*w,h*0.62,'#d8b4fe',10.5,'center');});
+    rr(g,w*0.15,h*0.72,w*0.7,40,8);g.fillStyle=['apple','straw'].includes(k)?'#9d174d':'#201b2b';g.fill();g.strokeStyle='#f472b6';g.stroke();T(g,'ผลเทียม (Accessory): เนื้อมาจากส่วนอื่นที่ไม่ใช่รังไข่',w/2,h*0.72+13,'#fff',10.5,'center',true);T(g,'เช่น ฐานรองดอก – สตรอเบอร์รี่ แอปเปิล',w/2,h*0.72+28,'#d8b4fe',10,'center');return;}
+  if(m===2){const items=[['Microspore MC',2],['Microspore',1],['Tube/Generative cell',1],['Sperm',1],['Megaspore MC',2],['Egg / Synergid / Antipodal',1],['Polar nuclei (แต่ละอัน)',1],['Zygote / Embryo',2],['Endosperm',3],['Integument / เปลือกเมล็ด',2],['ผนังรังไข่ / เปลือกผล',2]];
+    const x=150,cw=w-170,bh=(h-20)/items.length;items.forEach((it,i)=>{const y=10+i*bh;T(g,it[0],x-6,y+bh/2,'#e9d5ff',10.5,'right');g.fillStyle=PC[it[1]];g.fillRect(x,y+2,cw*it[1]/3,bh-4);T(g,it[1]+'n',x+cw*it[1]/3+4,y+bh/2,PC[it[1]],10.5,'left',true);});return;}
+  if(m===3){const spk=$('#species').value,W=+$('#water').value,O=+$('#oxy').value,L=$('#light').checked,Tc=+$('#temp').value;const x=40,cw=w-56,hh=(h-60)/2;
+    [[0,'อุณหภูมิ (°C)',0,50,v=>predictPct(spk,v,W,O,L),Tc,'#fb923c'],[1,'ความชื้น (%)',0,100,v=>predictPct(spk,Tc,v,O,L),W,'#60a5fa']].forEach(([i,lab,a,b,f,cur,col])=>{const y=10+i*(hh+30);axes(g,x,y,cw,hh,lab,'% งอก');
+      g.strokeStyle=col;g.lineWidth=2;g.beginPath();for(let k=0;k<=50;k++){const v=lerp(a,b,k/50);const X=x+k/50*cw,Y=y+hh-f(v)/100*hh;k?g.lineTo(X,Y):g.moveTo(X,Y);}g.stroke();
+      const X=x+(cur-a)/(b-a)*cw,Y=y+hh-f(cur)/100*hh;g.fillStyle='#fff';g.beginPath();g.arc(X,Y,4,0,7);g.fill();T(g,f(cur).toFixed(0)+'%',X+6,Y-8,'#fff',10.5);[a,b].forEach((v,j)=>T(g,v,x+j*cw,y+hh+9,'#6b5b80',9.5,'center'));});return;}
+  if(m===4){const x=20,cw=w-40,y=40,bh=40;const zones=[[0.01,0.1,'ยอด','#22c55e'],[0.1,1,'ยอด+Callus','#84cc16'],[1,5,'Callus','#fef3c7'],[5,10,'ราก+Callus','#e7e5e4'],[10,100,'ราก','#f8fafc']];const X=v=>x+(Math.log10(v)+2)/4*cw;
+    zones.forEach(z=>{g.fillStyle=z[3];g.globalAlpha=0.7;g.fillRect(X(z[0]),y,X(z[1])-X(z[0]),bh);g.globalAlpha=1;T(g,z[2],(X(z[0])+X(z[1]))/2,y+bh/2,'#1c1917',10.5,'center',true);});
+    [0.01,0.1,1,10,100].forEach(v=>T(g,v,X(v),y+bh+12,'#a89cbd',10,'center'));T(g,'อัตราส่วน [Auxin]/[Cytokinin] (สเกล log)',w/2,y+bh+30,'#a89cbd',11,'center');
+    const r=ratio();const rv=clamp(isFinite(r)?r:100,0.01,100);g.fillStyle='#f472b6';g.beginPath();g.moveTo(X(rv),y-4);g.lineTo(X(rv)-7,y-16);g.lineTo(X(rv)+7,y-16);g.fill();T(g,'ปัจจุบัน',X(rv),y-24,'#f472b6',10.5,'center',true);
+    T(g,'Auxin สูง → กระตุ้นการเกิดราก',x,y+bh+60,'#e7e5e4',11.5);T(g,'Cytokinin สูง → กระตุ้นการแบ่งเซลล์และการเกิดยอด',x,y+bh+80,'#86efac',11.5);T(g,'สัดส่วนใกล้เคียงกัน → เซลล์แบ่งตัวไม่จำเพาะ (Callus)',x,y+bh+100,'#fef3c7',11.5);}}
+
+/* ======== TEXT ======== */
+function stats(a){$('#stats').innerHTML=a.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const DF='Sperm 1 (1n) + Egg (1n) = Zygote (2n) ──Mitosis──▶ Embryo (2n)\nSperm 2 (1n) + Polar Nuclei (1n+1n) = Primary Endosperm Nucleus (3n) ──Mitosis──▶ Endosperm (3n)';
+const TRANS='<table><tr><th>ส่วนของดอก</th><th>เจริญเป็น</th></tr><tr><td>รังไข่ (Ovary)</td><td>ผล (Fruit)</td></tr><tr><td>ผนังรังไข่ (Ovary wall)</td><td>เปลือกผล (Pericarp)</td></tr><tr><td>ออวุล (Ovule)</td><td>เมล็ด (Seed)</td></tr><tr><td>Integument</td><td>เปลือกเมล็ด (Seed coat)</td></tr><tr><td>Zygote (2n)</td><td>เอ็มบริโอ (2n)</td></tr><tr><td>Primary endosperm nucleus (3n)</td><td>เอนโดสเปิร์ม (3n)</td></tr><tr><td>กลีบเลี้ยง กลีบดอก เกสรเพศผู้</td><td>มักเหี่ยวหลุดร่วง</td></tr></table>';
+const DICOT='<table><tr><th>ลักษณะ</th><th>ใบเลี้ยงคู่ (ถั่ว)</th><th>ใบเลี้ยงเดี่ยว (ข้าวโพด)</th></tr><tr><td>ส่วนของดอก</td><td>จำนวน 4 หรือ 5 หรือทวีคูณ</td><td>จำนวน 3 หรือทวีคูณ</td></tr><tr><td>ใบเลี้ยง</td><td>2 ใบ สะสมอาหาร</td><td>1 ใบ (Scutellum)</td></tr><tr><td>อาหารสะสม</td><td>ใบเลี้ยง (เอนโดสเปิร์มถูกใช้ไปตอนเจริญ)</td><td>เอนโดสเปิร์ม</td></tr><tr><td>ปกป้องยอดอ่อน</td><td>Hypocotyl โค้งเป็นตะขอ</td><td>Coleoptile</td></tr><tr><td>รูปแบบการงอก</td><td>Epigeal (ส่วนใหญ่)</td><td>Hypogeal</td></tr><tr><td>ระบบราก</td><td>รากแก้ว</td><td>รากฝอย</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const sp=$('#species').value;const type=$('#ftype').value;const info=S.view==='fruit'?null:PART[S.sel];
+    const comp=type==='sup'||type==='half'||type==='inf';const perfect=type!=='male'&&type!=='female';
+    st=[['ความสมบูรณ์ของดอก',comp?'ดอกสมบูรณ์':'ดอกไม่สมบูรณ์'],['อวัยวะสืบพันธุ์',perfect?'สมบูรณ์เพศ':'ไม่สมบูรณ์เพศ'],['ตำแหน่งรังไข่',{sup:'Superior',half:'Half-inferior',inf:'Inferior',male:'—',female:'Superior',nopetal:'Superior'}[type]],['ส่วนที่เลือก',S.sel?(PART[S.sel]?PART[S.sel].n.split(' (')[0]:(FRUIT[$('#fruit').value].parts[S.sel]||'').split(' =')[0]):'—']];
+    eq='ดอก 4 วง (จากนอกเข้าใน): Calyx (กลีบเลี้ยง) → Corolla (กลีบดอก) → Androecium (เกสรเพศผู้: Anther + Filament) → Gynoecium (เกสรเพศเมีย: Stigma + Style + Ovary)\nหลังปฏิสนธิ: Ovary → Fruit · Ovule → Seed · Integument → Seed coat';
+    if(S.view==='flower'){an=`<p><b>${comp?'ดอกสมบูรณ์':'ดอกไม่สมบูรณ์'}</b> = ${comp?'มีครบ 4 วง':'ขาดวงใดวงหนึ่ง'} · <b>${perfect?'ดอกสมบูรณ์เพศ':'ดอกไม่สมบูรณ์เพศ'}</b> = ${perfect?'มีทั้งเกสรเพศผู้และเพศเมียในดอกเดียว':'มีเกสรเพศเดียว'}</p>`;
+      if(type==='male'||type==='female')an+=`<p>${type==='male'?'Monoecious (แยกเพศร่วมต้น): ดอกเพศผู้และเพศเมียอยู่บนต้นเดียวกัน เช่น ข้าวโพด (ช่อดอกเพศผู้ที่ยอด ฝักคือช่อดอกเพศเมีย), ฟักทอง':'Dioecious (แยกเพศต่างต้น): ต้นตัวผู้มีแต่ดอกเพศผู้ ต้นตัวเมียมีแต่ดอกเพศเมีย เช่น มะละกอ (บางพันธุ์), อินทผลัม'}</p>`;
+      an+=`<p>${$('#inflo').checked?'<b>ดอกช่อ</b>: หลายดอกบนก้านช่อดอกเดียว เช่น ข้าวโพด สับปะรด':'<b>ดอกเดี่ยว</b>: ก้านดอก 1 ก้านมีดอกเพียง 1 ดอก เช่น ชบา บัว'}</p>`;
+      if(info)an+=`<p><span class="tag mid">${info.n}</span> ${info.d} <b>(${info.p}n)</b></p>`;}
+    else{const F=FRUIT[$('#fruit').value];an=`<p><b>${F.n}</b> – ${F.type}</p><p>${F.from}</p>`+(S.sel&&F.parts[S.sel]?`<p><span class="tag mid">ส่วนที่เลือก</span> ${F.parts[S.sel]}</p>`:'');}
+    mis='<p><b>❌ "สตรอเบอร์รี่และสับปะรดเป็นผลเดี่ยว เพราะเห็นเป็นลูกเดียว"</b></p><p>✅ สตรอเบอร์รี่เป็น<b>ผลกลุ่ม</b> (1 ดอก หลายรังไข่) เนื้อสีแดงเจริญจาก<b>ฐานรองดอก</b> ส่วนจุดเล็ก ๆ ที่ผิวคือผลย่อยจริง · สับปะรดเป็น<b>ผลรวม</b> เกิดจากดอกหลายดอกในช่อเดียวกันเชื่อมรวมกัน</p><p><b>❌ "ดอกสมบูรณ์ = ดอกสมบูรณ์เพศ"</b> ✅ ดอกสมบูรณ์คือมีครบ 4 วง ส่วนดอกสมบูรณ์เพศคือมีเกสรทั้งสองเพศ (ดอกสมบูรณ์เพศอาจไม่มีกลีบดอกก็ได้)</p>';
+    tb=TRANS;}
+  else if(m===2){const s=M2.stage;st=[['ขั้นตอน',(s+1)+' / 13'],['ฝั่งที่กำลังศึกษา',s<4?'เพศผู้ (อับเรณู)':s<9?'เพศเมีย (ออวุล)':'การปฏิสนธิ'],['Embryo / Zygote','2n'],['Endosperm','3n']];
+    eq=DF+'\n\nMicrospore MC (2n) ─Meiosis→ 4 Microspores (1n) ─Mitosis→ Pollen: Tube cell + Generative cell\nMegaspore MC (2n) ─Meiosis→ 4 Megaspores (เหลือ 1) ─Mitosis ×3→ 8 นิวเคลียส 7 เซลล์';
+    const D=['เซลล์ 2n ในอับเรณูเตรียมแบ่งแบบไมโอซิส','Meiosis I แยกโครโมโซมคู่เหมือน ได้ 2 เซลล์ (1n)','Meiosis II แยกโครมาทิด ได้ 4 Microspores (1n) เรียงเป็น Tetrad','Microspore แบ่ง Mitosis 1 ครั้ง ได้ Tube cell และ Generative cell → ละอองเรณู (Male gametophyte)','Megaspore mother cell (2n) ในออวุลเตรียมแบ่งไมโอซิส','ไมโอซิสได้ 4 Megaspores (1n) เรียงเป็นแถว 3 เซลล์สลาย เหลือ 1 เซลล์ (ใกล้ Chalaza)','นิวเคลียสแบ่ง Mitosis ครั้งที่ 1 → 2 นิวเคลียส แยกไปสองขั้ว','Mitosis ครั้งที่ 2 → 4 นิวเคลียส (ขั้วละ 2)','Mitosis ครั้งที่ 3 → 8 นิวเคลียส จัดเป็น 7 เซลล์: Antipodal 3, Synergid 2, Egg 1, Central cell 1 (มี 2 Polar nuclei) = ถุงเอ็มบริโอ (Female gametophyte)','ละอองเรณูตกบนยอดเกสรเพศเมีย (Pollination) Tube cell งอกเป็นหลอดเรณู','Generative cell แบ่งไมโทซิสได้ 2 Sperm nuclei หลอดเรณูเข้าทาง Micropyle ไปยัง Synergid','Sperm 1 ผสมกับ Egg → Zygote (2n); Sperm 2 ผสมกับ 2 Polar nuclei → Primary endosperm nucleus (3n)','Zygote เจริญเป็น Embryo, Endosperm เป็นอาหารสะสม, ออวุลเป็นเมล็ด, รังไข่เป็นผล'];
+    an=`<p><b>ขั้นที่ ${s+1}: ${ST2[s]}</b></p><p>${D[s]}</p>`;
+    mis=s<=3?'<p><b>❌ "ละอองเรณูคือเซลล์อสุจิ (Sperm)"</b></p><p>✅ ละอองเรณูคือ <b>Male gametophyte</b> ที่ประกอบด้วย Tube cell และ Generative cell — Generative cell จะแบ่งได้ Sperm nuclei 2 ตัวอีกที (ในหลอดเรณู)</p>':'<p><b>❌ "Endosperm มีโครโมโซม 2n เหมือนเอ็มบริโอ"</b></p><p>✅ Endosperm เกิดจาก Sperm (1n) + Polar nuclei 2 อัน (1n+1n) จึงเป็น <b>3n</b> ส่วนเอ็มบริโอเป็น 2n</p><p><b>❌ "ถุงเอ็มบริโอมี 8 เซลล์"</b> ✅ มี 8 นิวเคลียส แต่ 7 เซลล์ เพราะ Central cell มี 2 นิวเคลียส</p>';
+    tb=TRANS;}
+  else if(m===3){const s3=m3Stats(),f=curF(),sp=SPG[$('#species').value];st=[['% Germination',s3.pct.toFixed(0)+' %'],['เวลาเฉลี่ยในการงอก',s3.md?s3.md.toFixed(1)+' วัน':'—'],['Germination Index (GI)',s3.GI.toFixed(2)],['กิจกรรมเอนไซม์ Amylase',Math.round(f.fT*f.fW*f.fO*100)+' %']];
+    eq=`GI = Σ (Gt / Dt)   (Gt = จำนวนเมล็ดที่งอกในวันที่ t, Dt = จำนวนวันหลังเริ่มทดสอบ)\n= ${Object.entries(s3.byDay).sort((a,b)=>a[0]-b[0]).map(([d,n])=>n+'/'+d).join(' + ')||'0'} = ${s3.GI.toFixed(2)}\nImbibition → GA กระตุ้น Amylase → แป้ง → น้ำตาล → หายใจระดับเซลล์ → Radicle โผล่`;
+    const lim=[[f.fW,'น้ำ'],[f.fO,'ออกซิเจน'],[f.fT,'อุณหภูมิ'],[f.fL,'แสง']].sort((a,b)=>a[0]-b[0])[0];
+    an=`<p>ปัจจัย: น้ำ ${Math.round(f.fW*100)}% · O₂ ${Math.round(f.fO*100)}% · อุณหภูมิ ${Math.round(f.fT*100)}% · แสง ${Math.round(f.fL*100)}%</p>`;
+    an+=f.r<0.05?`<p><span class="tag no">ไม่งอก</span> ปัจจัยจำกัด: <b>${lim[1]}</b></p>`:f.r<0.5?`<p><span class="tag mid">งอกช้า</span> ปัจจัยจำกัด: ${lim[1]}</p>`:'<p><span class="tag ok">สภาวะเหมาะสม</span></p>';
+    an+=`<p>${sp.epi?'<b>Epigeal germination</b>: Hypocotyl ยืดตัวดันใบเลี้ยงขึ้นเหนือดิน (ถั่วเขียว ถั่วแดง ละหุ่ง)':'<b>Hypogeal germination</b>: Epicotyl/Coleoptile ยืดตัว ใบเลี้ยงอยู่ใต้ดิน (ข้าวโพด ข้าว ถั่วลันเตา)'}</p>`;
+    if(+$('#water').value>90)an+='<p>น้ำมากเกินไปแทนที่อากาศในดิน → เมล็ดขาด O₂ หายใจไม่ได้</p>';
+    if(sp.light==='need')an+=`<p>ผักกาดหอมเป็นเมล็ดที่ต้องการแสง (Photoblastic) — ไฟโตโครม Pfr กระตุ้นการงอก ${$('#light').checked?'(เปิดแสงแล้ว)':'(ลองเปิดแสง)'}</p>`;
+    mis='<p><b>❌ "เมล็ดทุกชนิดต้องมีแสงแดดจึงจะงอก"</b></p><p>✅ เมล็ดส่วนใหญ่ต้องการเพียง <b>น้ำ ออกซิเจน และอุณหภูมิที่เหมาะสม</b> (ลองปิดแสงกับถั่ว/ข้าวโพด – ยังงอกได้) ยกเว้นเมล็ดขนาดเล็กบางชนิด เช่น ผักกาดหอม วัชพืช</p><p><b>❌ "รดน้ำมากยิ่งงอกเร็ว"</b> ✅ น้ำขังทำให้ขาด O₂</p>';
+    tb=DICOT;}
+  else{const me=$('#method').value,r=ratio(),o=outcome(r);st=[['Auxin : Cytokinin',isFinite(r)?r.toFixed(2):'∞'],['ผลที่คาดหวัง',me==='tc'?o.n:'—'],['วันที่',Math.floor(M4.day)+' / 42'],['ต้นที่ได้ (ประมาณ)',me==='tc'?Math.round(o.shoot*M4.day/42*40)+' ต้นอ่อน':me==='nat'?'ต้นใหม่จากตา':'1 ต้น/กิ่ง']];
+    eq='Hormone Ratio = [Auxin] / [Cytokinin] = '+(+$('#aux').value).toFixed(1)+' / '+(+$('#cyt').value).toFixed(1)+' = '+(isFinite(r)?r.toFixed(2):'∞')+'\nRatio > 10 ⟹ เกิดราก  |  Ratio ≈ 1–5 ⟹ Callus proliferation  |  Ratio < 0.1 ⟹ เกิดยอด';
+    an=me==='tc'?`<p><b>การเพาะเลี้ยงเนื้อเยื่อ (Micropropagation)</b>: ${o.n}</p><p>เซลล์พืชมี <b>Totipotency</b> – เซลล์เดียวเจริญเป็นต้นใหม่ได้ ต้นที่ได้เป็นโคลนของต้นแม่</p>`:me==='cut'?'<p>การปักชำ: ใช้กิ่ง/ลำต้นที่มีข้อ ออกซินเร่งการเกิดรากพิเศษ เหมาะกับ ชบา โกสน มันสำปะหลัง</p>':me==='layer'?'<p>การตอนกิ่ง: ควั่นเปลือก (ตัดโฟลเอ็ม) ทำให้อาหารและออกซินสะสมเหนือรอยควั่น เกิดรากขณะยังติดต้นแม่ เหมาะกับไม้ผล เช่น มะนาว ลิ้นจี่</p>':me==='graft'?'<p>การทาบกิ่ง: เชื่อมเนื้อเยื่อแคมเบียมของต้นตอกับกิ่งพันธุ์ดี ได้ทั้งระบบรากแข็งแรงและผลผลิตดี เช่น มะม่วง ขนุน</p>':'<p>การสืบพันธุ์ไม่อาศัยเพศตามธรรมชาติ: ลำต้นใต้ดินและไหลมีตา (bud) งอกเป็นต้นใหม่ได้</p>';
+    an+='<p>ข้อดีของการสืบพันธุ์แบบไม่อาศัยเพศ: ได้ลักษณะเหมือนต้นแม่ ให้ผลเร็ว · ข้อเสีย: ไม่มีความแปรผันทางพันธุกรรม เสี่ยงต่อโรคระบาดทั้งแปลง</p>';
+    mis='<p><b>❌ "ต้นที่ได้จากเพาะเลี้ยงเนื้อเยื่อเป็นพืช GMO"</b></p><p>✅ การเพาะเลี้ยงเนื้อเยื่อ<b>ไม่ได้เปลี่ยนแปลงยีน</b> ได้ต้นที่มีพันธุกรรมเหมือนต้นแม่ทุกประการ (Clone)</p><p><b>❌ "ใส่ออกซินมาก ๆ จะได้ทั้งรากและยอด"</b> ✅ สัดส่วนฮอร์โมนกำหนดชนิดอวัยวะ ออกซินสูงได้ราก ไซโทไคนินสูงได้ยอด</p>';
+    tb='<table><tr><th>วิธี</th><th>หลักการ</th><th>ตัวอย่าง</th></tr><tr><td>ปักชำ</td><td>เกิดรากพิเศษจากกิ่ง</td><td>ชบา มันสำปะหลัง</td></tr><tr><td>ตอนกิ่ง</td><td>ควั่นเปลือก เกิดรากบนต้นแม่</td><td>มะนาว ลิ้นจี่</td></tr><tr><td>ทาบ/ติดตา</td><td>เชื่อมแคมเบียมต้นตอ+กิ่งพันธุ์</td><td>มะม่วง ทุเรียน</td></tr><tr><td>เพาะเลี้ยงเนื้อเยื่อ</td><td>Totipotency + ฮอร์โมน</td><td>กล้วยไม้ กล้วย</td></tr></table>';}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;update(dt);const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();requestAnimationFrame(loop);}
+initM3();setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

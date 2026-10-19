@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>นิเวศวิทยา ประชากร และความยั่งยืน – Interactive Biology Lab</title>
+<style>
+:root{--bg:#06100a;--panel:#0d1a12;--panel2:#142619;--line:#244a30;--txt:#eefbf2;--mut:#b4d3bd;--acc:#4ade80;--acc2:#fde047;--on:#14532d;--pri:#15803d;--sw:#0e7490;--deep:#07110b;--h1:#166534;--h2:#0e7490;--btn:#15291b}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,var(--h1),var(--h2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:#e7fff0;opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:var(--on);border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--btn);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--pri);border-color:var(--acc)}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:var(--sw);color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:var(--deep);border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:var(--pri);color:#fff;border-color:var(--acc)}.flow span.done{color:var(--txt);border-color:var(--on)}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:var(--deep);padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#1f1a0b;border-color:#6b5a1e}.mis h3{color:#fbbf24}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.chart{height:250px;background:var(--deep);border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🌿 นิเวศวิทยา ประชากร และความยั่งยืนของสิ่งแวดล้อม (Ecology &amp; Population)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : สายใยอาหาร พีระมิด และการสะสมสารพิษ</button>
+    <button data-mode="2">โหมด 2 : การเติบโตและปฏิสัมพันธ์ของประชากร</button>
+    <button data-mode="3">โหมด 3 : การเปลี่ยนแปลงแทนที่และไบโอม</button>
+    <button data-mode="4">โหมด 4 : ยูโทรฟิเคชันในแหล่งน้ำ</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>ระบบนิเวศ</label><select id="eco"><option value="grass">ทุ่งหญ้า</option><option value="forest">ป่า (ต้นไม้ใหญ่ + แมลง)</option><option value="ocean">ทะเล (แพลงก์ตอน)</option></select></div>
+      <div class="ctl"><label>ชนิดพีระมิด</label><select id="pyr"><option value="energy">พีระมิดพลังงาน</option><option value="bio">พีระมิดมวลชีวภาพ</option><option value="num">พีระมิดจำนวน</option></select></div>
+      <div class="ctl"><label>พลังงานที่ผู้ผลิตตรึงได้ (E₁) <b id="E0V"></b></label><input type="range" id="E0" min="1000" max="100000" step="1000" value="20000"></div>
+      <div class="ctl"><label>ประสิทธิภาพการถ่ายทอดพลังงาน <b id="effV"></b></label><input type="range" id="eff" min="5" max="20" step="1" value="10"></div>
+      <div class="ctl"><label>DDT ในผู้ผลิต (C₀) <b id="c0V"></b></label><input type="range" id="c0" min="0.01" max="5" step="0.01" value="0.04"></div>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>การทดลอง</label><select id="exp2"><option value="growth">Exponential เทียบ Logistic</option><option value="comp">การแข่งขัน (Lotka–Volterra Competition)</option><option value="pred">ผู้ล่า–เหยื่อ (Predator–Prey)</option><option value="disp">รูปแบบการกระจายตัว</option></select></div>
+      <div id="rkBox"><div class="ctl"><label>อัตราการเพิ่มของประชากร (r) <b id="rV"></b></label><input type="range" id="r" min="-0.5" max="1.5" step="0.05" value="0.5"></div>
+        <div class="ctl"><label>ความสามารถในการรองรับ (K) <b id="KV"></b></label><input type="range" id="K" min="50" max="2000" step="50" value="500"></div></div>
+      <div id="n0Box"><div class="ctl"><label>ประชากรเริ่มต้น (N₀) <b id="N0V"></b></label><input type="range" id="N0" min="2" max="200" value="10"></div></div>
+      <div id="compBox"><div class="ctl"><label>ผลของชนิด 2 ต่อชนิด 1 (α₁₂) <b id="a12V"></b></label><input type="range" id="a12" min="0" max="1.6" step="0.05" value="0.6"></div>
+        <div class="ctl"><label>ผลของชนิด 1 ต่อชนิด 2 (α₂₁) <b id="a21V"></b></label><input type="range" id="a21" min="0" max="1.6" step="0.05" value="0.7"></div></div>
+      <div id="predBox"><div class="ctl"><label>ประสิทธิภาพการล่า (a) <b id="peV"></b></label><input type="range" id="pe" min="0.002" max="0.02" step="0.001" value="0.008"></div></div>
+      <div id="dispBox"><div class="ctl"><label>จำนวนสิ่งมีชีวิตต่อแปลง <b id="ndV"></b></label><input type="range" id="nd" min="20" max="160" value="80"></div><button class="btn" id="reseed" style="width:100%">🎲 สุ่มตำแหน่งใหม่</button></div>
+      <div class="ctl"><label>ความเร็วเวลา <b id="spd2V"></b></label><input type="range" id="spd2" min="0.5" max="5" step="0.5" value="2"></div>
+      <button class="btn" id="rst2" style="width:100%">↺ เริ่มประชากรใหม่</button>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ชนิดการเปลี่ยนแปลงแทนที่</label><select id="stype"><option value="primary">ปฐมภูมิ (Primary) – เริ่มจากหินเปล่า</option><option value="secondary">ทุติยภูมิ (Secondary) – มีดินเดิมอยู่</option></select></div>
+      <div class="ctl"><label>ไบโอม (Biome)</label><select id="biome"><option value="rain">ป่าดิบชื้นเขตร้อน</option><option value="decid">ป่าผลัดใบเขตอบอุ่น</option><option value="taiga">ป่าสน (ไทกา)</option><option value="grass">ทุ่งหญ้า</option><option value="desert">ทะเลทราย</option><option value="tundra">ทุนดรา</option></select></div>
+      <div class="ctl"><label>ความเร็วเวลา <b id="spd3V"></b></label><input type="range" id="spd3" min="2" max="50" value="15"></div>
+      <div class="btns"><button class="btn" id="fire">🔥 ไฟป่า</button><button class="btn" id="lava">🌋 ลาวาไหลทับ</button></div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>ปริมาณปุ๋ย/น้ำทิ้งที่ไหลลงบ่อ</label><select id="load"><option value="low">ต่ำ (Low)</option><option value="med">ปานกลาง (Medium)</option><option value="sev" selected>รุนแรง (Severe)</option></select></div>
+      <label class="chk"><input type="checkbox" id="stopIn"> หยุดปล่อยน้ำทิ้ง/ปุ๋ย (บำบัดก่อนปล่อย)</label>
+      <label class="chk"><input type="checkbox" id="aer"> เปิดเครื่องเติมอากาศ (Aerator)</label>
+      <div class="ctl"><label>ความเร็วเวลา <b id="spd4V"></b></label><input type="range" id="spd4" min="0.25" max="4" step="0.25" value="1.5"></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgWeb" class="on">เครือข่ายผู้ล่า–เหยื่อ</button><button id="tgCyc">วัฏจักรสาร C / N / P</button></div></div>
+    <div id="cycBox" class="ctl"><label>วัฏจักร</label><select id="cyc"><option value="C">คาร์บอน (C)</option><option value="N">ไนโตรเจน (N)</option><option value="P">ฟอสฟอรัส (P)</option></select></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#eef2f6',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function EM(g,e,x,y,s){g.fillStyle='#000';g.font=s+'px "Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e,x,y);}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'web',time:0};
+const CYCV=()=>S.toggle==='cyc';
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='rgba(255,255,255,.09)';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#d6eedc',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function panel(g,x,y,w,h){g.fillStyle='rgba(10,24,15,.92)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=1;g.stroke();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+const fmt=v=>v>=1e6?(v/1e6).toFixed(v>=1e7?0:1)+' ล้าน':v>=100?Math.round(v).toLocaleString():v>=1?(+v.toFixed(1)).toString():v>=0.01?v.toFixed(2):v.toExponential(1);
+
+/* ================= MODE 1 : FOOD WEB, PYRAMIDS, BIOMAGNIFICATION ================= */
+const LVN=[['ผู้ผลิต','Producer'],['ผู้บริโภคลำดับ 1','Primary consumer'],['ผู้บริโภคลำดับ 2','Secondary consumer'],['ผู้บริโภคลำดับ 3','Tertiary consumer']];
+const LC=['#4ade80','#facc15','#fb923c','#f87171'];
+const ECO={
+  grass:{n:'ทุ่งหญ้า',nodes:[['หญ้า','Grass','🌾',0,0.2],['ต้นข้าว','Rice','🌱',0,0.75],['ตั๊กแตน','Grasshopper','🦗',1,0.12],['หนู','Rat','🐀',1,0.5],['กระต่าย','Rabbit','🐇',1,0.88],['กบ','Frog','🐸',2,0.28],['งู','Snake','🐍',2,0.72],['เหยี่ยว','Hawk','🦅',3,0.5]],
+    links:[[0,2],[0,4],[1,2],[1,3],[2,5],[3,6],[5,6],[4,7],[6,7],[3,7]],num:[1500000,200000,90000,1],bio:[809,37,11,1.5]},
+  forest:{n:'ป่า',nodes:[['ต้นไม้ใหญ่','Tree','🌳',0,0.5],['หนอนผีเสื้อ','Caterpillar','🐛',1,0.22],['ด้วงกินใบ','Leaf beetle','🐞',1,0.78],['นกกินแมลง','Insectivorous bird','🐦',2,0.28],['แมงมุม','Spider','🕷️',2,0.72],['เหยี่ยว','Hawk','🦅',3,0.5]],
+    links:[[0,1],[0,2],[1,3],[2,4],[2,3],[4,3],[1,4],[3,5]],num:[200,150000,3000,5],bio:[30000,30,3,0.3]},
+  ocean:{n:'ทะเล',nodes:[['แพลงก์ตอนพืช','Phytoplankton','🦠',0,0.5],['แพลงก์ตอนสัตว์','Zooplankton','🦐',1,0.25],['เคย','Krill','🦐',1,0.75],['ปลาเล็ก','Small fish','🐟',2,0.5],['ปลาใหญ่ / นกทะเล','Large fish / Seabird','🦈',3,0.5]],
+    links:[[0,1],[0,2],[1,3],[2,3],[3,4],[2,4]],num:[5e9,2e6,4000,10],bio:[4,21,3,0.5]}};
+const energies=()=>{const E0=V('E0'),f=V('eff')/100;return [0,1,2,3].map(i=>E0*f**i);};
+const toxins=()=>{const c0=V('c0'),b=100/V('eff');return [0,1,2,3].map(i=>c0*b**i);};
+function drawM1(g,w,h){if(CYCV()){drawCycle(g,w,h);return;}
+  const e=ECO[$('#eco').value],E=energies(),C=toxins(),ww=Math.round(w*0.56),LY=i=>h-112-i*(h-176)/3,NX=f=>124+f*(ww-156);
+  for(let i=0;i<4;i++){const y=LY(i);g.fillStyle=i%2?'rgba(255,255,255,.025)':'rgba(255,255,255,.055)';g.fillRect(4,y-32,ww-4,64);T(g,LVN[i][0],10,y-14,LC[i],11,'left',true);T(g,LVN[i][1],10,y,'#a7c4b0',9.5);T(g,'E = '+fmt(E[i])+' kcal',10,y+14,'#fde68a',10,'left',true);}
+  const P=e.nodes.map(n=>({x:NX(n[4]),y:LY(n[3])}));
+  e.links.forEach(([a,b],k)=>{const A=P[a],B=P[b],d=Math.hypot(B.x-A.x,B.y-A.y),ux=(B.x-A.x)/d,uy=(B.y-A.y)/d,x1=A.x+ux*21,y1=A.y+uy*21,x2=B.x-ux*23,y2=B.y-uy*23;arrow(g,x1,y1,x2,y2,'rgba(253,224,71,.4)',1.4);
+    const la=e.nodes[a][3],rad=1.2+2.6*clamp(Math.log10(E[la])/5,0,1);for(let j=0;j<3;j++){const q=(S.time*0.3+j/3+hash(k))%1,x=lerp(x1,x2,q),y=lerp(y1,y2,q);glow(g,x,y,rad*3,'rgba(253,224,71,.3)');g.fillStyle='#fde047';g.beginPath();g.arc(x,y,rad,0,7);g.fill();}});
+  for(let i=0;i<4;i++){const xs=P.filter((p,j)=>e.nodes[j][3]===i).map(p=>p.x),x=Math.max(...xs)+22,y=LY(i)-8;g.strokeStyle='#f87171';g.lineWidth=1.5;g.beginPath();for(let j=0;j<=10;j++){const xx=x+j*2,yy=y-j*1.3+Math.sin(j*1.4-S.time*6)*2;j?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.stroke();if(i===0)T(g,'ความร้อน ~'+(100-V('eff'))+'%',x+4,y-24,'#fca5a5',9.5,'left',true);}
+  e.nodes.forEach((n,i)=>{const p=P[i];g.fillStyle='#10241a';g.beginPath();g.arc(p.x,p.y,19,0,7);g.fill();g.strokeStyle=LC[n[3]];g.lineWidth=2;g.stroke();EM(g,n[2],p.x,p.y+1,19);T(g,n[0],p.x,p.y+27,'#eefbf2',10,'center',true);});
+  const dy=h-40;g.fillStyle='rgba(120,83,45,.35)';rr(g,124,dy,ww-136,32,8);g.fill();g.strokeStyle='#a16207';g.lineWidth=1;g.stroke();EM(g,'🍄',140,dy+16,16);T(g,'ผู้ย่อยสลาย: แบคทีเรีย รา (ย่อยซากทุกลำดับขั้น)',156,dy+16,'#fde68a',10.5,'left',true);
+  P.forEach((p,i)=>{if(e.nodes[i][3]===0)arrow(g,p.x,p.y+34,p.x,dy-2,'rgba(161,98,7,.8)',1.2,[3,3]);});
+  const px=ww+10,pw=w-px-6,ph=Math.round(h*0.55),ty=$('#pyr').value,vals=ty==='energy'?E:ty==='bio'?e.bio:e.num,un=ty==='energy'?'kcal/m²/ปี':ty==='bio'?'g/m²':'ตัว (ต้น) ต่อพื้นที่';
+  panel(g,px,6,pw,ph);T(g,{energy:'พีระมิดพลังงาน',bio:'พีระมิดมวลชีวภาพ',num:'พีระมิดจำนวน'}[ty]+' · '+e.n,px+10,20,'#86efac',12,'left',true);T(g,'หน่วย: '+un+' (ความกว้างใช้สเกล log)',px+10,36,'#a7c4b0',9.5);
+  const lv=vals.map(v=>Math.log10(Math.max(v,1e-3))),lo=Math.min(...lv)-0.6,hi=Math.max(...lv),mw=pw-118,bh=Math.min(36,(ph-84)/4-4),cx=px+36+mw/2;
+  vals.forEach((v,i)=>{const bw=mw*(0.08+0.92*(lv[i]-lo)/((hi-lo)||1)),y=6+ph-30-(i+1)*(bh+4);g.fillStyle=LC[i];g.globalAlpha=0.85;rr(g,cx-bw/2,y,bw,bh,4);g.fill();g.globalAlpha=1;T(g,['P','C₁','C₂','C₃'][i],px+12,y+bh/2,LC[i],11,'left',true);T(g,fmt(v),px+pw-8,y+bh/2,'#fef9c3',10.5,'right',true);});
+  const inv=vals.some((v,i)=>i&&v>vals[i-1]);T(g,inv?'⚠ พีระมิดหัวกลับ (Inverted) บางส่วน':'✔ พีระมิดฐานกว้าง (Upright)',px+10,6+ph-14,inv?'#fca5a5':'#86efac',10.5,'left',true);
+  const by=ph+14,bh2=h-by-6,x0=px+34,bwm=pw-112,LX=v=>x0+bwm*clamp((Math.log10(v)+2)/7,0,1),rh=(bh2-46)/4;panel(g,px,by,pw,bh2);T(g,'การสะสมสารพิษ DDT (Biomagnification)',px+10,by+14,'#fca5a5',11.5,'left',true);
+  g.strokeStyle='rgba(248,113,113,.7)';g.setLineDash([3,3]);g.beginPath();g.moveTo(LX(10),by+26);g.lineTo(LX(10),by+bh2-8);g.stroke();g.setLineDash([]);T(g,'10 ppm',LX(10),by+30,'#fca5a5',8.5,'center');
+  for(let i=0;i<4;i++){const y=by+bh2-10-(i+0.5)*rh,em=e.nodes.find(n=>n[3]===i)[2],k=clamp((Math.log10(C[i])+2)/6,0,1);EM(g,em,px+18,y,15);g.fillStyle='rgba(255,255,255,.07)';g.fillRect(x0,y-5,bwm,10);g.fillStyle=`rgb(${Math.round(lerp(250,239,k))},${Math.round(lerp(204,68,k))},${Math.round(lerp(21,68,k))})`;g.fillRect(x0,y-5,LX(C[i])-x0,10);T(g,fmt(C[i])+' ppm',px+pw-8,y,C[i]>=10?'#fca5a5':'#fef9c3',10.5,'right',true);}}
+
+/* ---- nutrient cycles ---- */
+const CY={
+  C:{t:'วัฏจักรคาร์บอน (Carbon cycle)',col:'#cbd5e1',n:[['CO₂ ในบรรยากาศ','☁️',0.5,0.1],['พืช (ผู้ผลิต)','🌳',0.15,0.5],['สัตว์ (ผู้บริโภค)','🦌',0.45,0.5],['ผู้ย่อยสลาย','🍄',0.45,0.88],['เชื้อเพลิงฟอสซิล','🛢️',0.85,0.88],['มหาสมุทร (HCO₃⁻)','🌊',0.86,0.5]],
+    e:[[0,1,'สังเคราะห์ด้วยแสง',0.18],[1,0,'หายใจ',0.18],[1,2,'การกิน',0],[2,0,'หายใจ',-0.1],[1,3,'ซากพืช',0],[2,3,'ซาก / ของเสีย',0],[3,0,'ย่อยสลาย → CO₂',0.45,0.3],[3,4,'ทับถมนับล้านปี',0],[4,0,'เผาไหม้ (มนุษย์)',0.05],[0,5,'ละลาย',0.15],[5,0,'แพร่กลับ',0.15]]},
+  N:{t:'วัฏจักรไนโตรเจน (Nitrogen cycle)',col:'#93c5fd',n:[['N₂ ในบรรยากาศ (78%)','💨',0.5,0.1],['สัตว์','🐄',0.5,0.45],['พืช (โปรตีน, DNA)','🌿',0.86,0.45],['ซาก / ของเสีย','🍂',0.5,0.68],['NH₄⁺ แอมโมเนียม','🧪',0.14,0.5],['NO₂⁻ ไนไตรต์','🧪',0.28,0.9],['NO₃⁻ ไนเตรต','🧪',0.72,0.9]],
+    e:[[0,4,'ตรึง N₂: Rhizobium, ไซยาโนแบคทีเรีย',-0.1],[4,5,'Nitrosomonas',0],[5,6,'Nitrobacter',0],[6,2,'ดูดซึม (Assimilation)',0],[2,1,'การกิน',0],[2,3,'ซาก',0],[1,3,'ซาก / ยูเรีย',0],[3,4,'Ammonification',0],[6,0,'Denitrification (Pseudomonas)',0.3,0.22]]},
+  P:{t:'วัฏจักรฟอสฟอรัส (Phosphorus cycle)',col:'#fdba74',n:[['หินฟอสเฟต','⛰️',0.13,0.17],['พืช (ATP, DNA)','🌿',0.43,0.17],['สัตว์ (กระดูก, ฟัน)','🐄',0.76,0.17],['PO₄³⁻ ในดิน','🟫',0.2,0.6],['ผู้ย่อยสลาย','🍄',0.55,0.5],['แหล่งน้ำ','🌊',0.86,0.62],['ตะกอนท้องทะเล','🪨',0.5,0.9]],
+    e:[[0,3,'ผุพัง (Weathering)',0],[3,1,'ดูดซึม',0],[1,2,'การกิน',0],[1,4,'ซาก',0],[2,4,'ซาก / ของเสีย',0],[4,3,'ย่อยสลาย → PO₄³⁻',0],[3,5,'ชะล้าง (Runoff)',0.15],[5,6,'ตกตะกอน',0],[6,0,'ยกตัวของเปลือกโลก (ล้านปี)',0.12,0.2]]}};
+function drawCycle(g,w,h){const c=CY[$('#cyc').value],bw=140,bh=40,N=c.n.map(n=>({x:n[2]*w,y:n[3]*h}));
+  const inBox=(p,q)=>Math.abs(p.x-q.x)<bw/2+4&&Math.abs(p.y-q.y)<bh/2+4;
+  c.e.forEach(([a,b,lab,cv,lp=0.5],k)=>{const A=N[a],B=N[b],d=Math.hypot(B.x-A.x,B.y-A.y),mx=(A.x+B.x)/2-(B.y-A.y)/d*cv*d,my=(A.y+B.y)/2+(B.x-A.x)/d*cv*d,pt=t=>({x:(1-t)**2*A.x+2*(1-t)*t*mx+t*t*B.x,y:(1-t)**2*A.y+2*(1-t)*t*my+t*t*B.y});
+    let t0=0,t1=1;while(t0<0.5&&inBox(pt(t0),A))t0+=0.01;while(t1>0.5&&inBox(pt(t1),B))t1-=0.01;
+    g.strokeStyle=c.col;g.globalAlpha=0.65;g.lineWidth=2;g.beginPath();for(let t=t0;t<=t1+1e-6;t+=0.02){const p=pt(Math.min(t,t1));t===t0?g.moveTo(p.x,p.y):g.lineTo(p.x,p.y);}g.stroke();g.globalAlpha=1;
+    const pe=pt(t1),pp=pt(t1-0.03),an=Math.atan2(pe.y-pp.y,pe.x-pp.x);g.fillStyle=c.col;g.beginPath();g.moveTo(pe.x,pe.y);g.lineTo(pe.x-9*Math.cos(an-0.45),pe.y-9*Math.sin(an-0.45));g.lineTo(pe.x-9*Math.cos(an+0.45),pe.y-9*Math.sin(an+0.45));g.closePath();g.fill();
+    for(let j=0;j<2;j++){const q=lerp(t0,t1,(S.time*0.25+j/2+hash(k))%1),p=pt(q);glow(g,p.x,p.y,7,'rgba(255,255,255,.35)');g.fillStyle='#fff';g.beginPath();g.arc(p.x,p.y,2.2,0,7);g.fill();}
+    const m=pt(lerp(t0,t1,lp));g.font='10px '+FONT;const tw=g.measureText(lab).width+10;g.fillStyle='rgba(7,17,11,.88)';rr(g,m.x-tw/2,m.y-8,tw,16,6);g.fill();T(g,lab,m.x,m.y,'#fef9c3',10,'center');});
+  c.n.forEach((n,i)=>{const p=N[i];g.fillStyle='#11291b';rr(g,p.x-bw/2,p.y-bh/2,bw,bh,10);g.fill();g.strokeStyle=c.col;g.lineWidth=1.5;g.stroke();EM(g,n[1],p.x-bw/2+16,p.y,16);T(g,n[0],p.x-bw/2+30,p.y,'#eefbf2',10.5,'left',true);});
+  T(g,c.t,10,16,'#86efac',13,'left',true);if($('#cyc').value==='P')T(g,'ไม่มีแก๊สในบรรยากาศ → หมุนเวียนช้ามาก',w-10,16,'#fdba74',11,'right',true);}
+
+/* ================= MODE 2 : POPULATION ================= */
+let M2;
+function initM2(){const k=$('#exp2').value,K=V('K'),seed=M2&&M2.seed||1;M2={k,seed,t:0,hist:[],ht:0,N1:20,N2:20,H:Math.round(K*0.9),P:4,pts:null};if(k==='disp')genPts();}
+function Nexp(t){return V('N0')*Math.exp(V('r')*t);}
+function Nlog(t){const r=V('r'),K=V('K'),N0=V('N0');return K/(1+((K-N0)/N0)*Math.exp(-r*t));}
+function gauss(i){const u=Math.max(1e-6,hash(i)),v=hash(i+0.5);return Math.sqrt(-2*Math.log(u))*Math.cos(6.283*v);}
+function genPts(){const n=V('nd'),s=M2.seed*1000,R=[],U=[],Cl=[],g=Math.ceil(Math.sqrt(n));for(let i=0;i<n;i++){R.push([hash(s+i*2),hash(s+i*2+1)]);const gx=i%g,gy=Math.floor(i/g);U.push([(gx+0.5+(hash(s+i*5)-0.5)*0.25)/g,(gy+0.5+(hash(s+i*5+1)-0.5)*0.25)/Math.ceil(n/g)]);
+    const c=Math.floor(hash(s+i*3)*5);Cl.push([clamp(0.15+0.7*hash(s+c*11)+gauss(s+i*7)*0.05,0.01,0.99),clamp(0.15+0.7*hash(s+c*13+5)+gauss(s+i*7+3)*0.05,0.01,0.99)]);}
+  M2.pts={clump:Cl,uni:U,rand:R};}
+function vmr(p){const q=5,c=new Array(q*q).fill(0);p.forEach(([x,y])=>c[Math.min(q-1,Math.floor(x*q))*q+Math.min(q-1,Math.floor(y*q))]++);const m=c.reduce((a,b)=>a+b,0)/c.length,v=c.reduce((a,b)=>a+(b-m)**2,0)/(c.length-1);return{c,m,v,r:v/m};}
+function stepM2(dt){const d=dt*V('spd2');if(M2.k==='growth'){M2.t=Math.min(40,M2.t+d);return;}if(M2.k==='disp'){M2.t+=dt;return;}
+  const r=V('r'),K=V('K'),n=Math.ceil(d/0.01),h=d/n;for(let i=0;i<n;i++){if(M2.k==='comp'){const a=V('a12'),b=V('a21'),d1=r*M2.N1*(K-M2.N1-a*M2.N2)/K,d2=r*M2.N2*(K-M2.N2-b*M2.N1)/K;M2.N1=Math.max(0,M2.N1+d1*h);M2.N2=Math.max(0,M2.N2+d2*h);}
+    else{const a=V('pe'),dH=r*M2.H*(1-M2.H/K)-a*M2.H*M2.P,dP=0.1*a*M2.H*M2.P-0.3*M2.P;M2.H=Math.max(0,M2.H+dH*h);M2.P=Math.max(0,M2.P+dP*h);}}
+  M2.t+=d;M2.ht+=d;if(M2.ht>0.2){M2.ht=0;M2.hist.push(M2.k==='comp'?[M2.t,M2.N1,M2.N2]:[M2.t,M2.H,M2.P]);if(M2.hist.length>1200)M2.hist.shift();}}
+function dots(g,x,y,w,h,n,col,seed,r=2.6){g.fillStyle=col;for(let i=0;i<n;i++){const px=x+5+hash(i*3+seed)*(w-10)+Math.sin(S.time*1.3+i)*1.4,py=y+5+hash(i*7+seed+1)*(h-10)+Math.cos(S.time*1.1+i*1.7)*1.4;g.beginPath();g.arc(px,py,r,0,7);g.fill();}}
+function field(g,x,y,w,h){const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,'#183d22');gr.addColorStop(1,'#0f2716');g.fillStyle=gr;rr(g,x,y,w,h,8);g.fill();g.strokeStyle='rgba(134,239,172,.25)';g.lineWidth=1;g.stroke();}
+function miniAxes(g,x,y,w,h,x0,x1,y0,y1,xl,yl){g.save();g.translate(x,y);panel(g,0,0,w,h);const A=axes(g,w,h,x0,x1,y0,y1,xl,yl,4,4);g.restore();return{X:v=>x+A.X(v),Y:v=>y+A.Y(v),A};}
+function drawM2(g,w,h){const k=M2.k,r=V('r'),K=V('K');
+  if(k==='growth'){const t=M2.t,Ne=Nexp(t),Nl=Nlog(t),pw=(w-30)/2,ph=Math.round(h*0.56),sc=Math.max(1,Math.ceil(K/250)),cap=Math.round(K/sc);
+    [[10,'Exponential growth (J-shaped)',Ne,'#f87171',false],[20+pw,'Logistic growth (S-shaped)',Nl,'#4ade80',true]].forEach(([x,ti,N,col,lg],i)=>{panel(g,x,6,pw,ph);T(g,ti,x+10,20,col,12,'left',true);T(g,'N = '+fmt(N),x+pw-10,20,'#fde68a',12,'right',true);
+      field(g,x+8,32,pw-16,ph-70);const n=Math.min(Math.round(N/sc),Math.round(cap*2.6));dots(g,x+8,32,pw-16,ph-70,n,col,i*500,2.4);
+      if(!lg&&N>K){g.fillStyle='rgba(127,29,29,.92)';rr(g,x+20,ph/2-4,pw-40,26,6);g.fill();T(g,'เกิน K แล้ว — ในธรรมชาติทรัพยากรไม่พอ',x+pw/2,ph/2+9,'#fecaca',11,'center',true);}
+      bar(g,x+10,6+ph-22,pw-20,9,lg?1-N/K:1,lg?(N/K>0.9?'#f87171':'#4ade80'):'#60a5fa',lg?'ทรัพยากรที่เหลือ (1 − N/K)':'ทรัพยากรไม่จำกัด (สมมติฐาน)',lg?Math.round(clamp(1-N/K,0,1)*100)+'%':'∞');});
+    T(g,'1 จุด = '+sc+' ตัว',w-14,ph+2,'#a7c4b0',9.5,'right');
+    const yy=ph+12,hh=h-yy-4,lw=Math.round(w*0.55),Nm=K*1.3,fm=Math.max(0.05,Math.abs(r))*K*0.3,M=miniAxes(g,10,yy,lw,hh,0,Nm,-fm,fm,'ขนาดประชากร N','dN/dt');
+    g.save();g.beginPath();g.rect(10+M.A.L,yy+M.A.Tm,lw-M.A.L-M.A.Rm,hh-M.A.B-M.A.Tm);g.clip();g.translate(10,yy);fn(g,M.A,0,Nm,N=>r*N,'#f87171',1.5,[5,4]);fn(g,M.A,0,Nm,N=>r*N*(1-N/K),'#4ade80',2.2);g.restore();
+    g.strokeStyle='rgba(255,255,255,.25)';g.beginPath();g.moveTo(M.X(0),M.Y(0));g.lineTo(M.X(Nm),M.Y(0));g.stroke();
+    const cN=Math.min(Nl,Nm);g.fillStyle='#fde047';g.beginPath();g.arc(M.X(cN),M.Y(r*cN*(1-cN/K)),5,0,7);g.fill();T(g,'K/2',M.X(K/2),yy+M.A.Tm+6,'#a7c4b0',9.5,'center');T(g,'K',M.X(K),yy+M.A.Tm+6,'#a7c4b0',9.5,'center');
+    const ix=10+lw+10,iw=w-ix-10;panel(g,ix,yy,iw,hh);const ratio=Nl/K,ph2=r<=0?'ประชากรลดลง (r ≤ 0)':ratio<0.15?'ระยะเริ่มต้น (Lag)':ratio<0.5?'ระยะเร่ง (Log phase)':ratio<0.95?'ระยะชะลอ (Deceleration)':'ระยะคงที่: N ≈ K';
+    T(g,'ระยะของ S-curve',ix+10,yy+16,'#86efac',11.5,'left',true);T(g,ph2,ix+10,yy+36,'#fde68a',12,'left',true);T(g,'t = '+t.toFixed(1),ix+10,yy+58,'#d6eedc',11);T(g,'dN/dt สูงสุดเมื่อ N = K/2',ix+10,yy+78,'#d6eedc',10.5);T(g,'= rK/4 = '+fmt(Math.max(0,r*K/4)),ix+10,yy+94,'#d6eedc',10.5);
+    if(CYCV())T(g,'K ถูกจำกัดโดยธาตุอาหาร N, P',ix+10,yy+hh-14,'#93c5fd',10,'left',true);return;}
+  if(k==='comp'||k==='pred'){const lw=Math.round(w*0.52),cp=k==='comp';panel(g,10,6,lw,h-12);T(g,cp?'Paramecium 2 ชนิด แข่งขันอาหาร (Gause)':'กระต่าย (เหยื่อ) – ลิงซ์ (ผู้ล่า)',20,20,'#86efac',12,'left',true);field(g,18,32,lw-16,h-90);
+    const sc=Math.max(1,Math.ceil(K/220));if(cp){dots(g,18,32,lw-16,h-90,Math.round(M2.N1/sc),'#60a5fa',11,2.6);dots(g,18,32,lw-16,h-90,Math.round(M2.N2/sc),'#fb923c',77,2.6);
+      T(g,'● ชนิด 1 (P. aurelia): '+fmt(M2.N1),20,h-46,'#93c5fd',11,'left',true);T(g,'● ชนิด 2 (P. caudatum): '+fmt(M2.N2),20,h-28,'#fdba74',11,'left',true);}
+    else{dots(g,18,32,lw-16,h-90,Math.round(M2.H/sc),'#a3e635',33,2.4);const ps=Math.max(1,sc/5);g.save();dots(g,18,32,lw-16,h-90,Math.min(150,Math.round(M2.P/ps)),'#ef4444',91,4);g.restore();
+      T(g,'● เหยื่อ H: '+fmt(M2.H)+' (1 จุด = '+sc+')',20,h-46,'#bef264',11,'left',true);T(g,'● ผู้ล่า P: '+fmt(M2.P)+' (1 จุด = '+(+ps.toFixed(1))+')',20,h-28,'#fca5a5',11,'left',true);}
+    const ix=lw+20,iw=w-ix-10,ih=h-12,a=V('a12'),b=V('a21'),pe=V('pe');
+    if(cp){const mx=K*1.25,M=miniAxes(g,ix,6,iw,ih,0,mx,0,mx,'N₁ (ชนิด 1)','N₂ (ชนิด 2)');g.save();g.beginPath();g.rect(M.X(0),M.Y(mx),M.X(mx)-M.X(0),M.Y(0)-M.Y(mx));g.clip();
+      g.strokeStyle='#60a5fa';g.lineWidth=2;g.beginPath();g.moveTo(M.X(K),M.Y(0));g.lineTo(M.X(0),M.Y(a>0?K/a:mx*10));g.stroke();g.strokeStyle='#fb923c';g.beginPath();g.moveTo(M.X(0),M.Y(K));g.lineTo(M.X(b>0?K/b:mx*10),M.Y(0));g.stroke();
+      g.strokeStyle='#fde047';g.lineWidth=1.6;g.beginPath();M2.hist.forEach((p,i)=>i?g.lineTo(M.X(p[1]),M.Y(p[2])):g.moveTo(M.X(p[1]),M.Y(p[2])));g.stroke();g.restore();
+      g.fillStyle='#fde047';g.beginPath();g.arc(M.X(Math.min(mx,M2.N1)),M.Y(Math.min(mx,M2.N2)),4.5,0,7);g.fill();legend(g,[['Isocline ชนิด 1','#60a5fa'],['Isocline ชนิด 2','#fb923c'],['เส้นทางประชากร','#fde047']],M.X(mx*0.42),6+M.A.Tm+10);}
+    else{const Hs=0.3/(0.1*pe),hx=Math.max(K,Hs)*1.3,Ps=Math.max(5,r/pe*0.8),py=Math.max(Ps,...M2.hist.map(p=>p[2]),M2.P)*1.15,M=miniAxes(g,ix,6,iw,ih,0,hx,0,py,'เหยื่อ H','ผู้ล่า P');
+      g.save();g.beginPath();g.rect(M.X(0),M.Y(py),M.X(hx)-M.X(0),M.Y(0)-M.Y(py));g.clip();g.strokeStyle='#a3e635';g.lineWidth=2;g.beginPath();g.moveTo(M.X(0),M.Y(r/pe));g.lineTo(M.X(K),M.Y(0));g.stroke();g.strokeStyle='#ef4444';g.beginPath();g.moveTo(M.X(Hs),M.Y(0));g.lineTo(M.X(Hs),M.Y(py));g.stroke();
+      g.strokeStyle='#fde047';g.lineWidth=1.5;g.beginPath();M2.hist.forEach((p,i)=>i?g.lineTo(M.X(p[1]),M.Y(p[2])):g.moveTo(M.X(p[1]),M.Y(p[2])));g.stroke();g.restore();g.fillStyle='#fde047';g.beginPath();g.arc(M.X(M2.H),M.Y(Math.min(py,M2.P)),4.5,0,7);g.fill();
+      legend(g,[['Isocline เหยื่อ','#a3e635'],['Isocline ผู้ล่า (H* = m/ea)','#ef4444'],['วงจรประชากร','#fde047']],M.X(hx*0.36),6+M.A.Tm+10);}
+    return;}
+  const pw=(w-40)/3,fh=Math.min(pw-20,h-130),Q=5,cur=Math.floor(M2.t*2.5)%25;[['clump','แบบกลุ่ม (Clumped)','#fb923c'],['uni','แบบสม่ำเสมอ (Uniform)','#60a5fa'],['rand','แบบสุ่ม (Random)','#a3e635']].forEach(([key,nm,col],i)=>{const x=10+i*(pw+10),fy=34;panel(g,x,6,pw,h-12);T(g,nm,x+pw/2,20,col,12,'center',true);const fx=x+10,fw=pw-20;field(g,fx,fy,fw,fh);
+    const P=M2.pts[key],R=vmr(P);g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=1;for(let j=1;j<Q;j++){g.beginPath();g.moveTo(fx+j*fw/Q,fy);g.lineTo(fx+j*fw/Q,fy+fh);g.stroke();g.beginPath();g.moveTo(fx,fy+j*fh/Q);g.lineTo(fx+fw,fy+j*fh/Q);g.stroke();}
+    const cx=Math.floor(cur/Q),cy=cur%Q;g.strokeStyle='#fde047';g.lineWidth=2;g.strokeRect(fx+cx*fw/Q,fy+cy*fh/Q,fw/Q,fh/Q);g.fillStyle=col;P.forEach(([px,py])=>{g.beginPath();g.arc(fx+px*fw,fy+py*fh,2.6,0,7);g.fill();});
+    T(g,'แปลง ('+(cx+1)+','+(cy+1)+') นับได้ '+R.c[cx*Q+cy]+' ตัว',x+pw/2,fy+fh+16,'#fde68a',10.5,'center',true);T(g,'x̄ = '+R.m.toFixed(2)+'   s² = '+R.v.toFixed(2),x+pw/2,fy+fh+36,'#d6eedc',10.5,'center');
+    T(g,'s²/x̄ = '+R.r.toFixed(2)+(R.r>1.6?'  (> 1)':R.r<0.6?'  (< 1)':'  (≈ 1)'),x+pw/2,fy+fh+56,col,12,'center',true);});}
+
+/* ================= MODE 3 : SUCCESSION & BIOMES ================= */
+const BIO={rain:{n:'ป่าดิบชื้นเขตร้อน',T:27,P:2600,B:1,c:'broad',ex:'ป่าดิบชื้นภาคใต้ของไทย, Amazon'},decid:{n:'ป่าผลัดใบเขตอบอุ่น',T:11,P:1000,B:0.75,c:'decid',ex:'ยุโรป, ตะวันออกของสหรัฐฯ'},taiga:{n:'ป่าสน (ไทกา)',T:-2,P:550,B:0.6,c:'conifer',ex:'แคนาดา, ไซบีเรีย'},
+  grass:{n:'ทุ่งหญ้า',T:12,P:450,B:0.3,c:'tallgrass',ex:'แพรรี, สะวันนา'},desert:{n:'ทะเลทราย',T:24,P:120,B:0.08,c:'cactus',ex:'ซาฮารา, โมฮาวี'},tundra:{n:'ทุนดรา',T:-10,P:250,B:0.12,c:'dwarf',ex:'อาร์กติก แคนาดาตอนเหนือ'}};
+let M3;function initM3(){M3={t:0,fx:null,fxT:0};}
+const TT=()=>$('#stype').value==='primary'?600:150;
+function abund(q){const pri=$('#stype').value==='primary',b=$('#biome').value,W=(s,e)=>sm((q-s)/0.08)*(1-sm((q-e)/0.15));
+  let a=pri?{lichen:W(0.02,0.3),moss:W(0.1,0.42),grass:W(0.26,0.66),shrub:W(0.44,0.8),ptree:W(0.6,0.95),climax:sm((q-0.78)/0.15)}:{lichen:0,moss:0,grass:W(-0.2,0.35),shrub:W(0.12,0.6),ptree:W(0.32,0.85),climax:sm((q-0.6)/0.2)};
+  if(a.climax>0.3)a.grass=Math.max(a.grass,0.25);
+  if(b==='grass'){a.ptree*=0.15;a.shrub*=0.5;}if(b==='desert'){a.ptree=0;a.grass*=0.4;a.shrub*=0.6;a.moss=0;}if(b==='tundra'){a.ptree=0;a.shrub*=0.6;a.lichen=Math.max(a.lichen,a.climax*0.8);a.moss=Math.max(a.moss,a.climax*0.8);}return a;}
+function soilD(q){return $('#stype').value==='primary'?80*sm(q*1.05):55+25*sm(q);}
+function biomass(t){const tau=TT()*0.45;return BIO[$('#biome').value].B*(1-Math.exp(-t/tau));}
+function rich(q){const sm0=$('#stype').value==='primary'?0.05:0.3;return (sm0+(1-sm0)*sm(q/0.6))*(1-0.25*sm((q-0.7)/0.3));}
+function stage3(q){const a=abund(q),pri=$('#stype').value==='primary';if(q<0.03&&pri)return 0;const order=pri?['lichen','moss','grass','shrub','ptree','climax']:['grass','shrub','ptree','climax'];let best=-1,bi=0;order.forEach((k,i)=>{if(a[k]>best){best=a[k];bi=i;}});return bi+1;}
+const STN=()=>$('#stype').value==='primary'?['หินเปล่า','ไลเคน (Pioneer)','มอส','หญ้า/ไม้ล้มลุก','ไม้พุ่ม','ไม้ยืนต้นเบิกนำ','สังคมสมบูรณ์ (Climax)']:['ดินเดิมหลังถูกรบกวน','หญ้า/ไม้ล้มลุก','ไม้พุ่ม','ไม้ยืนต้นเบิกนำ','สังคมสมบูรณ์ (Climax)'];
+function stepM3(dt){if(M3.fx){M3.fxT+=dt;if(M3.fxT>1.4){$('#stype').value=M3.fx==='fire'?'secondary':'primary';M3.t=0;M3.fx=null;updateText();}return;}M3.t=Math.min(TT()*1.1,M3.t+dt*V('spd3'));}
+function plant(g,type,x,y,s,b){const sw=Math.sin(S.time*1.5+x*0.05)*1.2;
+  if(type==='lichen'){g.fillStyle=hash(x)>0.5?'#fb923c':'#bef264';g.beginPath();g.ellipse(x,y-1,5*s,2.2*s,0,0,7);g.fill();}
+  else if(type==='moss'){g.fillStyle='#4d7c0f';for(let i=0;i<3;i++){g.beginPath();g.arc(x+(i-1)*4*s,y-2*s,3.5*s,Math.PI,0);g.fill();}}
+  else if(type==='grass'||type==='tallgrass'){const H=(type==='tallgrass'?26:13)*s;g.strokeStyle=type==='tallgrass'?'#a3a635':'#65a30d';g.lineWidth=1.3;for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(x+i*2,y);g.quadraticCurveTo(x+i*3,y-H*0.6,x+i*4+sw,y-H*(0.8+0.2*hash(x+i)));g.stroke();}}
+  else if(type==='shrub'||type==='dwarf'){const R=(type==='dwarf'?6:11)*s;g.fillStyle='#3f6212';g.beginPath();g.arc(x-R*0.5,y-R*0.7,R*0.75,0,7);g.arc(x+R*0.5,y-R*0.7,R*0.75,0,7);g.arc(x,y-R*1.1,R*0.8,0,7);g.fill();}
+  else if(type==='cactus'){g.fillStyle='#4d7c0f';rr(g,x-4*s,y-30*s,8*s,30*s,4*s);g.fill();rr(g,x-12*s,y-22*s,5*s,12*s,2.5*s);g.fill();rr(g,x+7*s,y-26*s,5*s,14*s,2.5*s);g.fill();}
+  else{const H=(type==='ptree'?55:type==='conifer'?85:type==='broad'?105:80)*s;g.fillStyle='#57381e';g.fillRect(x-2.5*s,y-H*0.55,5*s,H*0.55);
+    if(type==='conifer'){g.fillStyle='#14532d';for(let i=0;i<3;i++){g.beginPath();g.moveTo(x,y-H-2+i*H*0.22);g.lineTo(x-(12+i*6)*s,y-H*0.45+i*H*0.12);g.lineTo(x+(12+i*6)*s,y-H*0.45+i*H*0.12);g.closePath();g.fill();}}
+    else{const col=type==='ptree'?'#65a30d':type==='decid'?(Math.sin(S.time*0.05+hash(x))>0.6?'#d97706':'#3f8f2a'):'#166534',R=(type==='ptree'?14:type==='broad'?24:20)*s;g.fillStyle=col;g.beginPath();g.arc(x+sw,y-H+R*0.4,R,0,7);g.arc(x-R*0.7+sw,y-H+R*1.1,R*0.8,0,7);g.arc(x+R*0.7+sw,y-H+R*1.1,R*0.8,0,7);g.fill();}}}
+function drawM3(g,w,h){const T0=TT(),q=M3.t/T0,a=abund(q),b=BIO[$('#biome').value],sd=soilD(q),aw=w-212,yR=h*0.8,sp=sd*0.55,yG=yR-sp;
+  const sky=g.createLinearGradient(0,0,0,yG);sky.addColorStop(0,'#0c2740');sky.addColorStop(1,'#1e4d5c');g.fillStyle=sky;rr(g,4,4,aw,h-8,10);g.fill();g.fillStyle='#fde68a';glow(g,aw-50,40,40,'rgba(253,230,138,.4)');g.beginPath();g.arc(aw-50,40,14,0,7);g.fill();
+  g.fillStyle='#57534e';g.fillRect(4,yR,aw,h-yR-4);g.strokeStyle='#78716c';g.lineWidth=1;for(let i=0;i<14;i++){const x=10+hash(i+5)*(aw-20),y=yR+6+hash(i+9)*(h-yR-16);g.beginPath();g.moveTo(x,y);g.lineTo(x+14,y+4);g.stroke();}
+  if(sp>0.5){g.fillStyle='#7c4a1e';g.fillRect(4,yG,aw,sp);g.fillStyle='#3b2412';g.fillRect(4,yG,aw,Math.min(sp,sp*0.3+2));}
+  const lay=[['climax',7,b.c],['ptree',9,'ptree'],['shrub',16,b.c==='dwarf'?'dwarf':'shrub'],['grass',40,b.c==='tallgrass'?'tallgrass':'grass'],['moss',30,'moss'],['lichen',34,'lichen']];
+  lay.forEach(([k,mx,type],li)=>{let n=Math.round((a[k]||0)*mx);if(k==='climax'&&b.c==='tallgrass')n=Math.round(a.climax*40);if(k==='climax'&&b.c==='cactus')n=Math.round(a.climax*6);if(k==='climax'&&b.c==='dwarf')n=Math.round(a.climax*14);
+    for(let i=0;i<n;i++){const x=14+hash(i*13+li*101)*(aw-28),s=1.05+0.55*hash(i*7+li*31);plant(g,type,x,yG+1,s,b);}});
+  if(M3.fx){const k=clamp(M3.fxT/1.4,0,1);if(M3.fx==='fire'){for(let i=0;i<40;i++){const x=10+hash(i)*(aw-20),fh=20+30*hash(i+3)*(1+Math.sin(S.time*20+i));g.fillStyle=`rgba(${240},${Math.round(80+100*hash(i+7))},20,${0.85-k*0.3})`;g.beginPath();g.moveTo(x-8,yG);g.quadraticCurveTo(x,yG-fh*2,x+8,yG);g.fill();}g.fillStyle=`rgba(30,20,15,${k*0.7})`;g.fillRect(4,4,aw,yG-4);}
+    else{g.fillStyle=`rgba(${220},${60},20,${0.4+0.5*k})`;g.fillRect(4,yG-30*k,aw,yR-yG+30*k);g.fillStyle=`rgba(20,20,20,${k*0.8})`;g.fillRect(4,yG-30*k,aw,yR-yG+30*k);}}
+  T(g,'ดิน '+sd.toFixed(0)+' cm',12,yG+sp/2+(sp<8?-10:0),'#fde68a',10.5,'left',true);T(g,'หินต้นกำเนิด (Bedrock)',12,yR+14,'#d6d3d1',10.5,'left',true);
+  const ix=aw+10,iw=w-ix-4;panel(g,ix,4,iw,h-8);const st=stage3(q),nm=STN();T(g,b.n,ix+10,20,'#86efac',12,'left',true);T(g,'ปีที่ '+M3.t.toFixed(0)+' / ~'+T0,ix+10,38,'#fde68a',11.5,'left',true);T(g,nm[st]||nm[0],ix+10,56,'#eefbf2',11,'left',true);
+  bar(g,ix+10,84,iw-20,8,sd/80,'#a16207','ความลึกดิน',sd.toFixed(0)+' cm');bar(g,ix+10,114,iw-20,8,rich(q),'#60a5fa','ความหลากหลายของชนิด',Math.round(rich(q)*100)+'%');bar(g,ix+10,144,iw-20,8,biomass(M3.t),'#4ade80','มวลชีวภาพ (เทียบป่าดิบชื้น)',Math.round(biomass(M3.t)*100)+'%');
+  const wy=184,wh=110,wx=ix+30,wwid=iw-40;g.fillStyle='rgba(255,255,255,.04)';g.fillRect(wx,wy,wwid,wh);g.strokeStyle='rgba(255,255,255,.3)';g.strokeRect(wx,wy,wwid,wh);T(g,'Whittaker: อุณหภูมิ × ฝน',ix+10,wy-8+0,'#a7c4b0',9.5);
+  Object.entries(BIO).forEach(([k,v])=>{const x=wx+wwid*clamp(v.P/3000,0,1),y=wy+wh-wh*clamp((v.T+15)/45,0,1),on=k===$('#biome').value;g.fillStyle=on?'#fde047':'rgba(255,255,255,.4)';g.beginPath();g.arc(x,y,on?5:3,0,7);g.fill();if(on)T(g,v.T+'°C · '+v.P+' mm',x+(x>wx+wwid/2?-6:6),y<wy+20?y+12:y-10,'#fde68a',9.5,x>wx+wwid/2?'right':'left',true);});
+  T(g,'ฝน →',wx+wwid,wy+wh+9,'#a7c4b0',9,'right');T(g,'T ↑',wx-4,wy+6,'#a7c4b0',9,'right');
+  const py=wy+wh+24;if(CYCV()){T(g,'ธาตุอาหารในดิน',ix+10,py,'#93c5fd',11,'left',true);bar(g,ix+10,py+24,iw-20,7,clamp(sd/80*0.9,0,1),'#93c5fd','ไนโตรเจน (N) สะสม','');bar(g,ix+10,py+50,iw-20,7,clamp(biomass(M3.t)*0.9+0.05,0,1),'#a16207','อินทรียวัตถุ (C)','');T(g,'ไลเคนหลั่งกรดทำให้หินผุ → ดิน',ix+10,py+70,'#d6eedc',9.5);}
+  else{T(g,'ห่วงโซ่อาหารในระยะนี้',ix+10,py,'#86efac',11,'left',true);const ch=[['🦠 ไรดิน แบคทีเรีย','🦠 ไรดิน แบคทีเรีย'],['🦠 ไรดิน แบคทีเรีย','🐛 ไรดิน หนอน'],['🐛 → 🐦','🦗 → 🐸'],['🦗 → 🐸','🐀 → 🐍'],['🐀 → 🐍','🦌 → 🐅'],['🐇 → 🦊','🦌 → 🐅'],['🦌 → 🐅','🦌 → 🐅']],row=ch[Math.min(st,ch.length-1)];T(g,row[0],ix+10,py+22,'#eefbf2',11);T(g,row[1],ix+10,py+42,'#eefbf2',11);T(g,'ระดับขั้นอาหารเพิ่มตามความซับซ้อน',ix+10,py+64,'#d6eedc',9.5);}}
+
+/* ================= MODE 4 : EUTROPHICATION ================= */
+const LOAD={low:[0.03,'ต่ำ'],med:[0.2,'ปานกลาง'],sev:[0.8,'รุนแรง']};
+let M4;function initM4(){M4={t:0,Nu:0.05,A:8,D:15,DO:7.5,F:60,Fd:0,hist:[],ht:0};}
+const light=t=>Math.max(0,Math.sin(2*Math.PI*(t-0.25)));
+const BOD=()=>0.12*M4.D+0.5,KA=()=>$('#aer').checked?2.5:0.6,INP=()=>$('#stopIn').checked?0:LOAD[$('#load').value][0];
+function rates(){const s=M4,f=s.Nu/(s.Nu+0.3),L=light(s.t),P=0.06*s.A*L,R=0.02*s.A,dec=0.23*BOD();return{f,L,P,R,dec,dDO:KA()*(8-s.DO)+P-R-dec};}
+function stepM4(dt){let d=dt*V('spd4');const n=Math.ceil(d/0.005),h=d/n,I=INP();for(let i=0;i<n;i++){const s=M4,q=rates();
+    const dNu=I-0.02*s.A*q.f+0.0005*s.D-0.03*s.Nu,dA=s.A*q.f*(1-s.A/100)-0.15*s.A,dF=s.DO>=5?0.03*s.F*(1-s.F/80):s.DO>=3?-0.04*s.F*(5-s.DO)/2:-0.8*s.F*(3-s.DO)/3,death=Math.max(0,-dF),dD=0.15*s.A+0.3*death-0.08*s.D;
+    s.Nu=Math.max(0,s.Nu+dNu*h);s.A=Math.max(0.5,s.A+dA*h);s.D=Math.max(0,s.D+dD*h);s.DO=clamp(s.DO+q.dDO*h,0,14);s.F=Math.max(0,s.F+dF*h);s.Fd=Math.max(0,s.Fd+(death-0.3*s.Fd)*h);s.t+=h;}
+  M4.ht+=d;if(M4.ht>0.1){M4.ht=0;M4.hist.push([M4.t,M4.DO,BOD(),M4.A]);if(M4.hist.length>900)M4.hist.shift();}}
+function fish(g,x,y,s,dir,dead){g.save();g.translate(x,y);g.scale(dir,dead?-1:1);g.fillStyle=dead?'#a8a29e':'#fbbf24';g.beginPath();g.ellipse(0,0,10*s,5*s,0,0,7);g.fill();g.beginPath();g.moveTo(-8*s,0);g.lineTo(-15*s,-5*s);g.lineTo(-15*s,5*s);g.closePath();g.fill();g.fillStyle='#000';g.beginPath();g.arc(5*s,-1.5*s,1.3*s,0,7);g.fill();g.restore();}
+function drawM4(g,w,h){const s=M4,L=light(s.t),aw=w-214,yW=110,yB=h-26,A=s.A/100,I=INP(),bod=BOD();
+  const sk=g.createLinearGradient(0,0,0,yW);sk.addColorStop(0,`rgb(${Math.round(lerp(8,56,L))},${Math.round(lerp(15,130,L))},${Math.round(lerp(35,190,L))})`);sk.addColorStop(1,`rgb(${Math.round(lerp(15,120,L))},${Math.round(lerp(25,170,L))},${Math.round(lerp(45,210,L))})`);g.fillStyle=sk;rr(g,4,4,aw,h-8,10);g.fill();
+  const ang=2*Math.PI*(s.t-0.25),sx=aw/2-Math.cos(ang)*aw*0.38,sy=yW-10-Math.max(0,Math.sin(ang))*80;if(L>0){glow(g,sx,sy,36,'rgba(253,230,138,.5)');g.fillStyle='#fde047';g.beginPath();g.arc(sx,sy,13,0,7);g.fill();}else{g.fillStyle='#e5e7eb';g.beginPath();g.arc(aw*0.7,34,10,0,7);g.fill();g.fillStyle='rgb(8,15,35)';g.beginPath();g.arc(aw*0.7+5,31,9,0,7);g.fill();}
+  g.fillStyle='#4d3a22';g.fillRect(4,yW-6,aw,h-yW+2);const wg=g.createLinearGradient(0,yW,0,yB);wg.addColorStop(0,`rgb(${Math.round(lerp(30,40,A))},${Math.round(lerp(90,120,A))},${Math.round(lerp(140,40,A))})`);wg.addColorStop(1,`rgb(${Math.round(lerp(10,20,A))},${Math.round(lerp(40,45,A))},${Math.round(lerp(70,20,A))})`);
+  g.fillStyle=wg;g.beginPath();g.moveTo(40,yW);g.lineTo(aw-30,yW);g.quadraticCurveTo(aw-40,yB,aw/2,yB);g.quadraticCurveTo(50,yB,40,yW);g.closePath();g.fill();
+  g.fillStyle=`rgba(74,222,128,${0.25+0.6*A})`;g.fillRect(40,yW,aw-70,3+A*14);for(let i=0;i<Math.round(A*60);i++){const x=44+hash(i*3)*(aw-80),y=yW+2+hash(i*5)*A*14;g.fillStyle='#4ade80';g.beginPath();g.arc(x+Math.sin(S.time+i)*2,y,1.5+hash(i)*1.5,0,7);g.fill();}
+  g.fillStyle='#6b7280';g.fillRect(4,yW-34,48,12);T(g,'น้ำทิ้ง/ปุ๋ย',8,yW-44,'#fde68a',10,'left',true);if(I>0){for(let i=0;i<Math.round(I*30)+3;i++){const k=(S.time*0.8+hash(i))%1,x=52+k*40,y=yW-28+k*k*40;g.fillStyle=i%2?'#60a5fa':'#fb923c';g.beginPath();g.arc(x,y,2.2,0,7);g.fill();}}
+  const nf=Math.round(s.F/5);for(let i=0;i<nf;i++){const ph=S.time*(0.3+hash(i)*0.3)+hash(i+3)*6,x=aw/2+Math.sin(ph)*(aw*0.3),y=yW+40+hash(i+7)*(yB-yW-70)+Math.sin(ph*2)*4,dir=Math.cos(ph)>0?1:-1;fish(g,x,y,0.9,dir,false);}
+  for(let i=0;i<Math.min(14,Math.round(s.Fd*2));i++)fish(g,70+hash(i+40)*(aw-140),yW+6+Math.sin(S.time+i)*1.5,0.85,1,true);
+  for(let i=0;i<Math.round(bod*2);i++){g.fillStyle='rgba(161,98,7,.8)';g.beginPath();g.arc(aw/2+(hash(i+60)-0.5)*(aw*0.55),yB-6-hash(i+70)*12,1.8,0,7);g.fill();}
+  if(L>0.2&&s.DO<12)for(let i=0;i<Math.round(A*L*14);i++){const k=(S.time*0.5+hash(i+90))%1;g.strokeStyle='rgba(224,242,254,.75)';g.lineWidth=1;g.beginPath();g.arc(60+hash(i+91)*(aw-120),yW+40-k*36,2,0,7);g.stroke();}
+  T(g,'🦠 ผู้ย่อยสลายใช้ O₂ ย่อยซาก',aw/2,yB+12,'#fde68a',10.5,'center',true);
+  if(CYCV()){arrow(g,96,yW-6,140,yW+8,'#93c5fd',1.6);T(g,'NO₃⁻, PO₄³⁻',100,yW+24,'#93c5fd',10,'left',true);arrow(g,aw*0.62,yW+26,aw*0.66,yB-28,'#a3e635',1.6,[4,3]);T(g,'สาหร่ายตาย → ซาก',aw*0.67,yW+60,'#bef264',10,'left',true);arrow(g,aw*0.36,yB-26,aw*0.3,yW+22,'#fb923c',1.6,[4,3]);T(g,'ย่อยสลาย → ธาตุอาหารหมุนเวียน',aw*0.08,yB-44,'#fdba74',10,'left',true);}
+  else{const fx=aw-190,fy=yW+18;panel(g,fx,fy,180,70);T(g,'สายใยอาหารในบ่อ',fx+8,fy+12,'#86efac',10.5,'left',true);T(g,'🦠 สาหร่าย → 🦐 แพลงก์ตอนสัตว์',fx+8,fy+32,'#eefbf2',10);T(g,'→ 🐟 ปลาเล็ก → 🐠 ปลาใหญ่',fx+8,fy+50,'#eefbf2',10);}
+  const ix=aw+10,iw=w-ix-4;panel(g,ix,4,iw,h-8);const day=Math.floor(s.t),hr=Math.floor((s.t%1)*24),mn=Math.floor(((s.t*24)%1)*60);T(g,'วันที่ '+day+'  เวลา '+String(hr).padStart(2,'0')+':'+String(mn).padStart(2,'0'),ix+10,20,'#fde68a',12,'left',true);T(g,L>0?'☀ กลางวัน: สาหร่ายสังเคราะห์ด้วยแสง':'🌙 กลางคืน: มีแต่การหายใจ',ix+10,38,L>0?'#fde68a':'#c7d2fe',10.5);
+  const doc=s.DO>=6?'#4ade80':s.DO>=4?'#facc15':s.DO>=2?'#fb923c':'#ef4444';bar(g,ix+10,68,iw-20,10,s.DO/10,doc,'DO (ออกซิเจนละลาย)',s.DO.toFixed(1)+' mg/L');[2,4,6].forEach(v=>{g.fillStyle='#fff';g.fillRect(ix+10+(iw-20)*v/10,66,1,14);});
+  bar(g,ix+10,102,iw-20,10,bod/20,'#a16207','BOD',bod.toFixed(1)+' mg/L');bar(g,ix+10,136,iw-20,10,A,'#4ade80','สาหร่าย (Algal density)',Math.round(s.A)+'%');bar(g,ix+10,170,iw-20,10,s.F/80,'#fbbf24','ประชากรปลา',Math.round(s.F)+' ตัว');bar(g,ix+10,204,iw-20,10,clamp(s.Nu/2,0,1),'#60a5fa','ธาตุอาหาร N + P',s.Nu.toFixed(2)+' mg/L');
+  const st=s.DO>=6?['ดีมาก','#4ade80']:s.DO>=4?['พอใช้ ปลาเริ่มเครียด','#facc15']:s.DO>=2?['เสื่อมโทรม ปลาตาย','#fb923c']:['วิกฤต ขาดออกซิเจน','#ef4444'];panel(g,ix+10,228,iw-20,46);T(g,'คุณภาพน้ำ',ix+18,242,'#a7c4b0',10);T(g,st[0],ix+18,260,st[1],12.5,'left',true);
+  T(g,'อินพุต: '+(I>0?LOAD[$('#load').value][1]:'หยุดแล้ว'),ix+10,292,'#d6eedc',10.5);T(g,'เติมอากาศ: '+($('#aer').checked?'เปิด (kₐ = 2.5)':'ปิด (kₐ = 0.6)'),ix+10,310,'#d6eedc',10.5);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#a7c4b0',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#a7c4b0',10,'center');}
+  g.strokeStyle='rgba(255,255,255,.3)';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#a7c4b0',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#a7c4b0',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(2)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#e7fff0',10);});}
+function plot(g,A,H,ix,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();H.forEach((r,i)=>{const y=A.Y(r[ix]);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();}
+function fn(g,A,x0,x1,f,col,lw,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=120;i++){const x=x0+(x1-x0)*i/120;i?g.lineTo(A.X(x),A.Y(f(x))):g.moveTo(A.X(x),A.Y(f(x)));}g.stroke();g.setLineDash([]);}
+function vmark(g,A,x,h,col){g.strokeStyle=col;g.setLineDash([3,3]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.X(x),A.Tm);g.lineTo(A.X(x),h-A.B);g.stroke();g.setLineDash([]);}
+function clipA(g,A,w,h){g.save();g.beginPath();g.rect(A.L,A.Tm,w-A.L-A.Rm,h-A.B-A.Tm);g.clip();}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const E=energies(),C=toxins(),A=axes(g,w,h,0,4,-2,6,'ลำดับขั้นอาหาร','log₁₀ ของค่า',4,4,()=>'',v=>'10^'+Math.round(v));
+    for(let i=0;i<4;i++){const le=Math.log10(E[i]),lc=Math.log10(C[i]);g.fillStyle=LC[i];g.fillRect(A.X(i+0.15),A.Y(Math.max(-2,le)),A.X(i+0.47)-A.X(i+0.15),A.Y(-2)-A.Y(Math.max(-2,le)));g.fillStyle='#ef4444';g.fillRect(A.X(i+0.53),A.Y(Math.max(-2,lc)),A.X(i+0.85)-A.X(i+0.53),A.Y(-2)-A.Y(Math.max(-2,lc)));T(g,['P','C₁','C₂','C₃'][i],A.X(i+0.5),h-A.B+10,'#e7fff0',10.5,'center',true);}
+    legend(g,[['พลังงาน (kcal)','#4ade80'],['DDT (ppm)','#ef4444']],A.X(1.6),A.Tm+8);}
+  else if(m===2){const k=M2.k,K=V('K');
+    if(k==='growth'){const ym=K*1.5,A=axes(g,w,h,0,40,0,ym,'เวลา (t)','ขนาดประชากร N',4,4,v=>Math.round(v)+'',v=>Math.round(v)+'');clipA(g,A,w,h);fn(g,A,0,40,x=>Math.min(ym*2,Nexp(x)),'#f87171',2.2);fn(g,A,0,40,Nlog,'#4ade80',2.6);g.restore();
+      g.strokeStyle='#fde047';g.setLineDash([6,4]);g.beginPath();g.moveTo(A.X(0),A.Y(K));g.lineTo(A.X(40),A.Y(K));g.stroke();g.setLineDash([]);T(g,'K = '+K,A.X(40)-4,A.Y(K)-8,'#fde047',10,'right',true);vmark(g,A,M2.t,h,'#e5e7eb');legend(g,[['Exponential (J)','#f87171'],['Logistic (S)','#4ade80']],A.L+10,A.Tm+8);}
+    else if(k==='comp'||k==='pred'){const t1=Math.max(60,M2.t),t0=t1-60,ym=Math.max(K,...M2.hist.map(p=>Math.max(p[1],p[2])))*1.1,A=axes(g,w,h,t0,t1,0,ym,'เวลา','จำนวนประชากร',4,4,v=>Math.round(v)+'',v=>Math.round(v)+'');clipA(g,A,w,h);
+      const H=M2.hist.filter(p=>p[0]>=t0);plot(g,A,H,1,k==='comp'?'#60a5fa':'#a3e635',2.2);plot(g,A,H,2,k==='comp'?'#fb923c':'#ef4444',2.2);g.restore();legend(g,k==='comp'?[['ชนิด 1','#60a5fa'],['ชนิด 2','#fb923c']]:[['เหยื่อ (H)','#a3e635'],['ผู้ล่า (P)','#ef4444']],A.L+10,A.Tm+8);}
+    else{const R=['clump','uni','rand'].map(k=>vmr(M2.pts[k]).r),ym=Math.max(3,...R)*1.1,A=axes(g,w,h,0,3,0,ym,'รูปแบบการกระจาย','s² / x̄',3,4,()=>'');['#fb923c','#60a5fa','#a3e635'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(A.X(i+0.2),A.Y(R[i]),A.X(i+0.8)-A.X(i+0.2),A.Y(0)-A.Y(R[i]));T(g,['กลุ่ม','สม่ำเสมอ','สุ่ม'][i],A.X(i+0.5),h-A.B+10,'#e7fff0',10.5,'center',true);T(g,R[i].toFixed(2),A.X(i+0.5),A.Y(R[i])-8,'#fde68a',10.5,'center',true);});
+      g.strokeStyle='#fde047';g.setLineDash([6,4]);g.beginPath();g.moveTo(A.X(0),A.Y(1));g.lineTo(A.X(3),A.Y(1));g.stroke();g.setLineDash([]);T(g,'= 1 (สุ่ม)',A.X(3)-4,A.Y(1)-8,'#fde047',10,'right');}}
+  else if(m===3){const T0=TT(),A=axes(g,w,h,0,T0*1.1,0,1,'เวลา (ปี)','ค่าสัมพัทธ์',4,4,v=>Math.round(v)+'');const Bm=BIO[$('#biome').value].B||1;fn(g,A,0,T0*1.1,x=>soilD(x/T0)/80,'#a16207',2.2);fn(g,A,0,T0*1.1,x=>rich(x/T0),'#60a5fa',2.2);fn(g,A,0,T0*1.1,x=>biomass(x)/Bm,'#4ade80',2.6);
+    const other=$('#stype').value==='primary'?150:600;fn(g,A,0,T0*1.1,x=>1-Math.exp(-x/(other*0.45)),'rgba(74,222,128,.45)',1.5,[5,4]);vmark(g,A,M3.t,h,'#fde047');legend(g,[['ความลึกดิน','#a16207'],['ความหลากหลายของชนิด','#60a5fa'],['มวลชีวภาพ','#4ade80'],[$('#stype').value==='primary'?'มวลชีวภาพแบบทุติยภูมิ (เทียบ)':'มวลชีวภาพแบบปฐมภูมิ (เทียบ)','rgba(74,222,128,.45)']],A.X(T0*0.5),A.Y(0.42));}
+  else{const t1=Math.max(30,M4.t),t0=Math.max(0,t1-60),A=axes(g,w,h,t0,t1,0,20,'เวลา (วัน)','mg/L',4,4,v=>Math.round(v)+'');g.fillStyle='rgba(239,68,68,.12)';g.fillRect(A.L,A.Y(2),w-A.L-A.Rm,A.Y(0)-A.Y(2));T(g,'DO < 2: ปลาตาย',w-A.Rm-4,A.Y(1),'#fca5a5',9.5,'right');
+    clipA(g,A,w,h);const H=M4.hist.filter(p=>p[0]>=t0);plot(g,A,H,1,'#38bdf8',2.2);plot(g,A,H,2,'#d97706',2.2);plot(g,A,H.map(p=>[p[0],0,0,p[3]/5]),3,'rgba(74,222,128,.7)',1.5);g.restore();legend(g,[['DO (mg/L)','#38bdf8'],['BOD (mg/L)','#d97706'],['สาหร่าย (÷5)','#4ade80']],A.L+10,A.Tm+8);}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TB1='<table><tr><th>พีระมิด</th><th>หน่วย</th><th>หัวกลับได้?</th><th>ตัวอย่าง</th></tr><tr><td>พลังงาน</td><td>kcal/m²/ปี</td><td><span class="tag no">ไม่ได้</span></td><td>ทุกระบบนิเวศ (กฎ 10%)</td></tr><tr><td>มวลชีวภาพ</td><td>g/m²</td><td><span class="tag ok">ได้</span></td><td>ทะเล: แพลงก์ตอนพืชมวลน้อยแต่แบ่งตัวเร็วมาก</td></tr><tr><td>จำนวน</td><td>ตัว/พื้นที่</td><td><span class="tag ok">ได้</span></td><td>ต้นไม้ใหญ่ 1 ต้น เลี้ยงแมลงนับพันตัว</td></tr></table>';
+const TB1C='<table><tr><th></th><th>คาร์บอน</th><th>ไนโตรเจน</th><th>ฟอสฟอรัส</th></tr><tr><td>แหล่งสะสมหลัก</td><td>หินปูน มหาสมุทร</td><td>บรรยากาศ (N₂ 78%)</td><td>หินและตะกอน</td></tr><tr><td>มีแก๊สในบรรยากาศ</td><td>มี (CO₂)</td><td>มี (N₂)</td><td><b>ไม่มี</b></td></tr><tr><td>สิ่งมีชีวิตสำคัญ</td><td>พืช ผู้ย่อยสลาย</td><td>Rhizobium, Nitrosomonas, Nitrobacter, Pseudomonas</td><td>ผู้ย่อยสลาย</td></tr><tr><td>ผลกระทบจากมนุษย์</td><td>เผาเชื้อเพลิง → โลกร้อน</td><td>ปุ๋ยไนเตรต → ยูโทรฟิเคชัน</td><td>ผงซักฟอก ปุ๋ย → ยูโทรฟิเคชัน</td></tr></table>';
+const TB2G='<table><tr><th></th><th>Exponential (J)</th><th>Logistic (S)</th></tr><tr><td>สมการ</td><td>dN/dt = rN</td><td>dN/dt = rN(K − N)/K</td></tr><tr><td>ทรัพยากร</td><td>ไม่จำกัด</td><td>จำกัด (มี K)</td></tr><tr><td>รูปกราฟ</td><td>J</td><td>S (จุดเปลี่ยนเว้าที่ K/2)</td></tr><tr><td>ตัวอย่าง</td><td>แบคทีเรียช่วงแรก, ชนิดพันธุ์รุกราน</td><td>ประชากรในธรรมชาติส่วนใหญ่</td></tr></table>';
+const TB2I='<table><tr><th>ความสัมพันธ์</th><th>ชนิด A</th><th>ชนิด B</th><th>ตัวอย่าง</th></tr><tr><td>การแข่งขัน</td><td>−</td><td>−</td><td>Paramecium 2 ชนิด</td></tr><tr><td>ผู้ล่า–เหยื่อ</td><td>+</td><td>−</td><td>ลิงซ์–กระต่าย</td></tr><tr><td>ภาวะปรสิต</td><td>+</td><td>−</td><td>พยาธิ–คน</td></tr><tr><td>ภาวะพึ่งพากัน</td><td>+</td><td>+</td><td>ไลเคน (รา + สาหร่าย)</td></tr><tr><td>ภาวะอิงอาศัย</td><td>+</td><td>0</td><td>กล้วยไม้บนต้นไม้</td></tr></table>';
+const TB2D='<table><tr><th>รูปแบบ</th><th>s²/x̄</th><th>สาเหตุ</th><th>ตัวอย่าง</th></tr><tr><td>แบบกลุ่ม</td><td>&gt; 1</td><td>ทรัพยากรกระจุก, อยู่เป็นฝูง</td><td>ฝูงช้าง, ต้นไม้รอบแหล่งน้ำ (พบมากที่สุด)</td></tr><tr><td>แบบสม่ำเสมอ</td><td>&lt; 1</td><td>แย่งพื้นที่, หลั่งสารยับยั้ง (Allelopathy)</td><td>นกเพนกวินทำรัง, สวนยาง</td></tr><tr><td>แบบสุ่ม</td><td>≈ 1</td><td>ทรัพยากรสม่ำเสมอ ไม่มีปฏิสัมพันธ์</td><td>ต้นแดนดิไลออน (พบน้อย)</td></tr></table>';
+const TB3='<table><tr><th></th><th>ปฐมภูมิ (Primary)</th><th>ทุติยภูมิ (Secondary)</th></tr><tr><td>จุดเริ่มต้น</td><td>ไม่มีดิน (หินเปล่า ลาวา ทรายใหม่)</td><td>มีดินและเมล็ด/รากเดิม</td></tr><tr><td>สาเหตุ</td><td>ภูเขาไฟระเบิด ธารน้ำแข็งถอย</td><td>ไฟป่า น้ำท่วม การทำไร่เลื่อนลอย</td></tr><tr><td>สิ่งมีชีวิตบุกเบิก</td><td>ไลเคน มอส</td><td>หญ้า ไม้ล้มลุก</td></tr><tr><td>ระยะเวลา</td><td>นาน (หลายร้อย–พันปี)</td><td>เร็วกว่า (หลายสิบ–ร้อยปี)</td></tr></table>';
+const TB4='<table><tr><th>DO (mg/L)</th><th>BOD (mg/L)</th><th>คุณภาพน้ำ</th><th>ผลต่อสิ่งมีชีวิต</th></tr><tr><td>≥ 6</td><td>≤ 1.5</td><td><span class="tag ok">ดีมาก</span></td><td>ปลาและสัตว์น้ำอยู่ได้ปกติ</td></tr><tr><td>4 – 6</td><td>2 – 4</td><td><span class="tag mid">พอใช้</span></td><td>ปลาบางชนิดเริ่มเครียด</td></tr><tr><td>2 – 4</td><td>4 – 10</td><td><span class="tag no">เสื่อมโทรม</span></td><td>ปลาตาย เหลือสัตว์ทนทาน</td></tr><tr><td>&lt; 2</td><td>&gt; 10</td><td><span class="tag no">วิกฤต</span></td><td>เกิดสภาพไร้ออกซิเจน กลิ่นเหม็น (H₂S)</td></tr></table>';
+const MIS1='<p><b>❌ "พีระมิดทุกชนิดหัวกลับได้"</b></p><p>✅ <b>พีระมิดพลังงานไม่มีทางหัวกลับ</b> เพราะพลังงานสูญเสียเป็นความร้อนทุกลำดับขั้น (ราว 90%) ส่วนพีระมิดมวลชีวภาพและจำนวนหัวกลับได้</p><p><b>❌ "สารพิษเจือจางลงเมื่อผ่านห่วงโซ่อาหาร"</b> ✅ สารที่สลายตัวยากและละลายในไขมัน (DDT, ปรอท) <b>สะสมเพิ่มขึ้น</b> ในผู้บริโภคลำดับสูง (Biomagnification)</p>';
+const MIS2='<p><b>❌ "ประชากรจะเพิ่มขึ้นเรื่อย ๆ ถ้ามีอาหารพอ"</b></p><p>✅ ทุกประชากรมีขีดจำกัด (K) จากอาหาร พื้นที่ ผู้ล่า และโรค · อัตราการเพิ่มสูงสุดเกิดที่ <b>N = K/2</b> ไม่ใช่ตอนที่ประชากรมากที่สุด</p>';
+const MIS3='<p><b>❌ "Secondary succession ต้องเริ่มจากไลเคนเหมือน Primary"</b></p><p>✅ Secondary succession <b>มีดินเดิมอยู่แล้ว</b> จึงเริ่มจากหญ้าและไม้ล้มลุก และเกิดเร็วกว่ามาก · สังคมสมบูรณ์ (Climax) ก็ไม่ได้คงที่ถาวร อาจถูกรบกวนได้อีก</p>';
+const MIS4='<p><b>❌ "BOD สูงแปลว่าน้ำมีออกซิเจนมาก"</b></p><p>✅ <b>BOD คือปริมาณออกซิเจนที่จุลินทรีย์ต้องใช้ย่อยสารอินทรีย์</b> BOD สูงหมายถึงสารอินทรีย์มาก น้ำเสีย และ DO จะลดลง</p><p><b>❌ "สาหร่ายมากทำให้น้ำมีออกซิเจนมาก"</b> ✅ กลางวันอาจเพิ่ม O₂ แต่กลางคืนสาหร่ายหายใจ และเมื่อตายผู้ย่อยสลายใช้ O₂ จำนวนมาก</p>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='',tt='',ct='';
+  if(m===1){const e=ECO[$('#eco').value],E=energies(),C=toxins(),eff=V('eff'),bmf=100/eff;
+    if(CYCV()){const c=$('#cyc').value;tt=CY[c].t;ct='พลังงานและสารพิษในแต่ละลำดับขั้น';
+      st=[['วัฏจักร',{C:'คาร์บอน',N:'ไนโตรเจน',P:'ฟอสฟอรัส'}[c]],['แหล่งสะสมหลัก',{C:'มหาสมุทร/หินปูน',N:'บรรยากาศ N₂',P:'หินฟอสเฟต'}[c]],['มีแก๊สในบรรยากาศ',c==='P'?'ไม่มี':'มี'],['ผลจากมนุษย์',{C:'โลกร้อน',N:'ยูโทรฟิเคชัน',P:'ยูโทรฟิเคชัน'}[c]]];
+      flowBar({C:['CO₂ บรรยากาศ','สังเคราะห์ด้วยแสง','ห่วงโซ่อาหาร','หายใจ/ย่อยสลาย','CO₂ กลับคืน'],N:['N₂','ตรึง N → NH₄⁺','Nitrification → NO₃⁻','พืชดูดซึม','Ammonification','Denitrification → N₂'],P:['หินฟอสเฟต','ผุพัง → PO₄³⁻','พืช/สัตว์','ย่อยสลาย','ตะกอน → หิน']}[c],Math.floor(S.time/1.5)%({C:5,N:6,P:5}[c]));
+      eq={C:'สังเคราะห์ด้วยแสง: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂\nหายใจระดับเซลล์: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP\nเผาไหม้: CH₄ + 2O₂ → CO₂ + 2H₂O',N:'ตรึงไนโตรเจน: N₂ + 8H⁺ + 8e⁻ + 16ATP → 2NH₃ + H₂ (Nitrogenase)\nNitrification: NH₄⁺ → NO₂⁻ (Nitrosomonas) → NO₃⁻ (Nitrobacter)\nDenitrification: NO₃⁻ → N₂ (Pseudomonas, สภาพไร้ O₂)',P:'หินฟอสเฟต → (ผุพัง) → PO₄³⁻ → ATP, DNA, ฟอสโฟลิพิด, กระดูก (Ca₃(PO₄)₂)\nไม่มีแก๊สในวัฏจักร → ฟอสฟอรัสมักเป็นปัจจัยจำกัดในแหล่งน้ำจืด'}[c];
+      an={C:'<p><span class="tag ok">คาร์บอน</span> เข้าสู่สิ่งมีชีวิตทางการสังเคราะห์ด้วยแสง และกลับสู่บรรยากาศทางการหายใจ การย่อยสลาย และการเผาไหม้ มนุษย์เผาเชื้อเพลิงฟอสซิลทำให้ CO₂ ในบรรยากาศเพิ่มขึ้น</p>',N:'<p><span class="tag ok">ไนโตรเจน</span> พืชใช้ N₂ โดยตรงไม่ได้ ต้องอาศัย<b>แบคทีเรียตรึงไนโตรเจน</b> (Rhizobium ในปมรากพืชตระกูลถั่ว) เปลี่ยนเป็น NH₄⁺ แล้วแบคทีเรีย Nitrification เปลี่ยนเป็น NO₃⁻ ที่พืชดูดซึมได้</p>',P:'<p><span class="tag ok">ฟอสฟอรัส</span> ไม่มีรูปแก๊ส หมุนเวียนผ่านหิน ดิน น้ำ และสิ่งมีชีวิต จึงช้ามาก ฟอสเฟตจากผงซักฟอกและปุ๋ยเป็นสาเหตุหลักของยูโทรฟิเคชัน</p>'}[c];tb=TB1C;}
+    else{tt='สายใยอาหาร'+e.n+' · พีระมิด · การสะสมสารพิษ';ct='พลังงาน และ DDT ในแต่ละลำดับขั้น (สเกล log)';
+      st=[['พลังงานผู้ผลิต (E₁)',fmt(E[0])+' kcal'],['พลังงานถึง C₃ (E₄)',fmt(E[3])+' kcal'],['DDT ใน C₃',fmt(C[3])+' ppm'],['ตัวคูณสะสม (BMF)','×'+(+bmf.toFixed(1))+' ต่อขั้น']];
+      flowBar(['ดวงอาทิตย์','ผู้ผลิต','ผู้บริโภคลำดับ 1','ผู้บริโภคลำดับ 2','ผู้บริโภคลำดับ 3','ผู้ย่อยสลาย'],Math.floor(S.time/1.2)%6);
+      eq=`E(n+1) = E(n) × ${eff/100}   (กฎ 10% ของ Lindeman)\n${E.map((v,i)=>'E'+(i+1)+' = '+fmt(v)).join(' → ')} kcal/m²/ปี\nC(n) = C₀ × BMF^(n−1),  BMF ≈ 1/ประสิทธิภาพ = ${+bmf.toFixed(1)}\nC₄ = ${V('c0')} × ${+bmf.toFixed(1)}³ = ${fmt(C[3])} ppm`;
+      const ty=$('#pyr').value,vals=ty==='energy'?E:ty==='bio'?e.bio:e.num,inv=vals.some((v,i)=>i&&v>vals[i-1]);
+      an=`<p><span class="tag ok">พลังงาน</span> ถ่ายทอดได้เพียง ${eff}% ต่อลำดับขั้น ที่เหลือสูญเสียเป็นความร้อนจากการหายใจ และอยู่ในส่วนที่ไม่ถูกกิน · ผู้บริโภคลำดับ 3 ได้เพียง ${(eff**3/1e4).toFixed(eff>=10?3:5)}% ของพลังงานผู้ผลิต ห่วงโซ่อาหารจึงมักมีไม่เกิน 4–5 ลำดับขั้น</p>`+(inv?`<p><span class="tag mid">หัวกลับ</span> ${ty==='bio'?'แพลงก์ตอนพืชมีมวลขณะใดขณะหนึ่งน้อย แต่แบ่งตัวเร็วมาก (Turnover สูง) จึงเลี้ยงแพลงก์ตอนสัตว์ที่มีมวลมากกว่าได้':'ต้นไม้ใหญ่ 1 ต้นเป็นแหล่งอาหารของแมลงจำนวนมาก'}</p>`:'')+
+        `<p><span class="tag ${C[3]>=10?'no':'mid'}">Biomagnification</span> DDT ละลายในไขมัน ไม่ถูกขับออก ผู้ล่าต้องกินเหยื่อจำนวนมาก สารพิษจึงสะสมเพิ่ม ×${+bmf.toFixed(1)} ต่อขั้น${C[3]>=10?' · ผู้ล่าลำดับสูงสุดได้รับเกินระดับอันตราย (เช่น เปลือกไข่นกบาง)':''}</p>`;tb=TB1;}
+    mis=MIS1;}
+  else if(m===2){const k=M2.k,r=V('r'),K=V('K');
+    if(k==='growth'){const t=M2.t,Nl=Nlog(t),Ne=Nexp(t),N0=V('N0'),dN=r*Nl*(K-Nl)/K;tt='การเติบโตของประชากร: Exponential เทียบ Logistic';ct='ขนาดประชากรตามเวลา';
+      st=[['เวลา (t)',t.toFixed(1)],['N (Logistic)',fmt(Nl)],['N (Exponential)',Ne>1e7?'> 10 ล้าน':fmt(Ne)],['dN/dt (Logistic)',(dN>=0?'+':'')+dN.toFixed(1)]];
+      flowBar(['Lag','Log (เร่ง)','ชะลอ','คงที่ (K)'],r<=0?-1:Nl/K<0.15?0:Nl/K<0.5?1:Nl/K<0.95?2:3);
+      eq=`dN/dt = rN(K − N)/K = ${r}×${fmt(Nl)}×(${K} − ${fmt(Nl)})/${K} = ${dN.toFixed(2)}\nN(t) = K / (1 + ((K − N₀)/N₀)e^(−rt)) = ${K}/(1 + ${((K-N0)/N0).toFixed(1)}·e^(−${r}×${t.toFixed(1)})) = ${fmt(Nl)}\nExponential: N(t) = N₀e^(rt) = ${N0}·e^(${(r*t).toFixed(2)}) = ${Ne>1e7?Ne.toExponential(2):fmt(Ne)}`;
+      an=(r<=0?'<p><span class="tag no">r ≤ 0</span> อัตราตายมากกว่าอัตราเกิด ประชากรลดลงทั้งสองแบบ</p>':`<p><span class="tag ok">S-curve</span> ช่วงแรกเพิ่มช้า แล้วเร่งขึ้นจนเร็วที่สุดที่ N = K/2 (≈ ${K/2}) จากนั้นชะลอเพราะ<b>แรงต้านทานจากสิ่งแวดล้อม (Environmental resistance)</b> จนคงที่ที่ K</p><p>แบบ Exponential ไม่มีขีดจำกัด จึงเพิ่มเป็นทวีคูณ ${Ne>K?'และเกิน K แล้ว ซึ่งเกิดขึ้นจริงได้เพียงช่วงสั้น ๆ':''}</p>`)+(CYCV()?'<p><span class="tag mid">วัฏจักรสาร</span> ค่า K ถูกกำหนดโดยธาตุอาหารที่มีน้อยที่สุด (Liebig\'s law of the minimum) เช่น N หรือ P</p>':'');tb=TB2G;}
+    else if(k==='comp'){const a=V('a12'),b=V('a21'),out=a<1&&b<1?'อยู่ร่วมกันได้':a<1&&b>=1?'ชนิด 1 ชนะ':a>=1&&b<1?'ชนิด 2 ชนะ':'ขึ้นกับจำนวนเริ่มต้น';tt='การแข่งขันระหว่างชนิด (Interspecific competition)';ct='จำนวนประชากรของสองชนิดตามเวลา';
+      st=[['ชนิด 1 (N₁)',fmt(M2.N1)],['ชนิด 2 (N₂)',fmt(M2.N2)],['α₁₂ / α₂₁',a+' / '+b],['ผลที่คาด',out]];flowBar(['แข่งขันทรัพยากร','ชนิดหนึ่งได้เปรียบ',out==='อยู่ร่วมกันได้'?'แบ่งทรัพยากร (Niche partitioning)':'Competitive exclusion'],M2.t<5?0:M2.t<15?1:2);
+      eq=`dN₁/dt = r₁N₁(K₁ − N₁ − α₁₂N₂)/K₁\ndN₂/dt = r₂N₂(K₂ − N₂ − α₂₁N₁)/K₂\nr = ${r}, K = ${K}, α₁₂ = ${a}, α₂₁ = ${b} → ${out}`;
+      an=`<p><span class="tag ${out==='อยู่ร่วมกันได้'?'ok':'no'}">${out}</span> ${out==='อยู่ร่วมกันได้'?'ทั้งสองชนิดยับยั้งตัวเองมากกว่ายับยั้งอีกชนิด (α &lt; 1) เช่น ใช้อาหารต่างชนิดหรือหากินต่างบริเวณ':'<b>หลักการกีดกันทางการแข่งขัน (Competitive exclusion – Gause)</b>: สองชนิดที่ใช้ทรัพยากรเดียวกันทั้งหมดอยู่ร่วมกันไม่ได้'}</p><p>ในกราฟ Phase plane เส้นทางประชากรจะวิ่งไปยังจุดตัดของ Isocline หรือแกนของชนิดที่ชนะ</p>`;tb=TB2I;}
+    else if(k==='pred'){const pe=V('pe'),Hs=0.3/(0.1*pe),Ps=r*(1-Hs/K)/pe;tt='ความสัมพันธ์ผู้ล่า–เหยื่อ (Lotka–Volterra)';ct='ประชากรเหยื่อและผู้ล่าตามเวลา';
+      st=[['เหยื่อ (H)',fmt(M2.H)],['ผู้ล่า (P)',fmt(M2.P)],['สมดุล H*',fmt(Hs)],['สมดุล P*',Ps>0?fmt(Ps):'ผู้ล่าสูญพันธุ์']];flowBar(['เหยื่อเพิ่ม','ผู้ล่าเพิ่ม (ตามหลัง)','เหยื่อลด','ผู้ล่าลด'],(()=>{const n=M2.hist.length;if(n<3)return 0;const p=M2.hist[n-3],c=M2.hist[n-1],dH=c[1]-p[1],dP=c[2]-p[2];return dH>0&&dP<=0?0:dH>0?1:dP>0?2:3;})());
+      eq=`dH/dt = rH(1 − H/K) − aHP\ndP/dt = e·aHP − mP     (e = 0.1, m = 0.3)\nH* = m/(e·a) = 0.3/(0.1×${pe}) = ${fmt(Hs)}  ·  P* = r(1 − H*/K)/a = ${Ps>0?fmt(Ps):'< 0'}`;
+      an=Ps>0?'<p><span class="tag ok">วัฏจักรประชากร</span> เมื่อเหยื่อมาก ผู้ล่าเพิ่มตาม (ตามหลังเล็กน้อย) แล้วกินเหยื่อจนลดลง ผู้ล่าจึงลดตาม เกิดการแกว่งเป็นรอบ เช่น ลิงซ์–กระต่ายในแคนาดา</p><p>เทอม H/K ทำให้การแกว่งค่อย ๆ หน่วงลงเข้าสู่สมดุล</p>':'<p><span class="tag no">ผู้ล่าอยู่ไม่ได้</span> H* มากกว่า K หมายความว่าเหยื่อไม่เคยมากพอจะเลี้ยงผู้ล่า ลองเพิ่ม K หรือประสิทธิภาพการล่า</p>';tb=TB2I;}
+    else{const R=['clump','uni','rand'].map(k=>vmr(M2.pts[k]));tt='รูปแบบการกระจายตัวของประชากร (Quadrat sampling)';ct='อัตราส่วนความแปรปรวนต่อค่าเฉลี่ย';
+      st=[['จำนวนแปลง','25 แปลง (5×5)'],['กลุ่ม s²/x̄',R[0].r.toFixed(2)],['สม่ำเสมอ s²/x̄',R[1].r.toFixed(2)],['สุ่ม s²/x̄',R[2].r.toFixed(2)]];flowBar(['วางแปลงสุ่มตัวอย่าง','นับจำนวนในแต่ละแปลง','หา x̄ และ s²','เทียบ s²/x̄ กับ 1'],Math.floor(S.time/1.5)%4);
+      eq=`x̄ = Σxᵢ / n,   s² = Σ(xᵢ − x̄)² / (n − 1)\ns²/x̄ > 1 → แบบกลุ่ม · ≈ 1 → แบบสุ่ม · < 1 → แบบสม่ำเสมอ\nความหนาแน่น = ${V('nd')} ตัว / 25 แปลง = ${(V('nd')/25).toFixed(2)} ตัว/แปลง`;
+      an='<p><span class="tag ok">แบบกลุ่ม</span> พบมากที่สุดในธรรมชาติ เพราะทรัพยากรกระจายไม่สม่ำเสมอและสัตว์อยู่เป็นฝูง</p><p><span class="tag mid">แบบสม่ำเสมอ</span> เกิดจากการแย่งพื้นที่ หรือพืชหลั่งสารยับยั้ง · <span class="tag mid">แบบสุ่ม</span> พบน้อย เกิดเมื่อทรัพยากรสม่ำเสมอและไม่มีปฏิสัมพันธ์</p>';tb=TB2D;}
+    mis=MIS2;}
+  else if(m===3){const T0=TT(),q=M3.t/T0,st3=stage3(q),nm=STN(),b=BIO[$('#biome').value],pri=$('#stype').value==='primary',tau=T0*0.45;tt='การเปลี่ยนแปลงแทนที่แบบ'+(pri?'ปฐมภูมิ':'ทุติยภูมิ')+' · '+b.n;ct='ดิน ความหลากหลาย และมวลชีวภาพตามเวลา';
+    st=[['ปีที่',M3.t.toFixed(0)],['ระยะ',nm[st3]||nm[0]],['ความลึกดิน',soilD(q).toFixed(0)+' cm'],['มวลชีวภาพ',Math.round(biomass(M3.t)*100)+'%']];flowBar(nm,M3.fx?-1:st3);
+    eq=`B(t) = B_max(1 − e^(−t/τ)),  τ = ${tau.toFixed(0)} ปี (${pri?'ปฐมภูมิ: ต้องสร้างดินก่อน':'ทุติยภูมิ: มีดินแล้ว'})\nB(${M3.t.toFixed(0)}) = ${b.B} × (1 − e^(−${(M3.t/tau).toFixed(2)})) = ${biomass(M3.t).toFixed(2)}\nไบโอม ${b.n}: ${b.T}°C, ฝน ${b.P} mm/ปี`;
+    an=`<p><span class="tag ok">${nm[st3]||nm[0]}</span> `+(pri?['หินเปล่ายังไม่มีดิน สิ่งมีชีวิตแทบอยู่ไม่ได้','ไลเคนเป็น<b>สิ่งมีชีวิตบุกเบิก (Pioneer)</b> หลั่งกรดทำให้หินผุ เมื่อตายกลายเป็นอินทรียวัตถุ เริ่มเกิดดิน','มอสขึ้นบนดินบาง ๆ ช่วยเก็บความชื้นและเพิ่มอินทรียวัตถุ','ดินหนาขึ้น หญ้าและไม้ล้มลุกเข้ามาแทนที่','ไม้พุ่มบังแสง พืชเดิมที่ชอบแสงจัดลดลง','ไม้ยืนต้นโตเร็ว (เบิกนำ) เข้ามาแทนที่','สังคมสมบูรณ์ (Climax) ค่อนข้างคงที่ ขึ้นกับภูมิอากาศของไบโอม'][st3]:['ดินและเมล็ดในดินยังอยู่ หลังไฟป่า/การรบกวน','หญ้าและไม้ล้มลุกงอกจากเมล็ดในดินอย่างรวดเร็ว','ไม้พุ่มเข้ามาแทนที่','ไม้ยืนต้นเบิกนำเติบโต','กลับสู่สังคมสมบูรณ์เร็วกว่าแบบปฐมภูมิมาก'][st3])+`</p><p>สังคมสมบูรณ์ของ${b.n} ขึ้นกับอุณหภูมิและปริมาณฝน (เช่น ${b.ex})${b.c==='tallgrass'||b.c==='cactus'||b.c==='dwarf'?' — ฝนน้อย/หนาวเกินไป จึงไม่เป็นป่า':''}</p>`;mis=MIS3;tb=TB3;}
+  else{const s=M4,q=rates(),bod=BOD(),ld=LOAD[$('#load').value][1];tt='ยูโทรฟิเคชันในบ่อน้ำ (อินพุต: '+(INP()>0?ld:'หยุดแล้ว')+')';ct='DO และ BOD ตามเวลา';
+    st=[['DO',s.DO.toFixed(1)+' mg/L'],['BOD',bod.toFixed(1)+' mg/L'],['สาหร่าย',Math.round(s.A)+'%'],['ปลา',Math.round(s.F)+' ตัว']];
+    const sg=s.F<5&&s.DO<3?5:s.DO<3?4:bod>6?3:s.A>40?2:s.Nu>0.15||INP()>0.1?1:0;flowBar(['ธาตุอาหารเพิ่ม (N, P)','สาหร่ายเพิ่มจำนวน (Algal bloom)','สาหร่ายตาย','ผู้ย่อยสลายใช้ O₂ (BOD ↑)','DO ↓','ปลาตาย'],sg,s.F<5?5:-1);
+    eq=`dDO/dt = kₐ(DOsat − DO) + P_สังเคราะห์ − R_สาหร่าย − k_d·BOD\n= ${KA()}(8 − ${s.DO.toFixed(1)}) + ${q.P.toFixed(2)} − ${q.R.toFixed(2)} − 0.23×${bod.toFixed(1)} = ${q.dDO>=0?'+':''}${q.dDO.toFixed(2)} mg/L/วัน\nBOD = ออกซิเจนที่จุลินทรีย์ใช้ย่อยสารอินทรีย์ใน 5 วัน ที่ 20°C`;
+    an=`<p><span class="tag ${s.DO>=6?'ok':s.DO>=3?'mid':'no'}">DO ${s.DO.toFixed(1)} mg/L</span> `+(s.DO>=6?'น้ำยังดี ธาตุอาหารพอดี':s.DO>=3?'สาหร่ายมาก ซากเพิ่ม ผู้ย่อยสลายเริ่มแย่ง O₂ กับปลา':'ผู้ย่อยสลายใช้ O₂ ย่อยซากจำนวนมาก (BOD สูง) ปลาขาดออกซิเจนตาย ซากปลาเพิ่ม BOD ต่อเนื่อง (Positive feedback)')+'</p>'+
+      `<p>${light(s.t)>0?'กลางวัน: สาหร่ายสังเคราะห์ด้วยแสงช่วยเพิ่ม O₂':'กลางคืน: ไม่มีการสังเคราะห์ด้วยแสง DO ต่ำสุดช่วงก่อนรุ่งเช้า'}</p>`+($('#stopIn').checked?'<p><span class="tag ok">แก้ที่ต้นเหตุ</span> หยุดธาตุอาหาร สาหร่ายลดลง BOD ค่อย ๆ ลด น้ำฟื้นตัว</p>':'')+($('#aer').checked?'<p><span class="tag mid">เติมอากาศ</span> เพิ่ม DO ได้ทันที แต่ไม่ได้แก้ต้นเหตุ (ธาตุอาหาร)</p>':'');mis=MIS4;tb=TB4;}
+  $('#simTitle').textContent=tt;$('#chartTitle').textContent=ct;stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function sync(){const k=$('#exp2').value;$('#rkBox').style.display=k==='disp'?'none':'';$('#n0Box').style.display=k==='growth'?'':'none';$('#compBox').style.display=k==='comp'?'':'none';$('#predBox').style.display=k==='pred'?'':'none';$('#dispBox').style.display=k==='disp'?'':'none';$('#cycBox').style.display=CYCV()&&S.mode===1?'':'none';}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sync();updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{const o=$('#'+id+'V');if(o)o.textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();sync();updateText();});f();};
+bind('E0',v=>v.toLocaleString()+' kcal');bind('eff',v=>v+'%');bind('c0',v=>v+' ppm');bind('r',v=>v.toFixed(2));bind('K',v=>v);bind('N0',v=>v);bind('a12',v=>v.toFixed(2));bind('a21',v=>v.toFixed(2));bind('pe',v=>v.toFixed(3));bind('nd',v=>v+' ตัว');
+bind('spd2',v=>'×'+v);bind('spd3',v=>v+' ปี/วินาที');bind('spd4',v=>v+' วัน/วินาที');
+['eco','pyr','cyc','biome','load','stopIn','aer'].forEach(id=>$('#'+id).addEventListener('change',()=>{sync();updateText();}));
+$('#exp2').addEventListener('change',()=>{initM2();sync();updateText();});$('#nd').addEventListener('change',()=>{genPts();updateText();});$('#reseed').onclick=()=>{M2.seed++;genPts();updateText();};$('#rst2').onclick=()=>{initM2();updateText();};
+$('#stype').addEventListener('change',()=>{initM3();updateText();});$('#fire').onclick=()=>{if(!M3.fx){M3.fx='fire';M3.fxT=0;}};$('#lava').onclick=()=>{if(!M3.fx){M3.fx='lava';M3.fxT=0;}};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:()=>{S.time=0;},2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgWeb:'web',tgCyc:'cyc'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));sync();updateText();});
+initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,()=>{},stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

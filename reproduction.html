@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>การสืบพันธุ์และการเจริญเติบโตของสัตว์ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0d0610;--panel:#1a0d1a;--panel2:#261426;--line:#4a2445;--txt:#fbeef7;--mut:#d3b4c8;--acc:#f472b6;--acc2:#fde047;--on:#831843;--pri:#be185d;--sw:#6d28d9;--deep:#10070f;--h1:#9d174d;--h2:#4c1d95;--btn:#2d1529}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,var(--h1),var(--h2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:#fbe7f3;opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:var(--on);border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--btn);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--pri);border-color:var(--acc)}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:var(--sw);color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:var(--deep);border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:var(--pri);color:#fff;border-color:var(--acc)}.flow span.done{color:var(--txt);border-color:var(--on)}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:var(--deep);padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1020;border-color:#7b1e4a}.mis h3{color:#fbbf24}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.chart{height:250px;background:var(--deep);border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🧬 ระบบสืบพันธุ์และการเจริญเติบโตของสัตว์ (Reproduction &amp; Development)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : รอบประจำเดือนและฮอร์โมนเพศ</button>
+    <button data-mode="2">โหมด 2 : การสร้างเซลล์สืบพันธุ์และการปฏิสนธิ</button>
+    <button data-mode="3">โหมด 3 : คลีเวจ แกสทรูเลชัน และการสร้างอวัยวะ</button>
+    <button data-mode="4">โหมด 4 : ชนิดของไข่และเยื่อหุ้มตัวอ่อน</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สถานการณ์</label><select id="scen"><option value="normal">รอบปกติ (ไม่ตั้งครรภ์)</option><option value="preg">มีการปฏิสนธิและฝังตัว (ตั้งครรภ์)</option></select></div>
+      <div id="hcgBox"><div class="ctl"><label>ระดับ hCG สูงสุดจากตัวอ่อน <b id="hcgV"></b></label><input type="range" id="hcg" min="0" max="15000" step="5" value="5000"></div></div>
+      <div class="ctl"><label>ความเร็วเวลา <b id="spdV"></b></label><input type="range" id="spd" min="0.5" max="4" step="0.5" value="1.5"></div>
+      <div class="btns" style="grid-template-columns:1fr 1fr 1fr"><button class="btn" id="d0">วันที่ 0</button><button class="btn" id="d14">วันที่ 14</button><button class="btn" id="d21">วันที่ 21</button></div>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>การทดลอง</label><select id="exp2"><option value="gam">Spermatogenesis เทียบ Oogenesis</option><option value="fert">การปฏิสนธิ (Fertilization)</option></select></div>
+      <div id="gamBox"><label class="chk"><input type="checkbox" id="fertOn" checked> มีอสุจิเข้าปฏิสนธิ (ไข่แบ่ง Meiosis II ต่อ)</label>
+        <button class="btn" id="nextSt" style="width:100%">⏭ ขั้นถัดไป</button></div>
+      <div id="fertBox"><div class="ctl"><label>จำนวนอสุจิที่ไปถึงไข่ <b id="nspV"></b></label><input type="range" id="nsp" min="3" max="40" value="16"></div>
+        <label class="chk"><input type="checkbox" id="block" checked> กลไกกันอสุจิซ้ำ (Fast block + Cortical reaction)</label>
+        <button class="btn" id="release" style="width:100%">💧 ปล่อยอสุจิชุดใหม่</button></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="org"><option value="human">มนุษย์ (Blastocyst · หน่วยเวลา: วัน)</option><option value="frog">กบ (Blastula · หน่วยเวลา: ชั่วโมง)</option></select></div>
+      <div class="ctl"><label>ความเร็วการเจริญ <b id="spd3V"></b></label><input type="range" id="spd3" min="1" max="10" value="4"></div>
+      <button class="btn" id="next3" style="width:100%">⏭ ข้ามไปขั้นถัดไป</button>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>หัวข้อ</label><select id="exp4"><option value="yolk">ชนิดของไข่ตามปริมาณไข่แดง</option><option value="memb">เยื่อหุ้มตัวอ่อน (Extraembryonic membranes)</option></select></div>
+      <div id="yolkBox"><div class="ctl"><label>สิ่งมีชีวิต</label><select id="sp"><option value="star">ดาวทะเล</option><option value="human">มนุษย์</option><option value="frog">กบ</option><option value="bird">ไก่ / นก</option><option value="insect">แมลง</option></select></div></div>
+      <div id="membBox"><div class="ctl"><label>ตัวอย่าง</label><select id="egg"><option value="bird">ไข่ไก่ (สัตว์ที่มีถุงน้ำคร่ำ วางไข่บนบก)</option><option value="human">มนุษย์ (รก – Placenta)</option></select></div>
+        <div class="ctl"><label>เน้นเยื่อหุ้ม</label><select id="hl"><option value="all">แสดงทั้งหมด</option><option value="amnion">Amnion</option><option value="chorion">Chorion</option><option value="allantois">Allantois</option><option value="yolk">Yolk sac</option></select></div>
+        <div class="ctl"><label>ระยะการเจริญ <b id="age4V"></b></label><input type="range" id="age4" min="0" max="100" value="55"></div></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgLab" class="on">ป้ายชื่อ ไทย / อังกฤษ</button><button id="tgChr">จำนวนโครโมโซม / DNA</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#eef2f6',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'lab',time:0};
+const CHR=()=>S.toggle==='chr';
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='rgba(255,255,255,.09)';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#ead5e3',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function panel(g,x,y,w,h){g.fillStyle='rgba(26,10,24,.9)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=1;g.stroke();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+function lab2(g,th,en,ch,x,y,col='#fde68a',al='center'){T(g,th,x,y,col,11,al,true);T(g,CHR()&&ch?ch:en,x,y+13,'#e9d5e0',9.5,al);}
+function lead(g,x1,y1,x2,y2,col){g.strokeStyle=col||'rgba(255,255,255,.45)';g.lineWidth=1;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.fillStyle=col||'rgba(255,255,255,.6)';g.beginPath();g.arc(x1,y1,2,0,7);g.fill();}
+const G=(x,m,s)=>Math.exp(-((x-m)**2)/(2*s*s));
+
+/* ================= MODE 1 : MENSTRUAL CYCLE ================= */
+let M1;function initM1(){M1={d:0,cyc:1};}
+function horm(d){const preg=$('#scen').value==='preg',H=V('hcg'),resc=preg&&H*(1-Math.exp(-4/3))>=25,c=resc?Math.min(d,42):((d%28)+28)%28,hg=preg&&c>=21?H*(1-Math.exp(-(c-21)/3)):0;
+  let fsh=0.22+0.28*G(c,2,3)+0.28*G(c,30,3)+0.4*G(c,14,1.1),lh=0.12+0.85*G(c,14,1),e=0.12+0.7*G(c,12.5,2)+0.38*G(c,21,3.2),p=0.04+(c>14?0.88*G(c,21.5,c>21.5?2.6:3.3):0);
+  if(resc&&c>21.5){const k=sm((c-21.5)/4);p=0.92+0.04*k;e=Math.min(0.85,0.495+0.012*(c-21.5));fsh=lerp(0.22,0.1,k);lh=lerp(0.12,0.07,k);}
+  let th;if(c<5)th=lerp(10,1.5,sm(c/5));else if(c<14)th=lerp(1.5,8,(c-5)/9);else if(resc)th=lerp(8,14,clamp((c-14)/20,0,1));else if(c<25)th=lerp(8,11,(c-14)/11);else th=lerp(11,10,(c-25)/3);
+  return{c,fsh,lh,e,p,hg,resc,preg,th};}
+function phase(H){const c=H.c;if(c<5)return[0,'ระยะมีประจำเดือน (Menstrual phase)'];if(c<13.3)return[1,'ระยะฟอลลิเคิล (Follicular / Proliferative)'];if(c<15)return[2,'ตกไข่ (Ovulation)'];if(H.resc&&c>=21)return[4,'ตั้งครรภ์: hCG รักษา Corpus luteum'];return[3,'ระยะลูเทียล (Luteal / Secretory)'];}
+function stepM1(dt){M1.d+=dt*V('spd');const H=horm(M1.d);if(!H.resc&&M1.d>=28){M1.d-=28;M1.cyc++;}if(H.resc&&M1.d>42)M1.d=42;}
+function drawOvary(g,x,y,H){const c=H.c;g.fillStyle='#5b2240';g.beginPath();g.ellipse(x,y,88,66,0,0,7);g.fill();g.strokeStyle='#9d4a74';g.lineWidth=2;g.stroke();
+  for(let i=0;i<16;i++){const a=hash(i)*6.28,r=30+hash(i+20)*48,px=x+Math.cos(a)*r*0.95,py=y+Math.sin(a)*r*0.68;if(Math.hypot(px-x-16,py-y)<46)continue;g.fillStyle='rgba(253,230,138,.5)';g.beginPath();g.arc(px,py,3,0,7);g.fill();}
+  const fx=x+16,fy=y;let th='',en='',cs='';
+  if(c<13.6){const r=8+30*sm(c/13.6);g.fillStyle='#fcd34d';g.beginPath();g.arc(fx,fy,r,0,7);g.fill();if(c>5){const ar=r*0.62*sm((c-5)/5);g.fillStyle='#fef3c7';g.beginPath();g.arc(fx+r*0.15,fy,ar,0,7);g.fill();}
+    const or=clamp(r*0.4,4,7),ox=c>5?fx-r*0.55:fx;g.fillStyle='#fdf2f8';g.beginPath();g.arc(ox,fy,or,0,7);g.fill();g.fillStyle='#be185d';g.beginPath();g.arc(ox,fy,1.8,0,7);g.fill();
+    [th,en]=c<4?['ฟอลลิเคิลปฐมภูมิ','Primary follicle']:c<9?['ฟอลลิเคิลทุติยภูมิ','Secondary follicle']:['ฟอลลิเคิลเจริญเต็มที่','Graafian follicle'];cs='Primary oocyte 2n·4c หยุดที่ Prophase I';}
+  else if(c<15.5){const k=sm((c-13.6)/1.9);g.fillStyle='#fcd34d';g.beginPath();g.arc(fx,fy,38,-0.3,5.9);g.fill();g.fillStyle='#5b2240';g.beginPath();g.arc(fx+30,fy-12,10,0,7);g.fill();
+    const ox=lerp(fx+34,x+70,k),oy=lerp(fy-14,y-66,k);glow(g,ox,oy,22,'rgba(253,224,71,.35)');g.fillStyle='rgba(253,230,138,.55)';g.beginPath();g.arc(ox,oy,11,0,7);g.fill();g.fillStyle='#fdf2f8';g.beginPath();g.arc(ox,oy,6.5,0,7);g.fill();
+    th='ตกไข่';en='Ovulation';cs='Secondary oocyte n·2c หยุดที่ Metaphase II';}
+  else{let r,col;if(H.resc){r=30;col='#facc15';}else if(c<24){r=24+6*sm((c-15.5)/4);col='#facc15';}else{const k=sm((c-24)/4);r=lerp(30,13,k);col=k>0.6?'#e7e5e4':'#fde68a';}
+    g.fillStyle=col;g.beginPath();g.arc(fx,fy,r,0,7);g.fill();g.strokeStyle='rgba(161,98,7,.6)';g.lineWidth=1;for(let i=0;i<6;i++){g.beginPath();g.arc(fx,fy,r*(0.3+i*0.11),i,i+2.2);g.stroke();}
+    if(!H.resc&&c>=25.5){th='คอร์ปัสลูเทียมสลาย';en='Corpus albicans';cs='P และ E ลดลง → ประจำเดือน';}else{th='คอร์ปัสลูเทียม';en='Corpus luteum';cs='สร้าง Progesterone + Estrogen';}}
+  T(g,'รังไข่ (Ovary)',x,y-78,'#fbcfe8',12,'center',true);lab2(g,th,en,cs,x,y+80);}
+function uPath(g,x,y,W,H){g.beginPath();g.moveTo(x-W/2,y-H/2+W*0.12);g.quadraticCurveTo(x-W/2,y-H/2,x-W/2+W*0.15,y-H/2);g.lineTo(x+W/2-W*0.15,y-H/2);g.quadraticCurveTo(x+W/2,y-H/2,x+W/2,y-H/2+W*0.12);g.quadraticCurveTo(x+W*0.35,y+H*0.3,x+W*0.08,y+H/2);g.lineTo(x-W*0.08,y+H/2);g.quadraticCurveTo(x-W*0.35,y+H*0.3,x-W/2,y-H/2+W*0.12);g.closePath();}
+function drawUterus(g,x,y,H){const c=H.c,men=!H.resc&&c<5,sec=c>=14,tp=H.th*4.2;
+  g.fillStyle='#7a2848';g.fillRect(x-15,y+92,30,40);uPath(g,x,y,190,200);g.fill();g.strokeStyle='#b4537c';g.lineWidth=1.5;g.stroke();
+  g.fillStyle=men?'#991b1b':sec?'#db2777':'#ec4899';uPath(g,x,y+6,150,162);g.fill();
+  g.save();uPath(g,x,y+6,150,162);g.clip();g.strokeStyle=men?'#450a0a':'#9f1239';g.lineWidth=1.4;for(let i=0;i<14;i++){const sx=x-70+hash(i+3)*140,sy=y-72+hash(i+9)*120;g.beginPath();for(let j=0;j<=10;j++){const yy=sy+j*2.2,xx=sx+Math.sin(j*1.3+i)*(sec?3.5:1.5);j?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.stroke();}g.restore();
+  const lw=Math.max(10,150-tp*2.6),lh=Math.max(12,162-tp*2.4);g.fillStyle='#1a0812';uPath(g,x,y+6+tp*0.25,lw,lh);g.fill();
+  if(men){for(let i=0;i<6;i++){const k=((S.time*0.9+i/6)%1);g.fillStyle=`rgba(220,38,38,${1-k})`;g.beginPath();g.arc(x-6+hash(i)*12,y+96+k*60,2.6,0,7);g.fill();}for(let i=0;i<5;i++){g.fillStyle='rgba(127,29,29,.9)';g.fillRect(x-30+hash(i+40)*60,y-20+hash(i+60)*80,5,3);}}
+  if(H.resc&&c>=21){const bx=x-lw/2+8,by=y-30;glow(g,bx,by,26,'rgba(52,211,153,.35)');g.fillStyle='#fdf2f8';g.beginPath();g.arc(bx,by,10,0,7);g.fill();g.strokeStyle='#34d399';g.lineWidth=2;g.stroke();g.fillStyle='#be185d';g.beginPath();g.arc(bx-3,by-3,4,0,7);g.fill();
+    for(let i=0;i<5;i++){const a=S.time*1.5+i*1.26;g.fillStyle='#34d399';g.beginPath();g.arc(bx+Math.cos(a)*(14+i%2*5),by+Math.sin(a)*(14+i%2*5),1.8,0,7);g.fill();}
+    T(g,CHR()?'Blastocyst: ทุกเซลล์ 2n':'Blastocyst ฝังตัว → หลั่ง hCG',x,y-88,'#6ee7b7',10.5,'center',true);}
+  T(g,'มดลูก (Uterus)',x,y-116,'#fbcfe8',12,'center',true);lead(g,x+60,y-40,x+108,y-62,'#f9a8d4');T(g,'Endometrium',x+110,y-70,'#f9a8d4',10);T(g,H.th.toFixed(1)+' mm',x+110,y-56,'#fde68a',11,'left',true);
+  T(g,men?'เยื่อบุสลายตัว → ประจำเดือน':sec?(H.resc&&c>=21?'เยื่อบุหนา คงอยู่ (Progesterone สูง)':'Secretory: ต่อมหลั่งสาร หลอดเลือดขด'):'Proliferative: Estrogen ทำให้หนาขึ้น',x,y+142,'#e9d5e0',10.5,'center');}
+function drawM1(g,w,h){const H=horm(M1.d),c=H.c,[pi]=phase(H),ox=w*0.15,oy=135,ux=w*0.46,uy=128;
+  g.strokeStyle='#b4537c';g.lineWidth=5;g.beginPath();g.moveTo(ux-95,uy-82);g.quadraticCurveTo(ux-150,uy-140,ox+64,oy-72);g.stroke();g.strokeStyle='#f9a8d4';g.lineWidth=1.5;for(let i=0;i<5;i++){g.beginPath();g.moveTo(ox+64,oy-72);g.lineTo(ox+50+i*7,oy-58+Math.sin(S.time*2+i)*3);g.stroke();}
+  T(g,'ท่อนำไข่ (Oviduct)',(ux-95+ox+64)/2,24,'#e9d5e0',9.5,'center');
+  drawOvary(g,ox,oy,H);drawUterus(g,ux,uy,H);
+  const px=w-178,pw=168;panel(g,px,10,pw,262);T(g,'ต่อมใต้สมองส่วนหน้า → รังไข่',px+8,24,'#fbcfe8',10.5,'left',true);
+  [['FSH','#60a5fa',H.fsh],['LH','#facc15',H.lh],['Estrogen','#f472b6',H.e],['Progesterone','#a78bfa',H.p]].forEach(([n,col,v],i)=>bar(g,px+8,54+i*34,pw-16,9,v,col,n,Math.round(v*100)+'%'));
+  if(H.preg){bar(g,px+8,54+4*34,pw-16,9,Math.log10(H.hg+1)/Math.log10(20001),'#34d399','hCG (สเกล log)',Math.round(H.hg)+' mIU/mL');
+    const sy=212;g.fillStyle='#f5f5f4';rr(g,px+8,sy,pw-16,28,6);g.fill();g.fillStyle='#e7e5e4';g.fillRect(px+60,sy+4,70,20);g.fillStyle='#be123c';g.fillRect(px+108,sy+5,4,18);T(g,'C',px+110,sy-6,'#fecdd3',9,'center');if(H.hg>=25){g.fillStyle='#be123c';g.fillRect(px+86,sy+5,4,18);}T(g,'T',px+88,sy-6,'#fecdd3',9,'center');T(g,'ชุดตรวจ',px+14,sy+14,'#44403c',10,'left',true);
+    T(g,H.hg>=25?'ผลบวก: hCG ≥ 25 mIU/mL':'ผลลบ: hCG < 25 mIU/mL',px+8,sy+42,H.hg>=25?'#6ee7b7':'#fca5a5',10,'left',true);}
+  else{T(g,'GnRH → FSH/LH (Anterior pituitary)',px+8,200,'#e9d5e0',9.5);T(g,'E ต่ำ: Negative feedback',px+8,216,'#e9d5e0',9.5);T(g,'E สูงนาน: Positive feedback → LH surge',px+8,232,'#e9d5e0',9.5);T(g,'P สูง: ยับยั้ง FSH/LH',px+8,248,'#e9d5e0',9.5);}
+  const X1=H.resc?42:28,yo=288,hh=h-yo-4;g.save();g.translate(0,yo);panel(g,6,0,w-12,hh);const A=axes(g,w,hh,0,X1,0,1,'วันของรอบเดือน (Day)','ระดับสัมพัทธ์',X1===28?7:6,2);
+  [[0,5,'rgba(220,38,38,.16)','ประจำเดือน'],[5,13.3,'rgba(96,165,250,.1)','ฟอลลิเคิล'],[13.3,15,'rgba(250,204,21,.22)','ตกไข่'],[15,X1,H.resc?'rgba(52,211,153,.1)':'rgba(167,139,250,.12)',H.resc?'ลูเทียล → ตั้งครรภ์':'ลูเทียล']].forEach(([a,b,col,l])=>{g.fillStyle=col;g.fillRect(A.X(a),A.Tm,A.X(b)-A.X(a),hh-A.B-A.Tm);T(g,l,(A.X(a)+A.X(b))/2,A.Tm+8,'#f5e1ee',9.5,'center',true);});
+  fn(g,A,0,X1,x=>horm(x).fsh,'#60a5fa',1.8);fn(g,A,0,X1,x=>horm(x).lh,'#facc15',2.2);fn(g,A,0,X1,x=>horm(x).e,'#f472b6',2);fn(g,A,0,X1,x=>horm(x).p,'#a78bfa',2);if(H.preg)fn(g,A,0,X1,x=>Math.min(1,horm(x).hg/Math.max(1,V('hcg'))),'#34d399',1.6,[5,4]);
+  vmark(g,A,c,hh,'#fde047');g.fillStyle='#fde047';g.beginPath();g.arc(A.X(c),A.Y(H.lh),4,0,7);g.fill();g.restore();}
+
+/* ================= MODE 2 : GAMETOGENESIS & FERTILIZATION ================= */
+let M2;const STP=2.4;
+function initM2(){const k=$('#exp2').value,seed=M2&&M2.seed||0;M2={k,seed,t:0,sp:[],fz:-1,fa:0,ft:0,wave:0,poly:0,hist:[],ht:0};if(k==='fert')spawnSp();}
+function spawnSp(){Object.assign(M2,{sp:[],fz:-1,wave:0,poly:0,t:0,hist:[],ht:0});const n=V('nsp');for(let i=0;i<n;i++)M2.sp.push({x:-2.6-1.4*hash(i+3+M2.seed),y:-1.5+3*hash(i+9+M2.seed),a:0,st:0,tt:0,w:hash(i)*6});}
+const gS=()=>Math.min(4,Math.floor(M2.t/STP));
+const angD=(a,b)=>Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+const angBlocked=s=>angD(Math.atan2(s.y,s.x),M2.fa)<=M2.wave*Math.PI+0.25;
+function cnt(){const c=[0,0,0,0,0];M2.sp.forEach(s=>c[s.st]++);return c;}
+function stepM2(dt){M2.t+=dt;if(M2.k==='gam'){if(M2.t>STP*5+3)M2.t=0;return;}
+  const blk=$('#block').checked;
+  M2.sp.forEach((s,i)=>{const r=Math.hypot(s.x,s.y);s.w+=dt*14;
+    if(s.st===0){const a=Math.atan2(-s.y,-s.x)+Math.sin(s.w*0.25+i)*0.35;s.a=a;const v=r>1.38?0.6:0.22;s.x+=Math.cos(a)*v*dt;s.y+=Math.sin(a)*v*dt;if(r<=1.16){if(blk&&M2.fz>=0&&angBlocked(s))s.st=4;else{s.st=1;s.tt=0;}}}
+    else if(s.st===1){s.tt+=dt;if(blk&&M2.fz>=0&&angBlocked(s))s.st=4;else if(s.tt>0.7)s.st=2;}
+    else if(s.st===2){if(blk&&M2.fz>=0&&angBlocked(s)){s.st=4;return;}const a=Math.atan2(-s.y,-s.x);s.a=a;s.x+=Math.cos(a)*0.08*dt;s.y+=Math.sin(a)*0.08*dt;
+      if(Math.hypot(s.x,s.y)<=1.0){if(M2.fz<0){M2.fz=i;M2.fa=Math.atan2(s.y,s.x);M2.ft=M2.t;s.st=3;}else if(!blk){s.st=3;M2.poly++;}else s.st=4;}}
+    else if(s.st===3){const a=Math.atan2(-s.y,-s.x);s.a=a;if(r>0.3){s.x+=Math.cos(a)*0.12*dt;s.y+=Math.sin(a)*0.12*dt;}}});
+  if(M2.fz>=0&&blk)M2.wave=Math.min(1,M2.wave+dt*0.3);
+  M2.ht+=dt;if(M2.ht>0.25){M2.ht=0;const c=cnt();M2.hist.push([M2.t,c[0],c[1]+c[2],c[4],c[3]]);if(M2.hist.length>500)M2.hist.shift();}}
+function chroms(g,x,y,r,pl,rep){const cols=['#60a5fa','#f472b6'],s=clamp(r/22,0.45,1.1),n=pl*2;let i=0;g.lineCap='round';
+  for(let k=0;k<pl;k++)for(let j=0;j<2;j++){const L=(j?6:10)*s,px=x+(i-(n-1)/2)*7*s;g.strokeStyle=pl===2?cols[k]:cols[j];g.lineWidth=2.3*s;g.beginPath();if(rep){g.moveTo(px-2.2*s,y-L/2);g.lineTo(px+2.2*s,y+L/2);g.moveTo(px+2.2*s,y-L/2);g.lineTo(px-2.2*s,y+L/2);}else{g.moveTo(px,y-L/2);g.lineTo(px,y+L/2);}g.stroke();i++;}}
+function cell(g,x,y,r,fill,pl,c,th,en,a=1){g.globalAlpha=a;const gr=g.createRadialGradient(x-r*0.3,y-r*0.3,r*0.1,x,y,r);gr.addColorStop(0,'#fff');gr.addColorStop(1,fill);g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1;g.stroke();
+  if(CHR())chroms(g,x,y,r,pl,c/pl===2);else{g.fillStyle='rgba(90,20,60,.55)';g.beginPath();g.arc(x,y,Math.max(2.5,r*0.3),0,7);g.fill();}
+  if(th)T(g,th,x,y+r+9,'#fbe7f3',10,'center',true);if(en)T(g,CHR()?(pl===2?'2n':'n')+' · '+c+'c':en,x,y+r+20,'#d8b4cc',9,'center');g.globalAlpha=1;}
+function sperm(g,x,y,a,s,col,wv,acro){g.strokeStyle=col;g.lineWidth=1.3;g.beginPath();for(let j=0;j<=12;j++){const d=j*s*0.75,o=Math.sin(wv-j*0.7)*s*0.28*(j/12+0.3),px=x-Math.cos(a)*d-Math.sin(a)*o,py=y-Math.sin(a)*d+Math.cos(a)*o;j?g.lineTo(px,py):g.moveTo(px,py);}g.stroke();
+  g.save();g.translate(x,y);g.rotate(a);g.fillStyle=col;g.beginPath();g.ellipse(0,0,s*0.75,s*0.45,0,0,7);g.fill();if(acro){g.fillStyle='#93c5fd';g.beginPath();g.ellipse(s*0.4,0,s*0.38,s*0.4,0,-1.5,1.5);g.fill();}g.restore();}
+function drawGam(g,w,h){const s=gS(),fz=$('#fertOn').checked,c1=120+(w-120)*0.24,c2=120+(w-120)*0.58,Y=i=>46+i*86,al=i=>i<s?1:i===s?clamp((M2.t-i*STP)/0.6,0,1):0;
+  const NM=[['เพิ่มจำนวน','Mitosis'],['เจริญเติบโต','Growth'],['แบ่งครั้งที่ 1','Meiosis I'],['แบ่งครั้งที่ 2','Meiosis II'],['เปลี่ยนแปลงรูปร่าง','Maturation']];
+  g.fillStyle='rgba(244,114,182,.08)';g.fillRect(0,Y(s)-42,w,84);
+  NM.forEach(([a,b],i)=>{T(g,a,10,Y(i)-6,i<=s?'#fbcfe8':'#6b4a60',11,'left',true);T(g,b,10,Y(i)+8,i<=s?'#d8b4cc':'#5a3d50',9.5);});
+  T(g,'Spermatogenesis (อัณฑะ)',c1,14,'#93c5fd',12,'center',true);T(g,'Oogenesis (รังไข่)',c2,14,'#f9a8d4',12,'center',true);
+  g.strokeStyle='rgba(255,255,255,.25)';g.lineWidth=1.2;const ln=(x1,y1,x2,y2,i)=>{if(al(i)<=0)return;g.globalAlpha=al(i);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.globalAlpha=1;};
+  ln(c1,Y(0)+16,c1,Y(1)-20,1);[-40,40].forEach(d=>ln(c1,Y(1)+20,c1+d,Y(2)-15,2));[-75,-25,25,75].forEach(d=>ln(c1+(d<0?-40:40),Y(2)+15,c1+d,Y(3)-11,3));[-75,-25,25,75].forEach(d=>ln(c1+d,Y(3)+11,c1+d,Y(4)-14,4));
+  ln(c2,Y(0)+16,c2,Y(1)-24,1);ln(c2,Y(1)+24,c2-14,Y(2)-28,2);ln(c2,Y(1)+24,c2+36,Y(2)-7,2);if(fz){ln(c2-14,Y(2)+28,c2-14,Y(3)-28,3);ln(c2-14,Y(2)+28,c2+30,Y(3)-6,3);ln(c2-14,Y(3)+28,c2-14,Y(4)-28,4);}
+  if(al(0)>0){cell(g,c1,Y(0),15,'#93c5fd',2,2,'สเปอร์มาโทโกเนียม','Spermatogonium',al(0));cell(g,c2,Y(0),15,'#f9a8d4',2,2,'โอโอโกเนียม','Oogonium',al(0));}
+  if(al(1)>0){cell(g,c1,Y(1),20,'#93c5fd',2,4,'Primary spermatocyte','',al(1));cell(g,c2,Y(1),24,'#f9a8d4',2,4,'Primary oocyte','',al(1));
+    g.globalAlpha=al(1);g.fillStyle='#7f1d1d';rr(g,c2+30,Y(1)-26,52,16,5);g.fill();T(g,'⏸ Prophase I',c2+56,Y(1)-18,'#fecaca',9,'center',true);g.globalAlpha=1;}
+  if(al(2)>0){[-40,40].forEach(d=>cell(g,c1+d,Y(2),15,'#93c5fd',1,2,d<0?'Secondary':'spermatocyte','',al(2)));cell(g,c2-14,Y(2),28,'#f9a8d4',1,2,'Secondary oocyte','',al(2));cell(g,c2+36,Y(2),7,'#fbcfe8',1,2,'','',al(2));
+    g.globalAlpha=al(2);T(g,'Polar body 1',c2+36,Y(2)+16,'#d8b4cc',9,'center');g.fillStyle='#7f1d1d';rr(g,c2+20,Y(2)-40,64,16,5);g.fill();T(g,'⏸ Metaphase II',c2+52,Y(2)-32,'#fecaca',9,'center',true);g.globalAlpha=1;}
+  if(al(3)>0){[-75,-25,25,75].forEach(d=>cell(g,c1+d,Y(3),11,'#93c5fd',1,1,'','',al(3)));g.globalAlpha=al(3);T(g,'Spermatid × 4',c1,Y(3)+24,'#fbe7f3',10,'center',true);g.globalAlpha=1;
+    if(fz){cell(g,c2-14,Y(3),28,'#f9a8d4',1,1,'Ovum','',al(3));cell(g,c2+30,Y(3),6,'#fbcfe8',1,1,'','',al(3));cell(g,c2+46,Y(3),5,'#fbcfe8',1,1,'','',al(3));cell(g,c2+58,Y(3),5,'#fbcfe8',1,1,'','',al(3));g.globalAlpha=al(3);T(g,'Polar body × 3',c2+46,Y(3)+15,'#d8b4cc',9,'center');g.globalAlpha=1;}
+    else{cell(g,c2-14,Y(3),26,'#57534e',1,2,'ไม่ปฏิสนธิ → สลาย','',al(3)*0.6);}}
+  if(al(4)>0){g.globalAlpha=al(4);[-75,-25,25,75].forEach((d,i)=>sperm(g,c1+d,Y(4)-18,-Math.PI/2,6,'#e0f2fe',S.time*10+i,true));T(g,'Sperm × 4 (n)',c1,Y(4)+44,'#fbe7f3',10,'center',true);
+    if(fz){cell(g,c2-14,Y(4),28,'#f9a8d4',2,2,'Zygote (2n)','',al(4));if(!CHR()){g.fillStyle='#3b82f6';g.beginPath();g.arc(c2-22,Y(4),5,0,7);g.fill();g.fillStyle='#db2777';g.beginPath();g.arc(c2-6,Y(4),5,0,7);g.fill();}}
+    else T(g,'ไม่มีไข่ที่สมบูรณ์ (ไม่ถึง Meiosis II)',c2,Y(4),'#a8a29e',10,'center');g.globalAlpha=1;}
+  const nx=c2+90,mw=w-nx-8;if(mw>90){const notes=['ในตัวอ่อนเพศหญิง (ก่อนเกิด)','หยุดตั้งแต่ก่อนเกิดจนถึงวัยเจริญพันธุ์ (12–50 ปี)','LH surge → ตกไข่ในระยะนี้','แบ่งต่อเมื่ออสุจิเข้าไข่เท่านั้น','ไซโทพลาซึมแบ่งไม่เท่ากัน → ไข่ใหญ่ 1 เซลล์'];notes.forEach((t,i)=>{if(al(i)>0){g.globalAlpha=al(i);wrap(g,t,nx,Y(i)-8,mw,12,'#e9d5e0',9.5);g.globalAlpha=1;}});}}
+function drawFert(g,w,h){const cx=w*0.5,cy=h*0.47,k=Math.min(h*0.3,w*0.2),P=(x,y)=>[cx+x*k,cy+y*k],blk=$('#block').checked,ch=CHR();
+  for(let i=0;i<48;i++){const a=i/48*6.283+hash(i)*0.1,r2=1.27+hash(i+50)*0.14,[x,y]=P(Math.cos(a)*r2,Math.sin(a)*r2);g.fillStyle='rgba(252,211,77,.33)';g.beginPath();g.arc(x,y,k*0.06,0,7);g.fill();}
+  g.strokeStyle='rgba(196,181,253,.5)';g.lineWidth=k*0.13;g.beginPath();g.arc(cx,cy,k*1.08,0,7);g.stroke();
+  if(M2.fz>=0&&blk&&M2.wave>0){g.strokeStyle='#8b5cf6';g.beginPath();g.arc(cx,cy,k*1.08,M2.fa-M2.wave*Math.PI,M2.fa+M2.wave*Math.PI);g.stroke();}
+  const gr=g.createRadialGradient(cx-k*0.3,cy-k*0.3,k*0.1,cx,cy,k);gr.addColorStop(0,'#fdf2f8');gr.addColorStop(1,'#f9a8d4');g.fillStyle=gr;g.beginPath();g.arc(cx,cy,k*0.98,0,7);g.fill();
+  if(M2.fz>=0){const dep=clamp((M2.t-M2.ft)/1.2,0,1);g.strokeStyle=`rgba(250,204,21,${0.9*dep*(blk?1:0.3)})`;g.lineWidth=3;g.beginPath();g.arc(cx,cy,k*0.98,0,7);g.stroke();}
+  for(let i=0;i<64;i++){const a=i/64*6.283,rel=M2.fz>=0&&blk&&angD(a,M2.fa)<=M2.wave*Math.PI,r3=rel?1.03:0.9,[x,y]=P(Math.cos(a)*r3,Math.sin(a)*r3);g.fillStyle=rel?'rgba(167,139,250,.55)':'#a21caf';g.beginPath();g.arc(x,y,k*(rel?0.018:0.024),0,7);g.fill();}
+  const [pbx,pby]=P(0,-1.03);g.fillStyle='#fbcfe8';g.beginPath();g.arc(pbx,pby,k*0.08,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.stroke();
+  const mii=M2.fz>=0?clamp((M2.t-M2.ft-1)/3,0,1):0,[sx,sy]=P(0,-0.78);
+  if(mii<1){g.strokeStyle='#7c3aed';g.lineWidth=1;for(let i=-3;i<=3;i++){g.beginPath();g.moveTo(sx-k*0.14,sy);g.quadraticCurveTo(sx,sy+i*k*0.025,sx+k*0.14,sy);g.stroke();}if(ch)T(g,'MII: n · 2c',sx,sy+k*0.12,'#5b21b6',9.5,'center',true);}
+  if(mii>0){const [qx,qy]=P(0.2,-1.0);g.fillStyle='#fbcfe8';g.beginPath();g.arc(qx,qy,k*0.065*mii,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.stroke();}
+  const tp=M2.fz>=0?M2.t-M2.ft:0,fs=M2.fz>=0?M2.sp[M2.fz]:null;
+  if(mii>=1){const mrg=sm((tp-7)/2),fx=lerp(-0.22,-0.05,mrg),[px,py]=P(fx,0.05);if(mrg<1){g.fillStyle='rgba(219,39,119,.6)';g.beginPath();g.arc(px,py,k*0.1,0,7);g.fill();if(ch)T(g,'♀ n',px,py,'#fff',9.5,'center',true);}
+    if(mrg>=1){const [zx,zy]=P(0,0.04);g.fillStyle='rgba(147,51,234,.6)';g.beginPath();g.arc(zx,zy,k*0.14,0,7);g.fill();T(g,ch?'2n':'Zygote',zx,zy,'#fff',10,'center',true);}}
+  M2.sp.forEach((s,i)=>{const [x,y]=P(s.x,s.y);if(s.st===3&&Math.hypot(s.x,s.y)<=0.32){if(i===M2.fz&&mii>=1&&sm((tp-7)/2)>=1)return;g.fillStyle='rgba(59,130,246,.6)';g.beginPath();g.arc(x,y,k*0.09,0,7);g.fill();if(ch)T(g,'♂ n',x,y,'#fff',9.5,'center',true);return;}
+    const col=['#f8fafc','#bfdbfe','#fde047','#4ade80','#78716c'][s.st];sperm(g,x,y,s.a,k*0.085,col,s.w,s.st<2);if(s.st===2)glow(g,x+Math.cos(s.a)*6,y+Math.sin(s.a)*6,10,'rgba(253,224,71,.4)');});
+  const lb=[[1.36,-2.3,'Corona radiata','เซลล์ฟอลลิเคิลรอบไข่'],[1.1,-1.15,'Zona pellucida',M2.wave>=1?'แข็งตัวแล้ว (กันอสุจิ)':'ชั้นไกลโคโปรตีน'],[0.9,-0.6,'Cortical granules','ถุงเอนไซม์ใต้เยื่อหุ้ม'],[1.03,-1.5708,'Polar body 1','']];
+  lb.forEach(([r,a,t,s2],i)=>{const [x,y]=P(Math.cos(a)*r,Math.sin(a)*r),tx=cx+k*1.55,ty=cy-k*1.0+i*36;if(tx>w-60)return;lead(g,x,y,tx-4,ty);T(g,t,tx,ty-5,'#fde68a',10,'left',true);if(s2)T(g,s2,tx,ty+8,'#e9d5e0',9);});
+  const c=cnt();panel(g,10,10,196,96);T(g,'สถานะไข่ (Secondary oocyte)',18,24,'#fbcfe8',10.5,'left',true);
+  const st=M2.fz<0?'รออสุจิ — หยุดที่ Metaphase II':M2.poly>0?'⚠ Polyspermy (3n ขึ้นไป) ตัวอ่อนผิดปกติ':mii<1?'อสุจิเข้าแล้ว → แบ่ง Meiosis II':tp<9?'Pronucleus ♀ + ♂ กำลังรวมกัน':'Zygote (2n) สำเร็จ';
+  wrap(g,st,18,42,180,13,M2.poly>0?'#fca5a5':'#fde68a',10.5,true);T(g,'Fast block: '+(M2.fz>=0&&blk?'เยื่อหุ้มเปลี่ยนศักย์':'—'),18,74,'#e9d5e0',9.5);T(g,'Cortical reaction: '+(M2.fz>=0&&blk?Math.round(M2.wave*100)+'%':blk?'—':'ปิดอยู่'),18,90,'#e9d5e0',9.5);
+  const L=[['ยังไม่จับ','#f8fafc',c[0]],['Acrosome','#fde047',c[1]+c[2]],['ถูกกัน','#78716c',c[4]],['เข้าไข่','#4ade80',c[3]]];L.forEach(([n,col,v],i)=>{const x=14+[0,78,170,240][i];g.fillStyle=col;g.beginPath();g.arc(x+4,h-20,4,0,7);g.fill();T(g,n+' '+v,x+11,h-20,'#e9d5e0',9.5);});}
+function drawM2(g,w,h){if(M2.k==='gam')drawGam(g,w,h);else drawFert(g,w,h);}
+
+/* ================= MODE 3 : CLEAVAGE → ORGANOGENESIS ================= */
+let M3;function initM3(){M3={p:0};}
+const ST3=[['ไซโกต','Zygote'],['2 เซลล์','2-cell'],['4 เซลล์','4-cell'],['8 เซลล์','8-cell'],['16 เซลล์','16-cell'],['มอรูลา','Morula'],['บลาสทูลา','Blastula'],['แกสทรูลา','Gastrula'],['นิวรูลา','Neurula / Organogenesis']];
+const TH=[0,1.2,2,3,3.5,4,5,15,21,28],TF=[0,1.5,2,2.25,2.6,3.2,5,10,16,22];
+const frog3=()=>$('#org').value==='frog';
+function tAt(p){const A=frog3()?TF:TH,i=Math.min(8,Math.floor(p)),f=p-i;return lerp(A[i],A[Math.min(9,i+1)],f);}
+function nCell(p){return p<6?2**Math.floor(p):Math.round(2**(6+(p-6)*2.5));}
+function vTot(p){return frog3()?1767:(p<7?0.905:0.905*(1+30*((p-7)**2)));}
+function st3Name(i){if(i===6)return frog3()?['บลาสทูลา','Blastula']:['บลาสโทซิสต์','Blastocyst'];return ST3[i];}
+function stepM3(dt){M3.p=Math.min(9,M3.p+dt*V('spd3')*0.08);}
+function lay(N){if(N===1)return[[0,0,0.9]];if(N===2)return[[-0.45,0,0.46],[0.45,0,0.46]];if(N===4)return[[-0.45,-0.45,0.44],[0.45,-0.45,0.44],[-0.45,0.45,0.44],[0.45,0.45,0.44]];const o=[],rc=1.0/Math.sqrt(N)*1.02;for(let i=0;i<N;i++){const rho=(1-rc)*Math.sqrt((i+0.5)/N),t=i*2.39996;o.push([rho*Math.cos(t),rho*Math.sin(t),rc]);}return o;}
+function drawCleave(g,cx,cy,R,si,f,frog){const N=2**si,ch=CHR();
+  if(!frog){g.strokeStyle='rgba(196,181,253,.6)';g.lineWidth=7;g.beginPath();g.arc(cx,cy,R*1.06,0,7);g.stroke();}else{g.fillStyle='rgba(148,163,184,.1)';g.beginPath();g.arc(cx,cy,R*1.12,0,7);g.fill();}
+  lay(N).forEach(([x,y,r],i)=>{let rx=r;if(frog&&N>=8)rx=r*(y<0?0.85:1.12);const px=cx+x*R,py=cy+y*R,rp=rx*R;let fill='#f9a8d4';if(frog)fill=y<-0.1||N<8?'#7c5236':'#fde68a';
+    const gr=g.createRadialGradient(px-rp*0.3,py-rp*0.3,rp*0.1,px,py,rp);gr.addColorStop(0,frog&&fill==='#7c5236'?'#a07050':'#fff');gr.addColorStop(1,fill);g.fillStyle=gr;g.beginPath();g.arc(px,py,rp,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1;g.stroke();
+    if(frog&&N<8){g.fillStyle='rgba(253,230,138,.85)';g.beginPath();g.arc(px,py,rp,0.15,Math.PI-0.15);g.fill();}
+    if(f>0.7&&si<5){const k=sm((f-0.7)/0.3),vert=si%2===0;g.strokeStyle='rgba(60,10,40,.8)';g.lineWidth=2;g.beginPath();if(vert){g.moveTo(px,py-rp*k);g.lineTo(px,py+rp*k);}else{g.moveTo(px-rp*k,py);g.lineTo(px+rp*k,py);}g.stroke();}
+    if(ch&&N<=16)T(g,'2n',px,py,'#3b0764',Math.max(9,Math.min(14,rp*0.4)),'center',true);else{g.fillStyle='rgba(90,20,60,.5)';g.beginPath();g.arc(px,py,Math.max(1.5,rp*0.18),0,7);g.fill();}});
+  if(frog&&N>=8){T(g,'Animal pole: เซลล์เล็ก (Micromere)',cx,cy-R*1.2,'#e9d5e0',10,'center');T(g,'Vegetal pole: ไข่แดงมาก เซลล์ใหญ่ (Macromere)',cx,cy+R*1.22,'#fde68a',10,'center');}
+  else if(!frog)T(g,'Zona pellucida',cx+R*0.8,cy-R*1.1,'#c4b5fd',10,'center');}
+function drawBlast(g,cx,cy,R,f,frog){const ch=CHR();
+  if(!frog){if(f<0.6){g.strokeStyle='rgba(196,181,253,.6)';g.lineWidth=7;g.beginPath();g.arc(cx,cy,R*1.06,0,7);g.stroke();}else{g.strokeStyle='rgba(196,181,253,.45)';g.lineWidth=7;g.beginPath();g.arc(cx,cy,R*1.06,-1.0,4.6);g.stroke();T(g,'Hatching: ออกจาก Zona',cx+R*0.9,cy-R*0.95,'#c4b5fd',10,'left',true);}
+    g.fillStyle='rgba(30,27,75,.75)';g.beginPath();g.arc(cx,cy,R*0.92,0,7);g.fill();
+    for(let i=0;i<36;i++){const a=i/36*6.283,x=cx+Math.cos(a)*R*0.86,y=cy+Math.sin(a)*R*0.86;g.fillStyle='#fb923c';g.beginPath();g.ellipse(x,y,R*0.1,R*0.065,a+Math.PI/2,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=1;g.stroke();}
+    for(let i=0;i<14;i++){const x=cx-R*0.25+(hash(i)-0.5)*R*0.55,y=cy-R*0.5+hash(i+30)*R*0.3;g.fillStyle='#f472b6';g.beginPath();g.arc(x,y,R*0.09,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.3)';g.stroke();if(ch&&i<4)T(g,'2n',x,y,'#3b0764',9,'center',true);}
+    lead(g,cx-R*0.2,cy-R*0.5,cx-R*1.3,cy-R*0.95);lab2(g,'Inner cell mass','→ ตัวอ่อน (Embryo)','ทุกเซลล์ 2n',cx-R*1.3,cy-R*1.08,'#f9a8d4');
+    lead(g,cx+R*0.86,cy+R*0.3,cx+R*1.15,cy+R*0.55);lab2(g,'Trophoblast','→ Chorion / รก',"สร้าง hCG",cx+R*1.17,cy+R*0.52,'#fb923c','left');
+    T(g,'Blastocoel (ของเหลว)',cx+R*0.15,cy+R*0.25,'#a5b4fc',10.5,'center',true);}
+  else{g.save();g.beginPath();g.arc(cx,cy,R,0,7);g.clip();lay(110).forEach(([x,y,r],i)=>{const px=cx+x*R,py=cy+y*R,rp=r*R*(y<0?0.85:1.25);g.fillStyle=y<-0.05?'#7c5236':'#fde68a';g.beginPath();g.arc(px,py,rp,0,7);g.fill();g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1;g.stroke();});
+    g.fillStyle='rgba(30,27,75,.9)';g.beginPath();g.ellipse(cx,cy-R*0.28,R*0.55,R*0.36,0,0,7);g.fill();g.restore();g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=2;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    T(g,'Blastocoel',cx,cy-R*0.28,'#a5b4fc',11,'center',true);T(g,'Animal pole (เซลล์เล็ก)',cx,cy-R*1.12,'#e9d5e0',10,'center');T(g,'Vegetal pole (เซลล์ใหญ่ ไข่แดงมาก)',cx,cy+R*1.12,'#fde68a',10,'center');}}
+function drawGast(g,cx,cy,R,f,frog){const k=sm(f/0.85);
+  if(frog){g.fillStyle='#fde68a';g.beginPath();g.arc(cx,cy,R,0,7);g.fill();
+    g.fillStyle='rgba(30,27,75,.85)';g.beginPath();g.ellipse(cx,cy-R*0.35,R*0.55*(1-k*0.75),R*0.35*(1-k*0.7),0,0,7);g.fill();
+    g.strokeStyle='#ef4444';g.lineWidth=R*0.09;const ms=lerp(0.15,0.8,k)*Math.PI;g.beginPath();g.arc(cx,cy,R*0.82,Math.PI/2+0.2,Math.PI/2+0.2+ms);g.stroke();g.beginPath();g.arc(cx,cy,R*0.82,Math.PI/2-0.2-ms,Math.PI/2-0.2);g.stroke();
+    const ay=cy+R*(0.75-0.55*k),ah=R*(0.2+0.45*k);g.fillStyle='#1f1530';g.strokeStyle='#facc15';g.lineWidth=4;g.beginPath();g.ellipse(cx,ay,R*(0.12+0.14*k),ah/2+4,0,0,7);g.fill();g.stroke();
+    g.strokeStyle='#60a5fa';g.lineWidth=R*0.12;const gap=lerp(1.4,0.35,k);g.beginPath();g.arc(cx,cy,R*0.94,Math.PI/2+gap/2,Math.PI/2-gap/2+2*Math.PI);g.stroke();
+    if(k>0.5){g.fillStyle='#facc15';g.beginPath();g.arc(cx,cy+R*0.95,R*0.08,0,7);g.fill();}
+    lead(g,cx-R*0.66,cy-R*0.68,cx-R*1.25,cy-R*0.95);lab2(g,'Ectoderm','ชั้นนอก','',cx-R*1.25,cy-R*1.08,'#93c5fd');
+    lead(g,cx+R*0.72,cy+R*0.38,cx+R*1.15,cy+R*0.1);lab2(g,'Mesoderm','ชั้นกลาง','',cx+R*1.17,cy-R*0.03,'#fca5a5','left');
+    lead(g,cx+R*0.2,ay,cx+R*1.15,cy+R*0.7);lab2(g,'Endoderm / Archenteron','ลำไส้ดั้งเดิม','',cx+R*1.17,cy+R*0.57,'#fde68a','left');
+    lead(g,cx,cy+R*0.98,cx-R*0.9,cy+R*1.12);T(g,'Blastopore → ทวารหนัก (Deuterostome)',cx-R*0.9,cy+R*1.2,'#e9d5e0',10,'center');}
+  else{g.strokeStyle='#fb923c';g.lineWidth=4;g.beginPath();g.arc(cx,cy,R*1.0,0,7);g.stroke();T(g,'Chorion',cx+R*0.75,cy-R*0.82,'#fb923c',10,'left',true);
+    g.fillStyle='rgba(96,165,250,.25)';g.beginPath();g.ellipse(cx,cy-R*0.3,R*0.62,R*0.38,0,Math.PI,0);g.fill();T(g,'Amniotic cavity',cx,cy-R*0.48,'#93c5fd',10.5,'center',true);
+    g.fillStyle='rgba(250,204,21,.25)';g.beginPath();g.ellipse(cx,cy+R*0.12,R*0.5,R*0.42,0,0,Math.PI);g.fill();T(g,'Yolk sac',cx,cy+R*0.35,'#fde68a',10.5,'center',true);
+    const dw=R*1.24,dx=cx-dw/2,dy=cy-R*0.3;g.fillStyle='#60a5fa';rr(g,dx,dy,dw,R*0.14,6);g.fill();g.fillStyle='#facc15';rr(g,dx,dy+R*0.29,dw,R*0.13,6);g.fill();
+    const mw=dw*lerp(0.08,1,k);g.fillStyle='#ef4444';rr(g,cx-mw/2,dy+R*0.15,mw,R*0.13,5);g.fill();g.strokeStyle='#fff';g.setLineDash([4,3]);g.lineWidth=1.5;g.beginPath();g.moveTo(cx,dy);g.lineTo(cx,dy+R*0.14);g.stroke();g.setLineDash([]);
+    lab2(g,'Ectoderm (Epiblast)','ชั้นนอก','',cx-dw/2-6,dy+R*0.07,'#93c5fd','right');lab2(g,'Mesoderm','เคลื่อนผ่าน Primitive streak','',cx+dw/2+6,dy+R*0.2,'#fca5a5','left');lab2(g,'Endoderm','ชั้นใน','',cx-dw/2-6,dy+R*0.35,'#fde68a','right');}}
+function drawNeuru(g,cx,cy,R,f){const k=sm(f/0.7);g.fillStyle='rgba(244,114,182,.12)';g.beginPath();g.ellipse(cx,cy,R*0.92,R*0.78,0,0,7);g.fill();
+  g.strokeStyle='#60a5fa';g.lineWidth=R*0.07;g.beginPath();g.ellipse(cx,cy,R*0.92,R*0.78,0,0.0,Math.PI*2);g.stroke();
+  const ny=cy-R*0.5;if(k<0.6){const d=k/0.6;g.strokeStyle='#22c55e';g.lineWidth=R*0.08;g.beginPath();g.moveTo(cx-R*0.35,cy-R*0.72);g.quadraticCurveTo(cx,cy-R*(0.72-0.5*d),cx+R*0.35,cy-R*0.72);g.stroke();}
+  else{const d=(k-0.6)/0.4;g.strokeStyle='#22c55e';g.lineWidth=R*0.07;g.beginPath();g.arc(cx,ny,R*0.15,0,7);g.stroke();g.fillStyle='rgba(34,197,94,.25)';g.beginPath();g.arc(cx,ny,R*0.15,0,7);g.fill();if(d<1){g.strokeStyle='#22c55e';g.lineWidth=R*0.05;g.beginPath();g.moveTo(cx-R*0.3*(1-d),cy-R*0.72);g.lineTo(cx-R*0.12,cy-R*0.66);g.moveTo(cx+R*0.3*(1-d),cy-R*0.72);g.lineTo(cx+R*0.12,cy-R*0.66);g.stroke();}}
+  g.fillStyle='#a855f7';g.beginPath();g.arc(cx,cy-R*0.22,R*0.09,0,7);g.fill();
+  [-1,1].forEach(s=>{g.fillStyle='#ef4444';rr(g,cx+s*R*0.42-R*0.13,cy-R*0.5,R*0.26,R*0.3,6);g.fill();g.strokeStyle='#ef4444';g.lineWidth=R*0.06;g.beginPath();g.ellipse(cx,cy+R*0.12,R*0.62,R*0.42,0,s>0?-0.3:Math.PI+0.3,s>0?0.9:Math.PI-0.9,s<0);g.stroke();});
+  g.strokeStyle='#facc15';g.lineWidth=R*0.07;g.beginPath();g.arc(cx,cy+R*0.22,R*0.18,0,7);g.stroke();
+  lead(g,cx,ny,cx-R*1.2,cy-R*0.95);lab2(g,'Neural tube','→ สมอง ไขสันหลัง (Ectoderm)','',cx-R*1.2,cy-R*1.08,'#86efac');
+  lead(g,cx,cy-R*0.22,cx+R*1.15,cy-R*0.6);lab2(g,'Notochord','แกนค้ำจุน (Mesoderm)','',cx+R*1.17,cy-R*0.73,'#d8b4fe','left');
+  lead(g,cx+R*0.48,cy-R*0.4,cx+R*1.15,cy-R*0.15);lab2(g,'Somite','→ กล้ามเนื้อ กระดูกสันหลัง','',cx+R*1.17,cy-R*0.28,'#fca5a5','left');
+  lead(g,cx+R*0.15,cy+R*0.3,cx+R*1.15,cy+R*0.5);lab2(g,'Gut (Endoderm)','→ ทางเดินอาหาร ปอด ตับ','',cx+R*1.17,cy+R*0.37,'#fde68a','left');
+  lead(g,cx-R*0.85,cy+R*0.2,cx-R*1.2,cy+R*0.55);lab2(g,'Epidermis','ผิวหนังชั้นนอก (Ectoderm)','',cx-R*1.2,cy+R*0.62,'#93c5fd');}
+function drawM3(g,w,h){const p=M3.p,si=Math.min(8,Math.floor(p)),f=p-si,frog=frog3(),cx=w*0.34,cy=200,R=Math.min(115,w*0.17);
+  if(si<6)drawCleave(g,cx,cy,R,si,f,frog);else if(si===6)drawBlast(g,cx,cy,R,f,frog);else if(si===7)drawGast(g,cx,cy,R,f,frog);else drawNeuru(g,cx,cy,R,f);
+  const px=w-188,pw=178,N=nCell(p),Vt=vTot(p),V0=vTot(0),nm=st3Name(si),t=tAt(p);panel(g,px,10,pw,248);
+  T(g,nm[0],px+10,28,'#fbcfe8',13,'left',true);T(g,nm[1],px+10,44,'#e9d5e0',10.5);T(g,frog?'เวลา ≈ '+t.toFixed(1)+' ชม. หลังปฏิสนธิ':'วันที่ ≈ '+t.toFixed(1)+' หลังปฏิสนธิ',px+10,62,'#fde68a',10.5,'left',true);
+  bar(g,px+10,92,pw-20,9,Math.log2(N)/14,'#f472b6','จำนวนเซลล์',N.toLocaleString());
+  bar(g,px+10,126,pw-20,9,Math.min(1,0.5*Vt/V0),'#34d399','ปริมาตรรวม',(Vt>=100?Vt.toFixed(0):Vt.toFixed(2))+' nL');
+  bar(g,px+10,160,pw-20,9,(Vt/N)/V0,'#60a5fa','ปริมาตรต่อเซลล์',((Vt/N)*1000).toFixed(Vt/N*1000<10?2:0)+' pL');
+  wrap(g,si<6?'Cleavage: Mitosis ถี่ ข้ามระยะ G1/G2 เซลล์จึงเล็กลงเรื่อย ๆ แต่ปริมาตรรวมคงที่':si===6?'เซลล์เรียงตัวรอบช่อง Blastocoel':si===7?'เซลล์เคลื่อนที่เข้าไปภายใน เกิดเนื้อเยื่อ 3 ชั้น (Germ layers)':'Induction: Notochord ชักนำ Ectoderm ให้พับเป็น Neural tube',px+10,186,pw-20,13,'#e9d5e0',10);
+  const y0=h-44,x0=24,x1=w-24;g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=2;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y0);g.stroke();
+  for(let i=0;i<9;i++){const x=lerp(x0,x1,i/8),on=i<=si;g.fillStyle=i===si?'#fde047':on?'#f472b6':'#4a2445';g.beginPath();g.arc(x,y0,i===si?7:5,0,7);g.fill();T(g,i<6?ST3[i][1]:st3Name(i)[1].split(' ')[0],x,y0+16,on?'#fbcfe8':'#6b4a60',9,'center',i===si);}
+  g.fillStyle='#fde047';g.beginPath();g.arc(lerp(x0,x1,p/8.999*1),y0-12,3,0,7);g.fill();T(g,'Cleavage',lerp(x0,x1,2.5/8),y0-14,'#d8b4cc',9.5,'center');}
+
+/* ================= MODE 4 : EGG TYPES & MEMBRANES ================= */
+let M4;function initM4(){M4={p:0};}
+const YK={star:{n:'ดาวทะเล',e:'Sea star',t:'Isolecithal',ty:'iso',y:3,cl:'Holoblastic – Equal',d:'ไข่แดงน้อย กระจายสม่ำเสมอ'},human:{n:'มนุษย์',e:'Human',t:'Isolecithal (Alecithal)',ty:'iso',y:1,cl:'Holoblastic – Equal',d:'แทบไม่มีไข่แดง ได้อาหารจากแม่ผ่านรก'},frog:{n:'กบ',e:'Frog',t:'Mesolecithal',ty:'meso',y:40,cl:'Holoblastic – Unequal',d:'ไข่แดงปานกลาง หนาแน่นที่ขั้ว Vegetal'},bird:{n:'ไก่ / นก',e:'Chicken',t:'Telolecithal',ty:'telo',y:95,cl:'Meroblastic – Discoidal',d:'ไข่แดงมากเกือบทั้งเซลล์ แบ่งเฉพาะ Blastodisc'},insect:{n:'แมลง',e:'Drosophila',t:'Centrolecithal',ty:'centro',y:60,cl:'Meroblastic – Superficial',d:'ไข่แดงอยู่กลางเซลล์ นิวเคลียสแบ่งแล้วย้ายไปผิว'}};
+const MB={amnion:['แอมเนียน','Amnion','#60a5fa','ล้อมรอบตัวอ่อน มีน้ำคร่ำ กันกระแทกและกันตัวอ่อนแห้ง'],chorion:['คอเรียน','Chorion','#fb923c','ชั้นนอกสุด แลกเปลี่ยนแก๊ส · ในคนเป็นส่วนของรกและสร้าง hCG'],allantois:['แอลแลนทอยส์','Allantois','#4ade80','นก: เก็บกรดยูริก + แลกเปลี่ยนแก๊ส · คน: เป็นหลอดเลือดสายสะดือ'],yolk:['ถุงไข่แดง','Yolk sac','#facc15','นก: อาหารสะสม · คน: เล็ก สร้างเซลล์เม็ดเลือดระยะแรก']};
+function stepM4(dt){if($('#exp4').value==='yolk'){M4.p+=dt*0.5;if(M4.p>8)M4.p=0;}else M4.p+=dt;}
+function holo(g,cx,cy,R,k,meso){g.save();g.beginPath();g.arc(cx,cy,R,0,7);g.clip();
+  if(meso){const gr=g.createLinearGradient(0,cy-R,0,cy+R);gr.addColorStop(0,'#4a2c1d');gr.addColorStop(0.4,'#7c5236');gr.addColorStop(0.55,'#e9c46a');gr.addColorStop(1,'#facc15');g.fillStyle=gr;}else{const gr=g.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);gr.addColorStop(0,'#fff');gr.addColorStop(1,'#f9a8d4');g.fillStyle=gr;}
+  g.fillRect(cx-R,cy-R,2*R,2*R);
+  for(let i=0;i<(meso?90:40);i++){const a=hash(i)*6.283,r=Math.sqrt(hash(i+7))*R*0.95;let x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;if(meso&&y<cy-R*0.1)continue;g.fillStyle=meso?'rgba(202,138,4,.6)':'rgba(234,179,8,.45)';g.beginPath();g.arc(x,y,meso?3:1.6,0,7);g.fill();}
+  g.strokeStyle='rgba(40,10,25,.85)';g.lineWidth=2.2;const yl=meso?-0.35*R:0;
+  const vClip=(fn2)=>{g.save();if(meso){g.beginPath();g.rect(cx-R,cy-R,2*R,R*1.25);g.clip();}fn2();g.restore();};
+  if(k>=1){g.beginPath();g.moveTo(cx,cy-R);g.lineTo(cx,cy+R);g.stroke();}
+  if(k>=2){g.beginPath();g.ellipse(cx,cy,R*0.62,R,0,0,7);g.stroke();}
+  if(k>=3){const hw=Math.sqrt(R*R-yl*yl);g.beginPath();g.ellipse(cx,cy+yl,hw,R*0.1,0,0,7);g.stroke();}
+  if(k>=4)vClip(()=>{g.beginPath();g.ellipse(cx,cy,R*0.3,R,0,0,7);g.stroke();g.beginPath();g.ellipse(cx,cy,R*0.88,R,0,0,7);g.stroke();});
+  if(k>=5){[meso?yl-0.35*R:-0.5*R,meso?0.4*R:0.5*R].forEach(y=>{const hw=Math.sqrt(R*R-y*y);g.beginPath();g.ellipse(cx,cy+y,hw,R*0.08,0,0,7);g.stroke();});}
+  g.restore();g.strokeStyle='rgba(0,0,0,.45)';g.lineWidth=2;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+  if(meso&&k>=3){T(g,'Micromere (ขั้ว Animal)',cx,cy-R-14,'#e9d5e0',10,'center',true);T(g,'Macromere (ขั้ว Vegetal) ร่องแบ่งช้า',cx,cy+R+14,'#fde68a',10,'center',true);}}
+function drawYolk(g,w,h){const sp=$('#sp').value,Y=YK[sp],k=Math.min(5,Math.floor(M4.p)),f=M4.p-k,cx=w*0.36,cy=215,R=Math.min(140,w*0.2),ch=CHR();
+  if(Y.ty==='iso'){if(sp==='human'){g.strokeStyle='rgba(196,181,253,.6)';g.lineWidth=7;g.beginPath();g.arc(cx,cy,R*1.06,0,7);g.stroke();}holo(g,cx,cy,R,k,false);T(g,'แบ่งตลอดทั้งไข่ ขนาดเซลล์เท่ากัน',cx,cy+R+16,'#e9d5e0',10.5,'center');}
+  else if(Y.ty==='meso')holo(g,cx,cy,R,k,true);
+  else if(Y.ty==='telo'){g.strokeStyle='rgba(231,229,228,.5)';g.lineWidth=3;g.beginPath();g.ellipse(cx,cy+10,R*1.5,R*1.12,0,0,7);g.stroke();g.fillStyle='rgba(254,249,195,.08)';g.fill();
+    const gr=g.createRadialGradient(cx-R*0.3,cy-R*0.2,R*0.1,cx,cy+10,R*0.85);gr.addColorStop(0,'#fde047');gr.addColorStop(1,'#ea8a0b');g.fillStyle=gr;g.beginPath();g.arc(cx,cy+10,R*0.85,0,7);g.fill();
+    const by=cy+10-R*0.85;g.fillStyle='#fef9c3';g.beginPath();g.ellipse(cx,by+3,R*0.3,R*0.07,0,0,7);g.fill();if(k>=1){g.strokeStyle='rgba(120,53,15,.8)';g.lineWidth=1.4;for(let i=1;i<Math.min(2**k,16);i++){const x=cx-R*0.3+i*R*0.6/Math.min(2**k,16);g.beginPath();g.moveTo(x,by-1);g.lineTo(x,by+7);g.stroke();}}
+    const ix=cx+R*1.15,iy=cy-R*0.95,ir=46;panel(g,ix-ir-8,iy-ir-22,ir*2+16,ir*2+34);T(g,'มองจากด้านบน',ix,iy-ir-12,'#e9d5e0',9.5,'center');g.fillStyle='#fef9c3';g.beginPath();g.arc(ix,iy,ir,0,7);g.fill();g.strokeStyle='rgba(120,53,15,.85)';g.lineWidth=1.6;
+    const ns=k>=1?2**Math.min(k,3):0;for(let i=0;i<ns;i++){const a=i/ns*Math.PI*2;g.beginPath();g.moveTo(ix,iy);g.lineTo(ix+Math.cos(a)*ir,iy+Math.sin(a)*ir);g.stroke();}if(k>=4){g.beginPath();g.arc(ix,iy,ir*0.45,0,7);g.stroke();}if(k>=5){g.beginPath();g.arc(ix,iy,ir*0.75,0,7);g.stroke();for(let i=0;i<16;i++){const a=(i+0.5)/16*Math.PI*2;g.beginPath();g.moveTo(ix+Math.cos(a)*ir*0.45,iy+Math.sin(a)*ir*0.45);g.lineTo(ix+Math.cos(a)*ir,iy+Math.sin(a)*ir);g.stroke();}}
+    arrow(g,cx+R*0.32,by,ix-ir-10,iy+10,'rgba(255,255,255,.4)',1.4);lead(g,cx,by+4,cx-R*1.2,by-30);lab2(g,'Blastodisc','แบ่งเซลล์เฉพาะส่วนนี้','',cx-R*1.2,by-44,'#fef9c3');T(g,'ไข่แดง (ไม่แบ่ง)',cx,cy+30,'#78350f',13,'center',true);}
+  else{const rx=R*1.3,ry=R*0.62;g.fillStyle='rgba(254,243,199,.18)';g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,7);g.fill();g.strokeStyle='rgba(255,255,255,.4)';g.lineWidth=2;g.stroke();
+    const gr=g.createRadialGradient(cx,cy,R*0.1,cx,cy,rx*0.9);gr.addColorStop(0,'#fde047');gr.addColorStop(1,'rgba(234,179,8,.6)');g.fillStyle=gr;g.beginPath();g.ellipse(cx,cy,rx*0.86,ry*0.78,0,0,7);g.fill();
+    const N=2**k,mig=k<4?0:k===4?sm(f):1;const pts=[];if(k<5){for(let i=0;i<N;i++){const a=hash(i+N)*6.283,r=Math.sqrt(hash(i+N*3))*0.45,ax=Math.cos(a)*r,ay=Math.sin(a)*r,ta=Math.atan2(ay,ax);pts.push([lerp(ax,Math.cos(ta)*0.93,mig),lerp(ay,Math.sin(ta)*0.93,mig)]);}}else{for(let i=0;i<56;i++){const a=i/56*6.283;pts.push([Math.cos(a)*0.93,Math.sin(a)*0.93]);}}
+    pts.forEach(([x,y])=>{const px=cx+x*rx,py=cy+y*ry;glow(g,px,py,8,'rgba(244,114,182,.35)');g.fillStyle='#be185d';g.beginPath();g.arc(px,py,3.2,0,7);g.fill();});
+    if(k>=5&&f>0.4){g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=1;for(let i=0;i<56;i++){const a=(i+0.5)/56*6.283;g.beginPath();g.moveTo(cx+Math.cos(a)*rx*0.86,cy+Math.sin(a)*ry*0.8);g.lineTo(cx+Math.cos(a)*rx,cy+Math.sin(a)*ry);g.stroke();}}
+    T(g,k<4?'นิวเคลียสแบ่งในไข่แดง (ไม่มีเยื่อหุ้มเซลล์กั้น)':k===4?'นิวเคลียสย้ายไปที่ผิว → Syncytial blastoderm':f>0.4?'สร้างเยื่อหุ้มเซลล์ → Cellular blastoderm':'Syncytial blastoderm',cx,cy+ry+18,'#e9d5e0',10.5,'center',true);}
+  const px=w-188,pw=178;panel(g,px,10,pw,250);T(g,Y.n+' ('+Y.e+')',px+10,28,'#fbcfe8',13,'left',true);T(g,Y.t,px+10,46,'#fde68a',11,'left',true);
+  bar(g,px+10,76,pw-20,10,Y.y/100,'#facc15','ปริมาณไข่แดง','~'+Y.y+'%');T(g,'การแบ่ง:',px+10,104,'#e9d5e0',10.5,'left',true);T(g,Y.cl,px+10,120,'#f9a8d4',10.5,'left',true);
+  wrap(g,Y.d,px+10,142,pw-20,13,'#e9d5e0',10);T(g,'รอบการแบ่ง: '+k+(Y.ty==='centro'&&k<5?' → นิวเคลียส '+2**k:' → '+2**k+' เซลล์'),px+10,190,'#fde68a',10.5,'left',true);
+  if(ch)wrap(g,'ทุกเซลล์/นิวเคลียสเป็น 2n (แบ่งแบบ Mitosis) · '+(sp==='human'?'2n = 46':sp==='bird'?'2n = 78':sp==='frog'?'2n = 26':sp==='insect'?'2n = 8':'2n = 36'),px+10,210,pw-20,13,'#c4b5fd',10);}
+function fetus(g,x,y,s,a){g.fillStyle=`rgba(251,207,232,${a})`;g.beginPath();g.arc(x,y-s*0.45,s*0.32,0,7);g.fill();g.beginPath();g.ellipse(x+s*0.08,y+s*0.12,s*0.3,s*0.42,-0.3,0,7);g.fill();g.strokeStyle=`rgba(251,207,232,${a})`;g.lineWidth=s*0.1;g.lineCap='round';g.beginPath();g.moveTo(x+s*0.1,y+s*0.45);g.quadraticCurveTo(x-s*0.3,y+s*0.55,x-s*0.25,y+s*0.2);g.stroke();g.fillStyle=`rgba(60,20,50,${a})`;g.beginPath();g.arc(x-s*0.1,y-s*0.5,s*0.05,0,7);g.fill();}
+function drawMemb(g,w,h){const egg=$('#egg').value,hl=$('#hl').value,q=V('age4')/100,al=k=>hl==='all'||hl===k?1:0.22,cx=w*0.33,cy=218;
+  if(egg==='bird'){const rx=Math.min(190,w*0.27),ry=150;g.fillStyle=`rgba(254,249,195,${0.16*(1-q*0.7)})`;g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,7);g.fill();g.strokeStyle='#e7e5e4';g.lineWidth=5;g.stroke();
+    g.fillStyle='rgba(255,255,255,.15)';g.beginPath();g.ellipse(cx-rx+20,cy,18,52,0,0,7);g.fill();T(g,'Air cell',cx-rx+20,cy+64,'#d6d3d1',9.5,'center');
+    g.globalAlpha=al('chorion')*sm(q/0.15);g.strokeStyle=MB.chorion[2];g.lineWidth=3;g.beginPath();g.ellipse(cx,cy,rx-10,ry-10,0,0,7);g.stroke();g.globalAlpha=1;
+    const yr=lerp(100,38,q),yx=cx+30,yy=cy+30;g.globalAlpha=al('yolk');g.fillStyle='#facc15';g.beginPath();g.arc(yx,yy,yr,0,7);g.fill();g.strokeStyle='#dc2626';g.lineWidth=1.3;for(let i=0;i<7;i++){const a=-2.6+i*0.5;g.beginPath();g.moveTo(yx+Math.cos(a)*yr*0.2,yy+Math.sin(a)*yr*0.2);g.quadraticCurveTo(yx+Math.cos(a+0.3)*yr*0.6,yy+Math.sin(a+0.3)*yr*0.6,yx+Math.cos(a)*yr*0.95,yy+Math.sin(a)*yr*0.95);g.stroke();}g.globalAlpha=1;
+    const arx=lerp(10,rx*0.82,sm(q)),ary=lerp(8,ry*0.62,sm(q));g.globalAlpha=al('allantois');g.fillStyle='rgba(74,222,128,.22)';g.strokeStyle=MB.allantois[2];g.lineWidth=2.4;g.beginPath();g.ellipse(cx+10,cy-ry+ary+14,arx,ary,0,0,7);g.fill();g.stroke();g.globalAlpha=1;
+    const es=lerp(14,72,q),ex=cx-50,ey=cy-10;g.globalAlpha=al('amnion');g.fillStyle='rgba(96,165,250,.25)';g.strokeStyle=MB.amnion[2];g.lineWidth=2.4;g.beginPath();g.ellipse(ex,ey,es*0.85+12,es*0.95+12,0,0,7);g.fill();g.stroke();g.globalAlpha=1;fetus(g,ex,ey,es,1);
+    const L=[['amnion',ex-es*0.85-12,ey,cx-rx-10,cy-120],['chorion',cx+rx-10,cy,cx+rx+6,cy-40],['allantois',cx+10+arx*0.6,cy-ry+14+ary*0.4,cx+rx+6,cy-110],['yolk',yx+yr*0.7,yy+yr*0.5,cx+rx+6,cy+100]];
+    L.forEach(([k,x1,y1,x2,y2])=>{if(x2>w-200)x2=w-200;g.globalAlpha=Math.max(0.35,al(k));lead(g,x1,y1,x2,y2,MB[k][2]);T(g,MB[k][1],x2+(x2<cx?-2:4),y2-6,MB[k][2],10.5,x2<cx?'right':'left',true);g.globalAlpha=1;});
+    T(g,'วันที่ '+Math.round(q*21)+' จาก 21 วันของการฟัก',cx,cy+ry+22,'#fde68a',11,'center',true);if(q>0.6&&(hl==='all'||hl==='allantois'||hl==='chorion'))T(g,'Allantois + Chorion = Chorioallantoic membrane (แลกเปลี่ยนแก๊สผ่านเปลือก)',cx,cy+ry+38,'#86efac',10,'center');}
+  else{const pw2=60;g.fillStyle='#7a2848';g.fillRect(14,20,pw2,h-60);g.strokeStyle='#dc2626';g.lineWidth=1.6;for(let i=0;i<8;i++){const y=40+i*48;g.beginPath();for(let j=0;j<=12;j++){const x=14+j*5,yy=y+Math.sin(j*1.2+i)*4;j?g.lineTo(x,yy):g.moveTo(x,yy);}g.stroke();}T(g,'Endometrium',44,h-28,'#f9a8d4',10,'center',true);T(g,'(แม่)',44,h-15,'#f9a8d4',9.5,'center');
+    const Rc=lerp(95,150,q),sx=74+50+Rc,plx=74,ply=cy;g.fillStyle='rgba(127,29,29,.75)';rr(g,plx,ply-95,48,190,10);g.fill();
+    g.globalAlpha=al('chorion');g.strokeStyle=MB.chorion[2];g.lineWidth=2.4;for(let i=0;i<9;i++){const y=ply-80+i*20;g.beginPath();g.moveTo(plx+50,y);g.lineTo(plx+30,y);g.lineTo(plx+12,y-6);g.moveTo(plx+30,y);g.lineTo(plx+12,y+6);g.stroke();}
+    g.lineWidth=4;g.beginPath();g.arc(sx,cy,Rc,0,7);g.stroke();g.globalAlpha=1;
+    g.globalAlpha=al('amnion');g.fillStyle='rgba(96,165,250,.2)';g.strokeStyle=MB.amnion[2];g.lineWidth=2.4;g.beginPath();g.arc(sx+6,cy,Rc-lerp(26,6,q),0,7);g.fill();g.stroke();g.globalAlpha=1;
+    const fs=lerp(40,Rc*1.05,q),fx=sx+Rc*0.2,fy=cy+10;g.strokeStyle='#d6a4bf';g.lineWidth=9;g.beginPath();g.moveTo(plx+48,cy);g.bezierCurveTo(plx+110,cy-60,fx-fs*0.5,fy+fs*0.6,fx,fy+fs*0.2);g.stroke();
+    g.lineWidth=1.5;[['#ef4444',-2.5],['#3b82f6',0],['#3b82f6',2.5]].forEach(([col,o])=>{g.strokeStyle=col;g.beginPath();g.moveTo(plx+48,cy+o);g.bezierCurveTo(plx+110,cy-60+o,fx-fs*0.5,fy+fs*0.6+o,fx,fy+fs*0.2+o);g.stroke();});
+    if(hl==='allantois'){g.strokeStyle=MB.allantois[2];g.lineWidth=2.5;g.setLineDash([5,4]);g.beginPath();g.moveTo(plx+48,cy);g.bezierCurveTo(plx+110,cy-60,fx-fs*0.5,fy+fs*0.6,fx,fy+fs*0.2);g.stroke();g.setLineDash([]);}
+    fetus(g,fx,fy,fs,1);const ys=lerp(14,5,q);g.globalAlpha=al('yolk');g.fillStyle='#facc15';g.beginPath();g.arc(plx+92,cy+40,ys,0,7);g.fill();g.globalAlpha=1;
+    const L=[['chorion',plx+40,ply-70,plx+30,30],['amnion',sx+6+(Rc-lerp(26,6,q))*0.7,cy-(Rc-lerp(26,6,q))*0.7,sx+Rc*0.9,40],['allantois',plx+100,cy-28,plx+150,h-88],['yolk',plx+92,cy+40+ys,plx+70,h-40]];
+    L.forEach(([k,x1,y1,x2,y2])=>{g.globalAlpha=Math.max(0.35,al(k));lead(g,x1,y1,x2,y2,MB[k][2]);T(g,MB[k][1]+(k==='allantois'?' (หลอดเลือดสายสะดือ)':''),x2+4,y2,MB[k][2],10.5,'left',true);g.globalAlpha=1;});
+    T(g,'รก (Placenta) = Chorionic villi (ลูก) + Endometrium (แม่)',14,h-62,'#fecaca',10,'left',true);T(g,'อายุครรภ์ ≈ '+Math.round(4+q*36)+' สัปดาห์',sx,h-14,'#fde68a',11,'center',true);}
+  const px=w-188,pw=178;panel(g,px,10,pw,262);T(g,'เยื่อหุ้มตัวอ่อน 4 ชนิด',px+10,26,'#fbcfe8',12,'left',true);
+  Object.keys(MB).forEach((k,i)=>{const m=MB[k],y=50+i*54,on=hl==='all'||hl===k;g.globalAlpha=on?1:0.4;g.fillStyle=m[2];g.fillRect(px+10,y-5,10,10);T(g,m[0]+' ('+m[1]+')',px+26,y,m[2],10.5,'left',true);wrap(g,m[3],px+26,y+14,pw-34,12,'#e9d5e0',9.2);g.globalAlpha=1;});}
+function drawM4(g,w,h){if($('#exp4').value==='yolk')drawYolk(g,w,h);else drawMemb(g,w,h);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#c9a9bf',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#c9a9bf',10,'center');}
+  g.strokeStyle='rgba(255,255,255,.3)';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#c9a9bf',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#c9a9bf',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(2)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#fbe7f3',10);});}
+function plot(g,A,H,ix,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();H.forEach((r,i)=>{const y=A.Y(r[ix]);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();}
+function fn(g,A,x0,x1,f,col,lw,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=120;i++){const x=x0+(x1-x0)*i/120;i?g.lineTo(A.X(x),A.Y(f(x))):g.moveTo(A.X(x),A.Y(f(x)));}g.stroke();g.setLineDash([]);}
+function vmark(g,A,x,h,col){g.strokeStyle=col;g.setLineDash([3,3]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.X(x),A.Tm);g.lineTo(A.X(x),h-A.B);g.stroke();g.setLineDash([]);}
+function oocytes(a){if(a<-0.3)return 7*sm((a+0.75)/0.45);if(a<0)return lerp(7,2,(a+0.3)/0.3);if(a<13)return 2*Math.exp(-a*Math.log(5)/13);return 0.4*Math.exp(-(a-13)*Math.log(400)/38);}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const H=horm(M1.d),X1=H.resc?42:28,A=axes(g,w,h,0,X1,0,1,'วันของรอบเดือน','ระดับสัมพัทธ์',X1===28?4:6,4);g.fillStyle='rgba(220,38,38,.12)';g.fillRect(A.X(0),A.Tm,A.X(5)-A.X(0),h-A.B-A.Tm);
+    fn(g,A,0,X1,x=>horm(x).e,'#f472b6',2.6);fn(g,A,0,X1,x=>horm(x).p,'#a78bfa',2.6);if(H.preg)fn(g,A,0,X1,x=>Math.min(1,horm(x).hg/Math.max(1,V('hcg'))),'#34d399',1.6,[5,4]);vmark(g,A,H.c,h,'#fde047');
+    [[H.e,'#f472b6'],[H.p,'#a78bfa']].forEach(([v,col])=>{g.fillStyle=col;g.beginPath();g.arc(A.X(H.c),A.Y(v),5,0,7);g.fill();});legend(g,[['Estrogen','#f472b6'],['Progesterone','#a78bfa']].concat(H.preg?[['hCG (สัมพัทธ์)','#34d399']]:[]),A.L+8,A.Tm+8);}
+  else if(m===2){if(M2.k==='gam'){const A=axes(g,w,h,-0.75,55,0,1,'อายุ (ปี) · ค่าติดลบ = ก่อนเกิด','ระดับสัมพัทธ์',5,4,v=>Math.round(v)+'');g.fillStyle='rgba(244,114,182,.1)';g.fillRect(A.X(-0.75),A.Tm,A.X(0)-A.X(-0.75),h-A.B-A.Tm);
+      fn(g,A,-0.75,55,a=>oocytes(a)/7,'#f472b6',2.4);fn(g,A,-0.75,55,a=>a<12?0:sm((a-12)/4)*(1-0.006*(a-16)),'#60a5fa',2.4);[[0,'เกิด'],[13,'วัยเจริญพันธุ์'],[51,'หมดประจำเดือน']].forEach(([x,l])=>{vmark(g,A,x,h,'rgba(255,255,255,.35)');T(g,l,A.X(x)+3,A.Tm+40,'#e9d5e0',9.5);});
+      legend(g,[['จำนวนไข่ในรังไข่ (สูงสุด ~7 ล้าน ก่อนเกิด)','#f472b6'],['การสร้างอสุจิต่อวัน (~100–300 ล้าน)','#60a5fa']],A.L+50,A.Tm+8);}
+    else{const t1=Math.max(20,M2.t),A=axes(g,w,h,0,t1,0,Math.max(5,V('nsp')),'เวลา (วินาที)','จำนวนอสุจิ',5,4,v=>Math.round(v)+'',v=>Math.round(v)+'');plot(g,A,M2.hist,1,'#f8fafc',2);plot(g,A,M2.hist,2,'#fde047',2);plot(g,A,M2.hist,3,'#a8a29e',2);plot(g,A,M2.hist,4,'#4ade80',2.6);
+      if(M2.fz>=0)vmark(g,A,M2.ft,h,'#f472b6');legend(g,[['ยังไม่จับ (Unbound)','#f8fafc'],['Acrosome reacted','#fde047'],['ถูกกัน (Polyspermy blocked)','#a8a29e'],['เข้าไข่ (Fused)','#4ade80']],A.L+8,A.Tm+8);}}
+  else if(m===3){const A=axes(g,w,h,0,9,0,1,'ขั้นการเจริญ','ค่าสัมพัทธ์',9,4,v=>['1','2','4','8','16','Mo','Bl','Ga','Ne',''][Math.round(v)]||'');g.fillStyle='rgba(244,114,182,.1)';g.fillRect(A.X(0),A.Tm,A.X(6)-A.X(0),h-A.B-A.Tm);T(g,'Cleavage',A.X(3),A.Tm+8,'#f9a8d4',10,'center',true);
+    const V0=vTot(0);fn(g,A,0,9,p=>Math.log2(nCell(p))/14,'#f472b6',2.4);fn(g,A,0,9,p=>Math.min(1,vTot(p)/nCell(p)/V0),'#60a5fa',2.4);fn(g,A,0,9,p=>Math.min(1,0.5*vTot(p)/V0),'#34d399',2.4);vmark(g,A,M3.p,h,'#fde047');
+    legend(g,[['log₂ จำนวนเซลล์','#f472b6'],['ปริมาตรต่อเซลล์','#60a5fa'],['ปริมาตรรวม (×0.5)','#34d399']],A.X(4.6),A.Tm+26);}
+  else{if($('#exp4').value==='yolk'){const ks=Object.keys(YK),A=axes(g,w,h,0,5,0,100,'','ปริมาณไข่แดง (%)',5,4,()=>'');ks.forEach((k,i)=>{const v=YK[k].y,x=A.X(i)+6,bw=A.X(1)-A.X(0)-12;g.fillStyle='#facc15';g.globalAlpha=k===$('#sp').value?1:0.45;g.fillRect(x,A.Y(v),bw,A.Y(0)-A.Y(v));g.globalAlpha=1;T(g,v+'%',x+bw/2,A.Y(v)-8,'#fbe7f3',10,'center',true);T(g,YK[k].n,x+bw/2,h-A.B+10,'#e9d5e0',9.5,'center');T(g,YK[k].t.split(' ')[0],x+bw/2,h-A.B+22,'#c9a9bf',8.5,'center');});}
+    else if($('#egg').value==='bird'){const A=axes(g,w,h,0,21,0,1,'วันที่ฟัก','มวลสัมพัทธ์',7,4);fn(g,A,0,21,x=>1-0.62*sm(x/21),'#facc15',2.4);fn(g,A,0,21,x=>0.9*((x/21)**2.2),'#f472b6',2.4);fn(g,A,0,21,x=>0.8*(1-sm(x/16)),'#e7e5e4',1.8,[5,4]);fn(g,A,0,21,x=>0.6*sm((x-3)/12),'#4ade80',2);vmark(g,A,V('age4')/100*21,h,'#fde047');
+      legend(g,[['ไข่แดง (Yolk)','#facc15'],['ตัวอ่อน','#f472b6'],['ไข่ขาว','#e7e5e4'],['ของเสียใน Allantois','#4ade80']],A.L+8,A.Tm+8);}
+    else{const A=axes(g,w,h,0,40,0,1,'อายุครรภ์ (สัปดาห์)','ระดับสัมพัทธ์',8,4);fn(g,A,0,40,x=>x<3?0:0.95*G(x,10,3.5)+0.12*sm((x-14)/6),'#34d399',2.4);fn(g,A,0,40,x=>0.5*(1-sm((x-7)/5)),'#fbbf24',2);fn(g,A,0,40,x=>0.95*sm((x-5)/32),'#a78bfa',2.4);
+      g.fillStyle='rgba(251,191,36,.1)';g.fillRect(A.X(8),A.Tm,A.X(12)-A.X(8),h-A.B-A.Tm);T(g,'Luteo-placental shift',A.X(10),A.Tm+70,'#fde68a',9.5,'center');vmark(g,A,4+V('age4')/100*36,h,'#fde047');
+      legend(g,[['hCG (จาก Chorion)','#34d399'],['Progesterone จาก Corpus luteum','#fbbf24'],['Progesterone จากรก','#a78bfa']],A.X(17),A.Tm+8);}}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TB1='<table><tr><th>ฮอร์โมน</th><th>สร้างจาก</th><th>หน้าที่</th></tr><tr><td>GnRH</td><td>Hypothalamus</td><td>กระตุ้นต่อมใต้สมองส่วนหน้าหลั่ง FSH, LH</td></tr><tr><td>FSH</td><td>Anterior pituitary</td><td>♀ ฟอลลิเคิลเจริญ · ♂ Sertoli cell → สร้างอสุจิ</td></tr><tr><td>LH</td><td>Anterior pituitary</td><td>♀ LH surge → ตกไข่, สร้าง Corpus luteum · ♂ <b>Leydig cell</b> → Testosterone</td></tr><tr><td>Estrogen</td><td>ฟอลลิเคิล</td><td>เยื่อบุมดลูกหนา (Proliferative) · ลักษณะเพศหญิง</td></tr><tr><td>Progesterone</td><td>Corpus luteum / รก</td><td>เยื่อบุพร้อมรับการฝังตัว (Secretory) · ยับยั้ง FSH/LH</td></tr><tr><td>hCG</td><td>Trophoblast (Chorion)</td><td>รักษา Corpus luteum · ใช้ตรวจการตั้งครรภ์</td></tr><tr><td>Testosterone</td><td>Leydig cell</td><td>สร้างอสุจิ ลักษณะเพศชาย</td></tr><tr><td>Inhibin</td><td>Sertoli / Granulosa</td><td>ยับยั้งการหลั่ง FSH</td></tr></table>';
+const TB2='<table><tr><th></th><th>Spermatogenesis</th><th>Oogenesis</th></tr><tr><td>แหล่งสร้าง</td><td>ท่อสร้างอสุจิในอัณฑะ</td><td>ฟอลลิเคิลในรังไข่</td></tr><tr><td>เริ่ม</td><td>วัยเจริญพันธุ์</td><td>ก่อนเกิด (ตัวอ่อนในครรภ์)</td></tr><tr><td>การหยุดชั่วคราว</td><td>ไม่มี</td><td>Prophase I (ก่อนเกิด–ตกไข่) · Metaphase II (ตกไข่–ปฏิสนธิ)</td></tr><tr><td>การแบ่งไซโทพลาซึม</td><td>เท่ากัน</td><td>ไม่เท่ากัน</td></tr><tr><td>ผลผลิต / 1 Primary cell</td><td>อสุจิ 4 เซลล์</td><td>ไข่ 1 เซลล์ + Polar body 2–3</td></tr><tr><td>ช่วงเวลา</td><td>ต่อเนื่องตลอดชีวิต (~74 วัน/รอบ)</td><td>เป็นรอบ ~28 วัน สิ้นสุดเมื่อหมดประจำเดือน</td></tr><tr><td>เซลล์ที่ปล่อยออก</td><td>Sperm (n)</td><td>Secondary oocyte (n) หยุดที่ MII</td></tr></table>';
+const TBF='<table><tr><th>ขั้นการปฏิสนธิ</th><th>เหตุการณ์</th></tr><tr><td>Capacitation</td><td>อสุจิพร้อมปฏิสนธิในท่อนำไข่ของเพศหญิง</td></tr><tr><td>Acrosome reaction</td><td>อสุจิจับ Zona pellucida → ปล่อยเอนไซม์ย่อยทาง</td></tr><tr><td>Fast block</td><td>เยื่อหุ้มไข่เปลี่ยนศักย์ไฟฟ้าทันที (วินาที)</td></tr><tr><td>Cortical reaction (Slow block)</td><td>Ca²⁺ ↑ → Cortical granules หลั่งเอนไซม์ → Zona แข็งตัว</td></tr><tr><td>Meiosis II สมบูรณ์</td><td>เกิด Ovum + Polar body 2</td></tr><tr><td>Pronuclei รวมกัน</td><td>n + n → Zygote (2n)</td></tr></table>';
+const TB3='<table><tr><th>Germ layer</th><th>เจริญเป็น</th></tr><tr><td style="color:#93c5fd">Ectoderm</td><td>ผิวหนังชั้นนอก ผม เล็บ · ระบบประสาท (สมอง ไขสันหลัง) · เลนส์ตา · เคลือบฟัน</td></tr><tr><td style="color:#fca5a5">Mesoderm</td><td>กล้ามเนื้อ กระดูก · หัวใจ หลอดเลือด เลือด · ไต อวัยวะสืบพันธุ์ · ผิวหนังชั้นใน (Dermis) · Notochord</td></tr><tr><td style="color:#fde68a">Endoderm</td><td>เยื่อบุทางเดินอาหาร · ตับ ตับอ่อน · เยื่อบุทางเดินหายใจและปอด · กระเพาะปัสสาวะ · ต่อมไทรอยด์</td></tr></table><table style="margin-top:6px"><tr><th>ระยะ</th><th>ลักษณะ</th></tr><tr><td>Cleavage</td><td>แบ่งเซลล์แบบ Mitosis ถี่ ไม่มีการเติบโต</td></tr><tr><td>Morula</td><td>ก้อนเซลล์ตัน 16–32 เซลล์</td></tr><tr><td>Blastula / Blastocyst</td><td>มีช่อง Blastocoel · คน: ICM + Trophoblast</td></tr><tr><td>Gastrula</td><td>เซลล์เคลื่อนย้าย เกิด 3 Germ layers + Archenteron</td></tr><tr><td>Organogenesis</td><td>Neural tube, Notochord, Somite → อวัยวะ</td></tr></table>';
+const TB4='<table><tr><th>ชนิดไข่</th><th>ไข่แดง</th><th>การแบ่ง</th><th>ตัวอย่าง</th></tr><tr><td>Isolecithal</td><td>น้อย กระจายทั่ว</td><td>Holoblastic เท่ากัน</td><td>ดาวทะเล เม่นทะเล มนุษย์</td></tr><tr><td>Mesolecithal</td><td>ปานกลาง อยู่ขั้ว Vegetal</td><td>Holoblastic ไม่เท่ากัน</td><td>กบ ซาลาแมนเดอร์</td></tr><tr><td>Telolecithal</td><td>มากมาก</td><td>Meroblastic แบบ Discoidal</td><td>นก สัตว์เลื้อยคลาน ปลากระดูกแข็ง</td></tr><tr><td>Centrolecithal</td><td>อยู่กลางเซลล์</td><td>Meroblastic แบบ Superficial</td><td>แมลง</td></tr></table>';
+const TB4M='<table><tr><th>เยื่อหุ้ม</th><th>นก (ไข่)</th><th>มนุษย์</th></tr><tr><td style="color:#60a5fa">Amnion</td><td>ถุงน้ำคร่ำ กันกระแทก</td><td>ถุงน้ำคร่ำ กันกระแทก</td></tr><tr><td style="color:#fb923c">Chorion</td><td>แลกเปลี่ยนแก๊สผ่านเปลือก</td><td>ร่วมกับ Endometrium เป็น <b>รก</b> · สร้าง hCG</td></tr><tr><td style="color:#4ade80">Allantois</td><td>เก็บกรดยูริก + แลกเปลี่ยนแก๊ส</td><td>หลอดเลือดสายสะดือ</td></tr><tr><td style="color:#facc15">Yolk sac</td><td>อาหารสะสม (ไข่แดง)</td><td>เล็ก สร้างเม็ดเลือดระยะแรก</td></tr></table>';
+const MIS1='<p><b>❌ "LH ทำงานเฉพาะในเพศหญิง"</b></p><p>✅ ในเพศชาย <b>LH กระตุ้น Leydig cell (Interstitial cell)</b> ให้สร้าง Testosterone ส่วน FSH กระตุ้น Sertoli cell ให้สนับสนุนการสร้างอสุจิ</p><p><b>❌ "ประจำเดือนเกิดเพราะ Estrogen สูง"</b> ✅ เกิดเมื่อ Corpus luteum สลาย ทำให้ <b>Progesterone และ Estrogen ลดลง</b> เยื่อบุจึงหลุดลอก</p>';
+const MIS2='<p><b>❌ "เซลล์ที่ตกจากรังไข่คือไข่ (Ovum) ที่สมบูรณ์"</b></p><p>✅ เซลล์ที่ตกไข่คือ <b>Secondary oocyte ที่หยุดอยู่ที่ Metaphase II</b> จะแบ่ง Meiosis II จนสมบูรณ์ก็ต่อเมื่อมีอสุจิเข้าไปเท่านั้น</p>';
+const MIS3='<p><b>❌ "ระยะคลีเวจ ตัวอ่อนโตขึ้นเรื่อย ๆ"</b></p><p>✅ Cleavage คือการแบ่งเซลล์แบบ Mitosis ซ้ำ ๆ <b>โดยไม่มีการเติบโต</b> จำนวนเซลล์เพิ่มขึ้น แต่<b>ปริมาตรรวมคงที่</b> เซลล์จึงเล็กลงทุกครั้งที่แบ่ง</p>';
+const MIS4='<p><b>❌ "รกสร้างจากตัวอ่อนทั้งหมด และเลือดแม่กับลูกไหลปนกัน"</b></p><p>✅ <b>รก = Chorion (ส่วนของตัวอ่อน: Chorionic villi) + Endometrium (ส่วนของแม่)</b> เลือดของแม่และลูกไม่ปนกัน สารแลกเปลี่ยนผ่านผนัง villi ด้วยการแพร่</p>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='',tt='',ct='';
+  if(m===1){const H=horm(M1.d),[pi,pn]=phase(H),c=H.c;tt='รอบประจำเดือน: รังไข่ + มดลูก + ฮอร์โมน';ct='Estrogen เทียบ Progesterone ตลอดรอบ';
+    st=[['วันของรอบ (Day)',c.toFixed(1)+(H.resc&&c>28?' (ขาดประจำเดือน)':'')],['เยื่อบุโพรงมดลูก',H.th.toFixed(1)+' mm'],['LH',Math.round(H.lh*100)+'%'+(c>12.5&&c<15.5?' (Surge)':'')],[H.preg?'hCG':'รอบที่',H.preg?Math.round(H.hg).toLocaleString()+' mIU/mL':M1.cyc]];
+    flowBar(['Hypothalamus: GnRH','Pituitary: FSH ↑','Follicle → Estrogen ↑','LH surge → ตกไข่','Corpus luteum → Progesterone',H.resc?'hCG รักษา CL → ตั้งครรภ์':'CL สลาย → ประจำเดือน'],[5,2,3,4,5][pi]);
+    eq=`LH(t) = base + A·exp(−(t − 14)² / 2σ²)   base = 0.12, A = 0.85, σ = 1 วัน\nLH(${c.toFixed(1)}) = ${H.lh.toFixed(2)} · FSH = ${H.fsh.toFixed(2)} · E = ${H.e.toFixed(2)} · P = ${H.p.toFixed(2)}`+(H.preg?`\nhCG(t) = H·(1 − e^(−(t − 21)/3)) = ${Math.round(H.hg)} mIU/mL  (ชุดตรวจ ≥ 25 → บวก)`:'');
+    an=`<p><span class="tag ${pi===0?'no':pi===2?'mid':'ok'}">${pn}</span> `+['Progesterone และ Estrogen ต่ำ เยื่อบุมดลูกหลุดลอกออกมาพร้อมเลือด','FSH กระตุ้นฟอลลิเคิลให้เจริญ ฟอลลิเคิลสร้าง Estrogen ทำให้เยื่อบุหนาขึ้น (Proliferative)','Estrogen สูงต่อเนื่องเกิด <b>Positive feedback</b> → LH surge → Graafian follicle แตก ปล่อย Secondary oocyte','ฟอลลิเคิลที่เหลือกลายเป็น Corpus luteum สร้าง Progesterone ทำให้เยื่อบุพร้อมรับการฝังตัว และยับยั้ง FSH/LH (Negative feedback)','ตัวอ่อน (Trophoblast) หลั่ง <b>hCG</b> ซึ่งออกฤทธิ์คล้าย LH รักษา Corpus luteum ให้สร้าง Progesterone ต่อ เยื่อบุจึงไม่หลุด ไม่มีประจำเดือน'][pi]+'</p>'+(H.preg&&!H.resc?'<p><span class="tag no">hCG ไม่พอ</span> ระดับ hCG ต่ำเกินไป Corpus luteum จึงสลาย เกิดประจำเดือนตามปกติ (การฝังตัวไม่สำเร็จ)</p>':'');
+    mis=MIS1;tb=TB1;}
+  else if(m===2){if(M2.k==='gam'){const s=gS(),fz=$('#fertOn').checked,NM=['เพิ่มจำนวน (Mitosis)','เจริญเติบโต (Growth)','Meiosis I','Meiosis II','เปลี่ยนแปลงรูปร่าง'];tt='Spermatogenesis เทียบ Oogenesis';ct='จำนวนเซลล์สืบพันธุ์ตลอดช่วงชีวิต';
+      st=[['ระยะ',NM[s]],['ผลผลิตต่อ 1 Primary cell','อสุจิ 4 : ไข่ 1'],['Polar body',s<2?'—':s===2?'1':fz?'3 (สลาย)':'1'],['โครโมโซม (คน)',s<2?'2n = 46':'n = 23']];
+      flowBar(NM,s);eq=`Spermatogenesis: 1 Primary spermatocyte (2n) → 4 Sperm (n)\nOogenesis: 1 Primary oocyte (2n) → 1 Ovum (n) + Polar bodies 2–3\nปริมาณ DNA: 2n·4c → (Meiosis I) n·2c → (Meiosis II) n·1c`;
+      an=`<p><span class="tag ok">ความต่างสำคัญ</span> Oogenesis แบ่งไซโทพลาซึม<b>ไม่เท่ากัน</b> เพื่อเก็บอาหารและออร์แกเนลล์ไว้ในไข่ใบเดียว ส่วน Polar body เล็กและสลายไป</p><p>ไข่หยุดที่ <b>Prophase I</b> ตั้งแต่ก่อนเกิดจนถึงวัยเจริญพันธุ์ และหยุดอีกครั้งที่ <b>Metaphase II</b> ตอนตกไข่</p>`+(fz?'':'<p><span class="tag mid">ไม่มีการปฏิสนธิ</span> Secondary oocyte ไม่แบ่ง Meiosis II และเสื่อมสลายภายในประมาณ 24 ชั่วโมง</p>')+'<p>ลองกดสลับเป็น "จำนวนโครโมโซม / DNA" เพื่อดูโครโมโซมแต่ละระยะ (X = จำลองตัวแล้ว, I = ยังไม่จำลอง)</p>';mis=MIS2;tb=TB2;}
+    else{const c=cnt(),blk=$('#block').checked,tp=M2.fz>=0?M2.t-M2.ft:0;tt='การปฏิสนธิ: อสุจิเข้าสู่ Secondary oocyte';ct='สถานะของอสุจิตามเวลา';
+      st=[['ยังไม่จับ (Unbound)',c[0]],['Acrosome reacted',c[1]+c[2]],['ถูกกัน (Blocked)',c[4]],['สถานะไข่',M2.fz<0?'รออสุจิ':M2.poly>0?'Polyspermy':blk&&M2.wave>=1?'Cortical granule หลั่งครบ':'ปฏิสนธิแล้ว']];
+      flowBar(['ผ่าน Corona radiata','Acrosome reaction','เยื่อหุ้มรวมกัน','Fast block + Cortical reaction','Meiosis II → Polar body 2','Zygote (2n)'],M2.fz<0?(c[1]+c[2]>0?1:0):tp<1.2?2:tp<4?3:tp<9?4:5,M2.poly>0?3:-1);
+      eq=`Fast block: Na⁺ เข้าเซลล์ → ศักย์เยื่อหุ้มเปลี่ยนจาก −70 เป็น +20 mV ภายใน 1–3 วินาที\nSlow block: Ca²⁺ ↑ → Cortical granules หลั่งเอนไซม์ → Zona pellucida แข็งตัว (ราว 1 นาที)\nอสุจิที่เข้าไข่ = ${c[3]} ตัว → ${c[3]===0?'ยังไม่ปฏิสนธิ':c[3]===1?'2n ปกติ':'โครโมโซม ≥ 3n (Polyspermy)'}`;
+      an=(blk?`<p><span class="tag ok">Block to polyspermy</span> เมื่ออสุจิตัวแรกเข้าไข่ เยื่อหุ้มเปลี่ยนศักย์ทันที (Fast block) และ Cortical granules หลั่งเอนไซม์ทำให้ Zona pellucida แข็ง (Slow block) อสุจิตัวอื่นจึงเข้าไม่ได้</p>`:`<p><span class="tag no">ปิดกลไกกัน</span> อสุจิหลายตัวเข้าไข่ได้ → <b>Polyspermy</b> มีโครโมโซมเกิน ตัวอ่อนเจริญผิดปกติและตาย</p>`)+'<p>อสุจิต้องเกิด <b>Acrosome reaction</b> ปล่อยเอนไซม์ (เช่น Hyaluronidase, Acrosin) ย่อยทางผ่าน Zona pellucida · แม้ต้องใช้อสุจิจำนวนมากช่วยย่อย Corona radiata แต่มีเพียงตัวเดียวที่ปฏิสนธิ</p>';mis=MIS2;tb=TBF;}}
+  else if(m===3){const p=M3.p,si=Math.min(8,Math.floor(p)),N=nCell(p),Vt=vTot(p),frog=frog3(),nm=st3Name(si),t=tAt(p);tt='การเจริญของตัวอ่อน: '+nm[0]+' ('+nm[1]+')';ct='จำนวนเซลล์และปริมาตรระหว่างการเจริญ';
+    st=[[frog?'เวลา (ชั่วโมง)':'วันหลังปฏิสนธิ (Day)',t.toFixed(1)],['จำนวนเซลล์',N.toLocaleString()],['ปริมาตรรวม',(Vt>=100?Vt.toFixed(0):Vt.toFixed(2))+' nL'],['ปริมาตรต่อเซลล์',(Vt/N*1000).toFixed(Vt/N*1000<10?2:0)+' pL']];
+    flowBar(['Zygote','Cleavage','Morula','Blastula','Gastrulation','Organogenesis'],si===0?0:si<5?1:si===5?2:si===6?3:si===7?4:5);
+    eq=`จำนวนเซลล์ N = 2ⁿ (n = จำนวนรอบการแบ่ง)${si<6?' = 2^'+si+' = '+N:' ≈ '+N.toLocaleString()}\nปริมาตรรวม V = ${Vt>=100?Vt.toFixed(0):Vt.toFixed(2)} nL ${si<7||frog?'(คงที่: ไม่มีการเติบโต)':'(ได้อาหารจากแม่ จึงเริ่มเติบโต)'}\nปริมาตรต่อเซลล์ = V / N = ${(Vt/N*1000).toFixed(Vt/N*1000<10?2:0)} pL`;
+    an=[`<p><span class="tag ok">Zygote</span> เซลล์เดียว 2n เกิดจาก Pronucleus ของไข่และอสุจิรวมกัน</p>`,`<p><span class="tag ok">Cleavage</span> แบ่งเซลล์แบบ Mitosis อย่างรวดเร็ว ข้ามระยะ G1 และ G2 จึงไม่มีการเติบโต เซลล์ลูก (Blastomere) เล็กลงครึ่งหนึ่งทุกครั้ง</p>`][Math.min(1,si)]||'';
+    if(si===5)an='<p><span class="tag ok">Morula</span> ก้อนเซลล์ตัน 16–32 เซลล์ คล้ายผลหม่อน (Morus)</p>';if(si===6)an=frog?'<p><span class="tag ok">Blastula</span> เกิดช่อง Blastocoel ค่อนไปทางขั้ว Animal เพราะเซลล์ขั้ว Vegetal ใหญ่และมีไข่แดงมาก</p>':'<p><span class="tag ok">Blastocyst</span> Inner cell mass จะเจริญเป็นตัวอ่อน ส่วน Trophoblast เป็น Chorion และรก หลั่ง hCG · ราววันที่ 6–7 ฝังตัวในเยื่อบุโพรงมดลูก</p>';
+    if(si===7)an=`<p><span class="tag ok">Gastrulation</span> เซลล์เคลื่อนที่เข้าไปภายใน${frog?'ผ่าน Blastopore':'ผ่าน Primitive streak'} เกิดเนื้อเยื่อ 3 ชั้น: Ectoderm, Mesoderm, Endoderm</p>`;if(si===8)an='<p><span class="tag ok">Organogenesis</span> Notochord ชักนำ (Induction) Ectoderm ด้านบนให้พับเป็น Neural tube → สมองและไขสันหลัง · Somite → กล้ามเนื้อลาย กระดูกสันหลัง</p>';
+    an+=frog?'<p>ตัวอ่อนกบใช้ไข่แดงในเซลล์เป็นอาหาร มวลรวมจึงแทบไม่เพิ่มจนกว่าลูกอ๊อดจะกินอาหารเองได้</p>':'<p>ในคน หลังฝังตัวตัวอ่อนได้อาหารจากแม่ผ่านรก จึงเริ่มเติบโตหลังระยะ Blastocyst</p>';mis=MIS3;tb=TB3;}
+  else{if($('#exp4').value==='yolk'){const sp=$('#sp').value,Y=YK[sp],k=Math.min(5,Math.floor(M4.p));tt='ชนิดของไข่: '+Y.n+' – '+Y.t;ct='ปริมาณไข่แดงของไข่แต่ละชนิด';
+      st=[['ชนิดไข่',Y.t.split(' ')[0]],['ปริมาณไข่แดง','~'+Y.y+'%'],['รอบการแบ่ง',k+' → '+2**k+(Y.ty==='centro'&&k<5?' นิวเคลียส':' เซลล์')],['รูปแบบการแบ่ง',Y.cl.split(' – ')[0]]];
+      flowBar(['Isolecithal','Mesolecithal','Telolecithal','Centrolecithal'],['iso','meso','telo','centro'].indexOf(Y.ty));
+      eq=`จำนวนเซลล์หลังแบ่ง k รอบ = 2^k = ${2**k}\nไข่แดงมาก → ขัดขวางร่องแบ่งเซลล์ (Cleavage furrow) → ${Y.cl}\n${Y.ty==='iso'||Y.ty==='meso'?'Holoblastic: ร่องแบ่งผ่านตลอดทั้งไข่':'Meroblastic: แบ่งเพียงบางส่วน ไข่แดงไม่แบ่ง'}`;
+      an=`<p><span class="tag ok">${Y.t}</span> ${Y.d} → แบ่งแบบ <b>${Y.cl}</b></p>`+(Y.ty==='meso'?'<p>ร่องแบ่งเซลล์ผ่านไข่แดงได้ช้า เซลล์ขั้ว Animal จึงเล็กและมีจำนวนมากกว่าเซลล์ขั้ว Vegetal</p>':Y.ty==='telo'?'<p>ไข่แดงมากจนร่องแบ่งเซลล์ผ่านไม่ได้ เซลล์จึงแบ่งเฉพาะบน Blastodisc ขนาดเล็กด้านบน ส่วนไข่แดงเป็นอาหารของตัวอ่อน</p>':Y.ty==='centro'?'<p>นิวเคลียสแบ่งหลายครั้งโดยไม่มีการแบ่งไซโทพลาซึม (Syncytium) แล้วย้ายไปที่ผิวไข่ก่อนสร้างเยื่อหุ้มเซลล์</p>':'<p>ไข่แดงน้อย ร่องแบ่งผ่านได้ตลอดทั้งไข่ เซลล์ลูกมีขนาดใกล้เคียงกัน</p>');mis=MIS3;tb=TB4;}
+    else{const egg=$('#egg').value,hl=$('#hl').value,q=V('age4')/100,mb=hl==='all'?null:MB[hl];tt=egg==='bird'?'เยื่อหุ้มตัวอ่อนในไข่ไก่':'เยื่อหุ้มตัวอ่อนและรกของมนุษย์';ct=egg==='bird'?'การใช้ไข่แดงและการเติบโตของตัวอ่อนไก่':'hCG และแหล่งสร้าง Progesterone ระหว่างตั้งครรภ์';
+      st=[[egg==='bird'?'วันที่ฟัก':'อายุครรภ์',egg==='bird'?Math.round(q*21)+' / 21 วัน':Math.round(4+q*36)+' สัปดาห์'],['เยื่อที่เน้น',mb?mb[1]:'ทั้งหมด'],['หน้าที่',mb?mb[0]:'4 ชนิด'],['ที่มาของรก',egg==='human'?'Chorion + Endometrium':'ไม่มีรก']];
+      flowBar(['Amnion','Chorion','Allantois','Yolk sac'],hl==='all'?-1:['amnion','chorion','allantois','yolk'].indexOf(hl));
+      eq=egg==='bird'?'Chorion + Allantois = Chorioallantoic membrane → แลกเปลี่ยน O₂/CO₂ ผ่านรูพรุนของเปลือก\nของเสียไนโตรเจน = กรดยูริก (ไม่ละลายน้ำ เก็บใน Allantois ได้โดยไม่เป็นพิษ)\nYolk sac → อาหาร · Amnion → น้ำคร่ำ':'รก (Placenta) = Chorionic villi (ตัวอ่อน) + Decidua/Endometrium (แม่)\nแลกเปลี่ยนสารโดยการแพร่ — เลือดแม่และลูกไม่ปนกัน\nhCG สูงสุด ~สัปดาห์ที่ 10 → รกสร้าง Progesterone แทน Corpus luteum (สัปดาห์ 8–12)';
+      an=(mb?`<p><span class="tag ok">${mb[1]}</span> ${mb[3]}</p>`:'')+(egg==='bird'?'<p>สัตว์มีถุงน้ำคร่ำ (Amniote) คือ สัตว์เลื้อยคลาน นก และสัตว์เลี้ยงลูกด้วยน้ำนม มีเยื่อหุ้ม 4 ชนิด ทำให้ตัวอ่อนเจริญบนบกได้โดยไม่ต้องอาศัยน้ำภายนอก</p>':'<p>ในคน Yolk sac เล็กมากเพราะไข่แทบไม่มีไข่แดง ตัวอ่อนได้อาหารจากแม่ผ่านรก · Allantois เปลี่ยนเป็นหลอดเลือดในสายสะดือ (Umbilical arteries 2 เส้น, Vein 1 เส้น)</p>');mis=MIS4;tb=TB4M;}}
+  $('#simTitle').textContent=tt;$('#chartTitle').textContent=ct;stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function sync(){$('#hcgBox').style.display=$('#scen').value==='preg'?'':'none';const e2=$('#exp2').value;$('#gamBox').style.display=e2==='gam'?'':'none';$('#fertBox').style.display=e2==='fert'?'':'none';
+  const e4=$('#exp4').value;$('#yolkBox').style.display=e4==='yolk'?'':'none';$('#membBox').style.display=e4==='memb'?'':'none';$('#age4V').textContent=$('#egg').value==='bird'?'วันที่ '+Math.round(V('age4')/100*21):'สัปดาห์ที่ '+Math.round(4+V('age4')/100*36);}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sync();updateText();}
+const UPD={};const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{const o=$('#'+id+'V');if(o)o.textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();sync();updateText();});f();UPD[id]=f;};
+bind('hcg',v=>v.toLocaleString()+' mIU/mL');bind('spd',v=>v+' วัน/วินาที');bind('nsp',v=>v+' ตัว');bind('spd3',v=>'×'+v);bind('age4',()=>'');
+['fertOn','block','sp','hl'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#scen').addEventListener('change',()=>{M1.d=0;M1.cyc=1;sync();updateText();});$('#egg').addEventListener('change',()=>{sync();updateText();});
+$('#exp2').addEventListener('change',()=>{initM2();sync();updateText();});$('#exp4').addEventListener('change',()=>{initM4();sync();updateText();});$('#org').addEventListener('change',updateText);$('#sp').addEventListener('change',()=>{M4.p=0;});
+$('#d0').onclick=()=>{M1.d=0;updateText();};$('#d14').onclick=()=>{M1.d=13.2;updateText();};$('#d21').onclick=()=>{M1.d=21;updateText();};
+$('#nextSt').onclick=()=>{M2.t=gS()>=4?0:(gS()+1)*STP;updateText();};
+$('#release').onclick=()=>{M2.seed=(M2.seed||0)+17;spawnSp();updateText();};$('#block').addEventListener('change',()=>{spawnSp();});$('#nsp').addEventListener('change',()=>{spawnSp();});
+$('#next3').onclick=()=>{M3.p=Math.min(8.999,Math.floor(M3.p)+1);updateText();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgLab:'lab',tgChr:'chr'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();M2={seed:0};initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

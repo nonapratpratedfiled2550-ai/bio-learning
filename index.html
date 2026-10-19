@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Biology Learning</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #070b09;
+    --ink: #f3fff8;
+    --muted: #93b3a6;
+    --line: rgba(160, 210, 185, .18);
+    --green: #3dff8a;
+    --card: rgba(12, 22, 18, .72);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: var(--bg); }
+  html::before {
+    content: ""; position: fixed; inset: -20%; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(circle at 78% 12%, rgba(40, 180, 120, .28), transparent 34%),
+      radial-gradient(circle at 12% 88%, rgba(20, 120, 80, .2), transparent 36%);
+    animation: drift 16s ease-in-out infinite alternate;
+  }
+  body {
+    font-family: "Leelawadee UI", "Segoe UI", Tahoma, sans-serif;
+    color: var(--ink);
+    background: transparent;
+    overflow-x: hidden;
+    line-height: 1.7;
+    font-size: 18px;
+  }
+  a { color: inherit; }
+  body::before {
+    content: ""; position: fixed; inset: -15%; z-index: -1; pointer-events: none;
+    background-image:
+      radial-gradient(1.3px 1.3px at 20px 30px, rgba(255,255,255,.85), transparent),
+      radial-gradient(1.1px 1.1px at 80px 140px, rgba(190,255,220,.75), transparent),
+      radial-gradient(1.4px 1.4px at 160px 70px, rgba(255,255,255,.6), transparent),
+      radial-gradient(1px 1px at 40px 190px, rgba(180,255,210,.7), transparent),
+      radial-gradient(1.2px 1.2px at 210px 40px, rgba(255,255,255,.55), transparent),
+      radial-gradient(1px 1px at 120px 210px, rgba(255,255,255,.45), transparent);
+    background-size: 240px 240px;
+    animation: stars 18s linear infinite, twinkle 3.4s ease-in-out infinite;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 28px;
+    background: rgba(7, 11, 9, .45);
+    backdrop-filter: blur(12px);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; flex: none; white-space: nowrap; text-decoration: none; font-weight: 800; font-size: 1.15rem; color: #fff; }
+  .logo {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #102018;
+    border: 1px solid rgba(61, 255, 138, .45);
+    box-shadow: 0 0 16px rgba(61, 255, 138, .25);
+  }
+  nav { display: flex; gap: 4px; align-items: center; min-width: 0; overflow: auto; scrollbar-width: none; mask-image: linear-gradient(90deg, #000 90%, transparent); }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    text-decoration: none; white-space: nowrap;
+    padding: 8px 14px; border-radius: 999px;
+    color: #c9ddd4; font-size: 15.5px;
+  }
+  nav a:hover, nav a:focus-visible { color: #fff; }
+  nav a.on {
+    background: #1f8a5b; color: #fff; font-weight: 700;
+    box-shadow: 0 6px 16px rgba(31, 138, 91, .35);
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 18px 24px 56px; }
+  .hero {
+    display: grid; grid-template-columns: 1.05fr .95fr;
+    gap: 12px; align-items: center; min-height: 460px;
+  }
+  h1 {
+    margin: 0 0 28px;
+    font-size: clamp(4.6rem, 8vw, 7rem);
+    line-height: .98; letter-spacing: -.035em; font-weight: 800;
+  }
+  h1 span {
+    display: block;
+    background: linear-gradient(90deg, #eafff4, #7dffb8 42%, #1ed39a);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    text-decoration: none; font-weight: 800; border-radius: 999px;
+    padding: 16px 28px; font-size: 1.15rem;
+  }
+  .btn.main {
+    background: linear-gradient(180deg, #3ee58a, #14915f);
+    color: #fff; box-shadow: 0 10px 24px rgba(20, 145, 95, .35);
+  }
+  .btn.ghost {
+    background: rgba(10, 18, 14, .55);
+    color: #e9fff4; border: 1px solid rgba(190, 220, 205, .22);
+  }
+  .btn:hover, .btn:focus-visible { filter: brightness(1.08); }
+  .art { position: relative; min-height: 420px; }
+  .art p {
+    margin: 0; text-align: right; letter-spacing: .18em;
+    color: #b7d7c8; font-size: 13px; font-weight: 700;
+  }
+  .scene { position: relative; height: 400px; animation: bob 5s ease-in-out infinite; }
+  .helix, .cell { position: absolute; top: 0; height: 100%; }
+  .helix { left: 0; width: 34%; transform-origin: 50% 50%; animation: twist 3.2s ease-in-out infinite; }
+  .cell { right: -2%; width: 70%; transform-origin: 50% 50%; animation: pulsecell 4.2s ease-in-out infinite; }
+  .helix svg, .cell svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .journey { text-align: center; margin-top: 28px; }
+  .kicker {
+    margin: 0; letter-spacing: .22em; font-size: 13px; font-weight: 800; color: #8fd9b4;
+  }
+  .journey h2 { margin: 10px 0 6px; font-size: clamp(1.8rem, 3.2vw, 2.7rem); line-height: 1.3; }
+  .journey .sub { margin: 0 auto 28px; color: var(--muted); max-width: 36rem; }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; text-align: left; }
+  .card {
+    grid-column: span 2;
+    text-decoration: none;
+    background: linear-gradient(180deg, rgba(22, 36, 30, .78), rgba(8, 14, 12, .86));
+    border: 1px solid var(--line);
+    border-radius: 22px; padding: 22px 22px 18px;
+    min-height: 230px;
+    display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .card:nth-child(n+4) { grid-column: span 3; }
+  @media (min-width: 981px) { .card:nth-child(n+4):last-child:nth-child(even) { grid-column: 1 / -1; min-height: 0; } }
+  .card:hover, .card:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(61, 255, 138, .4);
+  }
+  .icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    display: grid; place-items: center;
+    background: rgba(8, 18, 14, .8);
+    border: 1px solid rgba(61, 255, 138, .22);
+  }
+  .card h3 { margin: 8px 0 0; font-size: 1.2rem; }
+  .card p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.6; }
+  .more { margin-top: auto; padding-top: 14px; color: #8dffc0; font-weight: 800; font-size: 16px; }
+  .feature {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px;
+    text-decoration: none;
+    margin: 0 0 22px; padding: 22px 24px;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 88% 20%, rgba(61, 255, 138, .16), transparent 32%),
+      linear-gradient(120deg, rgba(18, 42, 34, .92), rgba(8, 16, 14, .9));
+    border: 1px solid rgba(61, 255, 138, .35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .feature:hover, .feature:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(61, 255, 138, .55);
+  }
+  .feature .icon {
+    width: 56px; height: 56px; border-radius: 16px; flex: none;
+    display: grid; place-items: center;
+    background: rgba(8, 18, 14, .8);
+    border: 1px solid rgba(61, 255, 138, .22);
+  }
+  .feature .body { flex: 1 1 220px; min-width: 0; text-align: left; }
+  .feature h3 { margin: 0; font-size: 1.35rem; }
+  .feature p { margin: 4px 0 0; color: var(--muted); font-size: 16px; line-height: 1.6; }
+  .feature .tag {
+    display: inline-block; margin: 0 0 6px; padding: 2px 10px; border-radius: 999px;
+    background: rgba(61, 255, 138, .14); color: #9dffc8; font-size: 12.5px; font-weight: 800; letter-spacing: .04em;
+  }
+  .feature .more { color: #8dffc0; font-weight: 800; font-size: 16px; flex: none; white-space: nowrap; }
+  footer { text-align: center; color: #7f9d91; padding: 8px 16px 36px; font-size: 15px; }
+  @keyframes stars { to { transform: translate3d(-240px, -240px, 0); } }
+  @keyframes twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+  @keyframes drift {
+    from { transform: translate3d(-4%, -2%, 0); }
+    to { transform: translate3d(6%, 4%, 0); }
+  }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+  @keyframes twist { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+  @keyframes pulsecell { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @media (prefers-reduced-motion: reduce) {
+    html::before, body::before { animation: none; }
+  }
+  @media (max-width: 980px) {
+    .wrap { padding: 12px 20px 40px; }
+    .hero { grid-template-columns: 1fr; min-height: 0; text-align: center; }
+    .actions { justify-content: center; }
+    .art { min-height: 0; }
+    .art p { text-align: center; }
+    .scene { height: 320px; max-width: 560px; margin: 0 auto; }
+    h1 { font-size: clamp(3.2rem, 8vw, 4.6rem); }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .card, .card:nth-child(n+4) { grid-column: auto; min-height: 0; }
+    .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .feature { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 700px) {
+    header {
+      flex-wrap: nowrap; gap: 8px;
+      padding: 10px 14px;
+      padding-top: max(10px, env(safe-area-inset-top));
+    }
+    nav {
+      flex: 1; min-width: 0;
+      -webkit-overflow-scrolling: touch;
+      mask-image: linear-gradient(90deg, #000 82%, transparent);
+    }
+    nav a { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 12px; }
+    .wrap { padding: 8px 16px max(28px, env(safe-area-inset-bottom)); }
+    .hero { text-align: left; }
+    h1 { margin-bottom: 18px; }
+    .actions { display: grid; grid-template-columns: 1fr; }
+    .btn { min-height: 48px; display: flex; align-items: center; justify-content: center; }
+    .grid { grid-template-columns: 1fr; }
+    .card:last-child { grid-column: auto; }
+    .scene { height: 230px; }
+    h1 { font-size: 2.7rem; margin: 0 0 18px; }
+    .brand { font-size: 1rem; }
+    .card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html">
+    <span class="logo" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+        <circle cx="16" cy="16" r="11" stroke="#b8ffd8" stroke-width="1.6"/>
+        <circle cx="15" cy="16" r="4.2" fill="#3dff8a"/>
+        <circle cx="22" cy="11" r="2" fill="#9dffc8"/>
+      </svg>
+    </span>
+    Biology Learning
+  </a>
+  <nav>
+    <a class="on" href="index.html" aria-current="page">หน้าแรก</a>
+    <a href="study.html">สิ่งมีชีวิต</a>
+    <a href="chemistry.html">เคมีของชีวิต</a>
+    <a href="cell.html">เซลล์</a>
+    <a href="cell-3d.html">เซลล์ 3D</a>
+    <a href="genetics.html">พันธุกรรม</a>
+    <a href="genes.html">ยีน</a>
+    <a href="dna-technology.html">DNA เทค</a>
+    <a href="evolution.html">วิวัฒนาการ</a>
+    <a href="plant-reproduction.html">สืบพันธุ์พืช</a>
+    <a href="plant-transport.html">ลำเลียงพืช</a>
+    <a href="photosynthesis.html">สังเคราะห์แสง</a>
+    <a href="plant-hormones.html">ฮอร์โมนพืช</a>
+    <a href="digestive.html">ย่อยอาหาร</a>
+    <a href="respiratory.html">หายใจ</a>
+    <a href="circulatory.html">หมุนเวียนเลือด</a>
+    <a href="immune.html">ภูมิคุ้มกัน</a>
+    <a href="excretory.html">ขับถ่าย</a>
+    <a href="sensory-movement.html">รับรู้/เคลื่อนที่</a>
+    <a href="nervous.html">ประสาท</a>
+    <a href="endocrine.html">ต่อมไร้ท่อ</a>
+    <a href="behavior.html">พฤติกรรม</a>
+    <a href="reproduction.html">สืบพันธุ์สัตว์</a>
+    <a href="ecology.html">นิเวศวิทยา</a>
+    <a href="sustainability.html">สิ่งแวดล้อม</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Biology<span>Learning</span></h1>
+      <div class="actions">
+        <a class="btn main" href="study.html">เริ่มเรียน</a>
+        <a class="btn ghost" href="cell-3d.html" aria-label="เข้าห้องแล็บเซลล์ 3 มิติ">ลองเซลล์ 3D</a>
+        <a class="btn ghost" href="#labs">ดูบทเรียน</a>
+      </div>
+    </div>
+    <div class="art" aria-hidden="true">
+      <p>CELL · DNA · LIFE</p>
+      <div class="scene">
+        <div class="helix">
+          <svg viewBox="0 0 140 420">
+            <g fill="none" stroke-linecap="round">
+              <path d="M70 8 C116 40 116 72 70 104 C24 136 24 168 70 200 C116 232 116 264 70 296 C24 328 24 360 70 392" stroke="#d8ffe8" stroke-width="4"/>
+              <path d="M70 8 C24 40 24 72 70 104 C116 136 116 168 70 200 C24 232 24 264 70 296 C116 328 116 360 70 392" stroke="#3dff8a" stroke-width="4"/>
+              <g stroke="#f3fff8" stroke-width="2.6">
+                <line x1="38" y1="56" x2="102" y2="56"/>
+                <line x1="42" y1="152" x2="98" y2="152"/>
+                <line x1="38" y1="248" x2="102" y2="248"/>
+                <line x1="42" y1="344" x2="98" y2="344"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div class="cell">
+          <svg viewBox="-180 -150 360 300">
+            <defs>
+              <radialGradient id="cyto" cx="42%" cy="40%" r="65%">
+                <stop offset="0%" stop-color="#163828"/>
+                <stop offset="100%" stop-color="#0b1c14"/>
+              </radialGradient>
+              <radialGradient id="nuc" cx="40%" cy="38%" r="70%">
+                <stop offset="0%" stop-color="#1f6b45"/>
+                <stop offset="100%" stop-color="#0c2418"/>
+              </radialGradient>
+            </defs>
+            <ellipse rx="158" ry="128" fill="url(#cyto)" stroke="#d7ffe8" stroke-width="3"/>
+            <ellipse rx="140" ry="110" fill="none" stroke="rgba(125,255,184,.35)" stroke-width="1.6"/>
+            <g transform="translate(46,36)">
+              <ellipse rx="42" ry="30" fill="rgba(210,255,230,.06)" stroke="rgba(190,255,220,.28)" stroke-width="1.4"/>
+            </g>
+            <g transform="translate(-28,-6)">
+              <circle r="48" fill="url(#nuc)" stroke="#e7fff3" stroke-width="2.4"/>
+              <circle r="15" fill="#7dffb8">
+                <animate attributeName="r" values="12;18;12" dur="2.4s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+            <g transform="translate(78,-42)">
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; 16 -18; 0 0; -12 10; 0 0" dur="5s" repeatCount="indefinite"/>
+                <ellipse rx="36" ry="16" fill="#145c34" stroke="#b8ffd4" stroke-width="2"/>
+                <path d="M-24 -4h48M-24 4h48" stroke="#8dffc0" stroke-width="1.6" fill="none"/>
+              </g>
+            </g>
+            <g transform="translate(-86,52)">
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; -14 12; 0 0; 10 -16; 0 0" dur="6.2s" repeatCount="indefinite"/>
+                <ellipse rx="30" ry="13" fill="#0e3a28" stroke="#c8ffe2" stroke-width="2"/>
+                <path d="M-16 0c8-7 16-7 26 0" stroke="#9dffc8" stroke-width="1.6" fill="none"/>
+              </g>
+            </g>
+            <g transform="translate(24,62)">
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; 12 14; 0 0; -16 -8; 0 0" dur="4.6s" repeatCount="indefinite"/>
+                <circle r="7" fill="#1c6b42" stroke="#d8ffe8" stroke-width="1.5"/>
+              </g>
+            </g>
+            <g transform="translate(96,18)">
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; -10 14; 8 -8; 0 0" dur="5.4s" repeatCount="indefinite"/>
+                <circle r="4.5" fill="#9dffc8"/>
+              </g>
+            </g>
+            <g transform="translate(-8,78)">
+              <g>
+                <animateTransform attributeName="transform" type="translate" values="0 0; 14 -10; -8 8; 0 0" dur="4s" repeatCount="indefinite"/>
+                <circle r="3.5" fill="#eafff5"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="journey" id="labs">
+    <p class="kicker">YOUR BIOLOGY JOURNEY</p>
+    <h2>เริ่มในห้องแล็บชีววิทยา</h2>
+    <p class="sub">ยี่สิบสามบท + ห้องแล็บเซลล์ 3 มิติ เลือกอันที่อยากลอง</p>
+    <a class="feature" href="cell-3d.html" aria-label="เข้าห้องแล็บ 3D Cell Laboratory สำรวจเซลล์สัตว์และเซลล์พืชแบบสามมิติ">
+      <span class="icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 32 32" fill="none"><ellipse cx="16" cy="16" rx="12" ry="10" stroke="#b8ffd8" stroke-width="1.8"/><circle cx="14" cy="15" r="4.5" fill="#3dff8a"/><circle cx="22" cy="11" r="2" fill="#9dffc8"/><path d="M8 20c3-1 5-4 8-5" stroke="#7dffb8" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+      <div class="body">
+        <span class="tag">ใหม่ · เต็มจอ · ปุ่มลอย</span>
+        <h3>3D Cell Laboratory</h3>
+        <p>หมุน ซูม และคลิกออร์แกเนลล์ในเซลล์สัตว์/เซลล์พืชแบบสามมิติ พร้อมแผงข้อมูลและเครื่องมือลอยทับบนภาพ</p>
+      </div>
+      <span class="more">เข้าห้องแล็บ 3D →</span>
+    </a>
+    <div class="grid">
+      <a class="card" href="study.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4" stroke-linecap="round"/></svg></span>
+        <h3>การศึกษาชีววิทยา</h3>
+        <p>สังเกต ทดลอง และใช้กล้อง</p>
+        <span class="more">เข้าเรียน →</span>
+      </a>
+      <a class="card" href="chemistry.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M9 3h6M10 3v6L5 19a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3l-5-10V3" stroke-linejoin="round"/></svg></span>
+        <h3>เคมีของสิ่งมีชีวิต</h3>
+        <p>อาหาร โปรตีน และ DNA</p>
+        <span class="more">เข้าเรียน →</span>
+      </a>
+      <a class="card" href="cell.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <h3>เซลล์</h3>
+        <p>ออร์แกเนลล์ ออสโมซิส และลิงก์ไปห้องแล็บ 3D</p>
+        <span class="more">เข้าเรียน →</span>
+      </a>
+      <a class="card" href="genetics.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M8 7l3 9M16 7l-3 9" stroke-linecap="round"/></svg></span>
+        <h3>พันธุกรรม</h3>
+        <p>พันเนตต์และพงศาวลี</p>
+        <span class="more">เข้าเรียน →</span>
+      </a>
+      <a class="card" href="genes.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M8 4c6 3 2 6 8 8s2 5 8 8" stroke-linecap="round"/><path d="M8 20c6-3 2-6 8-8s2-5 8-8" stroke-linecap="round"/><path d="M9 7h6M9 12h6M9 17h6" stroke-linecap="round"/></svg></span>
+        <h3>ยีนและโครโมโซม</h3>
+        <p>DNA การกลาย และ PCR</p>
+        <span class="more">เข้าเรียน →</span>
+      </a>
+      <a class="card" href="dna-technology.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/></svg></span>
+        <h3>เทคโนโลยีทางดีเอ็นเอ</h3>
+        <p>เอนไซม์ตัดจำเพาะ PCR อิเล็กโทรโฟรีซิส และ GMO</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="evolution.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 21V11M12 11L6 5M12 11l6-6M6 5v4M18 5v4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>วิวัฒนาการ</h3>
+        <p>การคัดเลือกโดยธรรมชาติ Hardy-Weinberg และการเกิดสปีชีส์ใหม่</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="plant-reproduction.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="12" cy="9" r="2.2"/><path d="M12 6.8c-1-3 2-4 2-1M14.2 9c3-1 4 2 1 2M12 11.2c1 3-2 4-2 1M9.8 9c-3 1-4-2-1-2M12 11v10" stroke-linecap="round"/></svg></span>
+        <h3>การสืบพันธุ์ของพืชดอก</h3>
+        <p>โครงสร้างดอก การปฏิสนธิคู่ การงอก และเพาะเลี้ยงเนื้อเยื่อ</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="plant-transport.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 22V8M12 12c-4 0-6-3-6-6 4 0 6 3 6 6zM12 9c3 0 5-2 5-5-3 0-5 2-5 5z" stroke-linejoin="round"/><path d="M9 19l3 3 3-3" stroke-linecap="round"/></svg></span>
+        <h3>การลำเลียงของพืช</h3>
+        <p>ชลศักย์ การคายน้ำ ปากใบ และการลำเลียงทางโฟลเอ็ม</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="photosynthesis.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="7" cy="7" r="3"/><path d="M7 1v2M1 7h2M2.8 2.8l1.4 1.4M11.2 2.8L9.8 4.2" stroke-linecap="round"/><path d="M10 21c0-6 4-10 11-11-1 7-5 11-11 11zM10 21l6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>การสังเคราะห์ด้วยแสง</h3>
+        <p>ปฏิกิริยาแสง วัฏจักรคัลวิน C3 C4 CAM และปัจจัยจำกัด</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="plant-hormones.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 22V10c0-4 3-6 7-6M12 14c-3 0-6-2-6-6" stroke-linecap="round"/><circle cx="19" cy="4" r="1.6"/><path d="M4 21h16" stroke-linecap="round"/></svg></span>
+        <h3>การควบคุมการเจริญเติบโตของพืช</h3>
+        <p>ฮอร์โมนพืช การตอบสนองต่อแสงและแรงโน้มถ่วง และช่วงแสง</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="digestive.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M9 3v4c0 2 2 3 4 3h1c3 0 5 2 5 5s-2 5-5 5H9c-2 0-3 1-3 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>ระบบย่อยอาหาร</h3>
+        <p>เอนไซม์ ฮอร์โมนควบคุมการย่อย และการดูดซึมที่วิลลัส</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="respiratory.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 3v8M12 11l-3 2M12 11l3 2" stroke-linecap="round"/><path d="M9 8C5 8 3 13 3 18c0 2 2 3 4 2l2-1V10M15 8c4 0 6 5 6 10 0 2-2 3-4 2l-2-1V10" stroke-linejoin="round"/></svg></span>
+        <h3>ระบบหายใจ</h3>
+        <p>อวัยวะแลกเปลี่ยนแก๊ส สไปโรมิเตอร์ Bohr effect และการควบคุมการหายใจ</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="circulatory.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z" stroke-linejoin="round"/><path d="M5 12h3l2-3 2 5 2-2h5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>ระบบหมุนเวียนเลือดและน้ำเหลือง</h3>
+        <p>หัวใจ ECG ความดันเลือด หมู่เลือด การแข็งตัวของเลือด และการบวมน้ำ</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="immune.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z" stroke-linejoin="round"/><path d="M12 8v8M12 12l-3-3M12 12l3-3" stroke-linecap="round"/></svg></span>
+        <h3>ระบบภูมิคุ้มกัน</h3>
+        <p>การอักเสบ B cell / T cell แอนติบอดี วัคซีนกับเซรุ่ม ภูมิแพ้ และ HIV</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="excretory.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M9 4C5 4 4 8 4 12s1 8 5 8c2 0 3-2 2-4-1-1-1-3 0-4 1-2 1-4 0-6-.5-1-1-2-2-2z" stroke-linejoin="round"/><path d="M11 12h4c2 0 3 2 3 4v4" stroke-linecap="round"/></svg></span>
+        <h3>ระบบขับถ่าย</h3>
+        <p>ของเสียไนโตรเจนในสัตว์ หน่วยไต ADH/RAAS สมดุลน้ำ และการฟอกเลือด</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="sensory-movement.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><ellipse cx="12" cy="12" rx="9" ry="5.5"/><circle cx="12" cy="12" r="2.6"/></svg></span>
+        <h3>ระบบรับความรู้สึกและการเคลื่อนที่</h3>
+        <p>การเคลื่อนที่ของสัตว์ Sliding filament ตาและการมองเห็น หูและการทรงตัว</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="nervous.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="8" cy="9" r="3"/><path d="M8 3v3M3 7l2.5 1M3 12l2.5-1M11 9h4l3 4 3-1M15 9l2-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>ระบบประสาท</h3>
+        <p>วิวัฒนาการระบบประสาท Action potential ไซแนปส์ สมอง และรีเฟล็กซ์</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="endocrine.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M10 3h4M11 3v6L5 19a1.5 1.5 0 0 0 1.3 2h11.4a1.5 1.5 0 0 0 1.3-2L13 9V3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 15h9" stroke-linecap="round"/></svg></span>
+        <h3>ระบบต่อมไร้ท่อ</h3>
+        <p>กลไกฮอร์โมน แกนป้อนกลับ ดุลกลูโคสและแคลเซียม และโรคต่อมไร้ท่อ</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="behavior.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M4 19c2-1 3-3 3-5s2-4 5-4 5 2 5 4 1 4 3 5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="6" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><circle cx="17" cy="6" r="1.6"/></svg></span>
+        <h3>พฤติกรรมของสัตว์</h3>
+        <p>พฤติกรรมที่มีมาแต่กำเนิดและการเรียนรู้ การสื่อสาร และพฤติกรรมทางสังคม</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="reproduction.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="15" cy="12" r="6"/><path d="M3 9c2 0 3 1.5 4.5 3M7.5 12l1.5 0" stroke-linecap="round"/><circle cx="15" cy="12" r="2"/></svg></span>
+        <h3>การสืบพันธุ์และการเจริญเติบโต</h3>
+        <p>การสร้างเซลล์สืบพันธุ์ รอบประจำเดือน การปฏิสนธิ และการเจริญของเอ็มบริโอ</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="ecology.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><path d="M12 21v-8" stroke-linecap="round"/><path d="M12 13c-4 0-7-3-7-7 4 0 7 3 7 7zM12 13c0-4 3-7 7-7 0 4-3 7-7 7z" stroke-linejoin="round"/><path d="M4 21h16" stroke-linecap="round"/></svg></span>
+        <h3>นิเวศวิทยาและประชากร</h3>
+        <p>สายใยอาหาร วัฏจักรสาร การเติบโตของประชากร การแทนที่ และภาวะยูโทรฟิเคชัน</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+      <a class="card" href="sustainability.html">
+        <span class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b8ffd8" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h5l2 3-2 3h-4M15 3.5 14 8l3 2 3.5-1M14 21l1-5 3-1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>มนุษย์กับความยั่งยืน</h3>
+        <p>คุณภาพน้ำ BOD/DO การสะสมสารพิษ ภาวะโลกร้อน โอโซน และการอนุรักษ์ความหลากหลาย</p>
+        <span class="more">เข้าแล็บ →</span>
+      </a>
+    </div>
+  </section>
+</main>
+<footer>Biology Learning · ห้องแล็บชีววิทยา ม.ปลาย</footer>
+</body>
+</html>

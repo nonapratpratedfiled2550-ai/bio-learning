@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>วิวัฒนาการ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0d1117;--panel:#141b26;--panel2:#1b2433;--line:#2a3648;--txt:#e6edf7;--mut:#97a6bd;--acc:#a3e635;--acc2:#fbbf24;--bad:#f87171;--good:#4ade80}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#1a2e12,#2b1f0f);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#365314;border-color:var(--acc)}
+.ctl{margin:9px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#222d40;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#3f6212;border-color:#84cc16}.btn.warn{background:#7c2d12;border-color:#f97316}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;margin:6px 0}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#b45309;color:#fff}.switch button.on.dw{background:#15803d}
+canvas{display:block;width:100%}
+#main{height:470px;background:#06090f;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:17px;font-weight:700;color:var(--acc2);margin-top:2px}
+.eq{font-family:Consolas,monospace;background:#0b111b;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.5}
+.theory{margin-top:10px;padding:10px;border-radius:8px;background:#1a2412;border:1px solid #3f6212;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{border:1px solid var(--line);padding:4px 6px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:240px;background:#080d16;border-radius:8px}
+.seq{font-family:Consolas,monospace;font-size:11px;word-break:break-all;line-height:1.5}
+.seq .d{background:#7f1d1d;color:#fff}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🦋 วิวัฒนาการ (Evolution)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : การคัดเลือกโดยธรรมชาติ (ผีเสื้อกลางคืน Peppered moth)</button>
+    <button data-mode="2">โหมด 2 : พันธุศาสตร์ประชากร Hardy-Weinberg &amp; Genetic Drift</button>
+    <button data-mode="3">โหมด 3 : การเกิดสปีชีส์ใหม่และการแยกกันทางการสืบพันธุ์</button>
+    <button data-mode="4">โหมด 4 : ต้นไม้แห่งชีวิตและวิวัฒนาการมนุษย์</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1 2 3">
+      <div class="ctl"><label>ขนาดประชากร N <b id="nV">500</b></label><input type="range" id="nS" min="0" max="1000" value="566"></div>
+      <div class="ctl"><label>แรงกดดันการคัดเลือก s <b id="sV">0.50</b></label><input type="range" id="sS" min="0" max="1" step="0.01" value="0.5"></div>
+      <div class="ctl"><label>อัตราการอพยพ (Gene flow) m <b id="mV">0 %</b></label><input type="range" id="mS" min="0" max="50" step="1" value="0"></div>
+      <div class="ctl"><label>อัตรามิวเทชัน μ <b id="uV">0.005</b></label><input type="range" id="uS" min="0" max="0.05" step="0.001" value="0.005"></div>
+    </div>
+    <div data-m="1">
+      <div class="ctl"><label>สภาพแวดล้อม</label><select id="env">
+        <option value="clean">ป่าสมบูรณ์ – เปลือกไม้สีอ่อน มีไลเคน</option>
+        <option value="poll">มลพิษยุคอุตสาหกรรม – เปลือกไม้ดำด้วยเขม่า</option>
+        <option value="mixed">ป่าผสม – ต้นไม้สีอ่อนและเข้มปะปน</option>
+        <option value="mid">เปลือกไม้สีกลาง ๆ สม่ำเสมอ</option></select></div>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>ความถี่อัลลีลเริ่มต้น p (A) <b id="p0V">0.50</b></label><input type="range" id="p0" min="0.01" max="0.99" step="0.01" value="0.5"></div>
+      <div class="ctl"><label>ความถี่ q ของผู้อพยพ <b id="qmV">0.50</b></label><input type="range" id="qm" min="0" max="1" step="0.01" value="0.5"></div>
+      <div class="ctl"><label>การเลือกคู่ผสม (Inbreeding F) <b id="fV">0.00</b></label><input type="range" id="fS" min="0" max="1" step="0.05" value="0"></div>
+      <div class="ctl"><label>ความเร็ว (รุ่น/วินาที) <b id="gsV">20</b></label><input type="range" id="gs" min="1" max="60" value="20"></div>
+      <div class="btns"><button class="btn warn" id="bott">🌋 Bottleneck (ภัยพิบัติ)</button><button class="btn warn" id="found">⛵ Founder (ตั้งถิ่นฐานใหม่)</button></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>สิ่งกีดขวางทางภูมิศาสตร์</label><select id="barrier"><option value="none">ไม่มี (ประชากรเดียวกัน)</option><option value="river">แม่น้ำ</option><option value="mount" selected>เทือกเขา</option></select></div>
+      <label class="chk"><input type="checkbox" id="envDiff" checked> สภาพแวดล้อมสองฝั่งต่างกัน (แห้งแล้ง vs ชุ่มชื้น)</label>
+      <div class="btns"><button class="btn warn" id="poly" style="grid-column:1/-1">🌱 จำลอง Sympatric: เกิด Polyploidy (4n)</button></div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>มุมมอง</label><select id="view4"><option value="tree">ผังวิวัฒนาการ & ไซโทโครม c</option><option value="human">วิวัฒนาการมนุษย์ (Hominins)</option></select></div>
+      <div id="cmpBox"><div class="ctl"><label>สปีชีส์ A</label><select id="spA"></select></div><div class="ctl"><label>สปีชีส์ B</label><select id="spB"></select></div></div>
+      <div id="homBox"><div class="ctl"><label>เลือกสปีชีส์มนุษย์โบราณ</label><select id="hom"></select></div></div>
+      <p class="hint">คลิกบนแผนภาพเพื่อเลือกสปีชีส์ได้</p>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="step">⏭ ทีละรุ่น</button><button class="btn" id="reset">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>เปรียบเทียบแนวคิด (Toggle)</label>
+      <div class="switch"><button id="tgL">แนวคิด Lamarck</button><button id="tgD" class="on dw">แนวคิด Darwin</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="eq" id="eq"></div>
+  <div class="theory" id="theory"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function T(g,s,x,y,col='#e6edf7',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px "Sarabun","Leelawadee UI",Tahoma,sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function binom(n,p){if(p<=0)return 0;if(p>=1)return n;if(n>200){return clamp(Math.round(n*p+gauss()*Math.sqrt(n*p*(1-p))),0,n);}let k=0;for(let i=0;i<n;i++)if(Math.random()<p)k++;return k;}
+const getN=()=>Math.round(10*Math.pow(10,3*(+$('#nS').value)/1000));
+const S={mode:1,running:false,darwin:true,time:0};
+
+/* ================= MODE 1 : NATURAL SELECTION ================= */
+const SLOTS=150;
+const M1={};
+function bgAt(x){const e=$('#env').value;if(e==='clean')return 0.15;if(e==='poll')return 0.85;if(e==='mid')return 0.5;return (Math.floor(x*6)%2===0)?0.12:0.88;}
+function initM1(){const N=getN();M1.N=N;M1.G=new Uint8Array(N*8);M1.pos=new Float32Array(N);M1.acq=new Float32Array(N);M1.alive=new Uint8Array(N).fill(1);
+  for(let i=0;i<N;i++){for(let k=0;k<8;k++)M1.G[i*8+k]=Math.random()<0.15?1:0;M1.pos[i]=Math.random();}
+  M1.gen=0;M1.phase=0;M1.selected=false;M1.surv=1;M1.hist0=histM1();M1.history=[{gen:0,p:freqM1(),surv:1,mean:meanShade()}];M1.birds=[];}
+function shade(i){let s=0;for(let k=0;k<8;k++)s+=M1.G[i*8+k];return clamp(s/8+M1.acq[i]+(hash(i+M1.gen*0.37)-0.5)*0.06,0,1);}
+function freqM1(){let s=0;for(let i=0;i<M1.G.length;i++)s+=M1.G[i];return s/M1.G.length;}
+function meanShade(){let s=0;for(let i=0;i<M1.N;i++)s+=shade(i);return s/M1.N;}
+function histM1(){const b=new Array(20).fill(0);for(let i=0;i<M1.N;i++){b[Math.min(19,Math.floor(shade(i)*20))]++;}return b.map(v=>v/M1.N);}
+function selectM1(){const s=+$('#sS').value;let al=0;for(let i=0;i<M1.N;i++){const c=Math.abs(shade(i)-bgAt(M1.pos[i]));const surv=1-s*clamp(c*1.6,0,1);M1.alive[i]=Math.random()<surv?1:0;al+=M1.alive[i];}
+  if(al<2){M1.alive[0]=1;M1.alive[1]=1;al=2;}M1.surv=al/M1.N;M1.selected=true;
+  M1.birds=[];const n=Math.min(SLOTS,M1.N);for(let k=0;k<n;k++){const i=slotIdx(k);if(!M1.alive[i])M1.birds.push({k,i,t:0.1+Math.random()*0.75,side:Math.random()<0.5?-1:1});}}
+function reproduceM1(){const N=getN(),old=M1,mu=+$('#uS').value,m=+$('#mS').value/100;const surv=[];for(let i=0;i<old.N;i++)if(old.alive[i])surv.push(i);
+  const G=new Uint8Array(N*8),pos=new Float32Array(N),acq=new Float32Array(N);
+  for(let j=0;j<N;j++){if(Math.random()<m){for(let k=0;k<8;k++)G[j*8+k]=Math.random()<0.5?1:0;pos[j]=Math.random();continue;}
+    const a=surv[Math.floor(Math.random()*surv.length)],b=surv[Math.floor(Math.random()*surv.length)];
+    for(let l=0;l<4;l++){let x=old.G[a*8+l*2+(Math.random()<0.5?0:1)],y=old.G[b*8+l*2+(Math.random()<0.5?0:1)];if(Math.random()<mu)x^=1;if(Math.random()<mu)y^=1;G[j*8+l*2]=x;G[j*8+l*2+1]=y;}
+    pos[j]=Math.random();
+    if(!S.darwin){const pa=(old.acq[a]+old.acq[b])/2;const target=(bgAt(old.pos[a])+bgAt(old.pos[b]))/2;let gs=0;for(let k=0;k<8;k++)gs+=G[j*8+k];acq[j]=clamp(pa+0.3*(target-(gs/8+pa)),-1,1);}}
+  M1.N=N;M1.G=G;M1.pos=pos;M1.acq=acq;M1.alive=new Uint8Array(N).fill(1);M1.gen++;M1.selected=false;M1.phase=0;
+  M1.history.push({gen:M1.gen,p:freqM1(),surv:M1.surv,mean:meanShade()});if(M1.history.length>200)M1.history.shift();}
+function slotIdx(k){return M1.N>SLOTS?Math.floor(k*M1.N/SLOTS):k;}
+function stepM1(){if(!M1.selected)selectM1();reproduceM1();}
+
+/* ================= MODE 2 : HARDY-WEINBERG & DRIFT ================= */
+const LINES=6,LCOL=['#f87171','#fbbf24','#4ade80','#60a5fa','#c084fc','#f472b6'];
+const M2={};
+function initM2(){const p0=+$('#p0').value;M2.gen=0;M2.lines=Array.from({length:LINES},()=>[p0]);M2.det=[p0];M2.events=[];M2.Ncur=getN();M2.recover=0;M2.obs=null;sampleObs();}
+function nextP(p,N,stoch){const s=+$('#sS').value,mu=+$('#uS').value,m=+$('#mS').value/100,qm=+$('#qm').value,F=+$('#fS').value;let q=1-p;
+  const fAA=p*p+F*p*q,fAa=2*p*q*(1-F),faa=q*q+F*p*q;q=(fAa/2+faa*(1-s))/(1-s*faa);
+  q=q+mu*(1-q);q=(1-m)*q+m*qm;if(stoch){q=binom(2*N,q)/(2*N);}return 1-clamp(q,0,1);}
+function stepM2(){if(M2.gen>=500){S.running=false;return;}const N=M2.Ncur;M2.lines.forEach(l=>l.push(nextP(l[l.length-1],N,true)));M2.det.push(nextP(M2.det[M2.det.length-1],1e9,false));M2.gen++;
+  if(M2.recover>0){M2.recover--;M2.Ncur=Math.round(lerp(M2.Ncur,getN(),0.35));if(M2.recover===0)M2.Ncur=getN();}else M2.Ncur=getN();sampleObs();}
+function sampleObs(){const p=M2.lines[0][M2.lines[0].length-1],q=1-p,F=+$('#fS').value,N=Math.max(10,M2.Ncur);const e=[p*p+F*p*q,2*p*q*(1-F),q*q+F*p*q];let o=[0,0,0];
+  const n=Math.min(N,5000);for(let i=0;i<n;i++){const u=Math.random();o[u<e[0]?0:u<e[0]+e[1]?1:2]++;}M2.obs={o,n,p};}
+function eventM2(type){if(type==='bott'){M2.Ncur=10;M2.recover=8;M2.events.push({g:M2.gen,t:'Bottleneck'});}
+  else{const base=M2.lines[0][M2.lines[0].length-1];M2.lines=M2.lines.map((l,i)=>{const nl=l.slice();nl[nl.length-1]=binom(20,base)/20;return nl;});M2.Ncur=10;M2.recover=10;M2.events.push({g:M2.gen,t:'Founder'});}}
+
+/* ================= MODE 3 : SPECIATION ================= */
+const L3=16;const M3={};
+function sideOf(x){return x<0.5?0:1;}
+function opt(x){return $('#envDiff').checked?(x<0.5?0.22:0.78):0.5;}
+function initM3(){const N=clamp(getN(),100,600);M3.ind=[];for(let i=0;i<N;i++){const g=new Float32Array(L3);for(let k=0;k<L3;k++)g[k]=0.5+gauss()*0.04;M3.ind.push({x:Math.random(),y:Math.random(),vx:0,vy:0,g,pl:2});}
+  M3.gen=0;M3.hist=[{d:0,iso:0}];M3.spec=false;M3.acc=0;}
+const ecoT=a=>{let s=0;for(let k=8;k<16;k++)s+=a.g[k];return s/8;};
+const songT=a=>{let s=0;for(let k=0;k<8;k++)s+=a.g[k];return 0.5*s/8+0.5*ecoT(a);};
+function gdist(a,b){let s=0;for(let k=0;k<L3;k++)s+=Math.abs(a.g[k]-b.g[k]);return s/L3;}
+function mateOK(a,b){if(a.pl!==b.pl)return 0;const ds=songT(a)-songT(b);return Math.exp(-((ds/0.13)**2));}
+function viab(a,b){if(a.pl!==b.pl)return 0;const d=gdist(a,b);return Math.exp(-((d/0.3)**2));}
+function blocked(){return $('#barrier').value!=='none';}
+function stepM3(){const s=+$('#sS').value,mu=+$('#uS').value,m=+$('#mS').value/100,N=clamp(getN(),100,600);
+  const surv=M3.ind.filter(a=>{const e=ecoT(a),o=opt(a.x);const f=Math.exp(-((e-o)**2)/(2*0.12*0.12));return Math.random()<1-s*0.8*(1-f);});
+  const groups=blocked()?[0,1].map(sd=>{const sv=surv.filter(a=>sideOf(a.x)===sd);return{pool:sv.length>3?sv:M3.ind.filter(a=>sideOf(a.x)===sd),n:N/2};}):[{pool:surv.length>4?surv:M3.ind,n:N}];
+  const sub=[];for(const grp of groups){const p4=grp.pool.filter(c=>c.pl===4);if(!p4.length){sub.push(grp);continue;}
+    const n4=Math.min(grp.n*0.35,p4.length*1.6);sub.push({pool:p4,n:n4});const p2=grp.pool.filter(c=>c.pl===2);if(p2.length)sub.push({pool:p2,n:grp.n-n4});}
+  const next=[];
+  for(const grp of sub){const pool=grp.pool;if(!pool.length)continue;const p4=pool.filter(c=>c.pl===4);const target=next.length+grp.n;let tries=0;
+  while(next.length<target&&tries<grp.n*30){tries++;const a=pool[Math.floor(Math.random()*pool.length)];
+    let b=null;for(let r=0;r<25&&!b;r++){let c=null;if(a.pl===4)c=p4[Math.floor(Math.random()*p4.length)];else for(let t=0;t<12;t++){const d=pool[Math.floor(Math.random()*pool.length)];if(d===a||d.pl!==a.pl)continue;if(blocked()&&sideOf(d.x)!==sideOf(a.x))continue;if(Math.hypot(d.x-a.x,d.y-a.y)<0.35||t>8){c=d;break;}}
+      if(!c)continue;if(c!==a&&(Math.random()>mateOK(a,c)||Math.random()>viab(a,c)))continue;b=c;}
+    if(!b)continue;
+    const g=new Float32Array(L3);for(let k=0;k<L3;k++){g[k]=Math.random()<0.5?a.g[k]:b.g[k];if(Math.random()<mu*6)g[k]=clamp(g[k]+gauss()*0.06,0,1);}
+    let x=clamp(a.x+gauss()*0.03,0.01,0.99),y=clamp(a.y+gauss()*0.03,0.01,0.99);if(blocked()&&sideOf(x)!==sideOf(a.x))x=a.x;
+    if(blocked()&&Math.random()<m*0.2){x=1-x;}
+    next.push({x,y,vx:0,vy:0,g,pl:a.pl});}}
+  if(next.length>4)M3.ind=next;M3.gen++;const r=m3Metrics();M3.hist.push(r);if(M3.hist.length>400)M3.hist.shift();if(r.iso>0.9&&r.nL>5&&r.nR>5)M3.spec=true;}
+function m3Metrics(){const Lf=M3.ind.filter(a=>a.x<0.5&&a.pl===2),Rt=M3.ind.filter(a=>a.x>=0.5&&a.pl===2);if(!Lf.length||!Rt.length)return{d:0,iso:0,nL:Lf.length,nR:Rt.length,eL:0,eR:0};
+  const mean=arr=>{const m=new Float32Array(L3);arr.forEach(a=>{for(let k=0;k<L3;k++)m[k]+=a.g[k]/arr.length;});return m;};const mL=mean(Lf),mR=mean(Rt);let d=0;for(let k=0;k<L3;k++)d+=Math.abs(mL[k]-mR[k]);d/=L3;
+  let wi=0,bt=0;for(let t=0;t<120;t++){const a=Lf[Math.floor(Math.random()*Lf.length)],b=Lf[Math.floor(Math.random()*Lf.length)],c=Rt[Math.floor(Math.random()*Rt.length)];wi+=mateOK(a,b)*viab(a,b);bt+=mateOK(a,c)*viab(a,c);}
+  const iso=clamp(1-bt/Math.max(1e-6,wi),0,1);return{d,iso,nL:Lf.length,nR:Rt.length,eL:mean(Lf).slice(8).reduce((x,y)=>x+y,0)/8,eR:mean(Rt).slice(8).reduce((x,y)=>x+y,0)/8};}
+function polyEvent(){const cand=M3.ind.filter(a=>a.x>0.5&&a.pl===2);const n=Math.max(8,Math.floor(cand.length*0.25));for(let i=0;i<n&&i<cand.length;i++)cand[Math.floor(Math.random()*cand.length)].pl=4;}
+
+/* ================= MODE 4 : PHYLOGENY & HUMAN ================= */
+const HUMAN_CYTC='GDVEKGKKIFIMKCSQCHTVEKGGKHKTGPNLHGLFGRKTGQAPGYSYTAANKNKGIIWGEDTLMEYLENPKKYIPGTKMIFVGIKKKEERADLIAYLKKATNE';
+const AA='ACDEFGHIKLMNPQRSTVWY';
+const SPP=['มนุษย์','ชิมแปนซี','ลิงรีซัส','สุนัข','ม้า','ไก่','ปลาทูน่า','ยีสต์'];
+const TREE={c:[{l:'ยีสต์',m:15},{m:18,c:[{l:'ปลาทูน่า',m:10},{m:5,c:[{l:'ไก่',m:7},{m:3,c:[{l:'สุนัข',m:8},{l:'ม้า',m:9},{m:3,c:[{l:'ลิงรีซัส',m:1},{m:0,c:[{l:'มนุษย์',m:0},{l:'ชิมแปนซี',m:0}]}]}]}]}]}]};
+let SEQ={},DM=null,UP=null;
+function buildSeqs(){let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const walk=(node,seq)=>{let s=seq.split('');for(let i=0;i<(node.m||0);i++){const p=Math.floor(rnd()*s.length);let a;do{a=AA[Math.floor(rnd()*20)];}while(a===s[p]);s[p]=a;}s=s.join('');if(node.l)SEQ[node.l]=s;(node.c||[]).forEach(ch=>walk(ch,s));};
+  walk(TREE,HUMAN_CYTC);const ref=SEQ['มนุษย์'];
+  // shift so that human = real human cytochrome c sequence
+  for(const k in SEQ){let s='';for(let i=0;i<ref.length;i++)s+=SEQ[k][i]===ref[i]?HUMAN_CYTC[i]:SEQ[k][i];SEQ[k]=s;}
+  DM=SPP.map(a=>SPP.map(b=>pdiff(SEQ[a],SEQ[b])));UP=upgma();}
+function pdiff(a,b){let d=0;for(let i=0;i<a.length;i++)if(a[i]!==b[i])d++;return d/a.length*100;}
+function upgma(){let cl=SPP.map((s,i)=>({name:s,size:1,h:0,leaves:[i]}));const D=(a,b)=>{let s=0;a.leaves.forEach(i=>b.leaves.forEach(j=>s+=DM[i][j]));return s/(a.leaves.length*b.leaves.length);};
+  while(cl.length>1){let bi=0,bj=1,bd=1e9;for(let i=0;i<cl.length;i++)for(let j=i+1;j<cl.length;j++){const d=D(cl[i],cl[j]);if(d<bd){bd=d;bi=i;bj=j;}}
+    const n={a:cl[bi],b:cl[bj],h:bd/2,leaves:cl[bi].leaves.concat(cl[bj].leaves)};cl=cl.filter((_,k)=>k!==bi&&k!==bj);cl.push(n);}return cl[0];}
+const HOM=[
+ {n:'ชิมแปนซี (Pan troglodytes)',s:0.0,e:7.0,now:true,brain:390,bip:0,prog:0.95,brow:0.6,chin:0,tool:'ใช้กิ่งไม้/หินง่าย ๆ',note:'ญาติใกล้ชิดที่สุด — มีบรรพบุรุษร่วมกับมนุษย์ ~6–7 ล้านปีก่อน ไม่ใช่บรรพบุรุษของมนุษย์',col:'#94a3b8'},
+ {n:'Australopithecus afarensis ("ลูซี่")',s:2.9,e:3.9,brain:450,bip:0.75,prog:0.8,brow:0.55,chin:0,tool:'ยังไม่พบเครื่องมือหินที่ชัดเจน',note:'เดินสองขาได้ (รอยเท้า Laetoli) แต่สมองยังเล็กใกล้เคียงลิงใหญ่ ยังปีนต้นไม้เก่ง',col:'#f59e0b'},
+ {n:'Homo habilis ("มนุษย์ช่าง")',s:1.4,e:2.4,brain:610,bip:0.85,prog:0.6,brow:0.45,chin:0,tool:'เครื่องมือหินแบบ Oldowan',note:'สมองใหญ่ขึ้น เริ่มทำเครื่องมือหินกะเทาะ',col:'#22c55e'},
+ {n:'Homo erectus ("มนุษย์ยืนตรง")',s:0.11,e:1.9,brain:950,bip:1,prog:0.45,brow:0.9,chin:0.1,tool:'ขวานกำปั้น Acheulean, ใช้ไฟ',note:'สัดส่วนร่างกายคล้ายคนปัจจุบัน อพยพออกจากแอฟริกา (เช่น มนุษย์ชวา มนุษย์ปักกิ่ง)',col:'#3b82f6'},
+ {n:'Homo neanderthalensis',s:0.04,e:0.4,brain:1450,bip:1,prog:0.35,brow:0.85,chin:0.15,tool:'เครื่องมือ Mousterian, ฝังศพ',note:'สายพันธุ์พี่น้องที่สูญพันธุ์ เคยผสมพันธุ์กับ H. sapiens บางส่วน',col:'#a855f7'},
+ {n:'Homo sapiens (มนุษย์ปัจจุบัน)',s:0,e:0.3,now:true,brain:1350,bip:1,prog:0.1,brow:0.1,chin:1,tool:'เครื่องมือซับซ้อน ศิลปะ ภาษา',note:'หน้าแบน หน้าผากตั้งชัน มีคาง กะโหลกโค้งกลม',col:'#ef4444'}];
+const M4={hom:5,hit:[]};
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;S.running=false;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));
+  $$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','ห้องจำลองการคัดเลือกโดยธรรมชาติ – ผีเสื้อกลางคืนบนเปลือกไม้','เครื่องจำลองพันธุศาสตร์ประชากร – ความถี่อัลลีล p ตามรุ่น (6 ประชากรอิสระ)','แผนที่จำลองการแยกประชากรและการเกิดสปีชีส์ใหม่','ต้นไม้แห่งชีวิตและสายวิวัฒนาการมนุษย์'][m];
+  $('#chartTitle').textContent=['','กราฟการกระจายฟีโนไทป์ (Bell Curve)','จีโนไทป์ที่สังเกตได้ vs คาดหมายตาม Hardy-Weinberg','ระยะห่างทางพันธุกรรม & การแยกกันทางการสืบพันธุ์','ตารางเปรียบเทียบสปีชีส์'][m];
+  view4();updateText();}
+function view4(){const v=$('#view4').value;$('#cmpBox').style.display=v==='tree'?'':'none';$('#homBox').style.display=v==='human'?'':'none';if(S.mode===4)$('#chartTitle').textContent=v==='tree'?'% ความแตกต่างของไซโทโครม c เทียบกับมนุษย์':'ขนาดสมอง (cc) ของ Hominins';}
+const bind=(id,lab,fmt,cb)=>{const el=$('#'+id);const f=()=>{$('#'+lab).textContent=fmt(+el.value);cb&&cb();};el.addEventListener('input',()=>{f();updateText();});f();};
+bind('nS','nV',()=>getN().toLocaleString('th-TH'));
+bind('sS','sV',v=>v.toFixed(2));bind('mS','mV',v=>v+' %');bind('uS','uV',v=>v.toFixed(3));
+bind('p0','p0V',v=>v.toFixed(2),()=>{if(M2.gen===0)initM2();});bind('qm','qmV',v=>v.toFixed(2));bind('fS','fV',v=>v.toFixed(2));bind('gs','gsV',v=>v);
+$('#env').onchange=updateText;$('#barrier').onchange=updateText;$('#envDiff').onchange=updateText;
+$('#bott').onclick=()=>{eventM2('bott');updateText();};$('#found').onclick=()=>{eventM2('found');updateText();};
+$('#poly').onclick=()=>{polyEvent();updateText();};
+$('#view4').onchange=()=>{view4();updateText();};
+SPP.forEach((s,i)=>{$('#spA').add(new Option(s,s));$('#spB').add(new Option(s,s));});$('#spA').value='มนุษย์';$('#spB').value='ลิงรีซัส';
+HOM.forEach((h,i)=>$('#hom').add(new Option(h.n,i)));$('#hom').value=5;
+$('#spA').onchange=updateText;$('#spB').onchange=updateText;$('#hom').onchange=()=>{M4.hom=+$('#hom').value;updateText();};
+$('#tgL').onclick=()=>{S.darwin=false;$('#tgL').classList.add('on');$('#tgD').classList.remove('on','dw');updateText();};
+$('#tgD').onclick=()=>{S.darwin=true;$('#tgD').classList.add('on','dw');$('#tgL').classList.remove('on');if(M1.acq)M1.acq.fill(0);updateText();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#step').onclick=()=>{S.running=false;[null,stepM1,stepM2,stepM3,()=>{}][S.mode]();updateText();};
+$('#reset').onclick=()=>{S.running=false;[null,initM1,initM2,initM3,()=>{}][S.mode]();updateText();};
+$('#main').addEventListener('click',e=>{if(S.mode!==4)return;const r=e.target.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
+  for(const h of M4.hit){if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){if(h.type==='sp'){if(e.shiftKey)$('#spB').value=h.v;else{$('#spB').value=$('#spA').value;$('#spA').value=h.v;}}else{M4.hom=h.v;$('#hom').value=h.v;}updateText();break;}}});
+
+/* ================= UPDATE ================= */
+let acc=0,accT=0;
+function update(dt){S.time+=dt;if(S.mode===1){if(S.running){if(!M1.selected)selectM1();M1.phase+=dt/2.6;if(M1.phase>=1)reproduceM1();}}
+  if(S.running&&S.mode===2){acc+=dt*(+$('#gs').value);while(acc>=1){acc-=1;stepM2();}}
+  if(S.mode===3){M3.ind.forEach(a=>{a.vx=a.vx*0.9+gauss()*0.0006;a.vy=a.vy*0.9+gauss()*0.0006;let nx=a.x+a.vx,ny=a.y+a.vy;if(nx<0.01||nx>0.99){a.vx*=-1;nx=a.x;}if(ny<0.01||ny>0.99){a.vy*=-1;ny=a.y;}if(blocked()&&sideOf(nx)!==sideOf(a.x)){a.vx*=-1;nx=a.x;}a.x=nx;a.y=ny;});
+    if(S.running){acc+=dt;if(acc>0.35){acc=0;stepM3();}}}
+  accT+=dt;if(accT>0.3){accT=0;updateText();}}
+
+/* ================= DRAW ================= */
+function drawM1(g,w,h){const e=$('#env').value;const n=Math.min(SLOTS,M1.N);
+  for(let x=0;x<w;x+=4){const b=bgAt(x/w);const base=Math.round(lerp(225,40,b));g.fillStyle=`rgb(${base},${base-6},${base-14})`;g.fillRect(x,0,4,h);}
+  for(let i=0;i<240;i++){const x=hash(i)*w,y=hash(i+99)*h,b=bgAt(x/w);const v=Math.round(lerp(200,25,b)+(hash(i+7)-0.5)*40);g.fillStyle=`rgba(${v},${v},${v-8},0.55)`;g.fillRect(x,y,2+hash(i+3)*10,1.5+hash(i+5)*3);
+    if(b<0.3&&i%3===0){g.fillStyle='rgba(163,190,140,0.35)';g.beginPath();g.arc(x,y,3+hash(i+11)*6,0,7);g.fill();}}
+  const ph=M1.phase,birds=M1.birds;
+  for(let k=0;k<n;k++){const i=slotIdx(k);const bd=birds.find(b=>b.k===k);if(bd&&ph>bd.t+0.08)continue;
+    const x=M1.pos[i]*(w-30)+15,y=30+hash(i*3.1)*(h-60);const sh=shade(i);const v=Math.round(lerp(235,25,sh));
+    g.save();g.translate(x,y);g.rotate((hash(i*7)-0.5)*0.6);g.fillStyle=`rgb(${v},${v},${v-5})`;g.strokeStyle='rgba(0,0,0,0.35)';g.lineWidth=0.6;
+    g.beginPath();g.ellipse(-6,0,7,4.5,-0.3,0,7);g.fill();g.stroke();g.beginPath();g.ellipse(6,0,7,4.5,0.3,0,7);g.fill();g.stroke();
+    g.fillStyle=`rgb(${Math.max(0,v-40)},${Math.max(0,v-40)},${Math.max(0,v-45)})`;g.fillRect(-1,-4,2,8);g.restore();}
+  birds.forEach(b=>{const t=(ph-b.t+0.15)/0.3;if(t<0||t>1)return;const i=b.i;const tx=M1.pos[i]*(w-30)+15,ty=30+hash(i*3.1)*(h-60);const sx=b.side<0?-30:w+30,sy=-30;
+    let x,y;if(t<0.5){const u=t*2;x=lerp(sx,tx,u);y=lerp(sy,ty,u);}else{const u=(t-0.5)*2;x=lerp(tx,sx<0?w+30:-30,u);y=lerp(ty,-40,u);}
+    g.save();g.translate(x,y);const fl=Math.sin(S.time*30)*6;g.fillStyle='#3b2f2f';g.beginPath();g.moveTo(-14,fl);g.quadraticCurveTo(0,-6,14,fl);g.quadraticCurveTo(0,4,-14,fl);g.fill();g.beginPath();g.arc(0,0,4,0,7);g.fill();g.fillStyle='#f59e0b';g.beginPath();g.moveTo(3,0);g.lineTo(8,1.5);g.lineTo(3,3);g.fill();g.restore();});
+  rr(g,10,h-40,w-20,30,8);g.fillStyle='rgba(0,0,0,0.6)';g.fill();
+  T(g,`รุ่นที่ ${M1.gen} · ${S.darwin?'Darwin: ความแปรผันทางพันธุกรรม + ผู้ล่าคัดเลือก':'Lamarck: ผีเสื้อ "พยายาม" เปลี่ยนสีแล้วถ่ายทอด (สมมติฐานที่ถูกปฏิเสธ)'} · แสดง ${n} จาก ${M1.N.toLocaleString('th-TH')} ตัว`,20,h-25,S.darwin?'#bbf7d0':'#fed7aa',12.5,'left',true);
+  if(!S.darwin&&M1.gen>0){T(g,'⚠ ลักษณะที่ได้มาภายหลังไม่ถูกเข้ารหัสใน DNA จึงถ่ายทอดไม่ได้จริง',w/2,18,'#fdba74',13,'center',true);}}
+function drawM2(g,w,h){const x=56,y=24,cw=w-80,ch=h-70;g.strokeStyle='#475569';g.beginPath();g.moveTo(x,y);g.lineTo(x,y+ch);g.lineTo(x+cw,y+ch);g.stroke();
+  for(let v=0;v<=1.001;v+=0.25){const Y=y+ch-v*ch;T(g,v.toFixed(2),x-8,Y,'#64748b',11,'right');g.strokeStyle='#1e293b';g.beginPath();g.moveTo(x,Y);g.lineTo(x+cw,Y);g.stroke();}
+  for(let t=0;t<=500;t+=100)T(g,t,x+t/500*cw,y+ch+12,'#64748b',11,'center');T(g,'จำนวนรุ่น (Generations)',x+cw/2,y+ch+32,'#97a6bd',12,'center');
+  g.save();g.translate(18,y+ch/2);g.rotate(-Math.PI/2);T(g,'ความถี่อัลลีล p (A)',0,0,'#97a6bd',12,'center');g.restore();
+  M2.events.forEach(ev=>{const X=x+ev.g/500*cw;g.strokeStyle=ev.t==='Bottleneck'?'#f97316':'#22d3ee';g.setLineDash([4,4]);g.beginPath();g.moveTo(X,y);g.lineTo(X,y+ch);g.stroke();g.setLineDash([]);T(g,ev.t,X+3,y+10,g.strokeStyle,11);});
+  M2.lines.forEach((l,i)=>{g.strokeStyle=LCOL[i];g.lineWidth=1.6;g.beginPath();l.forEach((p,t)=>{const X=x+t/500*cw,Y=y+ch-p*ch;t?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();});
+  g.strokeStyle='#fff';g.lineWidth=2.5;g.setLineDash([6,4]);g.beginPath();M2.det.forEach((p,t)=>{const X=x+t/500*cw,Y=y+ch-p*ch;t?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();g.setLineDash([]);
+  T(g,'— — ค่าคาดหมาย (ประชากรขนาดใหญ่มาก ไม่มี drift)',x+cw-6,y+ch-10,'#e2e8f0',11,'right');
+  const fixed=M2.lines.filter(l=>{const p=l[l.length-1];return p<=0||p>=1;}).length;T(g,`N ปัจจุบัน = ${M2.Ncur.toLocaleString('th-TH')} · รุ่น ${M2.gen} · ประชากรที่อัลลีลตรึง/สูญหาย ${fixed}/${LINES}`,x+8,y+8,'#fde68a',12,'left',true);}
+function drawM3(g,w,h){const b=$('#barrier').value,ed=$('#envDiff').checked;
+  g.fillStyle=ed?'#5b4a23':'#2f4a2a';g.fillRect(0,0,w/2,h);g.fillStyle=ed?'#1f4d3a':'#2f4a2a';g.fillRect(w/2,0,w/2,h);
+  if(ed){T(g,'ฝั่งแห้งแล้ง',14,16,'#fde68a',12,'left',true);T(g,'ฝั่งชุ่มชื้น',w-14,16,'#a7f3d0',12,'right',true);}
+  if(b==='river'){g.fillStyle='#1d4ed8';g.beginPath();for(let y=0;y<=h;y+=6){const X=w/2+Math.sin(y/30+S.time)*10;g.lineTo(X-14,y);}for(let y=h;y>=0;y-=6){const X=w/2+Math.sin(y/30+S.time)*10;g.lineTo(X+14,y);}g.fill();T(g,'แม่น้ำ',w/2,h-12,'#bfdbfe',12,'center',true);}
+  if(b==='mount'){for(let y=-10;y<h+20;y+=34){g.fillStyle='#6b7280';g.beginPath();g.moveTo(w/2-26,y+34);g.lineTo(w/2,y);g.lineTo(w/2+26,y+34);g.fill();g.fillStyle='#e5e7eb';g.beginPath();g.moveTo(w/2-7,y+9);g.lineTo(w/2,y);g.lineTo(w/2+7,y+9);g.fill();}T(g,'เทือกเขา',w/2,h-12,'#f3f4f6',12,'center',true);}
+  M3.ind.forEach(a=>{const e=ecoT(a);const hue=lerp(30,210,clamp(e,0,1));const X=a.x*w,Y=a.y*h;g.fillStyle=`hsl(${hue},80%,60%)`;if(a.pl===4){g.fillRect(X-3.5,Y-3.5,7,7);g.strokeStyle='#fff';g.strokeRect(X-3.5,Y-3.5,7,7);}else{g.beginPath();g.arc(X,Y,3.2,0,7);g.fill();}});
+  rr(g,10,h-62,250,48,8);g.fillStyle='rgba(0,0,0,0.6)';g.fill();T(g,'สี = ลักษณะทางนิเวศ (ส้ม ↔ ฟ้า)',20,h-48,'#e2e8f0',11.5);T(g,'■ = พืช 4n (Polyploid)   ● = 2n',20,h-28,'#e2e8f0',11.5);
+  T(g,'รุ่นที่ '+M3.gen,w/2,16,'#fff',13,'center',true);
+  if(M3.spec){rr(g,w/2-170,36,340,30,8);g.fillStyle='rgba(22,101,52,0.9)';g.fill();T(g,'✔ เกิดการแยกกันทางการสืบพันธุ์ → สปีชีส์ใหม่!',w/2,51,'#fff',13,'center',true);}}
+function drawTree(g,w,h){M4.hit=[];const top=24,bottom=h*0.6,lx=40,rx=w-150;const leaves=[];(function coll(n){if(n.name!==undefined&&!n.a){leaves.push(n);return;}coll(n.a);coll(n.b);})(UP);
+  const yOf={};leaves.forEach((l,i)=>yOf[l.name]=top+i*(bottom-top)/(leaves.length-1));const maxH=UP.h;const X=hh=>rx-(hh/maxH)*(rx-lx);
+  const A=$('#spA').value,B=$('#spB').value;
+  function draw(n){if(!n.a){return{y:yOf[n.name],x:rx};}const p=draw(n.a),q=draw(n.b);const x=X(n.h);g.strokeStyle='#a3e635';g.lineWidth=2;g.beginPath();g.moveTo(p.x,p.y);g.lineTo(x,p.y);g.lineTo(x,q.y);g.lineTo(q.x,q.y);g.stroke();
+    g.fillStyle='#fbbf24';g.beginPath();g.arc(x,(p.y+q.y)/2,3,0,7);g.fill();if(S.mode===4&&n.h>0.3)T(g,(n.h).toFixed(1)+'%',x+4,(p.y+q.y)/2-8,'#64748b',9.5);return{x,y:(p.y+q.y)/2};}
+  draw(UP);leaves.forEach(l=>{const y=yOf[l.name];const sel=l.name===A||l.name===B;T(g,l.name,rx+8,y,sel?'#fbbf24':'#e2e8f0',13,'left',sel);M4.hit.push({x:rx,y:y-10,w:140,h:20,type:'sp',v:l.name});});
+  T(g,'บรรพบุรุษร่วม (Common ancestor) ●',lx,12,'#fbbf24',11);T(g,'แผนภูมิสร้างด้วยวิธี UPGMA จาก % ความแตกต่างของไซโทโครม c',rx,12,'#97a6bd',11,'right');
+  const sa=SEQ[A],sb=SEQ[B];const y0=bottom+30;const per=Math.max(20,Math.floor((w-110)/9.5));T(g,`เทียบลำดับกรดอะมิโน: ${A} vs ${B}`,20,y0-12,'#a3e635',12,'left',true);
+  g.font='12px Consolas,monospace';const cw=Math.min(9.5,(w-110)/per);let row=0;for(let st=0;st<sa.length;st+=per){const yy=y0+8+row*34;if(yy>h-10)break;T(g,A.slice(0,6),20,yy,'#94a3b8',10);T(g,B.slice(0,6),20,yy+14,'#94a3b8',10);
+    for(let i=st;i<Math.min(sa.length,st+per);i++){const xx=80+(i-st)*cw;const d=sa[i]!==sb[i];if(d){g.fillStyle='#7f1d1d';g.fillRect(xx-1,yy-7,cw,28);}g.fillStyle=d?'#fff':'#cbd5e1';g.font='11px Consolas,monospace';g.textAlign='left';g.fillText(sa[i],xx,yy);g.fillText(sb[i],xx,yy+14);}row++;}}
+function drawHuman(g,w,h){M4.hit=[];const x0=30,x1=w*0.52,y0=34,y1=h-30;const Ymy=my=>y0+(7-my)/7*(y1-y0);
+  T(g,'ล้านปีก่อน',x0,16,'#97a6bd',11);for(let my=0;my<=7;my++){const Y=Ymy(my);T(g,my+'',x0,Y,'#64748b',10);g.strokeStyle='#1e293b';g.beginPath();g.moveTo(x0+14,Y);g.lineTo(x1,Y);g.stroke();}
+  const ca=Ymy(6.5);const cx=x0+40;g.fillStyle='#fbbf24';g.beginPath();g.arc(cx,ca,6,0,7);g.fill();T(g,'บรรพบุรุษร่วม มนุษย์–ชิมแปนซี (~6–7 ล้านปี)',cx+10,ca,'#fde68a',11);
+  const cols=HOM.length;HOM.forEach((hm,i)=>{const bx=x0+60+i*((x1-x0-70)/cols),bw=(x1-x0-70)/cols*0.6;const ya=Ymy(hm.e),yb=Ymy(hm.s);
+    g.strokeStyle='rgba(251,191,36,0.4)';g.setLineDash([3,3]);g.beginPath();g.moveTo(cx,ca);g.lineTo(bx+bw/2,ya);g.stroke();g.setLineDash([]);
+    rr(g,bx,ya,bw,Math.max(4,yb-ya),4);g.fillStyle=hm.col;g.globalAlpha=i===M4.hom?1:0.55;g.fill();g.globalAlpha=1;if(i===M4.hom){g.strokeStyle='#fff';g.lineWidth=2;g.stroke();}
+    g.save();g.translate(bx+bw/2,Math.max(ya,y0)+ (yb-ya)/2);g.rotate(-Math.PI/2);T(g,hm.n.split(' (')[0].replace('Australopithecus','Australo.'),0,0,'#0b0f14',10.5,'center',true);g.restore();
+    M4.hit.push({x:bx,y:ya,w:bw,h:Math.max(14,yb-ya),type:'hom',v:i});});
+  // skull
+  const hm=HOM[M4.hom];const sx=w*0.76,sy=h*0.36,sc=Math.min(w*0.0011,h*0.0024);const br=Math.sqrt(hm.brain/1350);
+  g.save();g.translate(sx,sy);g.scale(sc*100,sc*100);g.lineWidth=0.025;
+  g.fillStyle='#e7dcc4';g.strokeStyle='#7c6f57';g.beginPath();
+  const vaultH=0.55+0.55*br,vaultL=0.9+0.35*br,front=lerp(-0.2,0.55,hm.chin*0.5+ (1-hm.prog)*0.5);
+  g.moveTo(-vaultL,0.15);g.bezierCurveTo(-vaultL-0.1,-vaultH*0.6,-0.3,-vaultH*1.1,front*0.4,-vaultH);g.bezierCurveTo(front+0.25,-vaultH*0.85,front+0.3,-0.35,0.55+0.05,-0.15);
+  g.lineTo(0.62+hm.brow*0.2,-0.12);g.lineTo(0.6+hm.prog*0.55,0.25);g.lineTo(0.6+hm.prog*0.5,0.5);g.lineTo(0.45+hm.prog*0.35+hm.chin*0.15,0.78);g.lineTo(0.1,0.82);g.lineTo(-0.15,0.55);g.lineTo(-0.5,0.35);g.closePath();g.fill();g.stroke();
+  g.fillStyle='#3f3a30';g.beginPath();g.ellipse(0.35+hm.prog*0.15,0.02,0.13,0.11,0,0,7);g.fill();
+  if(hm.brow>0.3){g.strokeStyle='#7c6f57';g.lineWidth=0.06*hm.brow;g.beginPath();g.moveTo(0.2,-0.13);g.lineTo(0.65+hm.brow*0.2,-0.12);g.stroke();}
+  const fm=lerp(-0.75,-0.15,hm.bip);g.fillStyle='#ef4444';g.beginPath();g.arc(fm,0.42,0.05,0,7);g.fill();
+  g.restore();T(g,'● ตำแหน่งรูท้ายทอย (Foramen magnum): '+(hm.bip>0.7?'อยู่ใต้กะโหลก → เดินสองขา':'ค่อนไปทางด้านหลัง → เดินสี่ขา'),sx,sy+h*0.2,'#fca5a5',11,'center');
+  // skeleton posture
+  const kx=w*0.76,ky=h*0.86,ang=lerp(1.0,0,hm.bip);g.save();g.translate(kx,ky);g.strokeStyle=hm.col;g.lineWidth=4;g.lineCap='round';
+  const bodyL=60;const hx=Math.sin(ang)*bodyL,hy=-Math.cos(ang)*bodyL;g.beginPath();g.moveTo(0,0);g.lineTo(-12,30);g.moveTo(0,0);g.lineTo(12,30);g.moveTo(0,0);g.lineTo(hx,hy);g.stroke();
+  g.beginPath();g.moveTo(hx*0.85,hy*0.85);g.lineTo(hx*0.85+(hm.bip<0.5?18:8),hy*0.85+(hm.bip<0.5?50:35));g.stroke();g.fillStyle=hm.col;g.beginPath();g.arc(hx*1.12,hy*1.12,8+br*5,0,7);g.fill();g.restore();
+  T(g,hm.n,sx,22,hm.col,14,'center',true);T(g,`สมอง ≈ ${hm.brain} cc · ${hm.now?'ยังมีชีวิตอยู่':hm.e+'–'+hm.s+' ล้านปีก่อน'}`,sx,42,'#e2e8f0',12,'center');}
+function drawM4(g,w,h){if($('#view4').value==='tree')drawTree(g,w,h);else drawHuman(g,w,h);}
+
+/* ================= RIGHT CHART ================= */
+function axes(g,x,y,w,h,xl,yl){g.strokeStyle='#475569';g.beginPath();g.moveTo(x,y);g.lineTo(x,y+h);g.lineTo(x+w,y+h);g.stroke();T(g,xl,x+w/2,y+h+26,'#97a6bd',11,'center');g.save();g.translate(x-34,y+h/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#97a6bd',11,'center');g.restore();}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const x=46,y=16,cw=w-60,ch=h-56;
+  if(S.mode===1){axes(g,x,y,cw,ch,'ฟีโนไทป์: สีปีก (อ่อน → เข้ม)','สัดส่วนประชากร');const cur=histM1(),h0=M1.hist0;const mx=Math.max(...cur,...h0,0.05);
+    for(let i=0;i<20;i++){const bw=cw/20;const v=cur[i];const c=Math.round(lerp(235,30,i/19));g.fillStyle=`rgb(${c},${c},${c})`;g.fillRect(x+i*bw+1,y+ch-v/mx*ch,bw-2,v/mx*ch);}
+    g.strokeStyle='#f87171';g.lineWidth=2;g.setLineDash([5,3]);g.beginPath();h0.forEach((v,i)=>{const X=x+(i+0.5)*cw/20,Y=y+ch-v/mx*ch;i?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();g.setLineDash([]);
+    const e=$('#env').value;[...new Set(Array.from({length:12},(_,k)=>bgAt(k/12)))].forEach(b=>{const X=x+b*cw;g.strokeStyle='#a3e635';g.beginPath();g.moveTo(X,y);g.lineTo(X,y+ch);g.stroke();T(g,'สีพื้นหลัง',X,y+6,'#a3e635',10,'center');});
+    T(g,'- - รุ่นที่ 0',x+cw-4,y+20,'#fca5a5',10.5,'right');T(g,'แท่ง = รุ่นปัจจุบัน',x+cw-4,y+34,'#e2e8f0',10.5,'right');}
+  else if(S.mode===2){const o=M2.obs;if(!o)return;const p=o.p,q=1-p,F=+$('#fS').value;const ex=[p*p+F*p*q,2*p*q*(1-F),q*q+F*p*q];const hw=[p*p,2*p*q,q*q];axes(g,x,y,cw,ch,'จีโนไทป์','ความถี่');
+    ['AA','Aa','aa'].forEach((lab,i)=>{const gx=x+i*cw/3+cw/3*0.12,bw=cw/3*0.24;const vo=o.o[i]/o.n;g.fillStyle='#60a5fa';g.fillRect(gx,y+ch-vo*ch,bw,vo*ch);g.fillStyle='#a3e635';g.fillRect(gx+bw+3,y+ch-hw[i]*ch,bw,hw[i]*ch);
+      T(g,lab,gx+bw,y+ch+10,'#e2e8f0',12,'center',true);T(g,vo.toFixed(2),gx+bw/2,y+ch-vo*ch-8,'#bfdbfe',10,'center');T(g,hw[i].toFixed(2),gx+bw*1.5+3,y+ch-hw[i]*ch-8,'#d9f99d',10,'center');});
+    T(g,'■ สังเกต (ประชากรที่ 1)',x+8,y+6,'#60a5fa',10.5);T(g,'■ คาดหมาย HWE p², 2pq, q²',x+8,y+20,'#a3e635',10.5);}
+  else if(S.mode===3){axes(g,x,y,cw,ch,'รุ่น','ค่า (0–1)');const hs=M3.hist;const n=Math.max(50,hs.length);
+    [['d','#fbbf24',v=>clamp(v*4,0,1)],['iso','#f87171',v=>v]].forEach(([k,col,f])=>{g.strokeStyle=col;g.lineWidth=2;g.beginPath();hs.forEach((p,i)=>{const X=x+i/n*cw,Y=y+ch-f(p[k])*ch;i?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();});
+    g.strokeStyle='rgba(74,222,128,0.6)';g.setLineDash([3,3]);g.beginPath();g.moveTo(x,y+ch*0.1);g.lineTo(x+cw,y+ch*0.1);g.stroke();g.setLineDash([]);
+    T(g,'— ระยะห่างทางพันธุกรรม (×4)',x+8,y+6,'#fbbf24',10.5);T(g,'— ดัชนีการแยกทางสืบพันธุ์',x+8,y+20,'#f87171',10.5);T(g,'เกณฑ์สปีชีส์ใหม่ 0.9',x+cw-4,y+ch*0.1-8,'#86efac',10,'right');}
+  else{if($('#view4').value==='tree'){const hi=SPP.indexOf('มนุษย์');const vals=SPP.map((s,i)=>[s,DM[hi][i]]).slice(1);const mx=Math.max(...vals.map(v=>v[1]));axes(g,x+40,y,cw-40,ch,'% ความแตกต่าง','');
+      vals.forEach(([s,v],i)=>{const bh=ch/vals.length*0.7,by=y+i*ch/vals.length+2;g.fillStyle=`hsl(${120-v/mx*120},70%,50%)`;g.fillRect(x+40,by,(cw-40)*v/mx,bh);T(g,s,x+36,by+bh/2,'#e2e8f0',11,'right');T(g,v.toFixed(1)+'%',x+44+(cw-40)*v/mx,by+bh/2,'#e2e8f0',10.5);});}
+    else{axes(g,x,y,cw,ch,'','ขนาดสมอง (cc)');const mx=1500;HOM.forEach((hm,i)=>{const bw=cw/HOM.length*0.6,bx=x+i*cw/HOM.length+cw/HOM.length*0.2,bh=hm.brain/mx*ch;g.fillStyle=hm.col;g.globalAlpha=i===M4.hom?1:0.6;g.fillRect(bx,y+ch-bh,bw,bh);g.globalAlpha=1;T(g,hm.brain,bx+bw/2,y+ch-bh-8,'#e2e8f0',10,'center');
+      g.save();g.translate(bx+bw/2,y+ch+6);g.rotate(-0.5);T(g,hm.n.split(' ')[0].replace('Australopithecus','Austr.')+(hm.n.includes('Homo')?' '+hm.n.split(' ')[1]:''),0,0,'#cbd5e1',9.5,'right');g.restore();});}}}
+
+/* ================= TEXT ================= */
+function stats(a){$('#stats').innerHTML=a.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+function selType(){const e=$('#env').value;const h0=M1.hist0,cur=histM1();const m0=h0.reduce((s,v,i)=>s+v*(i+0.5)/20,0),m1=cur.reduce((s,v,i)=>s+v*(i+0.5)/20,0);const v0=h0.reduce((s,v,i)=>s+v*((i+0.5)/20-m0)**2,0),v1=cur.reduce((s,v,i)=>s+v*((i+0.5)/20-m1)**2,0);
+  if(M1.gen<3)return['ยังไม่ชัดเจน','—'];if(e==='mixed'&&v1>v0*1.3)return['Disruptive Selection','ตัวสีสุดขั้วทั้งอ่อนและเข้มรอด ตัวสีกลางถูกกินมาก การกระจายแยกเป็นสองยอด'];
+  if(Math.abs(m1-m0)>0.08)return['Directional Selection','ค่าเฉลี่ยฟีโนไทป์เลื่อนไปทาง'+(m1>m0?'สีเข้ม':'สีอ่อน')];if(v1<v0*0.85)return['Stabilizing Selection','ตัวสีกลาง ๆ รอดมากที่สุด ความแปรผันลดลง'];return['คงที่ / ไม่ชัดเจน','—'];}
+function updateText(){const m=S.mode;let st=[],eq='',th='',an='',mis='',tb='';
+  if(m===1){const p=freqM1(),q=1-p;const t=selType();st=[['ความถี่อัลลีลสีเข้ม p',p.toFixed(3)],['ความถี่อัลลีลสีอ่อน q',q.toFixed(3)],['อัตราการรอดชีวิต (รุ่นล่าสุด)',(M1.surv*100).toFixed(1)+' %'],['สีเฉลี่ยของประชากร',meanShade().toFixed(2)]];
+    eq='โอกาสรอด = 1 − s × |สีผีเสื้อ − สีพื้นหลัง|   (s = '+(+$('#sS').value).toFixed(2)+')\nฟีโนไทป์ควบคุมด้วยยีน 4 ตำแหน่ง (Polygenic) → การกระจายแบบ Bell curve';
+    th=S.darwin?'<b>ทฤษฎีของดาร์วิน–วอลเลซ:</b> ประชากรมีความแปรผันทางพันธุกรรมอยู่แล้ว → ผู้ล่ามองเห็นตัวที่สีต่างจากพื้นหลังได้ง่าย → ตัวที่กลมกลืนรอดและสืบพันธุ์ได้มากกว่า (Differential reproductive success) → ความถี่อัลลีลเปลี่ยนไปในรุ่นถัดไป':'<b>แนวคิดของลามาร์ก:</b> กฎการใช้และไม่ใช้ + การถ่ายทอดลักษณะที่เกิดขึ้นใหม่ — ในโหมดนี้ผีเสื้อแต่ละตัว "ปรับสี" ระหว่างมีชีวิตแล้วส่งต่อให้ลูก ซึ่ง<b>ขัดกับหลักพันธุศาสตร์</b> เพราะการเปลี่ยนแปลงของเซลล์ร่างกายไม่ถูกส่งผ่านเซลล์สืบพันธุ์';
+    an=`<p><b>รูปแบบการคัดเลือก:</b> <span class="tag mid">${t[0]}</span> ${t[1]}</p>`;
+    if(+$('#sS').value===0)an+='<p>s = 0 → ไม่มีแรงคัดเลือก ความถี่เปลี่ยนเพียงจาก drift/mutation</p>';
+    if(+$('#mS').value>10)an+='<p>Gene flow สูง นำอัลลีลจากประชากรอื่นเข้ามา ลดผลของการคัดเลือกในท้องถิ่น</p>';
+    if(getN()<50)an+='<p><span class="tag mid">ประชากรเล็ก</span> Genetic drift มีผลมาก ความถี่อาจผันผวนแบบสุ่ม</p>';
+    mis=S.darwin?'<p><b>❌ "ผีเสื้อพยายามเปลี่ยนสีให้เข้ากับต้นไม้"</b></p><p>✅ ผีเสื้อแต่ละตัว<b>เปลี่ยนสีตัวเองไม่ได้</b> สีถูกกำหนดโดยยีนตั้งแต่เกิด สิ่งที่เปลี่ยนคือ<b>สัดส่วนของประชากร</b> เพราะตัวที่สีกลมกลืนรอดมากกว่า</p><p><b>❌ "วิวัฒนาการสร้างสิ่งมีชีวิตที่สมบูรณ์แบบ"</b> ✅ ลองเปลี่ยนกลับเป็นป่าสะอาด — สีที่เคย "ดี" กลับเสียเปรียบ วิวัฒนาการไม่มีเป้าหมาย</p>':'<p><b>❌ "การฝึกฝนหรือพยายามปรับตัวถ่ายทอดสู่ลูกได้"</b></p><p>✅ เช่น คนออกกำลังจนกล้ามโต ลูกไม่ได้เกิดมากล้ามโต การทดลองของ Weismann ตัดหางหนู 20 รุ่น ลูกยังมีหางปกติ — ลักษณะที่ได้มาภายหลังไม่ถ่ายทอด</p>';
+    tb='<table><tr><th>รุ่น</th><th>p (เข้ม)</th><th>รอด %</th><th>สีเฉลี่ย</th></tr>'+M1.history.slice(-6).map(r=>`<tr><td>${r.gen}</td><td>${r.p.toFixed(3)}</td><td>${(r.surv*100).toFixed(0)}</td><td>${r.mean.toFixed(2)}</td></tr>`).join('')+'</table>';}
+  else if(m===2){const p=M2.lines[0][M2.lines[0].length-1],q=1-p,o=M2.obs,F=+$('#fS').value;const ex=[p*p+F*p*q,2*p*q*(1-F),q*q+F*p*q];
+    let chi=0;['AA','Aa','aa'].forEach((_,i)=>{const E=p*p*(i===0)+2*p*q*(i===1)+q*q*(i===2);const Ec=E*o.n;if(Ec>0)chi+=(o.o[i]-Ec)**2/Ec;});
+    st=[['p (A) / q (a)',p.toFixed(3)+' / '+q.toFixed(3)],['p² : 2pq : q²',`${(p*p).toFixed(2)} : ${(2*p*q).toFixed(2)} : ${(q*q).toFixed(2)}`],['Heterozygosity (2pq)',(2*p*q).toFixed(3)],['χ² (df=1)',chi.toFixed(2)+(chi>3.84?' ✗':' ✓')]];
+    eq=`p + q = 1     p² + 2pq + q² = 1\nq_next = [q²(1−s) + pq] / (1 − s·q²)    s = ${(+$('#sS').value).toFixed(2)}\nMutation: q' = q + μp   |   Gene flow: q' = (1−m)q + m·q_m   |   Drift: สุ่มอัลลีล 2N ตัว`;
+    th='<b>ทฤษฎีวิวัฒนาการสังเคราะห์ (Modern Synthesis):</b> รวมพันธุศาสตร์เมนเดลกับการคัดเลือกโดยธรรมชาติ — วิวัฒนาการระดับจุลภาค (Microevolution) คือการเปลี่ยนแปลงความถี่อัลลีลในประชากรจาก 5 ปัจจัย: Mutation, Gene flow, Genetic drift, Non-random mating และ Natural selection';
+    const conds=[[+$('#uS').value===0,'ไม่มีมิวเทชัน'],[+$('#mS').value===0,'ไม่มีการอพยพ'],[getN()>=5000,'ประชากรขนาดใหญ่มาก'],[F===0,'ผสมพันธุ์แบบสุ่ม'],[+$('#sS').value===0,'ไม่มีการคัดเลือก']];
+    an='<p><b>เงื่อนไข 5 ประการของสมดุล Hardy-Weinberg:</b></p>'+conds.map(c=>`<p>${c[0]?'<span class="tag ok">✓</span>':'<span class="tag no">✗</span>'} ${c[1]}</p>`).join('')+(conds.every(c=>c[0])?'<p>ครบทุกเงื่อนไข → ความถี่อัลลีลคงที่ <b>ไม่เกิดวิวัฒนาการ</b></p>':'<p>ไม่ครบเงื่อนไข → <b>เกิดวิวัฒนาการระดับจุลภาค</b></p>');
+    const sd=(()=>{const f=M2.lines.map(l=>l[l.length-1]);const mn=f.reduce((a,b)=>a+b,0)/f.length;return Math.sqrt(f.reduce((a,b)=>a+(b-mn)**2,0)/f.length);})();
+    if(M2.gen>20)an+=`<p>ความแตกต่างระหว่าง 6 ประชากร (SD) = ${sd.toFixed(3)} → ${sd>0.1?'<span class="tag mid">Genetic drift รุนแรง</span> (ประชากรเล็ก)':'drift น้อย'}</p>`;
+    if(M2.events.length)an+=`<p>เหตุการณ์ล่าสุด: <b>${M2.events[M2.events.length-1].t}</b> — ${M2.events[M2.events.length-1].t==='Bottleneck'?'ประชากรเหลือน้อยจากภัยพิบัติ ความถี่อัลลีลของผู้รอดถูกสุ่ม อัลลีลบางชนิดอาจหายไป':'กลุ่มเล็ก ๆ อพยพไปตั้งถิ่นฐานใหม่ แต่ละกลุ่มมีความถี่อัลลีลต่างจากประชากรเดิมโดยบังเอิญ'}</p>`;
+    mis='<p><b>❌ "อัลลีลเด่นจะเพิ่มความถี่ขึ้นเรื่อย ๆ เสมอ"</b></p><p>✅ ถ้าไม่มีปัจจัยมารบกวน ความถี่อัลลีลคงที่ทุกรุ่น ไม่ว่าเด่นหรือด้อย (ตั้ง s, μ, m = 0 และ N ใหญ่ ลองดู)</p><p><b>❌ "Genetic drift ทำให้ปรับตัวดีขึ้น"</b> ✅ Drift เป็นการสุ่ม ไม่ได้คัดเลือกตัวที่เหมาะสม อาจทำให้อัลลีลที่ดีหายไปได้</p>';
+    tb=`<table><tr><th>จีโนไทป์</th><th>คาดหมาย (HWE)</th><th>สังเกต (n=${o.n})</th></tr>`+['AA','Aa','aa'].map((g,i)=>{const E=[p*p,2*p*q,q*q][i];return `<tr><td>${g}</td><td>${(E*o.n).toFixed(0)}</td><td>${o.o[i]}</td></tr>`;}).join('')+`</table><p class="hint">χ² = Σ(O−E)²/E; ถ้า > 3.84 แสดงว่าไม่อยู่ในสมดุล (เช่น เมื่อมี inbreeding F)</p>`;}
+  else if(m===3){const r=m3Metrics();const n4=M3.ind.filter(a=>a.pl===4).length;
+    st=[['ระยะห่างทางพันธุกรรม',(r.d*100).toFixed(1)+' %'],['ดัชนีการแยกทางสืบพันธุ์',(r.iso*100).toFixed(0)+' %'],['ประชากร ซ้าย / ขวา',r.nL+' / '+r.nR],['พืช 4n',n4]];
+    eq='Genetic Distance = (1/L) Σ |p̄ซ้าย − p̄ขวา|  (เฉลี่ยทุกตำแหน่งยีน)\nดัชนีการแยก = 1 − (ความสำเร็จผสมข้ามกลุ่ม ÷ ความสำเร็จผสมในกลุ่ม)';
+    th='<b>การเกิดสปีชีส์ใหม่ (Speciation):</b> Allopatric – ประชากรถูกแยกทางภูมิศาสตร์ ไม่มี gene flow แต่ละฝั่งสะสมความแตกต่างจาก mutation, drift และ natural selection จนผสมพันธุ์กันไม่ได้ · Sympatric – เกิดในพื้นที่เดียวกัน เช่น Polyploidy ในพืช (4n × 2n → 3n เป็นหมัน)';
+    const b=blocked();an=`<p>${b?'<span class="tag ok">มีสิ่งกีดขวาง</span> Gene flow ระหว่างสองฝั่งถูกจำกัด':'<span class="tag mid">ไม่มีสิ่งกีดขวาง</span> ยีนไหลข้ามได้อิสระ ประชากรผสมกลมกลืน'}</p>`;
+    if(r.iso>0.9)an+='<p><span class="tag ok">เกิด Speciation</span> แม้นำสิ่งกีดขวางออก (เลือก "ไม่มี") ทั้งสองกลุ่มจะผสมพันธุ์กันไม่สำเร็จ — กลายเป็น<b>สปีชีส์ต่างกัน</b></p>';else if(r.iso>0.4)an+='<p><span class="tag mid">กำลังแยก</span> เริ่มมีการแยกทางสืบพันธุ์บางส่วน (ลูกผสมมีชีวิตรอดน้อย)</p>';else an+='<p>ยังเป็นสปีชีส์เดียวกัน (ผสมพันธุ์กันได้ดี)</p>';
+    if(+$('#mS').value>5&&b)an+='<p>Gene flow ข้ามสิ่งกีดขวางสูง → ชะลอการเกิดสปีชีส์ใหม่</p>';
+    if(n4>0)an+=`<p><b>Sympatric speciation:</b> พืช 4n ${n4} ต้นผสมได้เฉพาะ 4n ด้วยกัน (หรือผสมตัวเอง) ลูกผสม 4n × 2n = 3n เป็นหมัน → แยกทางสืบพันธุ์ทันทีในรุ่นเดียว</p>`;
+    mis='<p><b>❌ "สปีชีส์ใหม่เกิดจากสิ่งมีชีวิตตัวเดียวเปลี่ยนไป"</b></p><p>✅ Speciation เกิดในระดับ<b>ประชากร</b> ผ่านการสะสมความแตกต่างทางพันธุกรรมหลายรุ่น (ยกเว้น polyploidy ที่เกิดได้รวดเร็ว)</p><p><b>❌ "แยกกันทางภูมิศาสตร์ = สปีชีส์ใหม่ทันที"</b> ✅ ต้องเกิด<b>การแยกกันทางการสืบพันธุ์</b>ก่อน จึงนับเป็นสปีชีส์ใหม่</p>';
+    const ds=r.d;tb='<table><tr><th>กลไก</th><th>ตัวอย่าง</th><th>สถานะ</th></tr>'+[['Prezygotic','แยกกันทางถิ่นที่อยู่ (Habitat)',b?'✓':'–'],['Prezygotic','พฤติกรรม/เสียงเรียกคู่ (Behavioral)',r.iso>0.3?'✓':'–'],['Prezygotic','ฤดูผสมพันธุ์ต่างกัน (Temporal)',r.iso>0.6?'✓':'–'],['Prezygotic','โครงสร้างอวัยวะ/เซลล์สืบพันธุ์ไม่เข้ากัน',r.iso>0.8?'✓':'–'],['Postzygotic','ลูกผสมตายก่อนวัย (Hybrid inviability)',ds>0.15?'✓':'–'],['Postzygotic','ลูกผสมเป็นหมัน (เช่น ล่อ, 3n)',n4>0||ds>0.2?'✓':'–'],['Postzygotic','ลูกผสมรุ่นหลังอ่อนแอ (Hybrid breakdown)',ds>0.25?'✓':'–']].map(x=>`<tr><td>${x[0]}</td><td style="text-align:left">${x[1]}</td><td>${x[2]}</td></tr>`).join('')+'</table>';}
+  else{const v=$('#view4').value;if(v==='tree'){const A=$('#spA').value,B=$('#spB').value;const sa=SEQ[A],sb=SEQ[B];let nd=0;for(let i=0;i<sa.length;i++)if(sa[i]!==sb[i])nd++;
+      st=[['ตำแหน่งที่ต่างกัน',nd+' ตำแหน่ง'],['จำนวนกรดอะมิโนทั้งหมด',sa.length],['% Difference',(nd/sa.length*100).toFixed(1)+' %'],['ความใกล้ชิด',nd<=2?'ใกล้ชิดมาก':nd<=15?'ปานกลาง':'ห่างไกล']];
+      eq=`Percentage Difference = (จำนวนตำแหน่งที่กรดอะมิโนต่างกัน / จำนวนกรดอะมิโนทั้งหมด) × 100\n= (${nd} / ${sa.length}) × 100 = ${(nd/sa.length*100).toFixed(2)} %`;
+      th='<b>หลักฐานทางชีววิทยาโมเลกุล:</b> สิ่งมีชีวิตที่มีบรรพบุรุษร่วมกันไม่นาน จะมีลำดับกรดอะมิโน/DNA คล้ายกันมาก · หลักฐานอื่น: <b>Homologous structures</b> (แขนคน ครีบวาฬ ปีกค้างคาว — กำเนิดเดียวกัน ทำหน้าที่ต่าง → Divergent evolution), <b>Analogous structures</b> (ปีกนก vs ปีกแมลง — กำเนิดต่าง หน้าที่เหมือน → Convergent evolution), ซากดึกดำบรรพ์ และคัพภะวิทยา (ตัวอ่อนสัตว์มีกระดูกสันหลังมีช่องเหงือกและหาง)';
+      an=`<p>${A} กับ ${B} ต่างกัน ${nd} ตำแหน่ง → ${nd<=2?'มีบรรพบุรุษร่วมกันเมื่อไม่นานนี้':'แยกสายวิวัฒนาการมานานแล้ว'}</p><p>Adaptive radiation: สัตว์เลี้ยงลูกด้วยน้ำนม (สุนัข ม้า ไพรเมต) แยกสายจากบรรพบุรุษร่วมกันเพื่อครองแหล่งที่อยู่หลากหลาย</p><p class="hint">* ลำดับของมนุษย์เป็นไซโทโครม c จริง ลำดับสปีชีส์อื่นจำลองให้มีจำนวนความแตกต่างใกล้เคียงข้อมูลจริง</p>`;
+      tb='<table><tr><th></th>'+SPP.map(s=>`<th>${s.slice(0,4)}</th>`).join('')+'</tr>'+SPP.map((a,i)=>`<tr><th>${a.slice(0,6)}</th>${SPP.map((b,j)=>`<td style="background:hsla(${120-DM[i][j]*2.4},60%,30%,${i===j?0:0.6})">${DM[i][j].toFixed(0)}</td>`).join('')}</tr>`).join('')+'</table><p class="hint">% ความแตกต่างของไซโทโครม c (คลิกชื่อบนผัง = เลือก A, Shift+คลิก = เลือก B)</p>';
+      mis='<p><b>❌ "สปีชีส์ที่อยู่ปลายกิ่งด้านบนวิวัฒนาการสูงกว่า"</b></p><p>✅ ทุกสปีชีส์ในปัจจุบันวิวัฒนาการมาเป็นเวลานานเท่ากันจากบรรพบุรุษร่วม ไม่มีสปีชีส์ใด "สูงกว่า" — ยีสต์ก็ปรับตัวเหมาะกับสิ่งแวดล้อมของมันเช่นกัน</p>';}
+    else{const hm=HOM[M4.hom];st=[['สปีชีส์',hm.n.split(' (')[0]],['ขนาดสมอง',hm.brain+' cc'],['การเดินสองขา',hm.bip>0.9?'เต็มรูปแบบ':hm.bip>0.5?'เดินสองขา (ยังปีนต้นไม้)':'เดินสี่ขา (Knuckle-walking)'],['ช่วงเวลา',hm.now?'ปัจจุบัน':hm.e+'–'+hm.s+' ล้านปี']];
+      eq='Primates → Hominids → Australopithecus afarensis → Homo habilis → Homo erectus → Homo sapiens\nแนวโน้ม: เดินสองขา → สมองใหญ่ขึ้น → ใช้เครื่องมือซับซ้อนขึ้น → ขากรรไกรเล็กลง หน้าแบนลง';
+      th='<b>วิวัฒนาการของมนุษย์:</b> สายวิวัฒนาการไม่ได้เป็นเส้นตรง แต่เป็น<b>พุ่มไม้ที่แตกกิ่ง</b> มี Hominins หลายสปีชีส์อยู่ร่วมยุคกัน (เช่น H. sapiens กับ Neanderthal) และส่วนใหญ่สูญพันธุ์ไป';
+      an=`<p><b>${hm.n}</b></p><p>${hm.note}</p><p>เครื่องมือ: ${hm.tool}</p>`;
+      tb='<table><tr><th>สปีชีส์</th><th>ล้านปีก่อน</th><th>สมอง</th><th>เครื่องมือ</th></tr>'+HOM.map(x=>`<tr><td style="text-align:left">${x.n.split(' (')[0]}</td><td>${x.now&&x.s===0?(x.e+'–ปัจจุบัน'):x.e+'–'+x.s}</td><td>${x.brain}</td><td style="text-align:left">${x.tool}</td></tr>`).join('')+'</table>';
+      mis='<p><b>❌ "มนุษย์วิวัฒนาการมาจากลิงชิมแปนซี"</b></p><p>✅ มนุษย์และชิมแปนซีมี<b>บรรพบุรุษร่วมกัน (Common Ancestor)</b> เมื่อ ~6–7 ล้านปีก่อน แล้วต่างฝ่ายต่างวิวัฒนาการแยกสายมา ชิมแปนซีในปัจจุบันไม่ใช่บรรพบุรุษของเรา</p><p><b>❌ "วิวัฒนาการมุ่งสู่มนุษย์ซึ่งสมบูรณ์แบบที่สุด"</b> ✅ วิวัฒนาการไม่มีเป้าหมายล่วงหน้า</p>';}}
+  $('#stats').innerHTML='';stats(st);$('#eq').textContent=eq;$('#theory').innerHTML=th;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;update(dt);const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();requestAnimationFrame(loop);}
+buildSeqs();initM1();initM2();initM3();setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

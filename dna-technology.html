@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เทคโนโลยีทางดีเอ็นเอ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0b1220;--panel:#121b2e;--panel2:#18233a;--line:#26344f;--txt:#e6edf7;--mut:#93a4c0;--acc:#4fd1c5;--acc2:#f6ad55;--bad:#fc8181;--good:#68d391;--blue:#63b3ed}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#0f2a3d,#1a1f3f);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}
+header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#134e4a;border-color:var(--acc)}
+.ctl{margin:9px 0}
+.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}
+.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#1f2d4a;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:#0f766e;border-color:#14b8a6}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;margin:6px 0;color:var(--txt)}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#7c3aed;color:#fff}
+canvas{display:block;width:100%}
+#main{height:460px;background:#050a14;border-radius:10px;cursor:crosshair}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}
+.stat .v{font-size:17px;font-weight:700;color:var(--acc2);margin-top:2px;word-break:break-word}
+.eq{font-family:Consolas,"Courier New",monospace;background:#0a1324;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+td,th{border:1px solid var(--line);padding:4px 6px;text-align:center}
+th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}
+.mis h3{color:var(--acc2)}
+.mis p{margin:6px 0;line-height:1.55}
+.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:230px;background:#070e1c;border-radius:8px}
+#fp{height:200px;background:#05070f;border-radius:8px;margin-top:8px}
+.case button{display:block;width:100%;margin:5px 0;padding:7px;text-align:left;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:12.5px}
+.case button.sel{border-color:var(--acc2)}
+.stagebar{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.stagebar span{flex:1;min-width:40px;text-align:center;font-size:11px;padding:4px 2px;border-radius:6px;background:var(--panel2);color:var(--mut);border:1px solid var(--line)}
+.stagebar span.on{background:#134e4a;color:#fff;border-color:var(--acc)}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header>
+  <a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a>
+  <h1>🧬 เทคโนโลยีทางดีเอ็นเอ (DNA Technology &amp; Genetic Engineering)</h1>
+  <span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span>
+</header>
+<div class="grid">
+<!-- ซ้าย -->
+<div class="left">
+  <div class="card modes">
+    <h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : ตัด-ต่อ DNA และสร้างพลาสมิดสายผสม</button>
+    <button data-mode="2">โหมด 2 : เครื่องจำลองปฏิกิริยา PCR</button>
+    <button data-mode="3">โหมด 3 : เจลอิเล็กโทรโฟรีซิสและลายพิมพ์ DNA</button>
+    <button data-mode="4">โหมด 4 : GMOs, ยีนบำบัด และชีวจริยธรรม</button>
+  </div>
+
+  <div class="card">
+    <h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>เอนไซม์ตัดยีนเป้าหมาย</label>
+        <select id="enzG"><option>EcoRI</option><option>BamHI</option><option>HindIII</option><option value="SmaI">SmaI (ปลายทู่ – เปรียบเทียบ)</option></select></div>
+      <div class="ctl"><label>เอนไซม์ตัดพลาสมิด (ตำแหน่ง MCS)</label>
+        <select id="enzP"><option>EcoRI</option><option>BamHI</option><option>HindIII</option><option value="SmaI">SmaI (ปลายทู่ – เปรียบเทียบ)</option></select></div>
+      <label class="chk"><input type="checkbox" id="amp" checked> จานเพาะเชื้อมียาแอมพิซิลลิน (Ampicillin)</label>
+      <label class="chk"><input type="checkbox" id="xgal" checked> มี X-gal + IPTG (Blue-White Screening)</label>
+      <div class="stagebar" id="stagebar"></div>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>จำนวนรอบ PCR เป้าหมาย <b id="cycV">25</b></label><input type="range" id="cyc" min="1" max="35" step="1" value="25"></div>
+      <div class="ctl"><label>จำนวนแม่แบบเริ่มต้น N₀ <b id="n0V">10</b></label><input type="range" id="n0" min="1" max="1000" step="1" value="10"></div>
+      <div class="ctl"><label>Denaturation (°C) <b id="tdV">95</b></label><input type="range" id="td" min="85" max="100" step="1" value="95"></div>
+      <div class="ctl"><label>Annealing (°C) <b id="taV">55</b></label><input type="range" id="ta" min="40" max="72" step="1" value="55"></div>
+      <div class="ctl"><label>Extension (°C) <b id="teV">72</b></label><input type="range" id="te" min="60" max="80" step="1" value="72"></div>
+      <div class="ctl"><label>ความเร็วแอนิเมชัน <b id="spV">1.0×</b></label><input type="range" id="sp" min="0.25" max="4" step="0.25" value="1"></div>
+      <label class="chk"><input type="checkbox" id="logScale" checked> กราฟแบบสเกล log</label>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>คดี / ตัวอย่าง DNA</label>
+        <select id="gcase"><option value="crime">คดีอาชญากรรม (หลักฐาน vs ผู้ต้องสงสัย)</option><option value="pat">พิสูจน์ความเป็นพ่อ-ลูก (Paternity)</option><option value="dig">ผลตัดพลาสมิด / ผลิตภัณฑ์ PCR</option></select></div>
+      <div class="ctl"><label>แรงดันไฟฟ้า <b id="vV">100 V</b></label><input type="range" id="volt" min="50" max="150" step="10" value="100"></div>
+      <div class="ctl"><label>ความเข้มข้น Agarose <b id="gcV">1.00 %</b></label><input type="range" id="gconc" min="0.5" max="2" step="0.25" value="1"></div>
+      <div class="ctl"><label>เวลาวิ่งเจล <b id="rtV">0 นาที</b></label><input type="range" id="rt" min="0" max="60" step="1" value="0"></div>
+      <div class="btns"><button class="btn" id="loadBtn">💧 โหลดตัวอย่างลงบ่อ</button><button class="btn" id="uvBtn">🔦 เปิดแสง UV</button></div>
+      <div class="btns"><button class="btn" id="newCase" style="grid-column:1/-1">🎲 สุ่มคดีใหม่</button></div>
+      <p class="hint">คลิกที่ช่องเจล (lane) เพื่อประมาณขนาดแถบจากกราฟมาตรฐาน</p>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>ผลิตภัณฑ์ / เทคโนโลยี</label>
+        <select id="prod"><option value="bt">ข้าวโพด Bt (ยีนต้านแมลง cry)</option><option value="gold">ข้าวสีทอง (Golden Rice)</option><option value="ins">อินซูลินมนุษย์จาก E. coli</option><option value="gt">ยีนบำบัดผ่านไวรัสตัวพา (AAV)</option><option value="crispr">CRISPR-Cas9 แก้ไขยีน</option></select></div>
+      <div class="ctl" id="refBox"><label>พื้นที่หลบภัย (Refuge) ปลูกพืชไม่ใช่ Bt <b id="refV">20 %</b></label><input type="range" id="refuge" min="0" max="50" step="5" value="20"></div>
+      <h3 style="margin-top:10px">มาตรการลดความเสี่ยง</h3>
+      <label class="chk"><input type="checkbox" class="mit" data-k="label"> ติดฉลาก GMO / ตรวจสอบย้อนกลับ</label>
+      <label class="chk"><input type="checkbox" class="mit" data-k="allergen"> ทดสอบสารก่อภูมิแพ้และความปลอดภัยอาหาร</label>
+      <label class="chk"><input type="checkbox" class="mit" data-k="contain"> ระยะกันชน/ป้องกันการผสมข้ามกับพืชพื้นเมือง</label>
+      <label class="chk"><input type="checkbox" class="mit" data-k="consent"> ความยินยอมโดยได้รับข้อมูล (Informed Consent)</label>
+      <label class="chk"><input type="checkbox" class="mit" data-k="privacy"> ปกป้องข้อมูลพันธุกรรม (เข้ารหัส/นิรนาม)</label>
+      <label class="chk"><input type="checkbox" class="mit" data-k="share"> แบ่งปันผลประโยชน์ / สิทธิบัตรแบบเปิด</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>การควบคุมการจำลอง</h3>
+    <div class="btns">
+      <button class="btn pri" id="play">▶ เริ่ม</button>
+      <button class="btn" id="pause">⏸ หยุดชั่วคราว</button>
+      <button class="btn" id="step">⏭ ทีละขั้น</button>
+      <button class="btn" id="reset">↺ รีเซ็ต</button>
+    </div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgEnds" class="on">ปลายเหนียว/ปลายทู่</button><button id="tgBp">ขนาดชิ้น DNA (bp)</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- กลาง -->
+<div class="center">
+  <div class="card">
+    <h3 id="simTitle">หน้าจอจำลอง</h3>
+    <canvas id="main"></canvas>
+    <div class="stats" id="stats"></div>
+    <div class="eq" id="eq"></div>
+  </div>
+</div>
+
+<!-- ขวา -->
+<div class="right">
+  <div class="card">
+    <h3 id="chartTitle">กราฟ</h3>
+    <canvas id="chart" class="chart"></canvas>
+    <canvas id="fp" data-m="3"></canvas>
+    <div id="tableBox" style="margin-top:8px"></div>
+  </div>
+  <div class="card ana">
+    <h3>📋 บทวิเคราะห์</h3>
+    <div id="analysis"></div>
+    <div id="caseBox" class="case" data-m="4"></div>
+  </div>
+  <div class="card mis">
+    <h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3>
+    <div id="mis"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function T(g,s,x,y,col='#e6edf7',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px "Sarabun","Leelawadee UI",Tahoma,sans-serif';g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sci(n){if(!isFinite(n))return'∞';if(Math.abs(n)<1e6)return Math.round(n).toLocaleString('th-TH');const e=Math.floor(Math.log10(n));const m=n/Math.pow(10,e);return m.toFixed(2)+'×10'+String(e).split('').map(c=>SUP[c]).join('');}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ---------------- STATE ---------------- */
+const ENZ={
+  EcoRI:{site:'GAATTC',cut:1,src:'Escherichia coli',end:'sticky'},
+  BamHI:{site:'GGATCC',cut:1,src:'Bacillus amyloliquefaciens',end:'sticky'},
+  HindIII:{site:'AAGCTT',cut:1,src:'Haemophilus influenzae',end:'sticky'},
+  SmaI:{site:'CCCGGG',cut:3,src:'Serratia marcescens',end:'blunt'}};
+const COMP={A:'T',T:'A',G:'C',C:'G'};
+const STAGES=['เตรียม DNA','ตัดด้วยเอนไซม์','ผสม/จับคู่ปลาย','DNA Ligase','Transformation','คัดเลือกโคโลนี'];
+const S={mode:1,running:false,toggle:'ends',time:0,
+  m1:{stage:0,prog:0,colonies:[],seed:7},
+  m2:{cycle:0,phase:0,pt:0,actual:10,hist:[],done:false},
+  m3:{loaded:0,uv:false,seed:11,sel:-1,data:null},
+  m4:{step:0,prog:0,gen:0,q:0.001,qHist:[],pest:1,caseIdx:0,choice:-1}};
+
+/* ---------------- UI wiring ---------------- */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function setMode(m){S.mode=m;S.running=false;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));
+  $$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');
+  $('#simTitle').textContent=['','โหมด 1 : ห้องปฏิบัติการตัด-ต่อ DNA และพลาสมิดสายผสม','โหมด 2 : เครื่องเพิ่มปริมาณ DNA (PCR Thermal Cycler)','โหมด 3 : ถาดเจลอิเล็กโทรโฟรีซิส & ลายพิมพ์ DNA','โหมด 4 : สถานีประยุกต์ใช้และชีวจริยธรรม'][m];
+  $('#chartTitle').textContent=['','ผลการคัดเลือกโคโลนี & ตารางเอนไซม์','กราฟการเพิ่มจำนวน DNA แบบ Exponential','กราฟมาตรฐาน (Standard Curve) & แผงเปรียบเทียบลายพิมพ์ DNA','การประเมินความเสี่ยงด้านชีวจริยธรรม'][m];
+  if(m===3&&!S.m3.data)newCase();
+  buildTable();buildCase();updateText();}
+const bindRange=(id,lab,fmt,cb)=>{const el=$('#'+id);const f=()=>{$('#'+lab).textContent=fmt(+el.value);cb&&cb();updateText();};el.addEventListener('input',f);f();};
+bindRange('cyc','cycV',v=>v);
+bindRange('n0','n0V',v=>v,()=>{if(S.m2.cycle===0){S.m2.actual=+$('#n0').value;}});
+bindRange('td','tdV',v=>v);bindRange('ta','taV',v=>v);bindRange('te','teV',v=>v);
+bindRange('sp','spV',v=>v.toFixed(2).replace(/0$/,'')+'×');
+bindRange('volt','vV',v=>v+' V');bindRange('gconc','gcV',v=>v.toFixed(2)+' %');
+bindRange('rt','rtV',v=>v+' นาที');
+bindRange('refuge','refV',v=>v+' %');
+['enzG','enzP'].forEach(id=>$('#'+id).onchange=()=>{resetM1();updateText();buildTable();});
+['amp','xgal'].forEach(id=>$('#'+id).onchange=()=>{if(S.m1.stage===5)makeColonies();updateText();});
+$('#gcase').onchange=()=>{newCase();};
+$('#newCase').onclick=()=>{S.m3.seed=(Math.random()*1e9)|0;newCase();};
+$('#loadBtn').onclick=()=>{S.m3.loaded=Math.max(S.m3.loaded,0.001);};
+$('#uvBtn').onclick=()=>{S.m3.uv=!S.m3.uv;$('#uvBtn').textContent=S.m3.uv?'💡 ปิดแสง UV':'🔦 เปิดแสง UV';updateText();};
+$('#prod').onchange=()=>{resetM4();buildCase();updateText();};
+$$('.mit').forEach(c=>c.onchange=updateText);
+$('#logScale').onchange=()=>{};
+$('#tgEnds').onclick=()=>{S.toggle='ends';$('#tgEnds').classList.add('on');$('#tgBp').classList.remove('on');};
+$('#tgBp').onclick=()=>{S.toggle='bp';$('#tgBp').classList.add('on');$('#tgEnds').classList.remove('on');};
+$('#play').onclick=()=>{S.running=true;if(S.mode===3&&!S.m3.loaded)S.m3.loaded=0.001;};
+$('#pause').onclick=()=>S.running=false;
+$('#step').onclick=()=>{S.running=false;stepOnce();updateText();};
+$('#reset').onclick=()=>{S.running=false;[null,resetM1,resetM2,resetM3,resetM4][S.mode]();updateText();};
+$('#main').addEventListener('click',e=>{if(S.mode!==3)return;const r=e.target.getBoundingClientRect();const x=e.clientX-r.left;const L=gelLayout(r.width,r.height);const i=Math.floor((x-L.gx)/L.lw);if(i>=0&&i<S.m3.data.lanes.length){S.m3.sel=i;updateText();}});
+
+/* ---------------- MODE 1 ---------------- */
+function compat(){const g=$('#enzG').value,p=$('#enzP').value;if(g===p)return true;if(ENZ[g].end==='blunt'&&ENZ[p].end==='blunt')return true;return false;}
+function resetM1(){S.m1.stage=0;S.m1.prog=0;S.m1.colonies=[];}
+function makeColonies(){const r=mulberry(S.m1.seed++);const c=compat();const blunt=ENZ[$('#enzG').value].end==='blunt';const amp=$('#amp').checked;
+  const n=55+Math.floor(r()*35);const recFrac=c?(blunt?0.3:0.72):0;const arr=[];
+  for(let i=0;i<n;i++){const a=r()*Math.PI*2,d=Math.sqrt(r())*0.9;arr.push({a,d,type:r()<recFrac?'white':'blue',sz:0.6+r()*0.6,delay:r()*0.5});}
+  if(!amp){for(let i=0;i<260;i++){const a=r()*Math.PI*2,d=Math.sqrt(r())*0.93;arr.push({a,d,type:'un',sz:0.4+r()*0.4,delay:r()*0.5});}}
+  S.m1.colonies=arr;}
+function m1Stats(){const col=S.m1.colonies;const tr=col.filter(c=>c.type!=='un');const w=tr.filter(c=>c.type==='white').length,b=tr.length-w,un=col.length-tr.length;return{w,b,un,total:col.length,tr:tr.length,pct:tr.length/1e5*100};}
+
+/* ---------------- MODE 2 ---------------- */
+const NMAX=2e10;
+function resetM2(){const m=S.m2;m.cycle=0;m.phase=0;m.pt=0;m.actual=+$('#n0').value;m.hist=[{c:0,ideal:m.actual,actual:m.actual}];m.done=false;}
+function pcrEff(){const tD=+$('#td').value,tA=+$('#ta').value,tE=+$('#te').value;
+  const eD=tD>=94?1:tD>=90?(tD-88)/6:0.04;
+  let eA,ns=false;if(tA>68)eA=0.02;else if(tA>65)eA=1-(tA-65)/3*0.95;else if(tA>=50)eA=1;else{eA=0.75;ns=true;}
+  const eE=Math.exp(-((tE-72)**2)/(2*7*7));
+  return{e:eD*eA*eE,eD,eA,eE,ns};}
+function pcrCycle(){const m=S.m2;const N0=+$('#n0').value;const ef=pcrEff();const taq=Math.pow(0.99,m.cycle);
+  const E=ef.e*taq*Math.max(0,1-m.actual/NMAX);m.actual=m.actual*(1+E);m.cycle++;
+  m.hist.push({c:m.cycle,ideal:N0*Math.pow(2,m.cycle),actual:m.actual});
+  if(m.cycle>=+$('#cyc').value){m.done=true;S.running=false;}}
+const PHASES=[{n:'Denaturation',id:'td',col:'#fc8181'},{n:'Annealing',id:'ta',col:'#63b3ed'},{n:'Extension',id:'te',col:'#68d391'}];
+
+/* ---------------- MODE 3 ---------------- */
+const LADDER=[100,200,300,400,500,600,800,1000,1500,2000,3000,5000];
+const LOCI=[{name:'STR-1 (D3S1358*)',base:150,unit:25,rmin:2,rmax:8},{name:'STR-2 (vWA*)',base:420,unit:25,rmin:2,rmax:8},{name:'STR-3 (FGA*)',base:900,unit:60,rmin:2,rmax:9}];
+function resetM3(){S.m3.loaded=0;$('#rt').value=0;$('#rtV').textContent='0 นาที';S.m3.sel=-1;}
+function newCase(){const r=mulberry(S.m3.seed);const cs=$('#gcase').value;
+  const freqs=LOCI.map(L=>{const n=L.rmax-L.rmin+1;let a=[];for(let i=0;i<n;i++)a.push(0.3+r()*1.4);const s=a.reduce((x,y)=>x+y,0);return a.map(v=>v/s);});
+  const draw=li=>{const f=freqs[li];let u=r(),i=0;while(i<f.length-1&&u>f[i]){u-=f[i];i++;}return LOCI[li].rmin+i;};
+  const person=()=>LOCI.map((L,li)=>[draw(li),draw(li)].sort((a,b)=>a-b));
+  const bands=p=>p.flatMap((g,li)=>[...new Set(g)].map(rp=>LOCI[li].base+LOCI[li].unit*rp));
+  let lanes=[],meta={cs,freqs};
+  if(cs==='crime'){const sus=[person(),person(),person()];const cul=Math.floor(r()*3);const vic=person();
+    meta.profiles={ev:sus[cul],sus,vic};meta.cul=cul;
+    lanes=[{name:'Ladder',bands:LADDER,ladder:true},{name:'หลักฐาน',bands:bands(sus[cul]),col:'#f6ad55'},{name:'ผู้ต้องสงสัย 1',bands:bands(sus[0])},{name:'ผู้ต้องสงสัย 2',bands:bands(sus[1])},{name:'ผู้ต้องสงสัย 3',bands:bands(sus[2])},{name:'ผู้เสียหาย',bands:bands(vic)}];}
+  else if(cs==='pat'){const mom=person(),fa=person(),fb=person();const tf=r()<0.5?0:1;const real=[fa,fb][tf];
+    const child=LOCI.map((L,li)=>[mom[li][Math.floor(r()*2)],real[li][Math.floor(r()*2)]].sort((a,b)=>a-b));
+    meta.profiles={mom,child,fa,fb};meta.tf=tf;
+    lanes=[{name:'Ladder',bands:LADDER,ladder:true},{name:'แม่',bands:bands(mom)},{name:'ลูก',bands:bands(child),col:'#f6ad55'},{name:'ชาย A',bands:bands(fa)},{name:'ชาย B',bands:bands(fb)}];}
+  else{lanes=[{name:'Ladder',bands:LADDER,ladder:true},{name:'pUC19 ตัด EcoRI',bands:[2686]},{name:'สายผสม ตัด EcoRI',bands:[2686,1500],col:'#f6ad55'},{name:'สายผสม ตัด HindIII',bands:[3786,400]},{name:'PCR product',bands:[520]},{name:'ไม่มี DNA (control)',bands:[]}];}
+  S.m3.data={lanes,meta};S.m3.sel=-1;resetM3();buildTable();updateText();}
+function dist(bp){const V=+$('#volt').value,c=+$('#gconc').value,t=+$('#rt').value;
+  const mob=Math.max(0.05,5-1.15*Math.log10(bp))/Math.pow(c,0.85);return mob*V*t*6.48e-4;}
+function gelLayout(w,h){const gx=60,gy=58,gw=w-120,gh=h-110;const n=S.m3.data?S.m3.data.lanes.length:6;return{gx,gy,gw,gh,lw:gw/n,pxcm:(gh-30)/8};}
+function stdCurve(){const pts=LADDER.map(bp=>({d:dist(bp),y:Math.log10(bp)})).filter(p=>p.d>0.05&&p.d<8);if(pts.length<2)return null;
+  const n=pts.length,sx=pts.reduce((a,p)=>a+p.d,0),sy=pts.reduce((a,p)=>a+p.y,0),sxx=pts.reduce((a,p)=>a+p.d*p.d,0),sxy=pts.reduce((a,p)=>a+p.d*p.y,0);
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=(sy-b*sx)/n;const my=sy/n;const ssT=pts.reduce((s,p)=>s+(p.y-my)**2,0),ssR=pts.reduce((s,p)=>s+(p.y-(a+b*p.d))**2,0);return{a,b,pts,r2:1-ssR/ssT};}
+function locusP(g,li){const f=S.m3.data.meta.freqs[li],L=LOCI[li];const pi=f[g[0]-L.rmin],pj=f[g[1]-L.rmin];return g[0]===g[1]?{P:pi*pi,hom:true,pi,pj}:{P:2*pi*pj,hom:false,pi,pj};}
+function resolved(){return +$('#rt').value>=20&&S.m3.loaded>=1;}
+
+/* ---------------- MODE 4 ---------------- */
+const PROD={
+ bt:{name:'ข้าวโพด Bt',steps:['แยกยีน cry จาก Bacillus thuringiensis','ใส่ยีนใน Ti plasmid ของ Agrobacterium','ถ่ายยีนเข้าเซลล์พืช (Agrobacterium/ปืนยิงยีน)','คัดเลือกเซลล์ด้วยยีนเครื่องหมาย','เพาะเลี้ยงเนื้อเยื่อ → ต้นพืช GMO','พืชสร้างโปรตีน Bt ฆ่าหนอนเจาะลำต้น'],eff:4.5,risk:{eco:70,bio:60,health:30,priv:5,eco2:55}},
+ gold:{name:'ข้าวสีทอง',steps:['แยกยีน psy (ข้าวโพด) และ crtI (แบคทีเรีย)','ต่อเข้ากับ promoter เฉพาะเอนโดสเปิร์ม','ถ่ายยีนด้วย Agrobacterium','คัดเลือกต้นที่แสดงออก','เมล็ดสร้างเบต้าแคโรทีน (สีเหลืองทอง)','ร่างกายเปลี่ยนเป็นวิตามิน A'],eff:8,risk:{eco:40,bio:45,health:25,priv:5,eco2:50}},
+ ins:{name:'อินซูลินมนุษย์',steps:['ได้ cDNA ยีนอินซูลินด้วย reverse transcriptase','ตัดยีนและพลาสมิดด้วยเอนไซม์ชนิดเดียวกัน','เชื่อมด้วย DNA ligase','Transformation เข้า E. coli','เลี้ยงในถังหมัก (Fermenter)','สกัด ทำบริสุทธิ์ อินซูลิน'],eff:0.1,risk:{eco:10,bio:5,health:15,priv:5,eco2:30}},
+ gt:{name:'ยีนบำบัด (AAV)',steps:['ระบุยีนบกพร่องของผู้ป่วย','ใส่ยีนปกติในไวรัสที่ถูกทำให้ไม่ก่อโรค','ฉีดไวรัสตัวพาเข้าสู่ร่างกาย/เซลล์','ไวรัสส่งยีนปกติเข้าเซลล์เป้าหมาย','เซลล์สร้างโปรตีนที่ทำงานได้','ติดตามผลข้างเคียงระยะยาว'],eff:40,risk:{eco:5,bio:5,health:60,priv:55,eco2:70}},
+ crispr:{name:'CRISPR-Cas9',steps:['ออกแบบ guide RNA ให้ตรงกับยีนเป้าหมาย','Cas9 + gRNA ค้นหาลำดับเบส (ติด PAM)','Cas9 ตัด DNA สองสาย','เซลล์ซ่อมแซม (NHEJ / HDR)','ยีนถูกปิด/แก้ไขลำดับ','ตรวจ off-target'],eff:60,risk:{eco:30,bio:30,health:55,priv:50,eco2:60}}};
+const RISKLAB={eco:'ผลกระทบระบบนิเวศ',bio:'ความหลากหลายทางชีวภาพ',health:'สุขภาพมนุษย์',priv:'ข้อมูลพันธุกรรมส่วนบุคคล',eco2:'สิทธิบัตร/ความเป็นธรรมทางเศรษฐกิจ'};
+const MITEFF={label:{health:-8,eco2:-5},allergen:{health:-15},contain:{eco:-18,bio:-20},consent:{priv:-20,health:-8},privacy:{priv:-25},share:{eco2:-25}};
+const CASES=[
+ {t:'บริษัทตรวจ DNA ออนไลน์ขายข้อมูลลูกค้าให้บริษัทประกัน',q:'ท่าทีที่เหมาะสมที่สุดคือข้อใด?',o:[['ยอมรับได้ เพราะลูกค้าส่งตัวอย่างเอง',0,'ข้อมูล DNA บอกความเสี่ยงโรคของทั้งครอบครัว ไม่ใช่เฉพาะผู้ส่ง การขายโดยไม่ได้รับความยินยอมชัดเจนละเมิดความเป็นส่วนตัว และอาจนำไปสู่การเลือกปฏิบัติทางพันธุกรรม'],['ต้องได้รับความยินยอมชัดเจน ข้อมูลนิรนาม และมีกฎหมายห้ามเลือกปฏิบัติ',2,'ถูกต้อง — หลัก Informed Consent, การปกป้องข้อมูล และกฎหมายต่อต้านการเลือกปฏิบัติทางพันธุกรรม (เช่น GINA ในสหรัฐฯ) ช่วยถ่วงดุลประโยชน์และความเสี่ยง'],['ห้ามตรวจ DNA ทุกกรณี',1,'การตรวจ DNA มีประโยชน์ทางการแพทย์มาก ควรควบคุมการใช้ข้อมูลมากกว่าห้ามทั้งหมด']]},
+ {t:'บริษัทจดสิทธิบัตรยีน BRCA1 ทำให้ค่าตรวจมะเร็งเต้านมแพง',q:'ประเด็นใดสำคัญที่สุด?',o:[['ยีนตามธรรมชาติไม่ควรจดสิทธิบัตรได้ แต่เทคนิค/สิ่งประดิษฐ์จดได้',2,'สอดคล้องกับคำตัดสินศาลสูงสหรัฐฯ ปี 2013 (AMP v. Myriad) ว่าลำดับ DNA ที่แยกจากธรรมชาติจดสิทธิบัตรไม่ได้ แต่ cDNA ที่สังเคราะห์ขึ้นจดได้'],['บริษัทลงทุนวิจัยจึงควรผูกขาดยีนนั้นตลอดไป',0,'สิทธิบัตรมีอายุจำกัดและไม่ควรครอบคลุมสิ่งที่มีอยู่ในธรรมชาติ การผูกขาดทำให้ผู้ป่วยเข้าถึงการตรวจได้ยาก'],['ไม่ควรมีสิทธิบัตรใด ๆ ทางชีวภาพ',1,'สิทธิบัตรช่วยจูงใจการพัฒนายาและเทคโนโลยี ประเด็นคือขอบเขตที่เหมาะสม']]},
+ {t:'ปลูกข้าวโพด Bt ติดกับแหล่งข้าวโพดพันธุ์พื้นเมือง',q:'แนวทางจัดการความเสี่ยงที่ดีที่สุดคือ?',o:[['ปลูกได้เลย เพราะโปรตีน Bt ไม่เป็นพิษต่อคน',0,'แม้ปลอดภัยต่อคน แต่ยังมีความเสี่ยงการไหลของยีน (gene flow) ไปยังพันธุ์พื้นเมือง และแมลงดื้อ Bt'],['มีระยะกันชน พื้นที่หลบภัย (refuge) และติดตามการไหลของยีน',2,'ถูกต้อง — refuge ชะลอวิวัฒนาการการดื้อ Bt ส่วนระยะกันชนลดการผสมข้าม เป็นหลัก Biosafety'],['ห้ามพืช GMO ทุกชนิดโดยไม่ต้องประเมิน',1,'การตัดสินควรอิงการประเมินความเสี่ยงทางวิทยาศาสตร์เป็นรายกรณี']]},
+ {t:'นักวิทยาศาสตร์ใช้ CRISPR แก้ยีนในตัวอ่อนมนุษย์ (germline) เพื่อต้านเชื้อ HIV',q:'ข้อใดสะท้อนประเด็นชีวจริยธรรมได้ดีที่สุด?',o:[['การแก้ไข germline ถ่ายทอดสู่รุ่นลูกหลานซึ่งไม่ได้ให้ความยินยอม และเสี่ยง off-target',2,'ถูกต้อง — กรณีปี 2018 ถูกประณามทั่วโลก การแก้ไขเซลล์ร่างกาย (somatic) ยอมรับได้มากกว่าเพราะไม่ถ่ายทอด'],['ถ้าป้องกันโรคได้ ทำได้ทันที',0,'ยังมีความเสี่ยงที่ไม่ทราบผล ความยินยอมของคนรุ่นหลัง และความเท่าเทียมในการเข้าถึง'],['CRISPR ไม่ควรใช้ในงานวิจัยใด ๆ',1,'CRISPR มีประโยชน์มากในการวิจัยและรักษาแบบ somatic (เช่น โรคเลือดจางซิกเคิลเซลล์)']]}];
+function resetM4(){const m=S.m4;m.step=0;m.prog=0;m.gen=0;m.q=0.001;m.qHist=[0.001];m.pest=1;}
+function btGen(){const m=S.m4;const ref=+$('#refuge').value/100;const q=m.q,p=1-q;
+  const wBt={SS:0.03,RS:0.06,RR:1};const w=k=>ref*1+(1-ref)*wBt[k];
+  const wbar=p*p*w('SS')+2*p*q*w('RS')+q*q*w('RR');m.q=(q*q*w('RR')+p*q*w('RS'))/wbar;m.pest=clamp(wbar,0.02,1);m.gen++;m.qHist.push(m.q);}
+function riskScores(){const base={...PROD[$('#prod').value].risk};$$('.mit').forEach(c=>{if(c.checked){const e=MITEFF[c.dataset.k];for(const k in e)base[k]=Math.max(0,base[k]+e[k]);}});
+  if($('#prod').value==='bt'){const ref=+$('#refuge').value;base.eco=clamp(base.eco-ref*0.6,0,100);}return base;}
+
+/* ---------------- STEP / UPDATE ---------------- */
+function stepOnce(){const m=S.mode;
+  if(m===1){const s=S.m1;if(s.stage<5){s.stage++;s.prog=0;if(s.stage===5)makeColonies();}else s.prog=1;}
+  else if(m===2){const s=S.m2;if(s.done)return;s.phase++;s.pt=0;if(s.phase>2){s.phase=0;pcrCycle();}}
+  else if(m===3){if(!S.m3.loaded)S.m3.loaded=1;const v=Math.min(60,+$('#rt').value+5);$('#rt').value=v;$('#rtV').textContent=v+' นาที';}
+  else{const s=S.m4;s.step=Math.min(5,s.step+1);s.prog=0;if($('#prod').value==='bt')btGen();}}
+let acc4=0,accTxt=0;
+function update(dt){S.time+=dt;
+  if(S.mode===3&&S.m3.loaded>0&&S.m3.loaded<1)S.m3.loaded=Math.min(1,S.m3.loaded+dt*0.8);
+  if(S.mode===1)S.m1.prog=Math.min(1,S.m1.prog+dt*(S.running?0.45:0.9));
+  if(S.mode===4)S.m4.prog=Math.min(1,S.m4.prog+dt*0.6);
+  if(!S.running)return;
+  if(S.mode===1){const s=S.m1;if(s.prog>=1){if(s.stage<5){s.stage++;s.prog=0;if(s.stage===5)makeColonies();}else S.running=false;}}
+  else if(S.mode===2){const s=S.m2;if(s.done){S.running=false;return;}s.pt+=dt*(+$('#sp').value)/1.1;if(s.pt>=1){s.pt=0;s.phase++;if(s.phase>2){s.phase=0;pcrCycle();}}}
+  else if(S.mode===3){if(S.m3.loaded>=1){let v=+$('#rt').value+dt*4;if(v>=60){v=60;S.running=false;}$('#rt').value=v;$('#rtV').textContent=Math.floor(v)+' นาที';}}
+  else if(S.mode===4){acc4+=dt;if(acc4>0.45){acc4=0;if($('#prod').value==='bt'&&S.m4.gen<60)btGen();if(S.m4.prog>=1&&S.m4.step<5){S.m4.step++;S.m4.prog=0;}}}
+  accTxt+=dt;if(accTxt>0.25){accTxt=0;updateText();}}
+
+/* ---------------- DRAW: MODE 1 ---------------- */
+function drawM1(g,w,h){const s=S.m1;const eg=$('#enzG').value,ep=$('#enzP').value;const E=ENZ[eg];
+  const fl='TACG',gene='ATGGTTCAGCTA',fr='CGTA';const seq=fl+E.site+gene+E.site+fr;const L=seq.length;
+  const cw=Math.min(20,(w-90)/L);const x0=(w-cw*L)/2;const y0=56,y1=y0+26;
+  const c1=4+E.cut,c2=4+6+12+E.cut,b1=4+(6-E.cut),b2=22+(6-E.cut);
+  const segT=i=>i<c1?0:i<c2?1:2,segB=i=>i<b1?0:i<b2?1:2;
+  const cutP=s.stage>=1?(s.stage===1?Math.min(1,s.prog*1.6):1):0;const gap=16*cutP;
+  const midFade=s.stage>=2?(s.stage===2?1-s.prog:0):1;
+  const off=seg=>seg===0?-gap:seg===2?gap:0;
+  T(g,'ยีนเป้าหมาย (DNA ผู้ให้) ถูกขนาบด้วยตำแหน่งจดจำของ '+eg,w/2,22,'#93a4c0',13,'center');
+  for(let i=0;i<L;i++){const st=segT(i),sb=segB(i);
+    const aT=st===1?midFade:1,aB=sb===1?midFade:1;const xt=x0+i*cw+off(st),xb=x0+i*cw+off(sb);
+    const inSite=(i>=4&&i<10)||(i>=22&&i<28);const ss=cutP>0.5&&st!==sb;
+    const colT=ss&&S.toggle==='ends'?'#f6ad55':inSite?'#4fd1c5':'#cbd5e1';
+    g.globalAlpha=aT;rr(g,xt+1,y0-10,cw-2,20,4);g.fillStyle=ss&&S.toggle==='ends'?'#7c2d12':inSite?'#134e4a':'#1e293b';g.fill();T(g,seq[i],xt+cw/2,y0,colT,Math.min(13,cw*0.7),'center',true);
+    g.globalAlpha=aB;rr(g,xb+1,y1-10,cw-2,20,4);g.fillStyle=ss&&S.toggle==='ends'?'#7c2d12':inSite?'#134e4a':'#1e293b';g.fill();T(g,COMP[seq[i]],xb+cw/2,y1,colT,Math.min(13,cw*0.7),'center',true);
+    if(st===sb){g.globalAlpha=Math.min(aT,aB)*0.6;g.strokeStyle='#64748b';g.beginPath();g.moveTo(xt+cw/2,y0+10);g.lineTo(xt+cw/2,y1-10);g.stroke();}
+    g.globalAlpha=1;}
+  T(g,"5'",x0-gap-16,y0,'#93a4c0',12,'center');T(g,"3'",x0+L*cw+gap+16,y0,'#93a4c0',12,'center');
+  T(g,"3'",x0-gap-16,y1,'#93a4c0',12,'center');T(g,"5'",x0+L*cw+gap+16,y1,'#93a4c0',12,'center');
+  if(midFade>0.5)T(g,'←─── ยีนเป้าหมาย ───→',x0+16*cw,y1+24,'#f6ad55',12,'center');
+  if(s.stage===1&&s.prog<0.7){[4,22].forEach(p=>{const cx=x0+(p+3)*cw;const a=0.5+0.5*Math.sin(S.time*10);g.fillStyle=`rgba(167,139,250,${0.35+0.2*a})`;g.beginPath();g.ellipse(cx,(y0+y1)/2,cw*3.6,28,0,0,Math.PI*2);g.fill();T(g,'✂ '+eg,cx,y0-26,'#c4b5fd',12,'center',true);});}
+  if(s.stage>=1&&S.toggle==='ends'){const sticky=E.end==='sticky';T(g,sticky?'ปลายเหนียว (Sticky end) : 5\' ยื่น '+E.site.slice(E.cut,6-E.cut):'ปลายทู่ (Blunt end) : ตัดตรงกลาง ไม่มีเบสยื่น',w/2,y1+44,sticky?'#f6ad55':'#93c5fd',12.5,'center',true);}
+  if(S.toggle==='bp'&&s.stage>=1)T(g,'ชิ้นยีน ≈ 1,500 bp   |   pUC19 = 2,686 bp   |   สายผสม ≈ 4,186 bp',w/2,y1+44,'#93c5fd',12.5,'center',true);
+  // plasmid
+  const cx=w*0.27,cy=h*0.66,R=Math.min(90,h*0.2);const ok=compat();
+  const open=s.stage>=1?(s.stage===1?cutP:1):0;
+  let ins=0;if(ok&&s.stage>=2)ins=s.stage===2?s.prog:1;
+  const selfLig=!ok&&s.stage>=3;
+  const top=-Math.PI/2;const gapA=selfLig?0:0.14*open*(1-ins)+0.0;const insA=0.55*ins;
+  g.lineWidth=11;g.lineCap='butt';
+  const arc=(a0,a1,col)=>{g.strokeStyle=col;g.beginPath();g.arc(cx,cy,R,a0,a1);g.stroke();};
+  const sh=insA/2+gapA;
+  arc(top+sh,top+Math.PI*2-sh,'#334155');
+  arc(top+sh,top+sh+0.55,'#3b82f6');arc(top-sh-0.55,top-sh,'#3b82f6');
+  arc(top+1.6,top+2.6,'#22c55e');arc(top+3.3,top+4.0,'#a855f7');
+  if(ins>0){arc(top-insA/2,top+insA/2,'#f97316');}
+  T(g,'lacZα',cx+R*1.32*Math.cos(top+0.75),cy+R*1.32*Math.sin(top+0.75),'#93c5fd',11,'center');
+  T(g,'ampᴿ',cx+R*1.35*Math.cos(top+2.1),cy+R*1.35*Math.sin(top+2.1),'#86efac',12,'center',true);
+  T(g,'ori',cx+R*1.3*Math.cos(top+3.65),cy+R*1.3*Math.sin(top+3.65),'#d8b4fe',12,'center',true);
+  T(g,'MCS: '+ep,cx,cy-R-22,'#4fd1c5',12,'center',true);
+  if(S.toggle==='bp')T(g,ins>0.5?'4,186 bp':'2,686 bp',cx,cy+4,'#e2e8f0',14,'center',true);else T(g,ins>0.5?'พลาสมิดสายผสม':'พลาสมิด pUC',cx,cy+4,'#e2e8f0',12.5,'center',true);
+  if(s.stage===2&&!ok){const bx=cx,by=cy-R-60+Math.sin(S.time*6)*4;g.strokeStyle='#f97316';g.lineWidth=8;g.beginPath();g.moveTo(bx-35,by);g.lineTo(bx+35,by);g.stroke();T(g,'✕ ปลายไม่เข้าคู่กัน',bx,by-16,'#fc8181',12,'center',true);}
+  if(s.stage===2&&ok&&s.prog<1){const t=s.prog;const sx=w/2,sy=y1+60;const bx=lerp(sx,cx,t),by=lerp(sy,cy-R,t);g.strokeStyle='#f97316';g.lineWidth=8;g.beginPath();g.moveTo(bx-30*(1-t),by);g.lineTo(bx+30*(1-t),by);g.stroke();}
+  if(s.stage===3){const a=0.5+0.5*Math.sin(S.time*12);const js=ok?[top-insA/2,top+insA/2]:[top];js.forEach(j=>{const px=cx+R*Math.cos(j),py=cy+R*Math.sin(j);g.fillStyle=`rgba(250,204,21,${a})`;g.beginPath();g.arc(px,py,9,0,Math.PI*2);g.fill();});
+    T(g,'DNA ligase เชื่อมพันธะฟอสโฟไดเอสเทอร์',cx,cy+R+26,'#facc15',12,'center',true);
+    if(!ok)T(g,'(พลาสมิดต่อกลับเอง – ไม่มียีนแทรก)',cx,cy+R+44,'#fc8181',11.5,'center');}
+  // right side
+  const rx=w*0.72,ry=cy;
+  if(s.stage===4){g.fillStyle='#1e3a2f';g.strokeStyle='#4ade80';g.lineWidth=2;rr(g,rx-110,ry-45,220,90,45);g.fill();g.stroke();
+    T(g,'E. coli (เซลล์เจ้าบ้าน)',rx,ry-60,'#86efac',12.5,'center',true);
+    g.strokeStyle='#94a3b8';g.lineWidth=1;g.beginPath();for(let i=0;i<40;i++){const a=i/40*Math.PI*2;const r2=18+6*Math.sin(i*3+S.time);g.lineTo(rx-30+r2*Math.cos(a),ry+r2*Math.sin(a)*0.6);}g.closePath();g.stroke();T(g,'โครโมโซม',rx-30,ry,'#94a3b8',10,'center');
+    for(let k=0;k<4;k++){const t=clamp(s.prog*1.4-k*0.15,0,1);const px=lerp(cx+R+20,rx+30+k*14-20,t),py=lerp(cy-20+k*14,ry-15+k*10,t);g.strokeStyle=ok?'#f97316':'#3b82f6';g.lineWidth=3;g.beginPath();g.arc(px,py,7,0,Math.PI*2);g.stroke();}
+    T(g,'Heat shock 42°C + CaCl₂ ทำให้เยื่อหุ้มเซลล์ยอมให้พลาสมิดผ่าน',rx,ry+68,'#cbd5e1',11.5,'center');}
+  if(s.stage===5){const D=Math.min(130,h*0.3);g.fillStyle=$('#amp').checked?'#3f3a1e':'#2d2a1a';g.beginPath();g.arc(rx,ry,D,0,Math.PI*2);g.fill();g.strokeStyle='#cbd5e1';g.lineWidth=3;g.stroke();
+    const grow=s.prog;s.colonies.forEach(c=>{const k=clamp((grow-c.delay)*2.2,0,1);if(k<=0)return;const px=rx+Math.cos(c.a)*c.d*D,py=ry+Math.sin(c.a)*c.d*D;const xg=$('#xgal').checked;
+      g.fillStyle=!xg?'#fef3c7':c.type==='blue'?'#2563eb':'#f8fafc';g.beginPath();g.arc(px,py,(c.type==='un'?2.5:4.5)*c.sz*k+0.5,0,Math.PI*2);g.fill();});
+    T(g,'จานเพาะเชื้อ: '+($('#amp').checked?'LB + Ampicillin':'LB (ไม่มียา)')+($('#xgal').checked?' + X-gal':''),rx,ry-D-16,'#fde68a',12,'center',true);
+    if($('#xgal').checked){g.fillStyle='#2563eb';g.beginPath();g.arc(rx-80,ry+D+18,5,0,7);g.fill();T(g,'น้ำเงิน = lacZα ทำงาน (ไม่มียีนแทรก)',rx-70,ry+D+18,'#93c5fd',11);
+      g.fillStyle='#f8fafc';g.beginPath();g.arc(rx-80,ry+D+36,5,0,7);g.fill();T(g,'ขาว = lacZα ถูกยีนแทรกขัด (สายผสม)',rx-70,ry+D+36,'#e2e8f0',11);}}
+  if(s.stage<4){T(g,'ขั้นที่ '+(s.stage+1)+' / 6 : '+STAGES[s.stage],rx,ry,'#e2e8f0',15,'center',true);T(g,'กด ▶ เริ่ม หรือ ⏭ ทีละขั้น',rx,ry+24,'#93a4c0',12,'center');}
+  $('#stagebar').innerHTML=STAGES.map((n,i)=>`<span class="${i===s.stage?'on':''}">${i+1}. ${n}</span>`).join('');}
+
+/* ---------------- DRAW: MODE 2 ---------------- */
+function drawM2(g,w,h){const s=S.m2;const ph=PHASES[s.phase];const tgt=+$('#'+ph.id).value;const prev=+$('#'+PHASES[(s.phase+2)%3].id).value;
+  const temp=s.cycle===0&&s.phase===0&&s.pt===0&&!S.running?25:lerp(prev,tgt,clamp(s.pt*4,0,1));
+  // thermal cycler
+  const bx=24,by=40,bw=170,bh=h-80;rr(g,bx,by,bw,bh,14);g.fillStyle='#1e293b';g.fill();g.strokeStyle='#334155';g.stroke();
+  T(g,'Thermal Cycler',bx+bw/2,by+18,'#93a4c0',12,'center',true);
+  rr(g,bx+20,by+36,bw-40,44,8);g.fillStyle='#020617';g.fill();T(g,temp.toFixed(1)+' °C',bx+bw/2,by+58,ph.col,24,'center',true);
+  T(g,'รอบที่ '+s.cycle+' / '+$('#cyc').value,bx+bw/2,by+98,'#e2e8f0',14,'center',true);
+  T(g,ph.n,bx+bw/2,by+120,ph.col,14,'center',true);
+  // tube
+  const tx=bx+bw/2,ty=by+150;g.fillStyle='rgba(148,163,184,0.25)';g.beginPath();g.moveTo(tx-26,ty);g.lineTo(tx+26,ty);g.lineTo(tx+20,ty+120);g.lineTo(tx,ty+160);g.lineTo(tx-20,ty+120);g.closePath();g.fill();g.strokeStyle='#cbd5e1';g.stroke();
+  const heat=clamp((temp-25)/75,0,1);g.fillStyle=`rgba(${Math.round(80+175*heat)},${Math.round(160-60*heat)},${Math.round(230-150*heat)},0.55)`;g.beginPath();g.moveTo(tx-23,ty+50);g.lineTo(tx+23,ty+50);g.lineTo(tx+19,ty+120);g.lineTo(tx,ty+156);g.lineTo(tx-19,ty+120);g.closePath();g.fill();
+  const dots=Math.min(160,Math.round(Math.log2(s.actual/(+$('#n0').value)+1)*5+2));const r=mulberry(3);for(let i=0;i<dots;i++){const yy=ty+56+r()*90,half=yy<ty+120?20:20*(1-(yy-ty-120)/36);const xx=tx+(r()*2-1)*Math.max(2,half-3);g.fillStyle='#f6ad55';g.fillRect(xx,yy+Math.sin(S.time*3+i)*1.5,2,2);}
+  T(g,'โมเลกุล DNA',tx,ty+176,'#93a4c0',11,'center');
+  // temp trace
+  const gx=bx+bw+30,gw=w-gx-20,gy=30,gh=70;rr(g,gx,gy,gw,gh,8);g.fillStyle='#0b1324';g.fill();
+  const tTrace=k=>{const pi=Math.floor(k)%3,f=k-Math.floor(k);const a=+$('#'+PHASES[(pi+2)%3].id).value,b=+$('#'+PHASES[pi].id).value;return lerp(a,b,clamp(f*4,0,1));};
+  g.strokeStyle='#f87171';g.lineWidth=2;g.beginPath();const now=s.phase+s.pt;for(let i=0;i<=200;i++){const k=now-6+i/200*6;if(k<0)continue;const tt=tTrace(k+3);const X=gx+i/200*gw,Y=gy+gh-8-(tt-40)/60*(gh-16);i?g.lineTo(X,Y):g.moveTo(X,Y);}g.stroke();
+  T(g,'อุณหภูมิ (2 รอบล่าสุด)',gx+8,gy+10,'#93a4c0',10.5);
+  [95,72,55].forEach(v=>{const Y=gy+gh-8-(v-40)/60*(gh-16);T(g,v+'°',gx+gw-6,Y,'#64748b',10,'right');});
+  // molecular view
+  const mx=gx,mw=gw,my=gy+gh+30,mh=h-my-30;rr(g,mx,my,mw,mh,10);g.fillStyle='#070d1a';g.fill();
+  const sx=mx+40,ex=mx+mw-40,len=ex-sx;const midY=my+mh/2;
+  let sep;if(s.phase===0)sep=clamp(s.pt*1.5,0,1);else sep=1;
+  const ef=pcrEff();if(s.phase===0&&ef.eD<0.5)sep*=ef.eD;
+  const yT=midY-12-sep*50,yB=midY+12+sep*50;
+  const strand=(y,col,x1,x2,lab,dir)=>{g.strokeStyle=col;g.lineWidth=5;g.beginPath();g.moveTo(x1,y);g.lineTo(x2,y);g.stroke();for(let x=x1;x<x2;x+=10){g.strokeStyle=col;g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(x,y+dir*7);g.stroke();}if(lab)T(g,lab,x1-24,y,'#93a4c0',11,'center');};
+  strand(yT,'#60a5fa',sx,ex,"5'",1);strand(yB,'#60a5fa',sx,ex,"3'",-1);T(g,"3'",ex+16,yT,'#93a4c0',11,'center');T(g,"5'",ex+16,yB,'#93a4c0',11,'center');
+  if(sep<0.3){for(let x=sx;x<ex;x+=10){g.strokeStyle='rgba(148,163,184,0.5)';g.beginPath();g.moveTo(x,yT+7);g.lineTo(x,yB-7);g.stroke();}}
+  const pL=60;const prA=s.phase>=1?(s.phase===1?clamp(s.pt*1.6,0,1):1):0;const bind=ef.eA;
+  if(s.phase>=1){const drop=(1-prA)*40;const al=bind;g.globalAlpha=0.3+0.7*al;
+    // forward primer on bottom strand at left (3' end of bottom is at left)
+    g.strokeStyle='#f43f5e';g.lineWidth=6;g.beginPath();g.moveTo(sx,yB-14+drop*(-1)*0+(1-prA)*40);g.lineTo(sx+pL,yB-14+(1-prA)*40);g.stroke();
+    g.strokeStyle='#22c55e';g.beginPath();g.moveTo(ex-pL,yT+14-(1-prA)*40);g.lineTo(ex,yT+14-(1-prA)*40);g.stroke();g.globalAlpha=1;
+    T(g,'Forward primer',sx+pL/2,yB+22,'#fda4af',11,'center');T(g,'Reverse primer',ex-pL/2,yT-22,'#86efac',11,'center');
+    if(ef.ns&&s.phase>=1){g.strokeStyle='rgba(244,63,94,0.5)';g.lineWidth=5;g.beginPath();g.moveTo(sx+len*0.45,yB-14);g.lineTo(sx+len*0.45+40,yB-14);g.stroke();T(g,'ไพรเมอร์จับผิดตำแหน่ง (อุณหภูมิต่ำเกินไป)',sx+len*0.45+20,yB+22,'#fb7185',10.5,'center');}}
+  if(s.phase===2||(s.phase===0&&s.cycle>0&&s.pt<0.01)){const ext=s.phase===2?clamp(s.pt*1.2,0,1)*ef.eE:0;const L1=pL+(len-pL)*ext*bind;
+    g.strokeStyle='#f97316';g.lineWidth=6;g.beginPath();g.moveTo(sx+pL,yB-14);g.lineTo(sx+L1,yB-14);g.stroke();g.beginPath();g.moveTo(ex-pL,yT+14);g.lineTo(ex-L1,yT+14);g.stroke();
+    if(s.phase===2){[[sx+L1,yB-14],[ex-L1,yT+14]].forEach(([px,py])=>{g.fillStyle='#a78bfa';g.beginPath();g.ellipse(px,py,16,12,0,0,Math.PI*2);g.fill();T(g,'Taq',px,py,'#1e1b4b',10,'center',true);});
+      T(g,'dNTPs ถูกเติมที่ปลาย 3\' ของไพรเมอร์ (5\'→3\')',mx+mw/2,my+mh-14,'#fdba74',11.5,'center');}}
+  const desc=['ความร้อน ~94–95°C ทำลายพันธะไฮโดรเจน → DNA สายคู่แยกเป็นสายเดี่ยว','ลดอุณหภูมิ ~50–65°C → ไพรเมอร์จับคู่เบสกับสายแม่แบบที่ปลาย 3\'','~72°C → Taq DNA polymerase (ทนร้อน) สังเคราะห์สายใหม่ต่อจากไพรเมอร์'][s.phase];
+  T(g,desc,mx+mw/2,my+14,ph.col,12,'center',true);
+  if(s.done)T(g,'✔ ครบ '+s.cycle+' รอบแล้ว',mx+mw/2,my+mh-34,'#68d391',14,'center',true);}
+
+/* ---------------- DRAW: MODE 3 ---------------- */
+function drawM3(g,w,h){const d=S.m3.data;const L=gelLayout(w,h);const uv=S.m3.uv;
+  rr(g,L.gx-30,L.gy-34,L.gw+60,L.gh+60,14);g.fillStyle=uv?'#0b0420':'#0c2233';g.fill();g.strokeStyle='#334155';g.stroke();
+  rr(g,L.gx,L.gy,L.gw,L.gh,6);g.fillStyle=uv?'#1a0b3d':'rgba(203,213,225,0.18)';g.fill();
+  g.fillStyle='#111';rr(g,L.gx-24,L.gy-28,L.gw+48,14,4);g.fill();T(g,'⊖ ขั้วลบ (Cathode) – บ่อเจลอยู่ด้านนี้',L.gx+L.gw/2,L.gy-21,'#cbd5e1',11,'center',true);
+  g.fillStyle='#7f1d1d';rr(g,L.gx-24,L.gy+L.gh+8,L.gw+48,14,4);g.fill();T(g,'⊕ ขั้วบวก (Anode) – DNA ประจุลบเคลื่อนมาทางนี้',L.gx+L.gw/2,L.gy+L.gh+15,'#fecaca',11,'center',true);
+  for(let cm=0;cm<=8;cm++){const Y=L.gy+20+cm*L.pxcm;T(g,cm+' cm',L.gx-8,Y,'#64748b',10,'right');}
+  const t=+$('#rt').value;const ld=S.m3.loaded;
+  d.lanes.forEach((ln,i)=>{const cx=L.gx+L.lw*(i+0.5),bw=L.lw*0.66;
+    g.fillStyle='#020617';g.fillRect(cx-bw/2,L.gy+8,bw,8);
+    T(g,ln.name,cx,L.gy-44+((i%2)?0:0),i===S.m3.sel?'#f6ad55':'#cbd5e1',11,'center',i===S.m3.sel);
+    if(i===S.m3.sel){g.strokeStyle='#f6ad55';g.setLineDash([4,4]);g.strokeRect(cx-L.lw/2+2,L.gy+2,L.lw-4,L.gh-4);g.setLineDash([]);}
+    if(ld<=0)return;
+    if(ld<1){g.fillStyle=`rgba(99,102,241,${ld})`;g.fillRect(cx-bw/2,L.gy+16-8*ld,bw,8*ld);return;}
+    if(!uv){[[300,'rgba(59,130,246,0.75)'],[4000,'rgba(14,165,233,0.55)']].forEach(([bp,col])=>{const dd=dist(bp);if(dd<8.2){g.fillStyle=col;g.fillRect(cx-bw/2,L.gy+20+dd*L.pxcm-2,bw,4);}});}
+    ln.bands.forEach(bp=>{const dd=dist(bp);if(dd>8.1)return;const Y=L.gy+20+dd*L.pxcm;const thick=ln.ladder&&(bp===500||bp===1000||bp===3000)?4:3;
+      if(uv){g.shadowColor=ln.col||'#f6ad55';g.shadowBlur=10;g.fillStyle=ln.ladder?'#fbbf24':(ln.col||'#fb923c');g.fillRect(cx-bw/2,Y-thick/2,bw,thick);g.shadowBlur=0;}
+      else{g.fillStyle='rgba(255,255,255,0.06)';g.fillRect(cx-bw/2,Y-1,bw,2);}
+      if(S.toggle==='bp'&&uv&&(ln.ladder||i===S.m3.sel))T(g,bp+'',ln.ladder?cx-bw/2-3:cx+bw/2+3,Y,ln.ladder?'#fde68a':'#fed7aa',9.5,ln.ladder?'right':'left');});
+    const lost=ln.bands.filter(bp=>dist(bp)>8.1).length;if(lost&&uv)T(g,'หลุดเจล '+lost,cx,L.gy+L.gh-8,'#fc8181',10,'center');});
+  if(!uv&&ld>=1)T(g,'(มองเห็นเพียงสีย้อม Loading dye — เปิดแสง UV เพื่อดูแถบ DNA ที่ย้อมสีเรืองแสง)',w/2,h-12,'#93c5fd',11.5,'center');
+  if(ld<=0)T(g,'กด "โหลดตัวอย่างลงบ่อ" หรือ ▶ เริ่ม',w/2,L.gy+L.gh/2,'#e2e8f0',15,'center',true);
+  if(ld>=1&&t>0&&S.running){for(let k=0;k<12;k++){const bx=L.gx+((k*97+S.time*30)%L.gw),by=L.gy+L.gh+30-((S.time*40+k*13)%22);g.fillStyle='rgba(255,255,255,0.4)';g.beginPath();g.arc(bx,by,1.5,0,7);g.fill();}}}
+
+/* ---------------- DRAW: MODE 4 ---------------- */
+function drawM4(g,w,h){const k=$('#prod').value,P=PROD[k],s=S.m4;
+  const n=P.steps.length;const top=20,bh=56,cols=3;const bw=(w-40-(cols-1)*16)/cols;
+  P.steps.forEach((st,i)=>{const r=Math.floor(i/cols),c=r%2===0?i%cols:cols-1-i%cols;const x=20+c*(bw+16),y=top+r*(bh+26);
+    const on=i===s.step,done=i<s.step;rr(g,x,y,bw,bh,10);g.fillStyle=on?'#134e4a':done?'#1e3a5f':'#18233a';g.fill();g.strokeStyle=on?'#4fd1c5':'#334155';g.lineWidth=on?2:1;g.stroke();
+    T(g,(i+1)+'.',x+12,y+bh/2,'#f6ad55',14,'left',true);
+    const words=st;const maxw=bw-36;g.font='12px Sarabun,Tahoma';let line='',lines=[];for(const ch of words){if(g.measureText(line+ch).width>maxw){lines.push(line);line=ch;}else line+=ch;}lines.push(line);
+    lines.slice(0,3).forEach((l,j)=>T(g,l,x+30,y+bh/2+(j-(Math.min(3,lines.length)-1)/2)*14,on?'#fff':'#cbd5e1',12));
+    if(i<n-1){const r2=Math.floor((i+1)/cols),c2=r2%2===0?(i+1)%cols:cols-1-(i+1)%cols;const x2=20+c2*(bw+16),y2=top+r2*(bh+26);
+      g.strokeStyle='#64748b';g.lineWidth=2;g.beginPath();if(r2===r){const ax=c2>c?x+bw:x,bx2=c2>c?x2:x2+bw;g.moveTo(ax,y+bh/2);g.lineTo(bx2,y+bh/2);}else{g.moveTo(x+bw/2,y+bh);g.lineTo(x2+bw/2,y2);}g.stroke();
+      if(i===s.step){const t=(S.time*0.8)%1;let px,py;if(r2===r){const ax=c2>c?x+bw:x,bx2=c2>c?x2:x2+bw;px=lerp(ax,bx2,t);py=y+bh/2;}else{px=x+bw/2;py=lerp(y+bh,y2,t);}g.fillStyle='#facc15';g.beginPath();g.arc(px,py,4,0,7);g.fill();}}});
+  const py0=top+2*(bh+26)+10,ph=h-py0-14;rr(g,20,py0,w-40,ph,10);g.fillStyle='#070d1a';g.fill();
+  if(k==='bt'){const gx=70,gw=w-120,gy=py0+30,gh=ph-60;T(g,'การเปลี่ยนความถี่อัลลีลดื้อ Bt (q) ของหนอนเจาะลำต้นในแปลง Bt (แบบจำลอง Hardy-Weinberg + Selection)',w/2,py0+14,'#e2e8f0',12,'center',true);
+    g.strokeStyle='#334155';g.strokeRect(gx,gy,gw,gh);for(let v=0;v<=1;v+=0.25){const Y=gy+gh-v*gh;T(g,v.toFixed(2),gx-6,Y,'#64748b',10,'right');}T(g,'รุ่นที่ 0',gx,gy+gh+12,'#64748b',10);T(g,'60',gx+gw,gy+gh+12,'#64748b',10,'right');
+    g.strokeStyle='#f97316';g.lineWidth=2.5;g.beginPath();s.qHist.forEach((q,i)=>{const X=gx+i/60*gw,Y=gy+gh-q*gh;i?g.lineTo(X,Y):g.moveTo(X,Y);});g.stroke();
+    g.fillStyle='rgba(74,222,128,0.6)';g.fillRect(gx+gw-110,gy+8,100*s.pest,10);T(g,'ประชากรหนอนในแปลง',gx+gw-112,gy+13,'#86efac',10.5,'right');
+    T(g,'q = '+s.q.toFixed(3)+'  |  Refuge '+$('#refuge').value+'%',gx+10,gy+12,'#fdba74',12,'left',true);}
+  else{const R=riskScores();const keys=Object.keys(R);T(g,'เปรียบเทียบผลกระทบ (คะแนนความเสี่ยง 0–100) — ปรับมาตรการทางซ้ายเพื่อดูการเปลี่ยนแปลง',w/2,py0+14,'#e2e8f0',12,'center',true);
+    const bx=230,bw2=w-bx-60;keys.forEach((kk,i)=>{const y=py0+36+i*((ph-46)/keys.length);T(g,RISKLAB[kk],bx-10,y+8,'#cbd5e1',12,'right');rr(g,bx,y,bw2,16,6);g.fillStyle='#1e293b';g.fill();const v=R[kk];rr(g,bx,y,bw2*v/100,16,6);g.fillStyle=v>55?'#ef4444':v>30?'#f59e0b':'#22c55e';g.fill();T(g,Math.round(v)+'',bx+bw2+8,y+8,'#e2e8f0',11);});
+    const t=S.time;if(k==='gt'||k==='crispr'){const cx=w-90,cy=py0+ph/2;}}}
+
+/* ---------------- RIGHT CHART ---------------- */
+function axes(g,x,y,w,h,xl,yl){g.strokeStyle='#475569';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(x,y+h);g.lineTo(x+w,y+h);g.stroke();T(g,xl,x+w/2,y+h+24,'#93a4c0',11,'center');g.save();g.translate(x-34,y+h/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#93a4c0',11,'center');g.restore();}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;const x=48,y=16,cw=w-64,ch=h-56;
+  if(m===1){const st=m1Stats();if(S.m1.stage<5){T(g,'ผลจะปรากฏหลังขั้นคัดเลือกโคโลนี (ขั้นที่ 6)',w/2,h/2,'#93a4c0',12,'center');return;}
+    const bars=[['ขาว (สายผสม)',st.w,'#f8fafc'],['น้ำเงิน (ไม่มีแทรก)',st.b,'#3b82f6'],['ไม่ได้รับพลาสมิด',st.un,'#a8a29e']];const mx=Math.max(1,...bars.map(b=>b[1]));axes(g,x,y,cw,ch,'ชนิดโคโลนี','จำนวนโคโลนี');
+    bars.forEach((b,i)=>{const bw=cw/3*0.6,bx=x+cw/3*i+cw/3*0.2,bh=b[1]/mx*(ch-14);g.fillStyle=b[2];g.fillRect(bx,y+ch-bh,bw,bh);T(g,b[1],bx+bw/2,y+ch-bh-8,'#e2e8f0',12,'center',true);T(g,b[0],bx+bw/2,y+ch+10,'#cbd5e1',10.5,'center');});return;}
+  if(m===2){const hs=S.m2.hist,lg=$('#logScale').checked;const maxC=35;const top=lg?Math.max(11,Math.ceil(Math.log10(Math.max(...hs.map(p=>p.ideal),10)))):Math.max(...hs.map(p=>p.ideal),10);
+    axes(g,x,y,cw,ch,'จำนวนรอบ (n)',lg?'log₁₀(จำนวนโมเลกุล)':'จำนวนโมเลกุล');
+    const Y=v=>lg?y+ch-Math.log10(Math.max(v,1))/top*ch:y+ch-v/top*ch;const X=c=>x+c/maxC*cw;
+    for(let c=0;c<=35;c+=5)T(g,c,X(c),y+ch+10,'#64748b',10,'center');
+    if(lg)for(let e=0;e<=top;e+=2)T(g,e,x-6,y+ch-e/top*ch,'#64748b',10,'right');
+    g.setLineDash([5,4]);g.strokeStyle='#60a5fa';g.lineWidth=2;g.beginPath();hs.forEach((p,i)=>i?g.lineTo(X(p.c),Y(p.ideal)):g.moveTo(X(p.c),Y(p.ideal)));g.stroke();g.setLineDash([]);
+    g.strokeStyle='#f97316';g.lineWidth=2.5;g.beginPath();hs.forEach((p,i)=>i?g.lineTo(X(p.c),Y(p.actual)):g.moveTo(X(p.c),Y(p.actual)));g.stroke();
+    if(lg){g.strokeStyle='rgba(252,129,129,0.6)';g.setLineDash([2,3]);g.beginPath();g.moveTo(x,Y(NMAX));g.lineTo(x+cw,Y(NMAX));g.stroke();g.setLineDash([]);T(g,'ขีดจำกัด reagents (plateau)',x+cw-4,Y(NMAX)-8,'#fca5a5',10,'right');}
+    T(g,'- - ทฤษฎี N₀×2ⁿ',x+8,y+8,'#93c5fd',11);T(g,'—— ผลจริง (มีขีดจำกัด)',x+8,y+24,'#fdba74',11);return;}
+  if(m===3){const sc=stdCurve();axes(g,x,y,cw,ch,'ระยะทางที่เคลื่อนที่ d (cm)','log₁₀(bp)');if(!sc||S.m3.loaded<1){T(g,'วิ่งเจลอย่างน้อยสักพักเพื่อสร้างกราฟมาตรฐาน',w/2,h/2,'#93a4c0',12,'center');drawFP();return;}
+    const X=d=>x+d/8*cw,Y=v=>y+ch-(v-1.8)/(4-1.8)*ch;for(let d=0;d<=8;d+=2)T(g,d,X(d),y+ch+10,'#64748b',10,'center');[2,2.5,3,3.5,4].forEach(v=>T(g,v,x-6,Y(v),'#64748b',10,'right'));
+    g.strokeStyle='#4fd1c5';g.lineWidth=2;g.beginPath();g.moveTo(X(0),Y(sc.a));g.lineTo(X(8),Y(sc.a+sc.b*8));g.stroke();
+    sc.pts.forEach(p=>{g.fillStyle='#fbbf24';g.beginPath();g.arc(X(p.d),Y(p.y),3.5,0,7);g.fill();});
+    if(S.m3.sel>0){S.m3.data.lanes[S.m3.sel].bands.forEach(bp=>{const dd=dist(bp);if(dd>8)return;const est=sc.a+sc.b*dd;g.fillStyle='#fb7185';g.beginPath();g.arc(X(dd),Y(est),4,0,7);g.fill();});}
+    T(g,'log₁₀(bp) = '+sc.a.toFixed(3)+' '+(sc.b<0?'−':'+')+' '+Math.abs(sc.b).toFixed(3)+'·d   (R² = '+sc.r2.toFixed(3)+')',x+cw,y+6,'#99f6e4',10.5,'right');drawFP();return;}
+  if(m===4){const R=riskScores();const keys=Object.keys(R);const cx=w/2,cy=h/2+4,rad=Math.min(w,h)/2-38;
+    for(let ring=1;ring<=4;ring++){g.strokeStyle='#26344f';g.beginPath();keys.forEach((k,i)=>{const a=-Math.PI/2+i/keys.length*Math.PI*2;const px=cx+Math.cos(a)*rad*ring/4,py=cy+Math.sin(a)*rad*ring/4;i?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();g.stroke();}
+    g.fillStyle='rgba(239,68,68,0.35)';g.strokeStyle='#ef4444';g.lineWidth=2;g.beginPath();keys.forEach((k,i)=>{const a=-Math.PI/2+i/keys.length*Math.PI*2;const px=cx+Math.cos(a)*rad*R[k]/100,py=cy+Math.sin(a)*rad*R[k]/100;i?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();g.fill();g.stroke();
+    keys.forEach((k,i)=>{const a=-Math.PI/2+i/keys.length*Math.PI*2;T(g,RISKLAB[k],cx+Math.cos(a)*(rad+22),cy+Math.sin(a)*(rad+14),'#cbd5e1',10.5,'center');});}}
+function drawFP(){const c=$('#fp');if(c.style.display==='none')return;const {g,w,h}=fit(c);g.clearRect(0,0,w,h);const d=S.m3.data;
+  T(g,'แผงเปรียบเทียบลายพิมพ์ DNA (ภาพถ่ายเจลภายใต้ UV)',w/2,12,'#93a4c0',11,'center',true);
+  if(!resolved()||!S.m3.uv){T(g,'ต้องวิ่งเจล ≥ 20 นาที และเปิด UV',w/2,h/2,'#64748b',12,'center');return;}
+  const n=d.lanes.length,lw=(w-20)/n;const ref=d.lanes.findIndex(l=>l.col);const ds=d.lanes.flatMap(l=>l.bands.map(dist)).filter(v=>v<=8);const mn=Math.min(...ds),mx=Math.max(...ds);
+  const Y=dd=>32+(dd-mn)/Math.max(0.01,mx-mn)*(h-50);
+  d.lanes.forEach((ln,i)=>{const cx=10+lw*(i+0.5);T(g,ln.name,cx,h-6,'#94a3b8',9.5,'center');ln.bands.forEach(bp=>{const dd=dist(bp);if(dd>8)return;const match=ref>=0&&i!==ref&&!ln.ladder&&d.lanes[ref].bands.includes(bp);g.fillStyle=ln.ladder?'#fbbf24':match?'#4ade80':(ln.col||'#fb923c');g.fillRect(cx-lw*0.32,Y(dd)-1.5,lw*0.64,3);});});}
+
+/* ---------------- TEXT PANELS ---------------- */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+function siteStr(e){const E=ENZ[e],L=6,s=E.site,b=s.split('').map(c=>COMP[c]).join('');return `${e.padEnd(8)} 5'-${s.slice(0,E.cut)}↓${s.slice(E.cut)}-3'\n${''.padEnd(8)} 3'-${b.slice(0,L-E.cut)}↑${b.slice(L-E.cut)}-5'   (${E.end==='sticky'?'ปลายเหนียว':'ปลายทู่'})`;}
+function updateText(){const m=S.mode;let an='',mis='',eq='';
+  if(m===1){const eg=$('#enzG').value,ep=$('#enzP').value,ok=compat(),st=m1Stats();
+    stats([['ขนาดชิ้นยีน / พลาสมิด','1,500 / 2,686 bp'],['ขนาดพลาสมิดสายผสม',ok?'4,186 bp':'— (ต่อไม่ได้)'],['โคโลนีที่ได้รับพลาสมิด',S.m1.stage===5?st.tr:'—'],['% ประสิทธิภาพ Transformation',S.m1.stage===5?($('#amp').checked?st.pct.toFixed(3)+' %':'คัดเลือกไม่ได้'):'—']]);
+    eq=siteStr(eg)+(eg!==ep?'\n'+siteStr(ep):'')+'\n\nDNA ligase: ...C–OH(3\') + P–O(5\')... → พันธะฟอสโฟไดเอสเทอร์\n% Transformation = (จำนวนโคโลนีที่ได้รับพลาสมิด ÷ จำนวนเซลล์ที่นำมาเพาะ 1×10⁵) × 100';
+    an=`<p><b>ขั้นปัจจุบัน:</b> ${STAGES[S.m1.stage]}</p><p>${ok?'<span class="tag ok">ปลายเข้าคู่กันได้</span> ยีนและพลาสมิดถูกตัดด้วย '+(eg===ep?'เอนไซม์ชนิดเดียวกัน ('+eg+')':'เอนไซม์ที่ให้ปลายทู่ทั้งคู่')+' ปลายจึงจับคู่และเชื่อมกันได้':'<span class="tag no">ปลายไม่เข้าคู่</span> '+eg+' ให้ปลายยื่น '+ENZ[eg].site.slice(ENZ[eg].cut,6-ENZ[eg].cut)+' แต่ '+ep+' ให้ปลาย '+(ENZ[ep].end==='blunt'?'ทู่':ENZ[ep].site.slice(ENZ[ep].cut,6-ENZ[ep].cut))+' จึงไม่สามารถจับคู่เบสกันได้ — พลาสมิดจะต่อกลับเป็นวงเดิม'}</p>`;
+    if(ENZ[eg].end==='blunt'&&ok)an+='<p><span class="tag mid">ปลายทู่</span> เชื่อมต่อได้แต่ประสิทธิภาพต่ำกว่าปลายเหนียว และยีนอาจแทรกกลับทิศ</p>';
+    if(S.m1.stage===5){if(!$('#amp').checked)an+=`<p><span class="tag no">ไม่มียาปฏิชีวนะ</span> เซลล์ทุกเซลล์เจริญได้ (${st.un} โคโลนีไม่มีพลาสมิด) จึงคัดเลือกเซลล์ที่ได้รับพลาสมิดไม่ได้ ยีน ampᴿ ใช้เป็น Selectable marker</p>`;
+      an+=`<p>โคโลนีสีขาว ${st.w} | สีน้ำเงิน ${st.b} → ${st.w>0?'เลือกโคโลนี<b>สีขาว</b>ไปเพาะเลี้ยงต่อ เพราะยีนแทรกทำให้ lacZα ทำงานไม่ได้ จึงย่อย X-gal ไม่ได้':'ไม่มีโคโลนีที่มียีนแทรก ต้องเลือกเอนไซม์ใหม่'}</p>`;
+      if(!$('#xgal').checked)an+='<p>ไม่มี X-gal จึงแยกโคโลนีที่มีพลาสมิดสายผสมกับพลาสมิดเปล่าด้วยสีไม่ได้</p>';}
+    mis=`<p><b>❌ "เอนไซม์ตัดจำเพาะตัด DNA ได้ทุกตำแหน่งตามต้องการ"</b></p><p>✅ เอนไซม์แต่ละชนิดจดจำและตัด<b>เฉพาะลำดับเบสจำเพาะแบบพาลินโดรม</b> เช่น ${eg} จดจำ ${ENZ[eg].site} (อ่าน 5'→3' ทั้งสองสายได้ลำดับเดียวกัน)</p>`+(!ok?'<p><b>❌ "เอนไซม์ต่างชนิดก็ต่อกันได้"</b> ✅ ต้องใช้เอนไซม์ที่สร้างปลายเหนียวคู่สมกัน</p>':'')+(S.m1.stage>=5?'<p><b>❌ "โคโลนีสีน้ำเงินคือเซลล์ที่ได้ยีน"</b> ✅ สีน้ำเงินแปลว่า lacZα ยังสมบูรณ์ = <b>ไม่มี</b>ยีนแทรก</p>':'');}
+  else if(m===2){const s=S.m2,N0=+$('#n0').value,ef=pcrEff(),n=s.cycle;const ideal=N0*Math.pow(2,n);const tgt=Math.max(0,N0*(Math.pow(2,n)-2*n));
+    stats([['N₀ × 2ⁿ (ทฤษฎี)',sci(ideal)],['จำนวน DNA จริง',sci(s.actual)],['ชิ้นความยาวเป้าหมาย (ทฤษฎี)',sci(tgt)],['ประสิทธิภาพรอบล่าสุด',(ef.e*Math.pow(0.99,n)*Math.max(0,1-s.actual/NMAX)*100).toFixed(1)+' %']]);
+    eq=`N_t = N₀ × 2ⁿ = ${N0} × 2^${n} = ${sci(ideal)} โมเลกุล\nชิ้นที่ยาวพอดีระหว่างไพรเมอร์ = N₀(2ⁿ − 2n) → เริ่มปรากฏรอบที่ 3\nขั้นตอน: Denaturation ${$('#td').value}°C → Annealing ${$('#ta').value}°C → Extension ${$('#te').value}°C`;
+    an=`<p><b>รอบที่ ${n}</b> | ช่วง: ${PHASES[s.phase].n}</p>`;
+    if(ef.eD<1)an+='<p><span class="tag no">Denaturation ต่ำเกินไป</span> DNA สายคู่แยกไม่สมบูรณ์ ปฏิกิริยาเกิดน้อย</p>';
+    if(ef.eA<1&&!ef.ns)an+='<p><span class="tag no">Annealing สูงเกินไป</span> ไพรเมอร์จับกับแม่แบบได้น้อย (สูงกว่า Tm)</p>';
+    if(ef.ns)an+='<p><span class="tag mid">Annealing ต่ำเกินไป</span> ไพรเมอร์จับผิดตำแหน่ง เกิดผลผลิตที่ไม่จำเพาะ</p>';
+    if(ef.eE<0.9)an+='<p><span class="tag mid">Extension ไม่เหมาะสม</span> Taq polymerase ทำงานดีที่สุดที่ ~72°C</p>';
+    if(ef.e>0.95)an+='<p><span class="tag ok">สภาวะเหมาะสม</span> DNA เพิ่มเป็นสองเท่าเกือบทุกรอบ</p>';
+    if(s.actual>NMAX*0.3)an+=`<p><span class="tag mid">ระยะ Plateau</span> จำนวนจริง (${sci(s.actual)}) ต่ำกว่าทฤษฎี (${sci(ideal)}) เพราะไพรเมอร์และ dNTPs ถูกใช้หมด และ Taq เสื่อมสภาพ</p>`;
+    mis='<p><b>❌ "PCR เพิ่มจำนวน DNA ได้เรื่อย ๆ ไม่มีขีดจำกัด"</b></p><p>✅ ปฏิกิริยาเข้าสู่ <b>Plateau</b> เพราะ Primers, dNTPs ถูกใช้หมด, สายผลผลิตจับคู่กันเองแข่งกับไพรเมอร์ และเอนไซม์ Taq เสื่อมลงเมื่อผ่านความร้อนหลายรอบ</p><p><b>❌ "ใช้ DNA polymerase ของคนก็ได้"</b> ✅ ต้องใช้ Taq จาก <i>Thermus aquaticus</i> ที่ทนอุณหภูมิ 95°C</p>';}
+  else if(m===3){const d=S.m3.data,sc=stdCurve(),t=+$('#rt').value;const sel=S.m3.sel;let est='—';
+    if(sel>0&&sc){const b=d.lanes[sel].bands.filter(bp=>dist(bp)<=8);if(b.length)est=b.map(bp=>Math.round(Math.pow(10,sc.a+sc.b*dist(bp)))).join(', ');}
+    let mp='—';if(d.meta.cs!=='dig'){const prof=d.meta.cs==='crime'?d.meta.profiles.ev:d.meta.profiles.child;const tot=prof.reduce((a,g2,li)=>a*locusP(g2,li).P,1);mp='1 ใน '+Math.round(1/tot).toLocaleString('th-TH');}
+    stats([['ระยะ 100 bp / 1,000 bp',dist(100).toFixed(2)+' / '+dist(1000).toFixed(2)+' cm'],['ขนาดแถบใน lane ที่เลือก (bp)',est],['V × t',$('#volt').value+' V × '+t+' นาที'],['Match Probability',mp]]);
+    eq='d ∝ 1 / log₁₀(bp)   →  กราฟมาตรฐาน: log₁₀(bp) = a + b·d\nP(locus) = 2pᵢpⱼ (heterozygous)  หรือ  pᵢ² (homozygous)\nMatch Probability = P₁ × P₂ × … × Pₖ';
+    if(!S.m3.loaded)an='<p>ยังไม่ได้โหลดตัวอย่าง DNA ลงบ่อเจล</p>';
+    else if(!resolved())an='<p><span class="tag mid">กำลังวิ่งเจล</span> แถบ DNA ยังแยกไม่ชัด ให้วิ่งอย่างน้อย 20 นาที</p>';
+    else if(!S.m3.uv)an='<p>วิ่งเจลแล้ว แต่ DNA ไม่มีสี ต้องย้อมสีเรืองแสงและ<b>ส่องแสง UV</b> จึงจะเห็นแถบ</p>';
+    else if(d.meta.cs==='crime'){const P=d.meta.profiles;const res=P.sus.map(su=>su.every((g2,li)=>g2[0]===P.ev[li][0]&&g2[1]===P.ev[li][1]));
+      an=res.map((r,i)=>`<p>ผู้ต้องสงสัย ${i+1}: ${r?'<span class="tag ok">แถบตรงกับหลักฐานทุกตำแหน่ง</span>':'<span class="tag no">แถบไม่ตรง → ตัดออก</span>'}</p>`).join('')+`<p>สรุป: DNA จากหลักฐานตรงกับ<b>ผู้ต้องสงสัย ${d.meta.cul+1}</b> ความน่าจะเป็นที่คนทั่วไปจะมีลายพิมพ์ DNA ตรงกันโดยบังเอิญ = <b>${mp}</b></p>`;}
+    else if(d.meta.cs==='pat'){const P=d.meta.profiles;const chk=f=>P.child.every((cg,li)=>{const mo=P.mom[li];return (mo.includes(cg[0])&&f[li].includes(cg[1]))||(mo.includes(cg[1])&&f[li].includes(cg[0]));});
+      an=`<p>แถบของลูก: ครึ่งหนึ่งต้องมาจากแม่ อีกครึ่งต้องมาจากพ่อ</p><p>ชาย A: ${chk(P.fa)?'<span class="tag ok">อาจเป็นพ่อ (มีแถบที่ลูกได้รับครบทุกตำแหน่ง)</span>':'<span class="tag no">ไม่ใช่พ่อ</span>'}</p><p>ชาย B: ${chk(P.fb)?'<span class="tag ok">อาจเป็นพ่อ (มีแถบที่ลูกได้รับครบทุกตำแหน่ง)</span>':'<span class="tag no">ไม่ใช่พ่อ</span>'}</p>`;}
+    else an='<p>สายผสมตัดด้วย EcoRI ได้ 2 แถบ (2,686 + 1,500 bp) ยืนยันว่ามียีนแทรก; ตัดด้วย HindIII ได้ขนาดต่างกัน เพราะตำแหน่งตัดต่างกัน</p>';
+    if(+$('#gconc').value>=1.75)an+='<p>เจลเข้มข้นสูง → รูพรุนเล็ก แยกชิ้นเล็กได้ดี แต่ชิ้นใหญ่เคลื่อนช้า</p>';if(+$('#gconc').value<=0.75)an+='<p>เจลเข้มข้นต่ำ → เหมาะกับชิ้น DNA ขนาดใหญ่ ชิ้นเล็กอาจวิ่งหลุดเจล</p>';
+    mis='<p><b>❌ "ชิ้น DNA ใหญ่กว่าเคลื่อนที่ได้ไกลกว่า"</b></p><p>✅ DNA ทุกขนาดมีประจุลบต่อความยาวเท่ากัน แต่ชิ้น<b>เล็ก</b>ลอดรูพรุนของเจลได้ง่ายกว่า จึงเคลื่อนที่<b>เร็วและไกลกว่า</b></p><p><b>❌ "DNA เคลื่อนไปขั้วลบ"</b> ✅ หมู่ฟอสเฟตทำให้ DNA เป็นประจุลบ จึงเคลื่อนเข้าหา<b>ขั้วบวก</b></p>';}
+  else{const k=$('#prod').value,P=PROD[k],R=riskScores();const tot=Object.values(R).reduce((a,b)=>a+b,0)/5;
+    stats([['ขั้นตอนปัจจุบัน',(S.m4.step+1)+' / 6'],['% ประสิทธิภาพการถ่ายยีน (โดยประมาณ)',P.eff+' %'],[k==='bt'?'ความถี่อัลลีลดื้อ Bt (q)':'รุ่น/ระยะติดตาม',k==='bt'?S.m4.q.toFixed(3):'—'],['คะแนนความเสี่ยงเฉลี่ย',tot.toFixed(0)+' / 100']]);
+    eq=P.steps.map((s2,i)=>(i===S.m4.step?'▶ ':'  ')+(i+1)+'. '+s2).join('\n');
+    an=`<p><b>${P.name}:</b> ${({bt:'พืชสร้างโปรตีน Cry ที่เป็นพิษต่อหนอนผีเสื้อบางชนิด ลดการใช้ยาฆ่าแมลง แต่แมลงอาจวิวัฒนาการดื้อ ถ้าไม่มีพื้นที่หลบภัย',gold:'เพิ่มเบต้าแคโรทีนในเมล็ดข้าวเพื่อลดภาวะขาดวิตามิน A ในประเทศกำลังพัฒนา',ins:'แบคทีเรียผลิตอินซูลินมนุษย์ได้ปริมาณมาก บริสุทธิ์ ไม่แพ้เหมือนอินซูลินจากสัตว์',gt:'ส่งยีนปกติเข้าเซลล์ร่างกาย (somatic) เพื่อรักษาโรคพันธุกรรม เช่น SMA, ตาบอดแต่กำเนิดบางชนิด',crispr:'แก้ไขลำดับเบสได้แม่นยำ ใช้ทั้งวิจัย เกษตร และการแพทย์ (เช่น โรคเลือดจาง Sickle cell)'})[k]}</p>`;
+    if(k==='bt'){an+=S.m4.q>0.5?'<p><span class="tag no">แมลงดื้อ Bt แพร่หลาย</span> Natural selection คัดเลือกอัลลีลดื้อ — ควรเพิ่มพื้นที่ refuge</p>':S.m4.gen>20?'<p><span class="tag ok">ชะลอการดื้อได้</span> แมลงไวต่อ Bt จาก refuge ผสมกับตัวดื้อ ทำให้ลูกเป็น heterozygous ที่ยังตายด้วย Bt</p>':'';}
+    an+=`<p>ความเสี่ยงสูงสุด: <b>${RISKLAB[Object.keys(R).sort((a,b)=>R[b]-R[a])[0]]}</b></p>`;
+    mis='<p><b>❌ "กินอาหาร GMOs แล้วยีนของเราจะถูกดัดแปลง"</b></p><p>✅ DNA ทุกชนิดในอาหาร (ทั้ง GMO และไม่ใช่) ถูก<b>ย่อยเป็นนิวคลีโอไทด์</b>ในทางเดินอาหาร ไม่สามารถแทรกเข้าจีโนมของเราได้</p><p><b>❌ "ยีนบำบัดทุกแบบถ่ายทอดสู่ลูก"</b> ✅ ยีนบำบัดแบบ somatic ไม่ถ่ายทอด มีเพียงการแก้ไข germline เท่านั้นที่ถ่ายทอด</p>';}
+  $('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;buildTableDyn();}
+function buildTable(){buildTableDyn();}
+function buildTableDyn(){const m=S.mode;let h='';
+  if(m===1)h='<table><tr><th>เอนไซม์</th><th>ลำดับจดจำ</th><th>ปลาย</th><th>แหล่งที่มา</th></tr>'+Object.entries(ENZ).map(([k,e])=>`<tr><td>${k}</td><td>5'-${e.site.slice(0,e.cut)}↓${e.site.slice(e.cut)}-3'</td><td>${e.end==='sticky'?'เหนียว':'ทู่'}</td><td><i>${e.src}</i></td></tr>`).join('')+'</table>';
+  else if(m===2){const hs=S.m2.hist;h='<table><tr><th>รอบ</th><th>ทฤษฎี</th><th>จริง</th></tr>'+hs.filter(p=>p.c%5===0||p.c===hs.length-1).slice(-8).map(p=>`<tr><td>${p.c}</td><td>${sci(p.ideal)}</td><td>${sci(p.actual)}</td></tr>`).join('')+'</table>';}
+  else if(m===3&&S.m3.data&&S.m3.data.meta.cs!=='dig'){const d=S.m3.data,cs=d.meta.cs,P=d.meta.profiles;const prof=cs==='crime'?P.ev:P.child;
+    const people=cs==='crime'?[['หลักฐาน',P.ev],['ผู้ต้องสงสัย 1',P.sus[0]],['ผู้ต้องสงสัย 2',P.sus[1]],['ผู้ต้องสงสัย 3',P.sus[2]]]:[['แม่',P.mom],['ลูก',P.child],['ชาย A',P.fa],['ชาย B',P.fb]];
+    h='<table><tr><th>Locus</th>'+people.map(p=>`<th>${p[0]}</th>`).join('')+'<th>P ('+(cs==='crime'?'หลักฐาน':'ลูก')+')</th></tr>'+LOCI.map((L,li)=>{const lp=locusP(prof[li],li);return `<tr><td>${L.name}</td>${people.map(p=>`<td>${p[1][li].join(',')}</td>`).join('')}<td title="${lp.hom?'p²':'2pᵢpⱼ'}">${lp.hom?lp.pi.toFixed(2)+'²':'2×'+lp.pi.toFixed(2)+'×'+lp.pj.toFixed(2)}<br>=${lp.P.toFixed(3)}</td></tr>`;}).join('')+'</table><p class="hint">ตัวเลข = จำนวนซ้ำ (repeats) ของแต่ละอัลลีล; แบบจำลองขยายขนาดหน่วยซ้ำเพื่อให้แยกบนเจลได้ * ชื่อ locus สมมติ</p>';}
+  else if(m===4)h='<table><tr><th>ประเด็น</th><th>ประโยชน์</th><th>ข้อกังวล</th></tr><tr><td>GMOs พืช</td><td>ผลผลิต↑ ยาฆ่าแมลง↓ โภชนาการ↑</td><td>Gene flow, แมลงดื้อ, ผูกขาดเมล็ดพันธุ์</td></tr><tr><td>ยาจาก GMO</td><td>อินซูลิน, วัคซีน, Growth hormone</td><td>ความปลอดภัยการผลิต (biosafety)</td></tr><tr><td>ยีนบำบัด/CRISPR</td><td>รักษาโรคพันธุกรรม</td><td>Off-target, germline, ราคาแพง</td></tr><tr><td>ข้อมูล DNA</td><td>นิติวิทยาศาสตร์, การแพทย์แม่นยำ</td><td>Privacy, การเลือกปฏิบัติ, สิทธิบัตร</td></tr></table>';
+  $('#tableBox').innerHTML=h;}
+function buildCase(){const k=S.m4.caseIdx;const c=CASES[k];
+  $('#caseBox').innerHTML=`<h3 style="margin-top:12px">⚖️ กรณีศึกษาชีวจริยธรรม (${k+1}/${CASES.length})</h3><p><b>${c.t}</b></p><p>${c.q}</p>`+c.o.map((o,i)=>`<button data-i="${i}" class="${S.m4.choice===i?'sel':''}">${o[0]}</button>`).join('')+(S.m4.choice>=0?`<p>${['<span class="tag no">ควรพิจารณาใหม่</span>','<span class="tag mid">มีเหตุผลบางส่วน</span>','<span class="tag ok">สมเหตุสมผล</span>'][c.o[S.m4.choice][1]]} ${c.o[S.m4.choice][2]}</p>`:'')+`<button id="nextCase" style="text-align:center">กรณีถัดไป →</button>`;
+  $$('#caseBox button[data-i]').forEach(b=>b.onclick=()=>{S.m4.choice=+b.dataset.i;buildCase();});$('#nextCase').onclick=()=>{S.m4.caseIdx=(k+1)%CASES.length;S.m4.choice=-1;buildCase();};}
+
+/* ---------------- LOOP ---------------- */
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;update(dt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();requestAnimationFrame(loop);}
+resetM1();resetM2();resetM4();newCase();setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

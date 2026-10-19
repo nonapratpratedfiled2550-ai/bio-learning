@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ยีนและโครโมโซม | ห้องแล็บชีววิทยา</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23050806' width='32' height='32' rx='8'/%3E%3Cpath fill='%233dff8a' d='M7 23c7-1 11-9 18-14-3 9-8 15-18 14z'/%3E%3C/svg%3E">
+<style>
+  :root { --bg:#07141c; --ink:#e8fff1; --muted:#8fb8a0; --line:rgba(120,190,180,.22); --green:#1ed39a; --green-d:#c8ffd9; --green-s:#10281a; --amber:#2a210c; --shadow:0 10px 28px rgba(0,0,0,.45); }
+  *{box-sizing:border-box;} html,body{margin:0;height:100%;}
+  body{font-family:"Leelawadee UI",Tahoma,"Segoe UI",sans-serif;color:var(--ink);background:#050806;font-size:16.5px;line-height:1.6;}
+  header{height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px;background:rgba(5,8,6,.9);border-bottom:1px solid var(--line);}
+  .brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;color:var(--green-d);}
+  .logo{width:32px;height:32px;border-radius:9px;background:#07140e;display:grid;place-items:center;}
+  nav{display:flex;gap:4px;overflow:auto;} nav a{text-decoration:none;color:var(--green-d);padding:6px 10px;border-radius:999px;white-space:nowrap;font-size:14px;}
+  nav a:hover,nav a[aria-current="page"]{background:var(--green-s);}
+  .layout{height:calc(100% - 64px);display:grid;grid-template-columns:330px minmax(0,1fr) 360px;}
+  .panel{overflow:auto;padding:14px;} .left{background:#070d0a;border-right:1px solid var(--line);} .right{background:#080d12;border-left:1px solid var(--line);}
+  .center{background:#050806;}
+  h1{font-size:1.2rem;margin:0 0 4px;color:var(--green-d);} h2{font-size:1.02rem;margin:12px 0 8px;color:var(--green-d);}
+  .eyebrow{margin:0;color:var(--green);font-weight:700;font-size:13px;} .hint{color:var(--muted);font-size:14px;margin:0 0 10px;}
+  .modes,.subs{display:grid;gap:6px;margin-bottom:10px;} .subs{grid-template-columns:1fr 1fr;}
+  button,select,input[type="text"],input[type="number"]{font-family:inherit;font-size:15px;} button{word-break:keep-all;}
+  .mode,.sub,.btn,.switch{border:1px solid var(--line);background:#101814;color:var(--ink);border-radius:12px;padding:9px 10px;text-align:left;cursor:pointer;}
+  .mode.on,.sub.on,.switch.on{background:#07140d;color:#3dff8a;border-color:#3dff8a;}
+  .btn{background:linear-gradient(135deg,#3dff8a,#14f1c5);color:#04140c;border-color:#3dff8a;font-weight:700;text-align:center;}
+  .btn.alt{background:#101814;color:var(--green-d);} .row{display:flex;gap:8px;margin:8px 0;} .row .btn{flex:1;}
+  label{display:block;margin:8px 0;font-size:14.5px;color:var(--green-d);font-weight:700;} label span{font-weight:600;color:var(--ink);}
+  input[type="range"]{width:100%;accent-color:#3dff8a;} select,input[type="text"]{width:100%;margin-top:4px;padding:8px;border-radius:10px;border:1px solid var(--line);}
+  .cvwrap{height:520px;background:#101814;border:1px solid #3dff8a;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);} .cvwrap.short{height:200px;background:#101814;border:1px solid var(--line);margin-top:8px;}
+  canvas{width:100%;height:100%;display:block;}
+  .formula,.analysis{margin-top:10px;background:#101814;border:1px solid var(--line);border-radius:14px;padding:10px 12px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+  .stat{background:#101814;border:1px solid var(--line);border-radius:14px;padding:8px 10px;} .stat b{display:block;color:var(--green-d);font-size:.98rem;} .stat span{color:var(--muted);font-size:13px;}
+  table{width:100%;border-collapse:collapse;background:#101814;font-size:12.5px;margin-top:8px;} th,td{border-bottom:1px solid var(--line);padding:4px 5px;text-align:left;} th{background:var(--green-s);color:var(--green-d);}
+  td.hot{background:#e5f8ec;font-weight:700;}
+  .mis{background:var(--amber);border-left:4px solid #e0a100;border-radius:12px;padding:10px 12px;margin-top:8px;}
+  @media(max-width:1100px){.layout{height:auto;grid-template-columns:1fr;}.cvwrap{height:460px;}}
+
+  html{background-color:#07141c;}
+  html::before{content:"";position:fixed;left:-28%;top:-28%;width:156%;height:156%;z-index:-2;pointer-events:none;background:radial-gradient(circle at 22% 18%,rgba(30,211,154,.5),transparent 32%),radial-gradient(circle at 78% 14%,rgba(46,200,230,.38),transparent 28%),radial-gradient(circle at 60% 84%,rgba(20,140,90,.28),transparent 34%);background-repeat:no-repeat;background-size:130% 130%,120% 120%,140% 140%;animation:drift 8s ease-in-out infinite alternate,blobs 10s ease-in-out infinite alternate;}
+  body{background:transparent;}
+  body::before{content:"";position:fixed;left:-15%;top:-15%;right:-15%;bottom:-15%;width:auto;height:auto;z-index:-1;pointer-events:none;border-radius:0;filter:none;background:transparent;background-image:radial-gradient(1.2px 1.2px at 20px 30px,rgba(255,255,255,.75),transparent),radial-gradient(1px 1px at 90px 140px,rgba(180,255,230,.7),transparent),radial-gradient(1.3px 1.3px at 170px 70px,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 40px 200px,rgba(160,230,255,.6),transparent);background-size:220px 220px;animation:stars 10s linear infinite,twinkle 2.8s ease-in-out infinite;}
+  body::after{content:none;}
+  header{position:sticky;top:0;z-index:4;background:rgba(7,11,9,.72);border-bottom:0;backdrop-filter:blur(12px);}
+  header::after{content:none;}
+  .logo{border:1px solid #1ed39a;box-shadow:0 0 14px rgba(30,211,154,.4);animation:floaty 4.2s ease-in-out infinite;}
+  .layout{grid-template-columns:270px minmax(0,1fr) 300px;}
+  .left,.right,.center{background:rgba(8,22,32,.72);box-shadow:none;}
+  .left{border-right:1px solid rgba(120,190,180,.18);}
+  .right{border-left:1px solid rgba(120,190,180,.18);}
+  .mode,.sub,.switch,.btn.alt,select,input[type="text"],input[type="number"],.formula,.analysis,.stat,table{background:rgba(10,24,34,.9);border-color:rgba(120,190,180,.22);color:#e7f6f1;}
+  .mode.on,.sub.on,.switch.on{background:rgba(30,180,120,.16);color:#e9fff4;border-color:#3dff8a;}
+  .btn:not(.alt){color:#fff;border:0;background:#14915f;box-shadow:0 8px 18px rgba(20,145,95,.28);}
+  .btn:hover{box-shadow:0 10px 24px rgba(46,200,230,.35);}
+  nav a{color:#c9ddd4;}
+  nav a:hover{color:#fff;background:transparent;}
+  nav a[aria-current="page"]{background:#1f8a5b;color:#fff;}
+  .cvwrap,.cvwrap.short{background:#f4fff8;border:1px solid rgba(46,200,180,.4);animation:screen 3.6s ease-in-out infinite;}
+  .mis{background:#1c2430;color:#d7fff2;border-left-color:#2ec8e6;}
+  .hint{color:#9dccc4;}
+  @keyframes stars{to{transform:translate3d(-220px,-220px,0);}}
+  @keyframes twinkle{0%,100%{opacity:.4;}50%{opacity:1;}}
+  @keyframes drift{from{transform:translate3d(-12%,-8%,0) scale(1);}to{transform:translate3d(14%,10%,0) scale(1.2);}}
+  @keyframes blobs{from{background-position:0% 0%,70% 10%,30% 100%;}to{background-position:40% 30%,0% 70%,80% 10%;}}
+  @keyframes hue{to{background-position:200% 0;}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,200,180,.2);}50%{box-shadow:0 0 16px 2px rgba(46,200,230,.45);}}
+  @keyframes edge{0%,100%{opacity:.7;}50%{opacity:1;}}
+  @keyframes screen{0%,100%{box-shadow:0 0 0 1px rgba(61,255,138,.2),0 0 16px rgba(30,211,154,.15);}50%{box-shadow:0 0 0 1px rgba(61,255,138,.45),0 0 22px rgba(30,211,154,.28);}}
+  @media (prefers-reduced-motion:reduce){.logo,.mode.on,.sub.on,.switch.on,.btn:not(.alt),.cvwrap,header::after,html::before,body::before,body::after{animation:none;}}
+  @media (max-width:1100px){
+    header{height:auto;flex-wrap:nowrap;padding:8px 14px;gap:8px;}
+    nav{min-width:0;-webkit-overflow-scrolling:touch;}
+    nav a{min-height:44px;display:inline-flex;align-items:center;padding:8px 12px;}
+    .layout{height:auto;grid-template-columns:minmax(230px,300px) minmax(0,1fr);grid-template-areas:"controls view" "result view";}
+    .left{grid-area:controls;}
+    .center{grid-area:view;}
+    .right{grid-area:result;border-left:0;border-top:1px solid rgba(120,190,180,.18);}
+    .cvwrap{height:min(62vh,520px);}
+    .cvwrap.short{height:180px;}
+  }
+  @media (max-width:700px){
+    header{flex-wrap:wrap;}
+    nav{width:100%;}
+    .layout{grid-template-columns:1fr;grid-template-areas:"controls" "view" "result";}
+    .left,.right{border:0;}
+    .cvwrap{height:300px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .panel{padding:12px;}
+    .mode,.sub,.btn,.switch{min-height:44px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;}
+    .row>*{width:100%;min-width:0;}
+    table{display:block;overflow-x:auto;}
+  }
+
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="index.html"><span class="logo"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M6 24c8-1 12-10 20-16-3 10-8 17-20 16z" fill="#3dff8a"/></svg></span>ห้องแล็บชีววิทยา</a>
+  <nav>
+    <a href="study.html">ธรรมชาติของสิ่งมีชีวิต</a><a href="chemistry.html">เคมีของชีวิต</a><a href="cell.html">เซลล์</a>
+    <a href="genetics.html">พันธุกรรม</a><a href="genes.html" aria-current="page">ยีนและโครโมโซม</a>
+  </nav>
+</header>
+<div class="layout">
+  <aside class="panel left">
+    <p class="eyebrow">บทที่ 5</p><h1>ยีนและโครโมโซม</h1>
+    <p class="hint">ใส่ได้เฉพาะ A T C G</p>
+    <div class="modes" id="modes"></div><div class="subs" id="subs"></div><div id="controls"></div>
+  </aside>
+  <main class="panel center"><div class="cvwrap"><canvas id="cv"></canvas></div><div class="formula" id="formula"></div><div class="stats" id="stats"></div></main>
+  <aside class="panel right"><h2>ผล</h2><div class="cvwrap short"><canvas id="graph"></canvas></div><div id="table"></div><div class="analysis" id="analysis"></div><div class="mis" id="mis"></div></aside>
+</div>
+<script>
+'use strict';
+const $=(id)=>document.getElementById(id);
+const CODE={UUU:'Phe',UUC:'Phe',UUA:'Leu',UUG:'Leu',UCU:'Ser',UCC:'Ser',UCA:'Ser',UCG:'Ser',UAU:'Tyr',UAC:'Tyr',UAA:'Stop',UAG:'Stop',UGU:'Cys',UGC:'Cys',UGA:'Stop',UGG:'Trp',CUU:'Leu',CUC:'Leu',CUA:'Leu',CUG:'Leu',CCU:'Pro',CCC:'Pro',CCA:'Pro',CCG:'Pro',CAU:'His',CAC:'His',CAA:'Gln',CAG:'Gln',CGU:'Arg',CGC:'Arg',CGA:'Arg',CGG:'Arg',AUU:'Ile',AUC:'Ile',AUA:'Ile',AUG:'Met',ACU:'Thr',ACC:'Thr',ACA:'Thr',ACG:'Thr',AAU:'Asn',AAC:'Asn',AAA:'Lys',AAG:'Lys',AGU:'Ser',AGC:'Ser',AGA:'Arg',AGG:'Arg',GUU:'Val',GUC:'Val',GUA:'Val',GUG:'Val',GCU:'Ala',GCC:'Ala',GCA:'Ala',GCG:'Ala',GAU:'Asp',GAC:'Asp',GAA:'Glu',GAG:'Glu',GGU:'Gly',GGC:'Gly',GGA:'Gly',GGG:'Gly'};
+const TH={Phe:'ฟีนิลอะลานีน',Leu:'ลิวซีน',Ser:'เซอรีน',Tyr:'ไทโรซีน',Stop:'หยุด',Cys:'ซิสเทอีน',Trp:'ทริปโตเฟน',Pro:'โพรลีน',His:'ฮิสทิดีน',Gln:'กลูตามีน',Arg:'อาร์จินีน',Ile:'ไอโซลิวซีน',Met:'เมไทโอนีน',Thr:'ทรีโอนีน',Asn:'แอสพาราจีน',Lys:'ไลซีน',Val:'วาลีน',Ala:'อะลานีน',Asp:'แอสปาร์ติก',Glu:'กลูตามิก',Gly:'ไกลซีน'};
+const BASECOL={A:'#e53935',T:'#1e88e5',G:'#f9a825',C:'#43a047',U:'#8e24aa'};
+function defaults(){return{
+  mode:1, sub:'point', playing:true, t:0, fork:0.15, showDir:true,
+  seq:'ATGTTTGGTAGCGAATAA', mutType:'sub', mutPos:5, newBase:'C',
+  kary:'normal', struct:'inv',
+  cycles:10, done:0, pcrPhase:0, n0:1, gel:1, gelRun:0.15, enzymeOn:true
+};}
+let state=defaults();
+function num(n,d){return (isFinite(n)?n:0).toLocaleString('th-TH',{maximumFractionDigits:d,minimumFractionDigits:d});}
+function clean(s){return String(s||'').toUpperCase().replace(/[^ATCG]/g,'').slice(0,60);}
+function mutated(seq){
+  const i=Math.max(0, Math.min(state.mutPos, seq.length));
+  if(!seq.length) return seq;
+  const at=Math.min(i, seq.length-1);
+  if(state.mutType==='sub') return seq.slice(0,at)+state.newBase+seq.slice(at+1);
+  if(state.mutType==='ins') return (seq.slice(0,i)+state.newBase+seq.slice(i)).slice(0,60);
+  if(state.mutType==='del') return seq.slice(0,at)+seq.slice(at+1);
+  return seq;
+}
+function translate(seq){
+  const rna=seq.replace(/T/g,'U'); const aas=[];
+  for(let i=0;i+2<rna.length;i+=3){ const codon=rna.slice(i,i+3); const aa=CODE[codon]||'?'; aas.push({codon,aa,i}); if(aa==='Stop') break; }
+  return {rna, aas, codons:Math.floor(rna.length/3)};
+}
+function chargaff(seq){
+  const c={A:0,T:0,G:0,C:0}; for(const ch of seq) if(c[ch]!==undefined) c[ch]++;
+  const n=seq.length||1, tot=n*2;
+  return {single:c,n, A:(c.A+c.T)/tot*100, T:(c.A+c.T)/tot*100, G:(c.G+c.C)/tot*100, C:(c.G+c.C)/tot*100};
+}
+function mutClass(before, after){
+  const A=translate(before).aas, B=translate(after).aas;
+  const as=A.map(x=>x.aa).join('-'), bs=B.map(x=>x.aa).join('-');
+  if(as===bs) return 'ไซเลนต์ หรือยังไม่เปลี่ยนกรดอะมิโน';
+  if(B.some(x=>x.aa==='Stop') && A.findIndex(x=>x.aa==='Stop')!==B.findIndex(x=>x.aa==='Stop')) return 'นันเซนส์ ได้รหัสหยุดเร็วหรือช้ากว่าเดิม';
+  if(state.mutType==='ins'||state.mutType==='del') return 'เฟรมชิฟต์ กรอบการอ่านเปลี่ยน';
+  return 'มิสเซนส์ กรดอะมิโนเปลี่ยนอย่างน้อย 1 ตำแหน่ง';
+}
+function bandsOf(kind){
+  const map={ladder:[100,300,500,800,1200,2000], crime:[300,800,1500], A:[300,800,1500], B:[400,900,1600]};
+  return map[kind];
+}
+function renderControls(){
+  const modes=[[1,'1. โครงสร้างและจำลอง DNA'],[2,'2. สังเคราะห์โปรตีน'],[3,'3. มิวเทชัน'],[4,'4. พันธุวิศวกรรม']];
+  $('modes').innerHTML=modes.map(([id,n])=>`<button class="mode ${state.mode===id?'on':''}" data-act="mode" data-v="${id}">${n}</button>`).join('');
+  let subs=[];
+  if(state.mode===3) subs=[['point','ระดับเบส'],['chrom','โครงโครโมโซม'],['kary','แคริโอไทป์']];
+  if(state.mode===4) subs=[['cut','ตัดและเชื่อม'],['pcr','PCR'],['gel','เจล']];
+  $('subs').innerHTML=subs.map(([id,n])=>`<button class="sub ${state.sub===id?'on':''}" data-act="sub" data-v="${id}">${n}</button>`).join('');
+  let html='';
+  if(state.mode===1 || state.mode===2 || (state.mode===3 && state.sub==='point')){
+    html+=`<label>ลำดับสายรหัส<span></span><input id="seqbox" data-key="seq" type="text" value="${state.seq}" maxlength="60"></label>`;
+  }
+  if(state.mode===1){
+    html+=`<label>ตำแหน่งง่ามจำลอง <span data-for="fork">${num(state.fork*100,0)}%</span><input data-key="fork" type="range" min="0.05" max="0.9" step="0.01" value="${state.fork}"></label>`;
+  }
+  if(state.mode===3 && state.sub==='point'){
+    html+=`<label>ชนิด<span></span><select data-key="mutType"><option value="sub" ${state.mutType==='sub'?'selected':''}>แทนที่เบส</option><option value="ins" ${state.mutType==='ins'?'selected':''}>แทรก</option><option value="del" ${state.mutType==='del'?'selected':''}>ขาดหาย</option></select></label>
+      <label>ตำแหน่งเบส <span data-for="mutPos">${state.mutPos}</span><input data-key="mutPos" type="range" min="0" max="${Math.max(0,state.seq.length-1)}" value="${state.mutPos}"></label>
+      <label>เบสใหม่<span></span><select data-key="newBase">${['A','T','C','G'].map(b=>`<option ${state.newBase===b?'selected':''}>${b}</option>`).join('')}</select></label>
+      <div class="row"><button class="btn alt" data-act="silent">ลองไซเลนต์</button><button class="btn alt" data-act="miss">มิสเซนส์</button></div>
+      <button class="btn alt" data-act="non" style="width:100%">นันเซนส์</button>`;
+  }
+  if(state.mode===3 && state.sub==='chrom'){
+    html+=`<label>การเปลี่ยนโครงสร้าง<span></span><select data-key="struct"><option value="del" ${state.struct==='del'?'selected':''}>ขาดหาย</option><option value="dup" ${state.struct==='dup'?'selected':''}>เพิ่มท่อน</option><option value="inv" ${state.struct==='inv'?'selected':''}>กลับทิศ</option><option value="trans" ${state.struct==='trans'?'selected':''}>สลับข้ามโครโมโซม</option></select></label>`;
+  }
+  if(state.mode===3 && state.sub==='kary'){
+    html+=`<label>ตัวอย่าง<span></span><select data-key="kary"><option value="normal" ${state.kary==='normal'?'selected':''}>ปกติ 46</option><option value="down" ${state.kary==='down'?'selected':''}>ดาวน์ ตรีโซมี 21</option><option value="turner" ${state.kary==='turner'?'selected':''}>เทอร์เนอร์ XO</option><option value="tri" ${state.kary==='tri'?'selected':''}>พอลิพลอยดี 3n</option></select></label>`;
+  }
+  if(state.mode===4 && state.sub==='cut'){
+    html+=`<p class="hint">EcoRI ตัดที่ GAATTC</p>
+      <button class="switch ${state.enzymeOn?'on':''}" data-act="enz" style="width:100%">${state.enzymeOn?'ตัดด้วย EcoRI แล้ว':'ยังไม่ตัด'}</button>`;
+  }
+  if(state.mode===4 && state.sub==='pcr'){
+    html+=`<label>รอบเป้าหมาย <span data-for="cycles">${state.cycles}</span><input data-key="cycles" type="range" min="1" max="35" value="${state.cycles}"></label>
+      <label>โมเลกุลเริ่มต้น <span data-for="n0">${state.n0}</span><input data-key="n0" type="range" min="1" max="20" value="${state.n0}"></label>
+      <div class="row"><button class="btn" data-act="onecyc">เดิน 1 รอบ</button><button class="btn alt" data-act="allcyc">ทำให้ครบ</button></div>`;
+  }
+  if(state.mode===4 && state.sub==='gel'){
+    html+=`<label>ความเข้มข้นเจล <span data-for="gel">${num(state.gel,1)}%</span><input data-key="gel" type="range" min="0.5" max="2" step="0.1" value="${state.gel}"></label>
+      <label>เวลาวิ่ง <span data-for="gelRun">${num(state.gelRun*100,0)}%</span><input data-key="gelRun" type="range" min="0.05" max="1" step="0.01" value="${state.gelRun}"></label>`;
+  }
+  html+=`<div class="row"><button class="switch ${state.showDir?'on':''}" data-act="toggle">${state.showDir?'แสดงปลาย 5′ และ 3′':'เน้นโคดอน / รหัส'}</button></div>
+    <div class="row"><button class="btn alt" data-act="play">${state.playing?'หยุดภาพ':'เล่นภาพ'}</button><button class="btn alt" data-act="reset">รีเซ็ต</button></div>`;
+  $('controls').innerHTML=html;
+}
+function side(){
+  const seq=clean(state.seq); const ch=chargaff(seq); const tr=translate(seq);
+  const aas=tr.aas.filter(a=>a.aa!=='Stop');
+  let formula='',stats='',analysis='',mis='',table='';
+  if(state.mode===1){
+    formula='กฎชาร์กาฟฟ์ของสายคู่: %A = %T และ %G = %C<br>DNA polymerase สังเคราะห์ได้ทิศ 5′ → 3′ เท่านั้น';
+    stats=[['%A = %T', num(ch.A,1)],['%G = %C', num(ch.G,1)],['แบบจำลอง','กึ่งอนุรักษ์']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ลูกได้สายแม่ 1 เส้นกับสายใหม่ 1 เส้น';
+    mis='<strong>จำไว้:</strong> สร้างสายใหม่ได้ทาง 5′→3′ เท่านั้น';
+    table=`<table><tr><th>เอนไซม์</th><th>หน้าที่</th></tr><tr><td>Helicase</td><td>คลายเกลียว</td></tr><tr><td>Primase</td><td>วางไพรเมอร์ RNA</td></tr><tr><td>Pol III</td><td>ต่อนิวคลีโอไทด์ 5′→3′</td></tr><tr><td>Pol I</td><td>รื้อไพรเมอร์แล้วใส่ DNA</td></tr><tr><td>Ligase</td><td>เชื่อมรอยโอคาซากิ</td></tr></table>`;
+  } else if(state.mode===2){
+    formula=`จำนวนโคดอน = จำนวนเบส mRNA / 3 = ${tr.codons}<br>กรดอะมิโนที่นับไม่รวมรหัสหยุด = ${aas.length}`;
+    stats=[['mRNA', tr.rna.slice(0,12)+(tr.rna.length>12?'…':'')],['กรดอะมิโน', aas.map(a=>a.aa).join('-')||'-'],['เบส', seq.length]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    const aaText=tr.aas.map(a=>`${a.codon} ${TH[a.aa]||a.aa}`).join(' · ');
+    analysis='T บนสายรหัสกลายเป็น U บน mRNA';
+    mis='<strong>จำไว้:</strong> เปลี่ยนเบส ไม่ได้แปลว่ากรดอะมิโนเปลี่ยนเสมอ';
+    const bases=['U','C','A','G'];
+    const cur=tr.aas[0]?tr.aas[Math.min(Math.floor(state.t)%Math.max(1,tr.aas.length), tr.aas.length-1)].codon:'';
+    let rows='';
+    bases.forEach(b1=>{
+      bases.forEach(b2=>{
+        rows+=`<tr><td>${b1}${b2}</td>`+bases.map(b3=>{const c=b1+b2+b3; return `<td class="${c===cur?'hot':''}">${c}<br>${CODE[c]}</td>`;}).join('')+'</tr>';
+      });
+    });
+    table=`<table><tr><th>2 เบสแรก</th><th>U</th><th>C</th><th>A</th><th>G</th></tr>${rows}</table><p class="hint">${aaText}</p>`;
+  } else if(state.mode===3 && state.sub==='point'){
+    const after=mutated(seq); const kind=mutClass(seq, after);
+    formula='มิวเทชันระดับเบสอาจเงียบ เปลี่ยนกรดอะมิโน กลายเป็นรหัสหยุด หรือเลื่อนกรอบการอ่าน';
+    stats=[['ผล', kind],['สายใหม่', after.slice(0,10)+(after.length>10?'…':'')],['ความยาว', after.length+' bp']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='เดิม: '+translate(seq).aas.map(a=>a.aa).join('-')+'<br>ใหม่: '+translate(after).aas.map(a=>a.aa).join('-');
+    mis='<strong>จำไว้:</strong> ไซเลนต์เปลี่ยนเบส แต่กรดอะมิโนเดิม';
+    table=`<table><tr><th>ชนิด</th><th>ผลต่อโปรตีน</th></tr><tr><td>แทนที่แบบเงียบ</td><td>กรดอะมิโนเดิม</td></tr><tr><td>มิสเซนส์</td><td>กรดอะมิโนเปลี่ยน</td></tr><tr><td>นันเซนส์</td><td>หยุดก่อนกำหนด</td></tr><tr><td>เฟรมชิฟต์</td><td>กรอบโคดอนเลื่อน</td></tr></table>`;
+  } else if(state.mode===3 && state.sub==='chrom'){
+    const names={del:'ดีลีชัน ชิ้นส่วนหาย',dup:'ดูพลิเคชัน ชิ้นส่วนซ้ำ',inv:'อินเวอร์ชัน ชิ้นส่วนกลับหัว',trans:'ทรานสโลเคชัน สลับกับโครโมโซมอีกเส้น'};
+    formula='มิวเทชันระดับโครโมโซมเปลี่ยนโครงสร้างหรือจำนวน ไม่ใช่แค่เบสเดียว';
+    stats=[['แบบ', names[state.struct]],['แถบเดิม','A B C D E F'],['ผล','ดูแถบสีบนจอ']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis=names[state.struct];
+    mis='<strong>จำไว้:</strong> ดาวน์คือโครโมโซมคู่ 21 เกินมา';
+    table=`<table><tr><th>แบบ</th><th>สิ่งที่เกิด</th></tr><tr><td>Deletion</td><td>หายบางท่อน</td></tr><tr><td>Duplication</td><td>ซ้ำบางท่อน</td></tr><tr><td>Inversion</td><td>กลับทิศในเส้นเดิม</td></tr><tr><td>Translocation</td><td>ย้ายไปอีกเส้น</td></tr></table>`;
+  } else if(state.mode===3){
+    const label={normal:'46, XX หรือ XY', down:'47, XX หรือ XY, +21', turner:'45, X', tri:'3n ทั้งชุด'};
+    formula='แคริโอไทป์เรียงโครโมโซมตามขนาดและตำแหน่งเซนโทรเมียร์';
+    stats=[['การอ่าน', label[state.kary]],['คู่ที่ 21', state.kary==='down'?'3 แท่ง':'2 แท่ง'],['เพศ', state.kary==='turner'?'X แท่งเดียว':'ครบคู่']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ดูตำแหน่งเซนโทรเมียร์';
+    mis='<strong>จำไว้:</strong> เทอร์เนอร์คือ XO · ดาวน์คือคู่ 21 มี 3 แท่ง';
+    table=`<table><tr><th>กลุ่ม</th><th>ตัวอย่าง</th></tr><tr><td>แอนยูพลอยดี</td><td>ดาวน์, เทอร์เนอร์</td></tr><tr><td>พอลิพลอยดี</td><td>3n, 4n พบบ่อยในพืช</td></tr></table>`;
+  } else if(state.sub==='pcr'){
+    const n=state.n0*Math.pow(2, state.done);
+    formula=`Nt = N0 × 2ⁿ = ${state.n0} × 2^${state.done} = ${n.toLocaleString('th-TH')}`;
+    const phase=['แยกสาย 95°C','จับไพรเมอร์ 55°C','สังเคราะห์ 72°C'][state.pcrPhase];
+    stats=[['รอบที่ทำแล้ว', state.done+' / '+state.cycles],['อุณหภูมิ', phase],['โมเลกุล', n.toExponential(2)]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ทุก ๆ รอบ จำนวนเพิ่มเป็น 2 เท่า';
+    mis='<strong>จำไว้:</strong> PCR เพิ่ม DNA ไม่ได้ตัด';
+    table=`<table><tr><th>ขั้น</th><th>อุณหภูมิโดยประมาณ</th></tr><tr><td>Denaturation</td><td>94–95°C</td></tr><tr><td>Annealing</td><td>50–60°C</td></tr><tr><td>Extension</td><td>72°C</td></tr></table>`;
+  } else if(state.sub==='gel'){
+    formula='DNA มีประจุลบ จึงวิ่งจากขั้วลบไปขั้วบวก ชิ้นสั้นวิ่งได้ไกลกว่าในเวลาเท่ากัน';
+    stats=[['เจล', num(state.gel,1)+' %'],['ผู้ต้องสงสัยที่ตรงหลักฐาน','A'],['ผลของเจลเข้ม','ชิ้นใหญ่ยิ่งช้า']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='แถบล่างคือชิ้นสั้นกว่า';
+    mis='<strong>จำไว้:</strong> ชิ้นสั้นวิ่งได้ไกลกว่า';
+    table=`<table><tr><th>ช่อง</th><th>ขนาดแถบ (bp)</th></tr><tr><td>แลดเดอร์</td><td>100–2000</td></tr><tr><td>หลักฐาน</td><td>300, 800, 1500</td></tr><tr><td>คน A</td><td>300, 800, 1500</td></tr><tr><td>คน B</td><td>400, 900, 1600</td></tr></table>`;
+  } else {
+    formula='EcoRI จดจำ 5′-G|AATTC-3′ ซึ่งเป็นพาลินโดรม แล้วตัดเป็นปลายเหนียว';
+    stats=[['เอนไซม์','EcoRI'],['ตำแหน่ง','GAATTC'],['การเชื่อม','DNA ligase']].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+    analysis='ตัดด้วยเอนไซม์เดียวกัน แล้วต่อด้วยไลเกส';
+    mis='<strong>จำไว้:</strong> ตัดได้เฉพาะลำดับที่เอนไซม์จำได้';
+    table=`<table><tr><th>ชิ้นส่วน</th><th>บทบาท</th></tr><tr><td>พลาสมิด</td><td>พาหะ</td></tr><tr><td>ยีนแปลกปลอม</td><td>สิ่งที่ต้องการเพิ่ม</td></tr><tr><td>ไลเกส</td><td>เชื่อมพันธะฟอสโฟไดเอสเทอร์</td></tr></table>`;
+  }
+  $('formula').innerHTML=formula; $('stats').innerHTML=stats; $('analysis').innerHTML=analysis; $('mis').innerHTML=mis; $('table').innerHTML=table;
+}
+function fit(canvas){const r=canvas.getBoundingClientRect();const dpr=Math.min(2,devicePixelRatio||1);const w=Math.max(10,r.width),h=Math.max(10,r.height);const W=Math.floor(w*dpr),H=Math.floor(h*dpr);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function paper(ctx,w,h){ctx.fillStyle='#fff8fb';ctx.fillRect(0,0,w,h);ctx.strokeStyle='rgba(80,160,110,.18)';for(let x=0;x<w;x+=26){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=26){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}}
+function drawRep(ctx,w,h){
+  paper(ctx,w,h);
+  const seq=clean(state.seq)||'ATGC';
+  const y1=h*0.42, y2=h*0.58, forkX=40+state.fork*(w-80);
+  ctx.strokeStyle='#1565c0'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(30,y1); ctx.lineTo(forkX,y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30,y2); ctx.lineTo(forkX,y2); ctx.stroke();
+  ctx.strokeStyle='#2e7d32'; ctx.beginPath(); ctx.moveTo(forkX,y1); ctx.lineTo(w-30,y1-30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(forkX,y2); ctx.lineTo(w-30,y2+30); ctx.stroke();
+  const n=Math.max(4, Math.floor((forkX-40)/28));
+  for(let i=0;i<n;i++){
+    const x=40+i*28; const b=seq[i%seq.length];
+    ctx.fillStyle=BASECOL[b]; ctx.beginPath(); ctx.arc(x,y1,8,0,Math.PI*2); ctx.fill();
+    const comp={A:'T',T:'A',C:'G',G:'C'}[b]; ctx.fillStyle=BASECOL[comp]; ctx.beginPath(); ctx.arc(x,y2,8,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#90a4ae'; ctx.beginPath(); ctx.moveTo(x,y1+8); ctx.lineTo(x,y2-8); ctx.stroke();
+  }
+  for(let k=0;k<3;k++){
+    const x=forkX+20+k*36;
+    ctx.fillStyle='#66bb6a'; ctx.fillRect(x, y2+8, 28, 8);
+  }
+  ctx.fillStyle='#ef6c00'; ctx.beginPath(); ctx.arc(forkX, (y1+y2)/2, 14,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI';
+  ctx.fillText('Helicase ที่ง่าม · เส้นเขียวคือสายใหม่', 20, 32);
+  if(state.showDir){ ctx.fillText("5'  สายบน    3'", 20, h-36); ctx.fillText("3'  สายล่าง   5'", 20, h-14); }
+}
+function drawProt(ctx,w,h){
+  paper(ctx,w,h);
+  const tr=translate(clean(state.seq));
+  const aas=tr.aas.length?tr.aas:[{codon:'---',aa:'?'}];
+  const idx=Math.floor(state.t*0.8)%aas.length;
+  ctx.fillStyle='#fff8e1'; ctx.fillRect(w*0.28,h*0.38,w*0.5,70);
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText('ไรโบโซม', w*0.46, h*0.38-8);
+  aas.forEach((a,i)=>{
+    const x=40+((i-idx+aas.length)%aas.length)*54;
+    if(x>w-20) return;
+    ctx.fillStyle=i===idx?'#f9a825':'#90caf9'; ctx.fillRect(x,h*0.62,40,22);
+    ctx.fillStyle='#2f7a4e'; ctx.font='12px Leelawadee UI'; ctx.fillText(a.codon, x+2, h*0.62+16);
+    ctx.fillStyle='#6a1b9a'; ctx.fillText(a.aa, x+4, h*0.62-8);
+  });
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText('mRNA วิ่งผ่านไรโบโซม',20,32);
+}
+function bandStr(kind){
+  const b=['A','B','C','D','E','F'];
+  if(kind==='del') return ['A','B','D','E','F'];
+  if(kind==='dup') return ['A','B','C','C','D','E','F'];
+  if(kind==='inv') return ['A','B','E','D','C','F'];
+  return b;
+}
+function drawStruct(ctx,w,h){
+  paper(ctx,w,h);
+  const cols=['#e53935','#fb8c00','#fdd835','#43a047','#1e88e5','#8e24aa','#6d4c41'];
+  function chrom(x, arr, label){
+    arr.forEach((band,i)=>{
+      ctx.fillStyle=cols['ABCDEF'.indexOf(band)]||'#6d4c41';
+      ctx.fillRect(x, 80+i*36, 46, 32);
+      ctx.fillStyle='#fff'; ctx.font='700 14px Leelawadee UI'; ctx.fillText(band, x+16, 102+i*36);
+    });
+    ctx.fillStyle='#2f7a4e'; ctx.fillText(label, x-6, 70);
+  }
+  chrom(80, ['A','B','C','D','E','F'], 'ปกติ');
+  chrom(240, bandStr(state.struct), 'เปลี่ยน');
+  if(state.struct==='trans') chrom(400, ['A','B','C','X','Y'], 'อีกเส้น');
+}
+function drawKary(ctx,w,h){
+  paper(ctx,w,h);
+  const sets=state.kary==='tri'?3:2;
+  for(let i=0;i<23;i++){
+    const x=16+(i%12)*((w-24)/12), y=50+Math.floor(i/12)*150;
+    let copies=sets;
+    if(state.kary==='down' && i===20) copies=3;
+    if(state.kary==='turner' && i===22) copies=1;
+    if(state.kary==='normal' && i===22) copies=2;
+    for(let c=0;c<copies;c++){
+      const hh=70-i;
+      ctx.fillStyle=i===20&&state.kary==='down'?'#c62828':'#1565c0';
+      ctx.fillRect(x+c*10, y+40, 8, Math.max(18,hh));
+      ctx.fillStyle='#2f7a4e'; ctx.fillRect(x+c*10, y+40+hh*0.4, 8, 4);
+    }
+    ctx.fillStyle='#4e6a5c'; ctx.font='11px Leelawadee UI'; ctx.fillText(String(i+1), x, y+130);
+  }
+}
+function drawCut(ctx,w,h){
+  paper(ctx,w,h);
+  const seq='ATGCGAATTCTAGC';
+  const cut=seq.indexOf('GAATTC');
+  ctx.font='700 20px Leelawadee UI';
+  for(let i=0;i<seq.length;i++){
+    const x=30+i*32;
+    ctx.fillStyle=i>=cut && i<cut+6 ? '#c62828':'#2f7a4e';
+    ctx.fillText(seq[i], x, h*0.42);
+    if(state.enzymeOn && i===cut){ ctx.strokeStyle='#e0a100'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(x-4,h*0.3); ctx.lineTo(x-4,h*0.5); ctx.stroke(); }
+  }
+  ctx.beginPath(); ctx.arc(w*0.72,h*0.72,50,0,Math.PI*2); ctx.strokeStyle='#6a1b9a'; ctx.lineWidth=6; ctx.stroke();
+  if(state.enzymeOn){ ctx.strokeStyle='#2e7d32'; ctx.beginPath(); ctx.arc(w*0.72,h*0.72,62,0.2,1.4); ctx.stroke(); }
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 16px Leelawadee UI'; ctx.fillText('พลาสมิดรับชิ้นที่ตัดด้วย EcoRI', 20, 36);
+}
+function drawPCR(ctx,w,h){
+  paper(ctx,w,h);
+  const temps=[95,55,72]; const t=temps[state.pcrPhase];
+  ctx.fillStyle='#ffccbc'; ctx.fillRect(w*0.62,80,70,220);
+  ctx.fillStyle='#2f7a4e'; ctx.font='700 22px Leelawadee UI'; ctx.fillText(t+'°C', w*0.62, 70);
+  const n=Math.min(16, state.n0*Math.pow(2, Math.min(4,state.done)));
+  for(let i=0;i<n;i++){
+    ctx.strokeStyle=i%2?'#1565c0':'#2e7d32'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(40, 80+i*16); ctx.lineTo(40+80+state.pcrPhase*30, 80+i*16); ctx.stroke();
+  }
+  ctx.fillStyle='#2f7a4e'; ctx.font='16px Leelawadee UI'; ctx.fillText('รอบที่ '+state.done, 20, 36);
+}
+function drawGel(ctx,w,h){
+  ctx.fillStyle='#120818'; ctx.fillRect(0,0,w,h);
+  const lanes=['ladder','crime','A','B'];
+  lanes.forEach((name,li)=>{
+    const x=70+li*((w-100)/4);
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(x,40,36,h-80);
+    bandsOf(name).forEach(bp=>{
+      const mobility=(Math.log10(2000/bp))/state.gel;
+      const y=60+mobility*state.gelRun*220;
+      ctx.fillStyle='#b2ff59'; ctx.shadowColor='#b2ff59'; ctx.shadowBlur=8;
+      ctx.fillRect(x+4, y, 28, 6); ctx.shadowBlur=0;
+    });
+    ctx.fillStyle='#e8f5e9'; ctx.font='13px Leelawadee UI';
+    ctx.fillText(name==='ladder'?'แลดเดอร์':name==='crime'?'หลักฐาน':name==='A'?'คน A':'คน B', x-8, h-24);
+  });
+  ctx.fillStyle='#fff'; ctx.font='14px Leelawadee UI'; ctx.fillText('− ขั้วลบ', 16, 28); ctx.fillText('+ ขั้วบวก', 16, h-8);
+}
+function drawMain(){
+  const {ctx,w,h}=fit($('cv'));
+  if(state.mode===1) drawRep(ctx,w,h);
+  else if(state.mode===2) drawProt(ctx,w,h);
+  else if(state.mode===3 && state.sub==='chrom') drawStruct(ctx,w,h);
+  else if(state.mode===3 && state.sub==='kary') drawKary(ctx,w,h);
+  else if(state.mode===3) drawProt(ctx,w,h);
+  else if(state.sub==='pcr') drawPCR(ctx,w,h);
+  else if(state.sub==='gel') drawGel(ctx,w,h);
+  else drawCut(ctx,w,h);
+}
+function drawGraph(){
+  const {ctx,w,h}=fit($('graph')); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h);
+  const pad={l:36,r:8,t:16,b:24}, iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  ctx.strokeStyle='#e7b7cc'; ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+ih); ctx.lineTo(pad.l+iw,pad.t+ih); ctx.stroke();
+  if(state.mode===4 && state.sub==='pcr'){
+    ctx.beginPath(); ctx.strokeStyle='#7dcea0'; ctx.lineWidth=2;
+    const max=state.n0*Math.pow(2,state.cycles);
+    for(let i=0;i<=state.cycles;i++){
+      const y=state.n0*Math.pow(2,i);
+      const X=pad.l+i/state.cycles*iw, Y=pad.t+ih-(Math.log2(y)/Math.log2(max))*ih;
+      if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.fillStyle='#4e6a5c'; ctx.font='12px Leelawadee UI'; ctx.fillText('log ของจำนวน DNA เทียบรอบ', pad.l, 12);
+  } else if(state.mode===1){
+    const ch=chargaff(clean(state.seq));
+    ['A','T','G','C'].forEach((b,i)=>{
+      const x=pad.l+i*50; const v=ch[b]/100; ctx.fillStyle=BASECOL[b]; ctx.fillRect(x, pad.t+ih-v*ih, 28, v*ih);
+      ctx.fillStyle='#4e6a5c'; ctx.fillText(b, x+8, h-6);
+    });
+  } else {
+    ctx.fillStyle='#4e6a5c'; ctx.font='13px Leelawadee UI'; ctx.fillText('กราฟชาร์กาฟฟ์และกราฟ PCR อยู่ตามโหมด', pad.l, 48);
+  }
+}
+function setKey(t){
+  if(!t.dataset||!t.dataset.key) return;
+  const key=t.dataset.key;
+  if(key==='seq'){
+    const s=clean(t.value); state.seq=s; if(t.value!==s) t.value=s;
+    state.mutPos=Math.min(state.mutPos, Math.max(0,s.length-1));
+  } else if(t.type==='range') state[key]=parseFloat(t.value);
+  else state[key]=t.value;
+  const lab=document.querySelector(`[data-for="${key}"]`);
+  if(lab){
+    if(key==='fork') lab.textContent=num(state.fork*100,0)+'%';
+    else if(key==='gel') lab.textContent=num(state.gel,1)+'%';
+    else if(key==='gelRun') lab.textContent=num(state.gelRun*100,0)+'%';
+    else lab.textContent=state[key];
+  }
+  if(['mutType','struct','kary'].includes(key)) renderControls();
+  side();
+}
+document.addEventListener('input',e=>setKey(e.target));
+document.addEventListener('change',e=>setKey(e.target));
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act, v=b.dataset.v;
+  if(act==='mode'){ state.mode=+v; if(state.mode===3) state.sub='point'; if(state.mode===4) state.sub='cut'; renderControls(); side(); }
+  if(act==='sub'){ state.sub=v; renderControls(); side(); }
+  if(act==='play'){ state.playing=!state.playing; renderControls(); }
+  if(act==='reset'){ const m=state.mode,s=state.sub; state=defaults(); state.mode=m; state.sub=s; renderControls(); side(); }
+  if(act==='toggle'){ state.showDir=!state.showDir; renderControls(); side(); }
+  if(act==='silent'){ state.seq='ATGTTTGGTAGCGAATAA'; state.mutType='sub'; state.mutPos=5; state.newBase='C'; renderControls(); side(); }
+  if(act==='miss'){ state.seq='ATGTTTGGTAGCGAATAA'; state.mutType='sub'; state.mutPos=4; state.newBase='C'; renderControls(); side(); }
+  if(act==='non'){ state.seq='ATGTTTGGTAGCGAATAA'; state.mutType='sub'; state.mutPos=12; state.newBase='T'; renderControls(); side(); }
+  if(act==='enz'){ state.enzymeOn=!state.enzymeOn; renderControls(); side(); }
+  if(act==='onecyc'){ if(state.done<state.cycles){ state.done++; state.pcrPhase=(state.pcrPhase+1)%3; } side(); }
+  if(act==='allcyc'){ state.done=state.cycles; side(); }
+});
+let last=0, acc=0;
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000||0); last=now;
+  if(state.playing){ state.t+=dt; acc+=dt; if(state.mode===4 && state.sub==='pcr' && acc>1.2 && state.done<state.cycles){ acc=0; state.done++; state.pcrPhase=(state.done)%3; side(); } if(state.mode===4 && state.sub==='gel') state.gelRun=Math.min(1, state.gelRun+dt*0.05); }
+  drawMain(); drawGraph(); requestAnimationFrame(loop);
+}
+renderControls(); side(); requestAnimationFrame(loop);
+document.documentElement.dataset.ready='genes';
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

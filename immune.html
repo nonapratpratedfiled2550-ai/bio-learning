@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบภูมิคุ้มกัน – Interactive Biology Lab</title>
+<style>
+:root{--bg:#07110d;--panel:#0e1a15;--panel2:#14251e;--line:#244136;--txt:#e6f6ee;--mut:#93b8a6;--acc:#86efac;--acc2:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#14532d,#4c1d95);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#166534;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#1a3328;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#15803d;border-color:#86efac}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#7c3aed;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#040b08;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:10px;font-size:12px}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);color:var(--mut)}
+.flow span.on{background:#166534;border-color:var(--acc);color:#fff;font-weight:700}.flow span.done{color:var(--txt)}.flow i{color:var(--mut);font-style:normal}
+.eq{font-family:Consolas,monospace;background:#050d09;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#050d09;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🛡️ ระบบภูมิคุ้มกัน (Immune System)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : ภูมิคุ้มกันดั้งเดิมและการอักเสบ</button>
+    <button data-mode="2">โหมด 2 : B cell / T cell และการสร้างแอนติบอดี</button>
+    <button data-mode="3">โหมด 3 : วัคซีน vs เซรุ่ม และ Primary / Secondary response</button>
+    <button data-mode="4">โหมด 4 : ความผิดปกติ: ภูมิแพ้ Autoimmune HIV/AIDS</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1 2 3 4"><div class="ctl"><label>ปริมาณเชื้อโรค / แอนติเจน (Pathogen load)</label><select id="load"><option value="low">ต่ำ (Low)</option><option value="med" selected>ปานกลาง (Medium)</option><option value="high">สูง (High)</option></select></div></div>
+    <div data-m="1">
+      <div class="ctl"><label>สภาพผิวหนัง (ด่านที่ 1)</label><select id="skin"><option value="wound">มีบาดแผล – แบคทีเรียเข้าสู่เนื้อเยื่อ</option><option value="intact">ผิวหนังปกติ – Keratin / เมือก / Lysozyme กันไว้</option></select></div>
+      <label class="chk"><input type="checkbox" id="anti"> ให้ยาต้านฮิสตามีน (ยับยั้งการอักเสบ)</label>
+      <label class="chk"><input type="checkbox" id="comp" checked> Complement proteins ทำงาน (MAC)</label>
+      <button class="btn pri" id="infect" style="width:100%;margin-top:4px">🦠 ปล่อยแบคทีเรียชุดใหม่</button>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>ชนิดสิ่งแปลกปลอม</label><select id="ptype"><option value="bac">แบคทีเรีย (อยู่นอกเซลล์ → Humoral เด่น)</option><option value="virus">ไวรัส (อยู่ในเซลล์ → Cell-mediated เด่น)</option></select></div>
+      <div class="ctl"><label>เวลาในการแบ่งเซลล์ 1 รอบ (g) <b id="genV"></b></label><input type="range" id="gen" min="6" max="24" step="1" value="12"></div>
+      <label class="chk"><input type="checkbox" id="noTh"> ไม่มี Helper T cell (CD4⁺) ทำงาน</label>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ประเภทภูมิคุ้มกันที่ได้รับ (ชุดการทดลอง)</label><select id="iv"><option value="none">None – ติดเชื้อจริง 2 ครั้ง (วันที่ 0 และ 60)</option><option value="active" selected>Active – วัคซีนเข็ม 1 (วัน 0) + เข็ม 2 (วัน 28) → ติดเชื้อวัน 90</option><option value="passive">Passive – ฉีดเซรุ่ม (วัน 0) → ติดเชื้อวัน 90</option></select></div>
+      <div class="ctl"><label>ชนิดวัคซีน</label><select id="vtype"><option value="att">เชื้ออ่อนฤทธิ์ (Live attenuated)</option><option value="kill">เชื้อตาย (Inactivated)</option><option value="tox">ท็อกซอยด์ (Toxoid)</option><option value="mrna">mRNA vaccine</option></select></div>
+      <div class="btns"><button class="btn" id="bVac">💉 ฉีดวัคซีนตอนนี้</button><button class="btn" id="bSer">🧪 ฉีดเซรุ่มตอนนี้</button><button class="btn" id="bInf" style="grid-column:1/-1">🦠 ติดเชื้อจริงตอนนี้</button></div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>ความผิดปกติของระบบภูมิคุ้มกัน</label><select id="dis"><option value="allergy">โรคภูมิแพ้ (Allergy / Hypersensitivity)</option><option value="hiv" selected>HIV / AIDS (Immunodeficiency)</option><option value="auto">โรคภูมิคุ้มกันต่อต้านตนเอง (Autoimmune)</option></select></div>
+      <div class="sub4" data-s="allergy">
+        <div class="ctl"><label>ระดับเกสรดอกไม้ / ฝุ่น (Allergen) <b id="algV"></b></label><input type="range" id="alg" min="0" max="100" step="1" value="40"></div>
+        <label class="chk"><input type="checkbox" id="sens" checked> เคยได้รับสารก่อภูมิแพ้มาก่อน (Sensitized)</label>
+        <label class="chk"><input type="checkbox" id="antiH"> กินยาต้านฮิสตามีน (Antihistamine)</label>
+      </div>
+      <div class="sub4" data-s="auto">
+        <div class="ctl"><label>โรค</label><select id="autoT"><option value="sle">โรคพุ่มพวง (SLE)</option><option value="ra">รูมาตอยด์ (Rheumatoid arthritis)</option><option value="t1d">เบาหวานชนิดที่ 1 (Type 1 diabetes)</option></select></div>
+        <label class="chk"><input type="checkbox" id="isup"> ได้รับยากดภูมิคุ้มกัน (Immunosuppressant)</label>
+      </div>
+      <div class="sub4" data-s="hiv auto"><div class="ctl"><label>ระยะเวลาการดำเนินโรค <b id="yrV"></b></label><input type="range" id="yr" min="0" max="10" step="0.1" value="3"></div></div>
+      <div class="sub4" data-s="hiv"><label class="chk"><input type="checkbox" id="art"> เริ่มยาต้านไวรัส (ART) ตั้งแต่ปีที่ 2</label><p class="hint">ปริมาณเชื้อ (Low/Medium/High) ด้านบน = อัตราการทำลาย CD4⁺</p></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgMHC" class="on">MHC I / MHC II บนผิวเซลล์</button><button id="tgIG">ชนิดแอนติบอดี (IgM / IgG / IgE)</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#e6f6ee',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'mhc',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#1a3328';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#cfeadb',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+const fmtBig=n=>n>=1e6?(n/1e6).toFixed(1)+' ล้าน':Math.round(n).toLocaleString('en-US');
+const LF=()=>({low:0.6,med:1,high:1.6})[$('#load').value];
+function panel(g,x,y,w,h){g.fillStyle='rgba(8,20,15,.93)';rr(g,x,y,w,h,10);g.fill();}
+function Yab(g,x,y,s,ang,col,lw=2){g.save();g.translate(x,y);g.rotate(ang||0);g.strokeStyle=col;g.lineWidth=lw;g.lineCap='round';g.beginPath();g.moveTo(0,s*0.6);g.lineTo(0,0);g.lineTo(-s*0.5,-s*0.6);g.moveTo(0,0);g.lineTo(s*0.5,-s*0.6);g.stroke();g.restore();}
+function cup(g,x,y,a,col){g.strokeStyle=col;g.lineWidth=2.5;g.beginPath();g.arc(x+Math.cos(a)*4,y+Math.sin(a)*4,4,a+Math.PI/2,a+Math.PI*1.5);g.stroke();}
+function cell(g,x,y,r,fill,edge){g.fillStyle=fill;g.strokeStyle=edge;g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.arc(x+r*0.15,y+r*0.1,r*0.45,0,7);g.fill();}
+function bacterium(g,x,y,a,col='#4ade80'){g.save();g.translate(x,y);g.rotate(a);g.fillStyle=col;rr(g,-5,-2.5,10,5,2.5);g.fill();g.restore();}
+function igDetail(g,x,y,s){g.lineCap='round';g.lineWidth=4;g.strokeStyle='#60a5fa';g.beginPath();g.moveTo(x-3,y+s*0.7);g.lineTo(x-3,y);g.lineTo(x-s*0.5,y-s*0.6);g.stroke();g.beginPath();g.moveTo(x+3,y+s*0.7);g.lineTo(x+3,y);g.lineTo(x+s*0.5,y-s*0.6);g.stroke();
+  g.strokeStyle='#a7f3d0';g.lineWidth=3;g.beginPath();g.moveTo(x-s*0.22,y-s*0.04);g.lineTo(x-s*0.62,y-s*0.5);g.stroke();g.beginPath();g.moveTo(x+s*0.22,y-s*0.04);g.lineTo(x+s*0.62,y-s*0.5);g.stroke();
+  g.fillStyle='#fde047';[-1,1].forEach(k=>{g.beginPath();g.arc(x+k*s*0.58,y-s*0.6,4,0,7);g.fill();});}
+function igInset(g,x,y,w,h){panel(g,x,y,w,h);g.strokeStyle='#a78bfa';g.lineWidth=1;rr(g,x,y,w,h,10);g.stroke();T(g,'ชนิดของแอนติบอดี (Immunoglobulin)',x+8,y+12,'#c4b5fd',11,'left',true);
+  const cw=w/4,cy=y+h*0.52,s=Math.min(cw*0.32,h*0.24);
+  igDetail(g,x+cw*0.5,cy,s);T(g,'IgG (Monomer)',x+cw*0.5,y+h-22,'#93c5fd',10,'center',true);T(g,'มากสุด · ผ่านรกได้',x+cw*0.5,y+h-9,'#cbd5e1',9,'center');
+  for(let i=0;i<5;i++){const a=i/5*6.283;Yab(g,x+cw*1.5+Math.sin(a)*s*0.55,cy-Math.cos(a)*s*0.55,s*0.6,a,'#f472b6',2);}T(g,'IgM (Pentamer)',x+cw*1.5,y+h-22,'#f9a8d4',10,'center',true);T(g,'หลั่งแรกสุด',x+cw*1.5,y+h-9,'#cbd5e1',9,'center');
+  Yab(g,x+cw*2.5,cy-s*0.42,s*0.6,0,'#34d399',2);Yab(g,x+cw*2.5,cy+s*0.42,s*0.6,Math.PI,'#34d399',2);T(g,'IgA (Dimer)',x+cw*2.5,y+h-22,'#6ee7b7',10,'center',true);T(g,'น้ำนม น้ำลาย น้ำตา',x+cw*2.5,y+h-9,'#cbd5e1',9,'center');
+  Yab(g,x+cw*3.5,cy,s*0.7,0,'#fbbf24',2.5);g.fillStyle='#a855f7';rr(g,x+cw*3.5-14,cy+s*0.42,28,8,4);g.fill();T(g,'IgE',x+cw*3.5,y+h-22,'#fde68a',10,'center',true);T(g,'เกาะ Mast cell · ภูมิแพ้',x+cw*3.5,y+h-9,'#cbd5e1',9,'center');
+  T(g,'● Variable region จับ Ag',x+8,y+27,'#fde047',9);T(g,'— Heavy chain  — Light chain',x+cw*1.2,y+27,'#93c5fd',9);}
+function mhcInset(g,x,y,w,h){panel(g,x,y,w,h);g.strokeStyle='#22d3ee';g.lineWidth=1;rr(g,x,y,w,h,10);g.stroke();T(g,'โมเลกุล MHC บนผิวเซลล์',x+8,y+12,'#67e8f9',11,'left',true);
+  const c1=[x+w*0.2,y+h*0.58],c2=[x+w*0.62,y+h*0.58],r=Math.min(h*0.22,w*0.09);
+  cell(g,c1[0],c1[1],r,'#7f1d1d','#fca5a5');for(let i=0;i<5;i++){const a=-1.2+i*0.6;cup(g,c1[0]+Math.cos(a)*r,c1[1]+Math.sin(a)*r,a,'#f472b6');}T(g,'MHC I – ทุกเซลล์ที่มีนิวเคลียส',c1[0],y+h-10,'#f9a8d4',9.5,'center',true);
+  cell(g,c1[0]+r*2.3,c1[1]-r*0.6,r*0.7,'#1e3a8a','#93c5fd');T(g,'Tc (CD8⁺)',c1[0]+r*2.3,c1[1]-r*1.5,'#93c5fd',9,'center');
+  g.fillStyle='#7c3aed66';g.beginPath();g.arc(c2[0],c2[1],r,0,7);g.fill();for(let i=0;i<5;i++){const a=-1.2+i*0.6;cup(g,c2[0]+Math.cos(a)*r,c2[1]+Math.sin(a)*r,a,'#22d3ee');g.fillStyle='#ef4444';g.beginPath();g.arc(c2[0]+Math.cos(a)*(r+5),c2[1]+Math.sin(a)*(r+5),2,0,7);g.fill();}T(g,'MHC II – เฉพาะ APC',c2[0],y+h-10,'#67e8f9',9.5,'center',true);
+  cell(g,c2[0]+r*2.3,c2[1]-r*0.6,r*0.7,'#2563eb','#93c5fd');T(g,'Th (CD4⁺)',c2[0]+r*2.3,c2[1]-r*1.5,'#93c5fd',9,'center');}
+
+/* ================= MODE 1 ================= */
+const MAST=[[0.25,0.42],[0.72,0.4],[0.5,0.58]];
+let M1;function initM1(){M1={t:0,bac:[],neu:[],mac:[],pus:[],gran:[],pop:[],H:0,kills:0,hist:[],lastH:-9,clear:0};seed1();}
+function seed1(){const n=Math.round(({low:12,med:30,high:60})[$('#load').value]);const intact=$('#skin').value==='intact';for(let i=0;i<n;i++){const r=Math.random();M1.bac.push(intact?{x:0.3+r*0.4,y:0.04+Math.random()*0.06,a:r*6}:{x:0.46+r*0.08,y:0.17+Math.random()*0.08,a:r*6});}}
+const vesselH=()=>0.06*(1+0.7*M1E()/100);
+const M1E=()=>M1.H*($('#anti').checked?0.25:1);
+function stepM1(dt){M1.t+=dt;const intact=$('#skin').value==='intact',nb0=M1.bac.length;
+  const nb=M1.bac.filter(b=>b.y>0.14).length;
+  M1.bac.forEach(b=>{b.x=clamp(b.x+(Math.random()-0.5)*0.03*dt*6,0.02,0.98);b.a+=dt;if(b.y>0.14)b.y=clamp(b.y+(Math.random()-0.42)*0.03*dt*6,0.16,0.66);});
+  if(intact){M1.bac=M1.bac.filter(b=>{if(b.y<0.14&&Math.random()<0.12*dt){M1.pop.push({x:b.x,y:b.y,t:0,c:'#fde047'});return false;}return true;});}
+  const born=[];M1.bac.forEach(b=>{if(b.y>0.14&&Math.random()<0.22*(1-nb0/260)*dt)born.push({x:b.x+0.01,y:b.y+0.01,a:b.a});});M1.bac.push(...born);
+  if($('#comp').checked)M1.bac=M1.bac.filter(b=>{if(b.y>0.14&&Math.random()<0.035*dt){M1.pop.push({x:b.x,y:b.y,t:0,c:'#22d3ee'});M1.kills++;return false;}return true;});
+  const rel=nb>0?12*Math.min(1,nb/25):0;M1.H=clamp(M1.H+(rel-0.12*M1.H)*dt,0,100);
+  if(rel>0&&Math.random()<rel*0.25*dt){const m=MAST[Math.floor(Math.random()*3)];for(let k=0;k<3;k++){const a=Math.random()*6.283;M1.gran.push({x:m[0],y:m[1],vx:Math.cos(a)*0.05,vy:Math.sin(a)*0.05,t:0});}}
+  M1.gran.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.t+=dt;});M1.gran=M1.gran.filter(p=>p.t<2);
+  const E=M1E(),vTop=0.82-vesselH();
+  if(E>8&&M1.neu.length<40&&Math.random()<0.05*(E-8)*dt)M1.neu.push({x:0.1+Math.random()*0.8,y:0.82,st:'dia',e:0,life:0,cd:0});
+  if(M1.t>6&&E>8&&M1.mac.length<6&&Math.random()<0.006*E*dt)M1.mac.push({x:0.1+Math.random()*0.8,y:0.82,st:'dia',e:0,life:0,cd:0});
+  const hunt=(c,sp,cap,eatPus)=>{c.life+=dt;c.cd=Math.max(0,c.cd-dt);if(c.st==='dia'){c.y-=0.05*dt;if(c.y<vTop-0.02)c.st='hunt';return;}
+    let tg=null,bd=1e9,pus=false;M1.bac.forEach(b=>{if(b.y<0.14)return;const d=Math.hypot(b.x-c.x,b.y-c.y);if(d<bd){bd=d;tg=b;}});if(eatPus)M1.pus.forEach(p=>{const d=Math.hypot(p.x-c.x,p.y-c.y)*1.3;if(d<bd){bd=d;tg=p;pus=true;}});
+    const tx=tg?tg.x:0.5,ty=tg?tg.y:0.3,d=Math.hypot(tx-c.x,ty-c.y)||1;c.x+=(tx-c.x)/d*sp*dt;c.y=clamp(c.y+(ty-c.y)/d*sp*dt,0.16,vTop);
+    if(tg&&bd<0.018&&c.cd===0){if(pus)M1.pus.splice(M1.pus.indexOf(tg),1);else{M1.bac.splice(M1.bac.indexOf(tg),1);M1.kills++;}c.e++;c.cd=0.35;}};
+  M1.neu.forEach(c=>hunt(c,0.07,8,false));M1.mac.forEach(c=>hunt(c,0.045,30,true));
+  M1.neu=M1.neu.filter(c=>{if(c.e>=8||c.life>(nb?30:8)){M1.pus.push({x:c.x,y:c.y});return false;}return true;});M1.mac=M1.mac.filter(c=>c.life<60);
+  M1.pop.forEach(p=>p.t+=dt);M1.pop=M1.pop.filter(p=>p.t<0.8);
+  M1.clear=nb===0?M1.clear+dt:0;
+  if(M1.t-M1.lastH>=0.5){M1.lastH=M1.t;M1.hist.push([M1.t,M1.bac.length,M1.H,M1.neu.length+M1.mac.length]);while(M1.hist.length&&M1.t-M1.hist[0][0]>90)M1.hist.shift();}}
+function drawM1(g,w,h){g.fillStyle='#040b08';g.fillRect(0,0,w,h);const UW=w*0.66,X=f=>f*UW,Y=f=>f*h,E=M1E(),intact=$('#skin').value==='intact';
+  g.fillStyle=`rgba(${Math.round(lerp(60,140,E/100))},20,30,1)`;g.fillRect(0,Y(0.14),UW,Y(0.86));
+  g.fillStyle='#c08457';if(intact)g.fillRect(0,Y(0.08),UW,Y(0.06));else{g.fillRect(0,Y(0.08),X(0.44),Y(0.06));g.fillRect(X(0.56),Y(0.08),X(0.44),Y(0.06));}
+  g.fillStyle='#e7c39a';if(intact)g.fillRect(0,Y(0.08),UW,3);else{g.fillRect(0,Y(0.08),X(0.44),3);g.fillRect(X(0.56),Y(0.08),X(0.44),3);}
+  T(g,'ผิวหนัง: Keratin + ต่อมเหงื่อ/ไขมัน (ด่านที่ 1)',X(0.01),Y(0.035),'#e7c39a',10.5,'left',true);if(!intact)T(g,'บาดแผล',X(0.5),Y(0.11),'#fca5a5',10,'center',true);
+  const vc=Y(0.82),vh=h*vesselH(),gap=E>20;g.fillStyle=`rgba(220,38,38,${0.35+0.3*E/100})`;g.fillRect(0,vc-vh,UW,vh*2);g.strokeStyle='#fca5a5';g.lineWidth=3;g.setLineDash(gap?[18,6]:[]);g.beginPath();g.moveTo(0,vc-vh);g.lineTo(UW,vc-vh);g.moveTo(0,vc+vh);g.lineTo(UW,vc+vh);g.stroke();g.setLineDash([]);
+  for(let i=0;i<14;i++){const x=(S.time*(60-E*0.35)+i*UW/14)%UW,y=vc+Math.sin(i*1.7)*vh*0.5;g.fillStyle='#ef4444';g.beginPath();g.ellipse(x,y,8,5,0,0,7);g.fill();}
+  T(g,gap?'หลอดเลือดฝอยขยาย + ผนังซึมผ่านได้มากขึ้น (เลือดไหลช้าลง)':'หลอดเลือดฝอย',X(0.01),vc+vh+12,'#fca5a5',10.5);
+  MAST.forEach(([mx,my])=>{g.fillStyle='#6d28d9';g.beginPath();g.arc(X(mx),Y(my),13,0,7);g.fill();for(let k=0;k<7;k++){g.fillStyle='#e9d5ff';g.beginPath();g.arc(X(mx)+Math.cos(k)*7,Y(my)+Math.sin(k*1.3)*7,2,0,7);g.fill();}});T(g,'Mast cell',X(MAST[0][0])+16,Y(MAST[0][1]),'#c4b5fd',10);
+  M1.gran.forEach(p=>{g.fillStyle=`rgba(216,180,254,${1-p.t/2})`;g.beginPath();g.arc(X(p.x),Y(p.y),2.5,0,7);g.fill();});
+  M1.pus.forEach(p=>{g.fillStyle='rgba(250,204,21,.75)';g.beginPath();g.arc(X(p.x),Y(p.y),5,0,7);g.fill();});
+  M1.bac.forEach(b=>bacterium(g,X(b.x),Y(b.y),b.a));
+  M1.pop.forEach(p=>{g.strokeStyle=p.c;g.lineWidth=1.5;g.beginPath();g.arc(X(p.x),Y(p.y),4+p.t*14,0,7);g.stroke();});
+  M1.neu.forEach(c=>{const sq=c.st==='dia';g.fillStyle='#c4b5fd';g.beginPath();g.ellipse(X(c.x),Y(c.y),sq?4:8,sq?10:8,0,0,7);g.fill();g.fillStyle='#4c1d95';for(let k=0;k<3;k++){g.beginPath();g.arc(X(c.x)-3+k*3,Y(c.y)+(k%2?2:-1),2.2,0,7);g.fill();}});
+  M1.mac.forEach(c=>{g.fillStyle='rgba(251,146,60,.85)';g.beginPath();for(let i=0;i<=20;i++){const a=i/20*6.283,r=14*(1+0.18*Math.sin(a*4+S.time*2));i?g.lineTo(X(c.x)+Math.cos(a)*r,Y(c.y)+Math.sin(a)*r):g.moveTo(X(c.x)+Math.cos(a)*r,Y(c.y)+Math.sin(a)*r);}g.closePath();g.fill();g.fillStyle='#7c2d12';g.beginPath();g.arc(X(c.x),Y(c.y),5,0,7);g.fill();});
+  if(intact)T(g,'แบคทีเรียติดอยู่บนผิว: กรดไขมัน เหงื่อ Lysozyme ทำลาย',X(0.5),Y(0.2),'#fde047',11,'center',true);
+  const px=w*0.68,pw=w*0.31;panel(g,px,10,pw,h-20);let y=30;T(g,'อาการอักเสบ 4 อย่าง',px+10,y,'#86efac',12,'left',true);y+=22;
+  [['แดง (Rubor) – เลือดมาเลี้ยงมาก',E/100,'#ef4444'],['ร้อน (Calor)',E/100,'#f97316'],['บวม (Tumor) – ของเหลวซึมออก',E/100*0.95,'#38bdf8'],['ปวด (Dolor)',Math.min(1,E/100*0.8+M1.bac.length/400),'#e879f9']].forEach(([n,v,c])=>{bar(g,px+10,y,pw-20,8,v,c,n);y+=28;});
+  y+=2;T(g,'ด่านที่ 2 (ไม่จำเพาะ)',px+10,y,'#86efac',12,'left',true);y+=18;
+  [['● Neutrophil (มาถึงก่อน)',M1.neu.length,'#c4b5fd'],['● Macrophage (ตามมา กินจุ)',M1.mac.length,'#fb923c'],['● หนอง (Pus) = WBC ตาย + เชื้อ',M1.pus.length,'#facc15'],['○ Complement (MAC) เจาะเชื้อ',$('#comp').checked?'ทำงาน':'ปิด','#22d3ee']].forEach(([n,v,c])=>{T(g,n,px+10,y,c,10.5);T(g,String(v),px+pw-10,y,'#fde68a',11,'right',true);y+=17;});
+  y+=6;const st=M1.clear>3&&M1.kills>0?['✓ กำจัดเชื้อสำเร็จ → Macrophage เก็บกวาด ซ่อมแซมเนื้อเยื่อ','#86efac']:M1.bac.length>150?['⚠ เชื้อเพิ่มจำนวนเร็วกว่าการกำจัด (ติดเชื้อลุกลาม)','#fca5a5']:intact?['✓ ด่านที่ 1 ป้องกันได้ ไม่เกิดการอักเสบ','#86efac']:['… กำลังต่อสู้กับเชื้อ','#fde68a'];  wrap(g,st[0],px+10,y,pw-20,15,st[1],11,true);
+  if(S.toggle==='ig')igInset(g,8,h*0.42,Math.min(UW-16,460),110);
+  else{MAST.forEach(([mx,my])=>{for(let i=0;i<5;i++){const a=i/5*6.283;cup(g,X(mx)+Math.cos(a)*15,Y(my)+Math.sin(a)*15,a,'#f472b6');}});M1.mac.forEach(c=>{for(let i=0;i<4;i++){const a=i/4*6.283+0.4;cup(g,X(c.x)+Math.cos(a)*16,Y(c.y)+Math.sin(a)*16,a,'#22d3ee');}});
+    T(g,'◡ MHC I (ทุกเซลล์ที่มีนิวเคลียส)',UW-8,Y(0.18),'#f9a8d4',10,'right');T(g,'◡ MHC II (Macrophage = APC)',UW-8,Y(0.22),'#67e8f9',10,'right');}}
+
+/* ================= MODE 2 ================= */
+let M2;function initM2(){M2={d:0,P:1500*LF(),N:0,Tc:0,m:0,gG:0,mem:0,hist:[],lastH:-9,cleared:false,peakP:0};}
+const N0=()=>Math.round(8*LF());
+function adv2(dd){const d=M2.d,vir=$('#ptype').value==='virus',th=!$('#noTh').checked,g=V('gen')/24;
+  if(th&&d>=3&&!M2.cleared)M2.N=Math.min(2e5,N0()*Math.pow(2,(d-3)/g));else if(M2.cleared)M2.N*=Math.exp(-0.15*dd);
+  const plasma=d>=4?0.6*M2.N:0;if(d>=4)M2.mem=Math.max(M2.mem,0.1*M2.N);
+  M2.m+=(0.004*plasma*(d<10?1:0.15)-0.35*M2.m)*dd;M2.gG+=(0.004*plasma*(d>=6?1:0)-0.04*M2.gG)*dd;
+  M2.Tc=vir&&th&&d>=3.5?0.35*M2.N:0;const ab=M2.m+M2.gG;
+  if(M2.P>0){const r=vir?1.4:1.1,kAb=(vir?0.002:0.01)*ab,kTc=vir?3*M2.Tc/(M2.Tc+3000):0;M2.P*=Math.exp((r*(1-M2.P/1e7)-kAb-kTc-0.3)*dd);if(M2.P<1){M2.P=0;M2.cleared=true;}}
+  M2.peakP=Math.max(M2.peakP,M2.P);M2.d+=dd;}
+function stepM2(dt){if(M2.d>=21)return;for(let i=0;i<8;i++)adv2(dt*0.6/8);if(M2.d-M2.lastH>=0.1){M2.lastH=M2.d;const L=v=>Math.log10(Math.max(1,v));M2.hist.push([M2.d,L(M2.N),L(M2.m),L(M2.gG),L(M2.P)]);}}
+function stage2(){const d=M2.d,th=!$('#noTh').checked;if(d<1)return 0;if(d<2||!th)return 1;if(d<3)return 2;if(d<5)return 3;return M2.cleared?5:4;}
+function drawM2(g,w,h){g.fillStyle='#040b08';g.fillRect(0,0,w,h);const d=M2.d,th=!$('#noTh').checked,vir=$('#ptype').value==='virus',UW=w*0.66,X=f=>f*UW,Y=f=>f*h,mhc=S.toggle==='mhc';
+  const apc=[X(0.13),Y(0.28)],thH=[X(0.42),Y(0.1)],bc=[X(0.3),Y(0.6)],tcp=[X(0.62),Y(0.14)],tg=[X(0.86),Y(0.3)];
+  g.fillStyle='#7c3aed55';g.strokeStyle='#a78bfa';g.lineWidth=2;g.beginPath();for(let i=0;i<=48;i++){const a=i/48*6.283,r=32*(1+0.35*Math.max(0,Math.sin(a*5+S.time*0.8)));const x=apc[0]+Math.cos(a)*r,y=apc[1]+Math.sin(a)*r;i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();g.fill();g.stroke();
+  T(g,'APC (Dendritic cell)',apc[0],apc[1]+56,'#c4b5fd',10,'center',true);
+  if(d<1.2)for(let i=0;i<8;i++){const s=clamp(d+hash(i)*0.3,0,1);g.fillStyle='#ef4444';g.beginPath();g.arc(lerp(X(0.02)+hash(i+2)*X(0.22),apc[0],s),lerp(Y(0.02)+hash(i+5)*Y(0.06),apc[1],s),3.5,0,7);g.fill();}
+  if(d>=0.8){for(let i=0;i<4;i++){const a=-0.9+i*0.45;const x=apc[0]+Math.cos(a)*34,y=apc[1]+Math.sin(a)*34;cup(g,x,y,a,'#22d3ee');g.fillStyle='#ef4444';g.beginPath();g.arc(x+Math.cos(a)*6,y+Math.sin(a)*6,2.6,0,7);g.fill();}if(mhc)T(g,'MHC II + ชิ้นแอนติเจน',apc[0],apc[1]+70,'#67e8f9',10,'center');}
+  const thp=!th||d<1?thH:d<1.6?[lerp(thH[0],X(0.24),(d-1)/0.6),lerp(thH[1],Y(0.22),(d-1)/0.6)]:[X(0.24),Y(0.22)];
+  cell(g,thp[0],thp[1],18,th?'#2563eb':'#334155','#93c5fd');T(g,th?'Helper T (CD4⁺)':'ไม่มี Helper T (CD4⁺)',thp[0]+22,thp[1]-18,'#93c5fd',10,'left',true);
+  if(th&&mhc&&d>=1.6)T(g,'TCR + CD4 จับ MHC II',thp[0]+22,thp[1]-4,'#67e8f9',9.5);
+  if(mhc){[bc,thp].forEach(c=>{for(let i=0;i<3;i++){const a=2.2+i*0.5;cup(g,c[0]+Math.cos(a)*19,c[1]+Math.sin(a)*19,a,'#f472b6');}});T(g,'MHC I',bc[0]-46,bc[1]+6,'#f9a8d4',9.5);}
+  if(th&&d>=2)for(let j=0;j<8;j++){const s=(S.time*0.5+j/8)%1;const to=j%2?bc:tcp;g.fillStyle='#fde047';g.beginPath();g.arc(lerp(thp[0],to[0],s),lerp(thp[1],to[1],s),2.5,0,7);g.fill();}
+  if(th&&d>=2)T(g,'Cytokines',X(0.36),Y(0.36),'#fde047',10,'left',true);
+  cell(g,bc[0],bc[1],18,'#0f766e','#5eead4');for(let i=0;i<5;i++){const a=-2.4+i*0.5;Yab(g,bc[0]+Math.cos(a)*24,bc[1]+Math.sin(a)*24,9,a+Math.PI/2,'#5eead4',1.6);}T(g,'B cell (BCR = แอนติบอดีบนผิว)',bc[0],bc[1]+32,'#5eead4',10,'center',true);
+  const act=th&&d>=2.5;const n=act?clamp(Math.round(Math.log2(Math.max(1,M2.N/N0()))),0,24):0;
+  for(let i=0;i<n;i++){const cx=X(0.5)+(i%8)*X(0.06),cy=Y(0.56)+Math.floor(i/8)*Y(0.1),mem=i%7===6;if(mem){g.fillStyle='#16a34a';g.beginPath();g.arc(cx,cy,8,0,7);g.fill();}else{g.fillStyle='#be185d';g.beginPath();g.ellipse(cx,cy,11,9,0,0,7);g.fill();g.strokeStyle='#fbcfe8';g.lineWidth=1;for(let k=0;k<3;k++){g.beginPath();g.arc(cx+3,cy,3+k*2.5,2,4.2);g.stroke();}}}
+  if(n)T(g,'Clonal expansion: ● Plasma cell  ● Memory B cell',X(0.5),Y(0.5),'#f9a8d4',10,'left',true);
+  if(act&&d>=3){g.fillStyle='#1e3a8a';g.beginPath();g.arc(tcp[0],tcp[1],15,0,7);g.fill();T(g,'Cytotoxic T (CD8⁺)',tcp[0]+19,tcp[1],'#93c5fd',10,'left',true);}
+  const lp=Math.log10(M2.P+1),np=M2.P>0?clamp(Math.round(lp*4),1,26):0,ab=M2.m+M2.gG;
+  if(vir){const R=34*clamp(lp/6,0.35,1);g.fillStyle=M2.P>0?'#7f1d1d':'#3f3f46';g.strokeStyle='#fca5a5';g.lineWidth=2;g.beginPath();g.arc(tg[0],tg[1],R,0,7);g.fill();g.stroke();
+    for(let i=0;i<np;i++){const a=hash(i)*6.283,r=R*0.75*hash(i+9);g.fillStyle='#f97316';g.beginPath();g.arc(tg[0]+Math.cos(a)*r,tg[1]+Math.sin(a)*r,2.6,0,7);g.fill();}
+    T(g,M2.P>0?'เซลล์ติดไวรัส':'เซลล์ติดเชื้อถูกทำลาย (Apoptosis)',tg[0],tg[1]+R+14,'#fca5a5',10,'center',true);
+    if(mhc)for(let i=0;i<4;i++){const a=2.6+i*0.45;cup(g,tg[0]+Math.cos(a)*R,tg[1]+Math.sin(a)*R,a,'#f472b6');}
+    if(M2.Tc>0&&M2.P>0)for(let i=0;i<3;i++){const a=3.6+i*0.7,x=tg[0]+Math.cos(a)*(R+16),y=tg[1]+Math.sin(a)*(R+16);g.fillStyle='#1e3a8a';g.beginPath();g.arc(x,y,11,0,7);g.fill();for(let k=0;k<3;k++){const s=(S.time+k/3)%1;g.fillStyle='#fde047';g.beginPath();g.arc(lerp(x,tg[0]+Math.cos(a)*R,s),lerp(y,tg[1]+Math.sin(a)*R,s),2,0,7);g.fill();}g.fillStyle='#000';g.beginPath();g.arc(tg[0]+Math.cos(a)*(R-3),tg[1]+Math.sin(a)*(R-3),3,0,7);g.fill();}
+    if(M2.Tc>0&&M2.P>0)T(g,'Perforin เจาะรู + Granzyme',tg[0]-R-10,tg[1]-R-6,'#fde047',9.5,'right');}
+  else{for(let i=0;i<np;i++){const a=hash(i)*6.283,r=(ab>5?20:44)*hash(i+9);bacterium(g,tg[0]+Math.cos(a)*r,tg[1]+Math.sin(a)*r,a);}if(np)T(g,ab>5?'Agglutination / Opsonization':'แบคทีเรีย',tg[0],tg[1]+56,'#86efac',10,'center',true);else T(g,'กำจัดเชื้อหมดแล้ว',tg[0],tg[1],'#86efac',11,'center',true);}
+  if(ab>1&&np){const na=clamp(Math.round(Math.log10(ab)*5),1,14);for(let i=0;i<na;i++){const s=(S.time*0.35+i/na)%1;const sx=X(0.52)+hash(i)*X(0.4),sy=Y(0.56);Yab(g,lerp(sx,tg[0]+(hash(i+3)-0.5)*40,s),lerp(sy,tg[1]+(hash(i+4)-0.5)*40,s),9,0,'#fde047',1.8);}}
+  T(g,`วันที่ ${d.toFixed(1)}`,8,14,'#e6f6ee',13,'left',true);
+  if(S.toggle==='ig')igInset(g,8,h-118,Math.min(UW-16,460),110);
+  const px=w*0.68,pw=w*0.31;panel(g,px,10,pw,h-20);let y=30;T(g,'ระดับในร่างกาย (สเกล log)',px+10,y,'#86efac',12,'left',true);y+=26;
+  [['Lymphocytes จำเพาะ N(t)',M2.N,6,'#5eead4'],['IgM',M2.m,4,'#f472b6'],['IgG',M2.gG,4,'#60a5fa'],['เชื้อโรค (Pathogen)',M2.P,7,'#ef4444'],['Memory B cell',M2.mem,5,'#22c55e']].forEach(([n,v,mx,c])=>{bar(g,px+10,y,pw-20,9,Math.log10(Math.max(1,v))/mx,c,n,fmtBig(v));y+=32;});
+  y+=4;const st=['รอ APC จับแอนติเจน','APC นำเสนอแอนติเจนบน MHC II','Helper T ถูกกระตุ้น หลั่ง Cytokines','Clonal selection + expansion','Plasma cell หลั่งแอนติบอดี / Tc ทำลายเซลล์ติดเชื้อ','กำจัดเชื้อสำเร็จ เหลือ Memory cell'][stage2()];wrap(g,(th?'':'⚠ ไม่มี Helper T: B cell และ Tc ไม่ถูกกระตุ้น → ')+st,px+10,y,pw-20,15,th?'#fde68a':'#fca5a5',11,true);}
+
+/* ================= MODE 3 ================= */
+const VF={att:1,kill:0.5,tox:0.5,mrna:0.8},KEL=0.05;
+let M3;function initM3(){const iv=$('#iv').value;M3={d:0,ev:[],P:0,peak:0,hist:[],lastH:-9};const pre=iv==='none'?[[0,'inf'],[60,'inf']]:iv==='active'?[[0,'vac'],[28,'vac'],[90,'inf']]:[[0,'ser'],[90,'inf']];pre.forEach(([d,k])=>addEv(d,k,false));}
+function addEv(d,k,fired){const sec=k!=='ser'&&M3.ev.some(x=>x.k!=='ser'&&d-x.d>=7);M3.ev.push({d,k,sec,f:k==='vac'?VF[$('#vtype').value]:k==='inf'?LF():1,fired,n:M3.ev.filter(x=>x.k===k).length+1});if(fired&&k==='inf'){M3.P+=1000*LF();M3.peak=M3.P;}}
+function resp(t,A,lag,peak,kd){if(t<=0)return 0;return A/(1+Math.exp(-(t-lag)/1.2))*Math.exp(-kd*Math.max(0,t-peak));}
+function titers(d){let m=0,gg=0,ser=0;M3.ev.forEach(e=>{const t=d-e.d;if(t<0)return;if(e.k==='ser'){ser+=20*Math.exp(-KEL*t);return;}if(e.sec){m+=0.4*e.f*resp(t,1,2,4,0.35);gg+=30*e.f*resp(t,1,2.5,8,0.012);}else{m+=1.5*e.f*resp(t,1,6,10,0.2);gg+=2*e.f*resp(t,1,9,15,0.03);}});return{m,g:gg,ser,tot:m+gg+ser};}
+function stepM3(dt){if(M3.d>=150)return;const dd=dt*5;for(let i=0;i<10;i++){const d=M3.d+dd*i/10;M3.ev.forEach(e=>{if(!e.fired&&d>=e.d){e.fired=true;if(e.k==='inf'){M3.P+=1000*e.f;M3.peak=M3.P;}}});if(M3.P>0){const tt=titers(d).tot;M3.P*=Math.exp((1.1*(1-M3.P/1e7)-1.6*tt)*dd/10);M3.peak=Math.max(M3.peak,M3.P);if(M3.P<1)M3.P=0;}}
+  M3.d=Math.min(150,M3.d+dd);if(M3.d-M3.lastH>=0.5){M3.lastH=M3.d;const t=titers(M3.d);M3.hist.push([M3.d,t.m,t.g,t.ser,M3.P]);}}
+const hasMem=()=>M3.ev.some(e=>e.fired&&e.k!=='ser'&&M3.d-e.d>=7);
+const L10=v=>Math.log10(Math.max(0.01,v));
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=46,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#1c3a2e';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#93b8a6',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#93b8a6',10,'center');}
+  g.strokeStyle='#36614f';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#93b8a6',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#93b8a6',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+const pw10=v=>{const r=Math.round(v);return r===0?'1':r===1?'10':r===-1?'0.1':r===2?'100':r===-2?'0.01':'10^'+r;};
+function plot(g,A,f,x0,x1,col,lw=2,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=200;i++){const x=x0+(x1-x0)*i/200,y=f(x);i?g.lineTo(A.X(x),A.Y(y)):g.moveTo(A.X(x),A.Y(y));}g.stroke();g.setLineDash([]);}
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#e6f6ee',10);});}
+function hl(g,A,y,w,col,lab){g.strokeStyle=col;g.setLineDash([3,3]);g.lineWidth=1;g.beginPath();g.moveTo(A.L,A.Y(y));g.lineTo(w-A.Rm,A.Y(y));g.stroke();g.setLineDash([]);if(lab)T(g,lab,A.L+4,A.Y(y)-7,col,9.5);}
+function drawM3(g,w,h){g.fillStyle='#040b08';g.fillRect(0,0,w,h);const A=axes(g,w,h-20,0,150,-2,2.5,'เวลา (วัน)','ระดับแอนติบอดีในเลือด (Titer, สเกล log)',10,9,null,v=>Number.isInteger(Math.round(v*2)/2)&&Math.abs(v-Math.round(v))<0.01?pw10(v):'');
+  const H=M3.hist;hl(g,A,0,w,'#86efac','');T(g,'ระดับป้องกันโรค (Protective level)',w-A.Rm-4,A.Y(0)-8,'#86efac',9.5,'right');
+  M3.ev.forEach((e,i)=>{const x=A.X(e.d);g.strokeStyle=e.k==='inf'?'#ef4444':e.k==='vac'?'#22c55e':'#a78bfa';g.setLineDash([4,3]);g.lineWidth=1.2;g.beginPath();g.moveTo(x,A.Tm);g.lineTo(x,h-20-A.B);g.stroke();g.setLineDash([]);
+    const lab=e.k==='inf'?`🦠 ติดเชื้อครั้งที่ ${e.n}${e.sec?' (Secondary)':' (Primary)'}`:e.k==='vac'?`💉 วัคซีนเข็ม ${e.n}`:'🧪 เซรุ่ม';T(g,lab.replace(/^\S+ /,''),x+4,A.Tm+8+(i%3)*14,e.fired?(e.k==='inf'?'#fca5a5':e.k==='vac'?'#86efac':'#c4b5fd'):'#64748b',10,'left',true);});
+  const line=(i,col,lw)=>{g.strokeStyle=col;g.lineWidth=lw;g.beginPath();let f=1;H.forEach(r=>{const y=A.Y(clamp(L10(r[i]),-2,2.5));f?g.moveTo(A.X(r[0]),y):g.lineTo(A.X(r[0]),y);f=0;});g.stroke();};
+  g.fillStyle='rgba(239,68,68,.22)';g.beginPath();g.moveTo(A.X(0),A.Y(-2));H.forEach(r=>g.lineTo(A.X(r[0]),A.Y(-2+clamp(Math.log10(r[4]+1)/7,0,1)*1.8)));g.lineTo(A.X(M3.d),A.Y(-2));g.closePath();g.fill();
+  line(1,'#f472b6',2);line(2,'#60a5fa',2.6);line(3,'#a78bfa',2.2);
+  g.strokeStyle='#fde047';g.lineWidth=1;g.beginPath();g.moveTo(A.X(M3.d),A.Tm);g.lineTo(A.X(M3.d),h-20-A.B);g.stroke();
+  legend(g,[['IgM','#f472b6'],['IgG (จากร่างกายสร้างเอง)','#60a5fa'],['IgG จากเซรุ่ม','#a78bfa'],['ปริมาณเชื้อโรค (แถบแดง)','#ef4444']],w-170,h-120);
+  T(g,`วันที่ ${M3.d.toFixed(0)}`,A.X(M3.d)+4,h-24-A.B,'#fde047',10,'left',true);T(g,hasMem()?'✓ มี Memory cells':'✗ ยังไม่มี Memory cells',w-12,h-8,hasMem()?'#86efac':'#fca5a5',11,'right',true);
+  if(S.toggle==='ig')igInset(g,A.L+6,A.Tm+4,Math.min(w*0.5,400),104);}
+
+/* ================= MODE 4 ================= */
+const HK={low:0.15,med:0.21,high:0.3};
+function cd4At(y){const k=HK[$('#load').value];let c;if(y<0.15)c=1050-450*(y/0.15);else if(y<0.5)c=600+250*((y-0.15)/0.35);else c=850*Math.exp(-k*(y-0.5));
+  if($('#art').checked&&y>2){const c2=850*Math.exp(-k*1.5);c=c2+(750-c2)*(1-Math.exp(-0.6*(y-2)));}return c;}
+function vlAt(y){const k=HK[$('#load').value];let v;if(y<0.1)v=2+4.5*(y/0.1);else if(y<0.5)v=6.5-2.3*((y-0.1)/0.4);else v=4.2+(k/0.21)*0.18*(y-0.5);if($('#art').checked&&y>2){const v2=4.2+(k/0.21)*0.27;v=Math.max(1.3,v2-3*(y-2));}return v;}
+function hivStage(c,y){if(y<0.5)return['Acute','ระยะติดเชื้อเฉียบพลัน (ไข้ คล้ายไข้หวัด)','mid'];if(c<200)return['AIDS','เข้าสู่ภาวะเอดส์ (AIDS stage): CD4⁺ < 200 cells/µL','no'];if(c<500)return['Symptomatic','ระยะมีอาการ: ภูมิคุ้มกันลดลง ติดเชื้อง่าย','mid'];return['Asymptomatic','ระยะไม่แสดงอาการ (แต่แพร่เชื้อได้)','ok'];}
+const dmgAt=y=>1-Math.exp(-($('#isup').checked?0.07:0.28)*y);
+let M4;function initM4(){M4={H:0,gran:[],t:0};}
+function stepM4(dt){M4.t+=dt;const dis=$('#dis').value;if(dis==='allergy'){const rate=$('#sens').checked?40*Math.pow(V('alg')/100,1.5):0;M4.H=clamp(M4.H+(rate-0.3*M4.H)*dt*2,0,100);if(rate>0.5&&Math.random()<rate*0.15*dt)for(let k=0;k<2;k++){const a=Math.random()*6.283;M4.gran.push({a,r:0,t:0});}M4.gran.forEach(p=>{p.r+=dt*0.35;p.t+=dt;});M4.gran=M4.gran.filter(p=>p.t<2.5);}}
+const allergyE=()=>M4.H*($('#antiH').checked?0.3:1);
+function allergyStatus(){const e=allergyE();if(!$('#sens').checked)return['Sensitization','ได้รับครั้งแรก: B cell สร้าง IgE ไปเกาะ Mast cell ยังไม่มีอาการ','mid'];if(e<12)return['ไม่มีอาการ','ไม่มีอาการแพ้','ok'];if(e<45)return['แพ้เล็กน้อย','จาม คัน น้ำมูกไหล ตาแดง (Hay fever)','mid'];if(e<75)return['แพ้ปานกลาง','ลมพิษ ผื่นบวม หอบหืด (หลอดลมตีบ)','no'];return['Anaphylaxis','Anaphylaxis: หลอดเลือดขยายทั่วร่างกาย ความดันตก หลอดลมตีบ — ต้องฉีด Epinephrine ทันที','no'];}
+function drawM4(g,w,h){g.fillStyle='#040b08';g.fillRect(0,0,w,h);const dis=$('#dis').value,UW=w*0.66,X=f=>f*UW,Y=f=>f*h;const px=w*0.68,pw=w*0.31;
+  if(dis==='allergy'){const cx=X(0.42),cy=Y(0.45),R=Math.min(UW*0.22,h*0.28),sens=$('#sens').checked,alg=V('alg')/100,deg=M4.H/100;
+    g.fillStyle='#4c1d95';g.strokeStyle='#c4b5fd';g.lineWidth=2;g.beginPath();g.arc(cx,cy,R,0,7);g.fill();g.stroke();g.fillStyle='#2e1065';g.beginPath();g.arc(cx,cy,R*0.3,0,7);g.fill();
+    const ng=Math.round(40*(1-0.7*deg));for(let i=0;i<ng;i++){const a=hash(i)*6.283,r=R*(0.38+0.5*hash(i+7));g.fillStyle='#e9d5ff';g.beginPath();g.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r,3,0,7);g.fill();}
+    T(g,'Mast cell',cx,cy,'#e9d5ff',12,'center',true);
+    const nr=16;for(let i=0;i<nr;i++){const a=i/nr*6.283;if(sens)Yab(g,cx+Math.cos(a)*(R+9),cy+Math.sin(a)*(R+9),12,a+Math.PI/2,'#fbbf24',2.2);else{g.fillStyle='#64748b';g.fillRect(cx+Math.cos(a)*R-2,cy+Math.sin(a)*R-2,4,4);}}
+    const na=Math.round(alg*nr);for(let i=0;i<na;i++){const a=(i+0.5)/nr*6.283,bound=sens;const fr=bound?R+24:R+50+30*Math.sin(S.time+i);const x=cx+Math.cos(a)*fr,y=cy+Math.sin(a)*fr;g.fillStyle='#facc15';g.beginPath();for(let k=0;k<12;k++){const aa=k/12*6.283,rr2=k%2?4:7;g.lineTo(x+Math.cos(aa)*rr2,y+Math.sin(aa)*rr2);}g.closePath();g.fill();
+      if(bound){g.strokeStyle='#fde047';g.lineWidth=1;g.beginPath();g.moveTo(cx+Math.cos(a-0.2)*(R+18),cy+Math.sin(a-0.2)*(R+18));g.lineTo(x,y);g.lineTo(cx+Math.cos(a+0.2)*(R+18),cy+Math.sin(a+0.2)*(R+18));g.stroke();}}
+    M4.gran.forEach(p=>{const r=R+p.r*R*1.4;g.fillStyle=`rgba(216,180,254,${1-p.t/2.5})`;g.beginPath();g.arc(cx+Math.cos(p.a)*r,cy+Math.sin(p.a)*r,3.5,0,7);g.fill();});
+    T(g,sens?'Allergen จับ IgE 2 โมเลกุลที่อยู่ติดกัน (Cross-linking) → Mast cell แตกปล่อย Histamine':'ยังไม่เคยสัมผัส: ยังไม่มี IgE เกาะ Mast cell',X(0.02),Y(0.06),'#fde68a',11,'left',true);
+    T(g,'✸ Allergen (เกสร/ฝุ่น)   Y IgE   ● เม็ด Histamine',X(0.02),Y(0.12),'#cbd5e1',10.5);
+    if(S.toggle==='ig')igInset(g,8,h-118,Math.min(UW-16,460),110);else{const e=allergyE();T(g,$('#antiH').checked?'ยาต้านฮิสตามีนบล็อกตัวรับ H1 → Histamine ยังหลั่งแต่ออกฤทธิ์ได้น้อย':'',X(0.02),Y(0.9),'#86efac',11,'left',true);}
+    panel(g,px,10,pw,h-20);let y=30;T(g,'ผลของ Histamine ต่อร่างกาย',px+10,y,'#86efac',12,'left',true);y+=26;const e=allergyE()/100;
+    bar(g,px+10,y,pw-20,9,M4.H/100,'#c084fc','Histamine ที่หลั่ง',M4.H.toFixed(0));y+=32;
+    [['หลอดเลือดขยาย ซึมผ่าน (แดง บวม ลมพิษ)',e,'#ef4444'],['กล้ามเนื้อเรียบหลอดลมหดตัว (หอบ)',Math.max(0,e-0.25)/0.75,'#38bdf8'],['หลั่งเมือก (น้ำมูก)',e,'#a3e635'],['คัน (กระตุ้นปลายประสาท)',e,'#f472b6'],['ความดันเลือดตก',Math.max(0,e-0.7)/0.3,'#f97316']].forEach(([n,v,c])=>{bar(g,px+10,y,pw-20,8,v,c,n);y+=28;});
+    const st=allergyStatus();wrap(g,st[1],px+10,y+4,pw-20,15,st[2]==='ok'?'#86efac':st[2]==='mid'?'#fde68a':'#fca5a5',11,true);}
+  else if(dis==='hiv'){const y=V('yr'),c=cd4At(y),vl=vlAt(y),alive=Math.round(24*clamp(c/1100,0,1));
+    for(let i=0;i<24;i++){const cx=X(0.08)+(i%6)*X(0.11),cy=Y(0.14)+Math.floor(i/6)*Y(0.17);if(i<alive){cell(g,cx,cy,17,'#2563eb','#93c5fd');for(let k=0;k<6;k++){const a=k/6*6.283+0.3;g.fillStyle='#22d3ee';g.beginPath();g.arc(cx+Math.cos(a)*19,cy+Math.sin(a)*19,2.6,0,7);g.fill();}}else{g.fillStyle='#3f3f46';for(let k=0;k<5;k++){g.beginPath();g.arc(cx+Math.cos(k*1.3)*9,cy+Math.sin(k*1.7)*9,4,0,7);g.fill();}}}
+    const nv=clamp(Math.round((vl-1.3)*4),0,22);for(let i=0;i<nv;i++){const tc=Math.floor(hash(i)*Math.max(1,alive)),cx=X(0.08)+(tc%6)*X(0.11),cy=Y(0.14)+Math.floor(tc/6)*Y(0.17);const ph=(S.time*0.3+hash(i+3))%1,a=hash(i+5)*6.283;const r=alive?lerp(60,21,Math.min(1,ph*1.6)):60;const x=cx+Math.cos(a)*r,yy=cy+Math.sin(a)*r;
+      g.fillStyle='#f97316';g.beginPath();g.arc(x,yy,4.5,0,7);g.fill();g.strokeStyle='#fdba74';g.lineWidth=1;for(let k=0;k<6;k++){const b=k/6*6.283;g.beginPath();g.moveTo(x+Math.cos(b)*4.5,yy+Math.sin(b)*4.5);g.lineTo(x+Math.cos(b)*7,yy+Math.sin(b)*7);g.stroke();}}
+    T(g,'● Helper T (CD4⁺)  ● ตัวรับ CD4  ✺ HIV (gp120 จับ CD4)  ● เซลล์ถูกทำลาย',X(0.02),Y(0.8),'#cbd5e1',10.5);
+    T(g,`ปีที่ ${y.toFixed(1)} หลังติดเชื้อ`,X(0.02),Y(0.86),'#fde68a',13,'left',true);
+    if(S.toggle==='ig')igInset(g,8,h-118,Math.min(UW-16,460),110);
+    panel(g,px,10,pw,h-20);let yy=30;T(g,'ผลการตรวจเลือด',px+10,yy,'#86efac',12,'left',true);yy+=26;
+    bar(g,px+10,yy,pw-20,10,c/1200,c<200?'#ef4444':c<500?'#f59e0b':'#22c55e','CD4⁺ T cell count',Math.round(c)+' cells/µL');yy+=34;
+    bar(g,px+10,yy,pw-20,10,vl/7,'#f97316','Viral load (log₁₀ copies/mL)',vl<1.7?'< 50 (ตรวจไม่พบ)':'10^'+vl.toFixed(1));yy+=34;
+    const fn=clamp((c-100)/700,0,1);bar(g,px+10,yy,pw-20,8,fn,'#60a5fa','Humoral immunity (B cell)',Math.round(fn*100)+'%');yy+=28;bar(g,px+10,yy,pw-20,8,fn,'#a78bfa','Cell-mediated (Tc)',Math.round(fn*100)+'%');yy+=26;
+    const st=hivStage(c,y);yy=wrap(g,st[1],px+10,yy,pw-20,15,st[2]==='ok'?'#86efac':st[2]==='mid'?'#fde68a':'#fca5a5',11,true)+6;
+    if(c<200)wrap(g,'โรคฉวยโอกาส: ปอดอักเสบ PCP, วัณโรค, เชื้อราในปาก (Candida), Kaposi sarcoma',px+10,yy,pw-20,14,'#fecaca',10.5);}
+  else{const y=V('yr'),dm=dmgAt(y),t=$('#autoT').value,cx=X(0.42),cy=Y(0.46),R=Math.min(UW*0.28,h*0.32);const nc=16,dead=Math.round(nc*dm);
+    const nm={sle:'อวัยวะหลายระบบ (ไต ผิวหนัง ข้อ) – แอนติบอดีต่อ DNA/นิวเคลียสของตนเอง',ra:'เยื่อบุข้อ (Synovial membrane) – ข้ออักเสบ บวม ผิดรูป',t1d:'Islets of Langerhans – Tc ทำลาย β-cell → ขาด Insulin'}[t];
+    g.fillStyle=t==='t1d'?'rgba(251,191,36,.12)':t==='ra'?'rgba(148,163,184,.12)':'rgba(244,114,182,.12)';g.beginPath();g.arc(cx,cy,R+18,0,7);g.fill();
+    for(let i=0;i<nc;i++){const a=i/nc*6.283,x=cx+Math.cos(a)*R*0.75,yy=cy+Math.sin(a)*R*0.75,dd=i<dead;if(dd){g.fillStyle='#3f3f46';for(let k=0;k<4;k++){g.beginPath();g.arc(x+Math.cos(k*1.6)*7,yy+Math.sin(k*1.6)*7,4,0,7);g.fill();}}else{cell(g,x,yy,13,t==='t1d'?'#ca8a04':t==='ra'?'#64748b':'#be185d','#fde68a');g.fillStyle='#fde047';g.beginPath();g.arc(x+Math.cos(a)*13,yy+Math.sin(a)*13,2.5,0,7);g.fill();}}
+    for(let i=0;i<6;i++){const a=(i/6)*6.283+S.time*0.25,x=cx+Math.cos(a)*R*0.3,yy=cy+Math.sin(a)*R*0.3;if(t==='sle'){Yab(g,x,yy,12,a,'#fbbf24',2);g.fillStyle='#f472b6';g.beginPath();g.arc(x+Math.cos(a-1.57)*6,yy+Math.sin(a-1.57)*6,3,0,7);g.fill();}else{g.fillStyle=t==='t1d'?'#1e3a8a':'#2563eb';g.beginPath();g.arc(x,yy,10,0,7);g.fill();}}
+    T(g,t==='sle'?'Y Autoantibody + ● Self-antigen = Immune complex สะสมในเนื้อเยื่อ':t==='ra'?'● T cell / Macrophage โจมตีเยื่อบุข้อของตนเอง':'● Cytotoxic T cell ทำลาย β-cell ของตนเอง',X(0.02),Y(0.06),'#fde68a',11,'left',true);
+    wrap(g,'เป้าหมาย: '+nm,X(0.02),Y(0.9),UW-20,15,'#cbd5e1',11);
+    if(S.toggle==='ig')igInset(g,8,h-118,Math.min(UW-16,460),110);
+    panel(g,px,10,pw,h-20);let yy=30;T(g,'สภาวะผู้ป่วย',px+10,yy,'#86efac',12,'left',true);yy+=26;
+    bar(g,px+10,yy,pw-20,10,dm,'#ef4444','เนื้อเยื่อถูกทำลาย',Math.round(dm*100)+'%');yy+=34;bar(g,px+10,yy,pw-20,10,1-dm,'#22c55e',t==='t1d'?'การสร้าง Insulin':'การทำงานของอวัยวะ',Math.round((1-dm)*100)+'%');yy+=34;
+    wrap(g,'สาเหตุ: ระบบภูมิคุ้มกันสูญเสีย Self-tolerance แยกไม่ออกระหว่าง "ตนเอง" กับ "สิ่งแปลกปลอม"'+($('#isup').checked?' · ยากดภูมิคุ้มกันชะลอการทำลายแต่เสี่ยงติดเชื้อง่าย':''),px+10,yy,pw-20,15,'#fde68a',11);}}
+
+/* ================= CHARTS ================= */
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const H=M1.hist,t1=Math.max(60,M1.t),t0=Math.max(0,t1-90);const A=axes(g,w,h,t0,t1,0,260,'เวลา (วินาที)','จำนวน / ระดับ',4,4);
+    [[1,'#4ade80',1],[2,'#c084fc',1],[3,'#fb923c',4]].forEach(([i,c,k])=>{g.strokeStyle=c;g.lineWidth=2;g.beginPath();let f=1;H.forEach(r=>{if(r[0]<t0)return;const y=A.Y(clamp(r[i]*k,0,260));f?g.moveTo(A.X(r[0]),y):g.lineTo(A.X(r[0]),y);f=0;});g.stroke();});
+    legend(g,[['แบคทีเรีย','#4ade80'],['Histamine (0–100)','#c084fc'],['Phagocytes (×4)','#fb923c']],w-130,18);}
+  else if(m===2){const A=axes(g,w,h,0,21,0,7,'เวลาหลังได้รับแอนติเจน (วัน)','จำนวน (log₁₀)',7,7,null,v=>'10^'+Math.round(v));
+    [[1,'#5eead4'],[2,'#f472b6'],[3,'#60a5fa'],[4,'#ef4444']].forEach(([i,c])=>{g.strokeStyle=c;g.lineWidth=2;g.beginPath();M2.hist.forEach((r,j)=>{j?g.lineTo(A.X(r[0]),A.Y(r[i])):g.moveTo(A.X(r[0]),A.Y(r[i]));});g.stroke();});
+    legend(g,[['Lymphocytes N(t)','#5eead4'],['IgM','#f472b6'],['IgG','#60a5fa'],['เชื้อโรค','#ef4444']],w-118,18);}
+  else if(m===3){const A=axes(g,w,h,0,40,-2,2.5,'วันหลังได้รับแอนติเจน','Titer (log)',8,9,null,v=>Math.abs(v-Math.round(v))<0.01?pw10(v):'');
+    plot(g,A,t=>L10(1.5*resp(t,1,6,10,0.2)),0,40,'#f472b6',1.6,[5,4]);plot(g,A,t=>L10(2*resp(t,1,9,15,0.03)),0,40,'#60a5fa',1.6,[5,4]);plot(g,A,t=>L10(0.4*resp(t,1,2,4,0.35)),0,40,'#f472b6',2.4);plot(g,A,t=>L10(30*resp(t,1,2.5,8,0.012)),0,40,'#60a5fa',2.6);
+    hl(g,A,0,w,'#86efac','');legend(g,[['Primary IgM (เส้นประ)','#f472b6'],['Primary IgG (เส้นประ)','#60a5fa'],['Secondary IgM (เส้นทึบ)','#f472b6'],['Secondary IgG (เส้นทึบ)','#60a5fa']],A.L+8,18);}
+  else{const dis=$('#dis').value;if(dis==='hiv'){const A=axes(g,w,h,0,10,0,1200,'เวลาหลังติดเชื้อ (ปี)','CD4⁺ (cells/µL)',5,6);g.fillStyle='rgba(239,68,68,.12)';g.fillRect(A.L,A.Y(200),w-A.L-A.Rm,A.Y(0)-A.Y(200));T(g,'AIDS (< 200)',A.L+4,A.Y(100),'#fca5a5',9.5);
+      plot(g,A,cd4At,0,10,'#22c55e',2.6);plot(g,A,y=>vlAt(y)*1200/7,0,10,'#f97316',2.2);const y=V('yr');g.strokeStyle='#fde047';g.beginPath();g.moveTo(A.X(y),A.Tm);g.lineTo(A.X(y),h-A.B);g.stroke();
+      for(let i=0;i<=7;i++)T(g,i?'10^'+i:'',w-A.Rm-2,A.Y(i*1200/7),'#fdba74',9,'right');legend(g,[['CD4⁺ T cell','#22c55e'],['Viral load (log, แกนขวา)','#f97316']],A.L+60,18);}
+    else if(dis==='allergy'){const A=axes(g,w,h,0,100,0,100,'ระดับสารก่อภูมิแพ้ (%)','ผลของ Histamine',5,4);const ss=a=>Math.min(100,40*Math.pow(a/100,1.5)/0.3);plot(g,A,ss,0,100,'#c084fc',2.6);plot(g,A,a=>ss(a)*0.3,0,100,'#86efac',2,[5,4]);plot(g,A,()=>0,0,100,'#64748b',1.5,[2,3]);
+      hl(g,A,75,w,'#ef4444','Anaphylaxis');hl(g,A,45,w,'#f59e0b','ลมพิษ / หอบ');hl(g,A,12,w,'#fde047','');const a=V('alg');g.fillStyle='#fde047';g.beginPath();g.arc(A.X(a),A.Y(allergyE()),5,0,7);g.fill();
+      legend(g,[['Sensitized','#c084fc'],['+ Antihistamine','#86efac'],['ไม่เคย Sensitized','#64748b']],A.L+8,18);}
+    else{const A=axes(g,w,h,0,10,0,100,'เวลา (ปี)','การทำงานของอวัยวะ (%)',5,4);const r0=0.28,r1=0.07;plot(g,A,y=>100*Math.exp(-r0*y),0,10,'#ef4444',2.4);plot(g,A,y=>100*Math.exp(-r1*y),0,10,'#22c55e',2.2,[5,4]);const y=V('yr');g.fillStyle='#fde047';g.beginPath();g.arc(A.X(y),A.Y(100*(1-dmgAt(y))),5,0,7);g.fill();legend(g,[['ไม่ได้รักษา','#ef4444'],['ยากดภูมิคุ้มกัน','#22c55e']],w-120,18);}}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+function flowBar(steps,cur){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===cur?'on':i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+const TWBC='<table><tr><th>เซลล์</th><th>กลุ่ม</th><th>หน้าที่</th></tr><tr><td>Neutrophil</td><td>Phagocyte</td><td>มาถึงแผลก่อน กลืนกินแบคทีเรีย ตายกลายเป็นหนอง</td></tr><tr><td>Monocyte → Macrophage</td><td>Phagocyte / APC</td><td>กินจุ เก็บกวาด นำเสนอแอนติเจน</td></tr><tr><td>Eosinophil</td><td>Phagocyte</td><td>ทำลายพยาธิ ภูมิแพ้</td></tr><tr><td>Basophil / Mast cell</td><td>Granulocyte</td><td>หลั่ง Histamine</td></tr><tr><td>Dendritic cell</td><td>APC</td><td>นำแอนติเจนไปเสนอ T cell</td></tr><tr><td>NK cell</td><td>Lymphocyte (ไม่จำเพาะ)</td><td>ทำลายเซลล์ติดไวรัส / มะเร็ง</td></tr><tr><td>B cell</td><td>Lymphocyte</td><td>→ Plasma cell สร้างแอนติบอดี</td></tr><tr><td>Helper T (CD4⁺)</td><td>Lymphocyte</td><td>หลั่ง Cytokines กระตุ้น B และ Tc</td></tr><tr><td>Cytotoxic T (CD8⁺)</td><td>Lymphocyte</td><td>Perforin + Granzymes ทำลายเซลล์ติดเชื้อ</td></tr></table><p class="hint">ด่านที่ 1: ผิวหนัง (Keratin) เยื่อเมือก Cilia Lysozyme (น้ำตา/น้ำลาย) HCl (กระเพาะ)</p>';
+const TIG='<table><tr><th>ชนิด</th><th>โครงสร้าง</th><th>ลักษณะเด่น</th></tr><tr><td>IgG</td><td>Monomer</td><td>มากที่สุด ~75% · ผ่านรกได้ · Secondary response</td></tr><tr><td>IgM</td><td>Pentamer</td><td>หลั่งเป็นชนิดแรก (Primary) · Agglutination ดี</td></tr><tr><td>IgA</td><td>Dimer</td><td>น้ำนมแม่ น้ำลาย น้ำตา เมือก</td></tr><tr><td>IgE</td><td>Monomer</td><td>เกาะ Mast cell / Basophil · ภูมิแพ้ · พยาธิ</td></tr><tr><td>IgD</td><td>Monomer</td><td>อยู่บนเยื่อหุ้ม B cell (ตัวรับแอนติเจน)</td></tr></table><table style="margin-top:6px"><tr><th>อวัยวะน้ำเหลือง</th><th>ตัวอย่าง</th></tr><tr><td>Primary</td><td>ไขกระดูก (สร้าง B, T และ B เจริญ) · ไทมัส (T เจริญ)</td></tr><tr><td>Secondary</td><td>ต่อมน้ำเหลือง ม้าม ทอนซิล Peyer\'s patches</td></tr></table>';
+const TAP='<table><tr><th></th><th>Active (ก่อเอง)</th><th>Passive (รับมา)</th></tr><tr><td>แหล่งที่มา</td><td>ร่างกายสร้างแอนติบอดีเอง (ติดเชื้อ / วัคซีน)</td><td>ได้รับแอนติบอดีสำเร็จรูป (รก น้ำนม เซรุ่ม)</td></tr><tr><td>ความเร็ว</td><td>ช้า (1–2 สัปดาห์)</td><td>ทันที</td></tr><tr><td>Memory cell</td><td>มี</td><td>ไม่มี</td></tr><tr><td>ระยะเวลา</td><td>นาน (ปี – ตลอดชีวิต)</td><td>สั้น (สัปดาห์ – เดือน)</td></tr><tr><td>ธรรมชาติ</td><td>ติดเชื้อแล้วหาย</td><td>IgG ผ่านรก · IgA ในน้ำนมแม่</td></tr><tr><td>ประดิษฐ์</td><td>วัคซีน: เชื้อตาย อ่อนฤทธิ์ ท็อกซอยด์ mRNA</td><td>เซรุ่ม แอนติเวนอม Monoclonal antibody</td></tr></table>';
+const TDIS='<table><tr><th>ความผิดปกติ</th><th>กลไก</th><th>ตัวอย่าง</th></tr><tr><td>ภูมิแพ้ (Hypersensitivity)</td><td>IgE บน Mast cell + Allergen → Histamine มากเกิน</td><td>แพ้เกสร ฝุ่น อาหาร หอบหืด Anaphylaxis</td></tr><tr><td>Autoimmune</td><td>ภูมิคุ้มกันทำลายเซลล์ตนเอง (ขาด Self-tolerance)</td><td>SLE (พุ่มพวง) รูมาตอยด์ เบาหวานชนิดที่ 1</td></tr><tr><td>Immunodeficiency</td><td>ภูมิคุ้มกันบกพร่อง</td><td>HIV ทำลาย Helper T (CD4⁺) → AIDS</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const nb=M1.bac.length,E=M1E(),anti=$('#anti').checked,intact=$('#skin').value==='intact';st=[['เชื้อโรคที่เหลือ (Pathogen)',nb+' ×10³ เซลล์'],['ระดับ Histamine ในเนื้อเยื่อ',M1.H.toFixed(0)+' / 100'],['Neutrophil + Macrophage',M1.neu.length+' + '+M1.mac.length],['เชื้อถูกทำลายแล้ว',M1.kills+' ×10³']];
+    const cur=intact?0:nb===0&&M1.kills>0?5:M1.neu.length>0?(M1.kills>0?4:3):M1.H>15?2:M1.H>2?1:0;flowBar(['สิ่งแปลกปลอมผ่านด่านที่ 1','Mast cell หลั่ง Histamine','หลอดเลือดขยาย + ซึมผ่านมากขึ้น','Chemotaxis + Diapedesis','Phagocytosis + Complement','หนอง → ซ่อมแซมเนื้อเยื่อ'],cur);
+    eq=`ผลของ Histamine ต่อหลอดเลือด E = H × ${anti?'0.25 (ยาต้านฮิสตามีน)':'1'} = ${E.toFixed(0)}  →  ขนาดหลอดเลือด × ${(1+0.7*E/100).toFixed(2)}\nอัตรา Neutrophil ลอดผนังหลอดเลือด ∝ (E − 8) = ${Math.max(0,0.05*(E-8)).toFixed(2)} เซลล์/วินาที\ndB/dt = r·B·(1 − B/Bmax) − Phagocytosis − Complement (MAC)`;
+    an=(intact?'<p><span class="tag ok">ด่านที่ 1</span> ผิวหนังที่ไม่มีบาดแผล (Keratin) กรดไขมัน เหงื่อ และ Lysozyme กันเชื้อไว้ภายนอก ไม่เกิดการอักเสบ</p>':nb===0&&M1.kills>0?'<p><span class="tag ok">กำจัดเชื้อสำเร็จ</span> Neutrophil และ Macrophage กลืนกินเชื้อหมด Macrophage เก็บกวาดหนองและเซลล์ตาย เนื้อเยื่อเริ่มซ่อมแซม</p>':nb>150?'<p><span class="tag no">ติดเชื้อลุกลาม</span> เชื้อแบ่งตัวเร็วกว่าการกำจัด ร่างกายต้องอาศัยภูมิคุ้มกันจำเพาะ (โหมด 2)</p>':'<p><span class="tag mid">กำลังอักเสบ</span> Histamine ทำให้หลอดเลือดขยายและซึมผ่านมากขึ้น → แดง ร้อน บวม ปวด และเม็ดเลือดขาวเคลื่อนเข้ามาตามสารเคมี (Chemotaxis)</p>')+(anti&&!intact?'<p>ยาต้านฮิสตามีนลดการอักเสบ → เม็ดเลือดขาวมาถึงช้าและน้อยลง เชื้อจึงถูกกำจัดช้ากว่า</p>':'')+($('#comp').checked?'<p>Complement proteins ในพลาสมารวมกันเป็น <b>MAC</b> เจาะรูผนังแบคทีเรีย (วงสีฟ้า)</p>':'');
+    mis='<p><b>❌ "การอักเสบเป็นสิ่งไม่ดี ควรยับยั้งเสมอ"</b></p><p>✅ การอักเสบเป็นกลไก<b>ภูมิคุ้มกันดั้งเดิม</b>ที่ดึงเม็ดเลือดขาวมาทำลายเชื้อและซ่อมแซมเนื้อเยื่อ — ลองเปิดยาต้านฮิสตามีนแล้วดูว่าเชื้อถูกกำจัดช้าลง</p><p><b>❌ "หนองคือเชื้อโรค"</b> ✅ หนองคือ<b>เม็ดเลือดขาวที่ตาย</b> ซากเชื้อ และของเหลวจากเนื้อเยื่อ</p>';tb=TWBC;}
+  else if(m===2){const d=M2.d,g=V('gen'),th=!$('#noTh').checked,ab=M2.m+M2.gG,tt=Math.max(0,(d-3)*24);st=[['Lymphocytes จำเพาะ N(t)',fmtBig(M2.N)],['Antibody titer (IgM + IgG)',ab.toFixed(1)],['เชื้อโรคที่เหลือ',fmtBig(M2.P)],['เวลา',`วันที่ ${d.toFixed(1)}`]];
+    flowBar(['แอนติเจนเข้าสู่ร่างกาย','APC นำเสนอบน MHC II','Helper T (CD4⁺) หลั่ง Cytokines','Clonal selection (B / Tc)','Plasma cell → Antibody · Tc → Perforin','Memory cell'],stage2());
+    eq=`Clonal expansion: N(t) = N₀ · 2^(t/g) = ${N0()} · 2^(${tt.toFixed(0)} ชม. / ${g} ชม.) = ${th&&d>=3?fmtBig(N0()*Math.pow(2,tt/g)):'0 (ยังไม่ถูกกระตุ้น)'}\nB cell → Plasma cell (หลั่ง Ab) : Memory B cell\nIgM สร้างก่อน → Class switching → IgG (หลังวันที่ ~6)`;
+    an=(!th?'<p><span class="tag no">ไม่มี Helper T</span> APC นำเสนอแอนติเจนได้ แต่ไม่มีเซลล์หลั่ง Cytokines → B cell และ Tc <b>ไม่ถูกกระตุ้น</b> ระบบทั้ง Humoral และ Cell-mediated ล้มเหลว (เหมือนผู้ป่วย AIDS)</p>':M2.cleared?'<p><span class="tag ok">กำจัดเชื้อสำเร็จ</span> เกิด <b>Immunological memory</b> (Memory B / T cell) ไว้ตอบสนองครั้งต่อไปอย่างรวดเร็ว</p>':'<p><span class="tag mid">กำลังตอบสนอง</span> ภูมิคุ้มกันจำเพาะใช้เวลาหลายวันกว่าจะสร้างแอนติบอดีได้มากพอ (Lag phase)</p>')+($('#ptype').value==='virus'?'<p>ไวรัสอยู่<b>ภายในเซลล์</b> แอนติบอดีเข้าไม่ถึง ต้องใช้ <b>Cytotoxic T cell</b> ที่จดจำชิ้นไวรัสบน <b>MHC I</b> แล้วหลั่ง Perforin/Granzymes ให้เซลล์ติดเชื้อตายแบบ Apoptosis</p>':'<p>แบคทีเรียอยู่<b>นอกเซลล์</b> กำจัดด้วย <b>Humoral immunity</b>: แอนติบอดีจับเชื้อ (Neutralization, Agglutination, Opsonization) แล้ว Phagocyte / Complement ทำลาย</p>')+`<p>g สั้นลง (แบ่งเร็ว) → N(t) เพิ่มเร็ว → กำจัดเชื้อได้เร็ว · ปัจจุบัน g = ${g} ชม.</p>`;
+    mis=(!th?'<p><b>❌ "HIV ทำลายเม็ดเลือดแดง"</b> ✅ HIV ทำลาย <b>Helper T (CD4⁺)</b> ซึ่งเป็นศูนย์กลางกระตุ้นทั้ง B cell และ Tc — ดูผลเมื่อปิด Helper T</p>':'')+'<p><b>❌ "แอนติบอดีฆ่าเชื้อโรคโดยตรง"</b></p><p>✅ แอนติบอดี<b>ไม่ได้ฆ่าเชื้อเอง</b> แต่จับ ยับยั้ง (Neutralization) รวบกลุ่ม (Agglutination) หรือทำเครื่องหมาย (Opsonization) ให้ Phagocyte / Complement มาทำลาย</p><p><b>❌ "B cell ทุกตัวตอบสนองต่อเชื้อทุกชนิด"</b> ✅ เฉพาะ clone ที่มีตัวรับตรงกับ Epitope เท่านั้นที่ถูกคัดเลือก (Clonal selection)</p>';tb=TIG;}
+  else if(m===3){const t=titers(M3.d),mem=hasMem(),last=[...M3.ev].reverse().find(e=>e.fired);st=[['Antibody titer (รวม)',t.tot.toFixed(2)],['IgM / IgG',`${t.m.toFixed(2)} / ${(t.g+t.ser).toFixed(2)}`],['เชื้อโรคที่เหลือ',fmtBig(M3.P)],['Memory cells',mem?'มี ✓':'ไม่มี']];
+    const k=last?last.k:'';flowBar(k==='ser'?['ฉีดเซรุ่ม (แอนติบอดีสำเร็จรูป)','ป้องกันทันที','แอนติบอดีสลายไป C(t) = C₀e^(−kt)','ไม่มี Memory cell']:['ได้รับแอนติเจน (วัคซีน/เชื้อ)','APC → Helper T','B cell → Plasma + Memory','Antibody ↑','พบเชื้ออีกครั้ง → Secondary response'],k==='ser'?(M3.d-last.d<1?0:t.ser>1?1:t.ser>0.2?2:3):!last?0:k==='inf'&&last.sec?4:M3.d-last.d<2?1:M3.d-last.d<6?2:3);
+    eq=`Passive (เซรุ่ม): C(t) = C₀ · e^(−k·t) = 20 · e^(−${KEL}·t)   ·   t½ = ln2 / k = ${(Math.LN2/KEL).toFixed(0)} วัน${t.ser>0?`   → ตอนนี้ ${t.ser.toFixed(2)}`:''}\nPrimary: lag ~5–7 วัน IgM นำ IgG ระดับต่ำ  ·  Secondary: lag 1–3 วัน IgG สูงกว่า ~10–100 เท่า อยู่นาน`;
+    const pk=M3.peak;an=(mem?'<p><span class="tag ok">Immunological memory</span> มี Memory cells แล้ว เมื่อพบแอนติเจนเดิมจะเกิด <b>Secondary response</b> เร็วและแรง</p>':'<p><span class="tag mid">ยังไม่มีความจำ</span> การพบแอนติเจนครั้งแรกจะเป็น Primary response (ช้า)</p>')+(t.ser>0.05?'<p><span class="tag mid">Passive</span> แอนติบอดีจากเซรุ่มป้องกันได้ทันที แต่ลดลงเรื่อย ๆ และ<b>ไม่สร้าง Memory cell</b></p>':'')+(M3.ev.some(e=>e.fired&&e.k==='inf')?(pk>1e5?'<p><span class="tag no">ป่วย</span> เชื้อเพิ่มจำนวนมากก่อนที่แอนติบอดีจะสูงพอ</p>':'<p><span class="tag ok">ไม่ป่วย</span> แอนติบอดีที่มีอยู่/สร้างได้เร็วกำจัดเชื้อก่อนเกิดอาการ</p>'):'')+'<p>ชนิดวัคซีน: '+({att:'เชื้ออ่อนฤทธิ์ กระตุ้นได้แรง',kill:'เชื้อตาย ต้องฉีดหลายเข็ม',tox:'ท็อกซอยด์ (พิษที่หมดฤทธิ์ เช่น บาดทะยัก)',mrna:'mRNA ให้เซลล์สร้างโปรตีนแอนติเจนเอง'})[$('#vtype').value]+'</p>';
+    mis='<p><b>❌ "วัคซีนกับเซรุ่มคือสิ่งเดียวกัน"</b></p><p>✅ <b>วัคซีน</b> = แอนติเจนที่อ่อนฤทธิ์ กระตุ้นให้ร่างกายสร้างแอนติบอดีและ Memory cell เอง (Active) · <b>เซรุ่ม</b> = แอนติบอดีสำเร็จรูป ออกฤทธิ์ทันทีแต่ไม่สร้าง Memory cell (Passive) — เทียบชุด Active กับ Passive</p><p><b>❌ "ฉีดวัคซีนแล้วป้องกันได้ทันที"</b> ✅ ต้องรอ 1–2 สัปดาห์ให้ร่างกายสร้างภูมิ</p>';tb=TAP;}
+  else{const dis=$('#dis').value;
+    if(dis==='hiv'){const y=V('yr'),c=cd4At(y),vl=vlAt(y),s=hivStage(c,y),k=HK[$('#load').value];st=[['CD4⁺ T cell count',Math.round(c)+' cells/µL'],['Viral load',vl<1.7?'< 50 copies/mL':'10^'+vl.toFixed(1)+' copies/mL'],['ระดับ Histamine','—'],['ระยะของโรค',s[0]]];
+      flowBar(['gp120 ของ HIV จับตัวรับ CD4','RNA เข้าเซลล์','Reverse transcriptase: RNA → DNA','Integrase แทรก DNA ในจีโนม','สร้างไวรัสใหม่ เซลล์แตก','CD4⁺ ลดลง → AIDS'],Math.floor(S.time/1.5)%6);
+      eq=`CD4⁺(t) ≈ CD4₀ · e^(−k·t) = 850 · e^(−${k}·${Math.max(0,y-0.5).toFixed(1)}) = ${Math.round(850*Math.exp(-k*Math.max(0,y-0.5)))} cells/µL${$('#art').checked&&y>2?'  (ยาต้านไวรัสทำให้ฟื้นขึ้นมาเป็น '+Math.round(c)+')':''}\nปกติ 500–1,500 · AIDS เมื่อ < 200 cells/µL`;
+      an=`<p><span class="tag ${s[2]}">${s[0]}</span> ${s[1]}</p><p>HIV ใช้ <b>gp120</b> จับตัวรับ <b>CD4</b> บน Helper T cell แล้วเพิ่มจำนวนภายในเซลล์ ทำให้ Helper T ลดลง → ไม่มี Cytokines กระตุ้น B cell และ Tc → ภูมิคุ้มกัน<b>ทั้ง Humoral และ Cell-mediated ล้มเหลว</b></p>`+($('#art').checked?'<p>ยาต้านไวรัส (ART) ยับยั้ง Reverse transcriptase / Protease ทำให้ Viral load ต่ำจนตรวจไม่พบ และ CD4⁺ ฟื้นตัว แต่ยังไม่หายขาด</p>':'');
+      mis='<p><b>❌ "HIV ทำลายเม็ดเลือดแดงจึงทำให้ป่วย"</b></p><p>✅ HIV เข้าจับและทำลาย <b>Helper T cell (CD4⁺)</b> ซึ่งเป็นศูนย์กลางการกระตุ้นระบบภูมิคุ้มกัน ผู้ป่วยเสียชีวิตจาก<b>โรคฉวยโอกาส</b> ไม่ใช่จาก HIV โดยตรง</p><p><b>❌ "ติด HIV = เป็นเอดส์ทันที"</b> ✅ อาจไม่มีอาการหลายปี จนกว่า CD4⁺ < 200</p>';}
+    else if(dis==='allergy'){const s=allergyStatus();st=[['CD4⁺ T cell count','ปกติ'],['IgE บน Mast cell',$('#sens').checked?'มี (Sensitized)':'ยังไม่มี'],['ระดับ Histamine',M4.H.toFixed(0)+' / 100'],['อาการ',s[0]]];
+      flowBar(['ได้รับ Allergen ครั้งแรก','B cell สร้าง IgE','IgE เกาะ Mast cell (Sensitization)','ได้รับซ้ำ: Allergen จับ IgE','Mast cell หลั่ง Histamine','อาการแพ้'],!$('#sens').checked?1:M4.H<3?3:allergyE()<12?4:5);
+      eq=`Allergen + IgE (บน Mast cell) → Cross-linking → Degranulation → Histamine\nอัตราการหลั่ง ∝ (Allergen)^1.5 = 40 × (${V('alg')}/100)^1.5 = ${($('#sens').checked?40*Math.pow(V('alg')/100,1.5):0).toFixed(1)}  ·  H_คงที่ = อัตราหลั่ง / k_สลาย`;
+      an=`<p><span class="tag ${s[2]}">${s[0]}</span> ${s[1]}</p><p>ภูมิแพ้เป็นการตอบสนอง<b>มากเกินไป</b> (Hypersensitivity) ต่อสารที่ปกติไม่เป็นอันตราย ผ่าน <b>IgE</b> ที่เกาะบน Mast cell</p>`+($('#antiH').checked?'<p>Antihistamine บล็อกตัวรับ Histamine จึงลดอาการ แต่ Mast cell ยังหลั่ง Histamine อยู่</p>':'');
+      mis='<p><b>❌ "คนเป็นภูมิแพ้เพราะภูมิคุ้มกันอ่อนแอ"</b></p><p>✅ ภูมิแพ้เกิดจากระบบภูมิคุ้มกัน<b>ไวและตอบสนองเกินปกติ</b> ต่อ Allergen</p><p><b>❌ "แพ้ตั้งแต่ครั้งแรกที่สัมผัส"</b> ✅ ครั้งแรกเป็นการ Sensitization (สร้าง IgE) อาการเกิดเมื่อได้รับซ้ำ — ลองปิด Sensitized</p>';}
+    else{const y=V('yr'),dm=dmgAt(y),t=$('#autoT').value;st=[['CD4⁺ T cell count','ปกติ / สูง'],['Autoantibody',t==='sle'?'สูง (anti-DNA)':t==='ra'?'Rheumatoid factor':'anti-islet'],['เนื้อเยื่อถูกทำลาย',Math.round(dm*100)+' %'],['ระยะเวลา',y.toFixed(1)+' ปี']];
+      flowBar(['สูญเสีย Self-tolerance','T / B cell จดจำโปรตีนตนเองเป็นแอนติเจน','Autoantibody / Tc โจมตีเนื้อเยื่อ','อักเสบเรื้อรัง','อวัยวะเสียหน้าที่'],dm<0.1?1:dm<0.3?2:dm<0.6?3:4);
+      eq=`การทำงานของอวัยวะ = e^(−r·t) = e^(−${$('#isup').checked?0.07:0.28}·${y.toFixed(1)}) = ${Math.round((1-dm)*100)}%`;
+      an={sle:'<p><span class="tag no">SLE (โรคพุ่มพวง)</span> แอนติบอดีต่อสารในนิวเคลียสของตนเอง เกิด Immune complex สะสมที่ไต ผิวหนัง (ผื่นรูปผีเสื้อ) ข้อ และหลอดเลือด</p>',ra:'<p><span class="tag no">รูมาตอยด์</span> ภูมิคุ้มกันโจมตีเยื่อบุข้อ ข้ออักเสบเรื้อรัง ปวด บวม และข้อผิดรูป (มักเป็นข้อมือ/นิ้วทั้งสองข้าง)</p>',t1d:'<p><span class="tag no">เบาหวานชนิดที่ 1</span> Cytotoxic T cell ทำลาย β-cell ในตับอ่อน → ขาด Insulin ต้องฉีด Insulin ตลอดชีวิต</p>'}[t]+($('#isup').checked?'<p>ยากดภูมิคุ้มกันชะลอการทำลาย แต่ผู้ป่วยติดเชื้อได้ง่ายขึ้น</p>':'');
+      mis='<p><b>❌ "โรค Autoimmune เกิดจากภูมิคุ้มกันต่ำ"</b></p><p>✅ เกิดจากภูมิคุ้มกัน<b>ทำงานผิดเป้าหมาย</b> โจมตีเซลล์ของตนเอง (สูญเสีย Self-tolerance)</p>';}
+    tb=TDIS;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function syncSub(){const d=$('#dis').value;$$('.sub4').forEach(e=>e.style.display=e.dataset.s.split(' ').includes(d)?'':'none');}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');syncSub();
+  $('#simTitle').textContent=['','บาดแผล การอักเสบ และ Phagocytosis','ภูมิคุ้มกันจำเพาะ: APC → Helper T → B cell / Tc','ระดับแอนติบอดีในเลือดตามเวลา (Active vs Passive)','ความผิดปกติของระบบภูมิคุ้มกัน'][m];
+  $('#chartTitle').textContent=['','แบคทีเรีย / Histamine / Phagocytes ตามเวลา','Clonal expansion และแอนติบอดี (log)','Primary vs Secondary immune response','กราฟความผิดปกติ'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('gen',v=>v+' ชม.');bind('alg',v=>v+' %');bind('yr',v=>v.toFixed(1)+' ปี');
+['skin','anti','comp','ptype','noTh','vtype','sens','antiH','autoT','isup','art'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#dis').addEventListener('change',()=>{syncSub();updateText();});
+$('#load').addEventListener('change',()=>{if(S.mode===2)initM2();if(S.mode===3)initM3();updateText();});
+$('#skin').addEventListener('change',()=>{initM1();updateText();});
+$('#ptype').addEventListener('change',()=>{initM2();updateText();});
+$('#iv').addEventListener('change',()=>{initM3();updateText();});
+$('#infect').onclick=()=>{seed1();updateText();};
+$('#bVac').onclick=()=>{addEv(M3.d,'vac',true);updateText();};$('#bSer').onclick=()=>{addEv(M3.d,'ser',true);updateText();};$('#bInf').onclick=()=>{addEv(M3.d,'inf',true);updateText();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgMHC:'mhc',tgIG:'ig'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

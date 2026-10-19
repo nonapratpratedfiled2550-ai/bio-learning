@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบประสาท – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0a0816;--panel:#141127;--panel2:#1c1836;--line:#2e2856;--txt:#ece9ff;--mut:#a9a3d1;--acc:#a78bfa;--acc2:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#4c1d95,#0e7490);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#4c1d95;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#231d45;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#6d28d9;border-color:#c4b5fd}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#0e7490;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#07051a;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:#6d28d9;color:#fff;border-color:#c4b5fd}.flow span.done{color:#ddd6fe;border-color:#4c1d95}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:#06041a;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.hint{font-size:12px;color:var(--mut);line-height:1.5}
+.chart{height:250px;background:#06041a;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🧠 ระบบประสาท (Nervous System)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : วิวัฒนาการของระบบประสาทในสัตว์</button>
+    <button data-mode="2">โหมด 2 : ศักย์ไฟฟ้าเยื่อหุ้มเซลล์และ Action potential</button>
+    <button data-mode="3">โหมด 3 : ไซแนปส์ สารสื่อประสาท และสารพิษ/ยา</button>
+    <button data-mode="4">โหมด 4 : สมอง รีเฟล็กซ์ และระบบประสาทอัตโนมัติ</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>สิ่งมีชีวิต</label><select id="org"><option value="amoeba">อะมีบา – ไม่มีระบบประสาท</option><option value="hydra">ไฮดรา – ร่างแหประสาท (Nerve net)</option><option value="planaria">พลานาเรีย – แบบขั้นบันได (Ladder-type)</option><option value="earthworm">ไส้เดือนดิน – Ventral nerve cord</option><option value="insect">แมลง – Ventral nerve cord + ปมประสาท</option><option value="human" selected>มนุษย์ – Dorsal hollow nerve cord</option></select></div>
+      <button class="btn" id="stim1" style="width:100%">⚡ กระตุ้น</button>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>ขนาดสิ่งเร้า (Depolarization) <b id="stimAV"></b></label><input type="range" id="stimA" min="0" max="100" step="1" value="25"></div>
+      <div class="ctl"><label>[Na⁺] นอกเซลล์ <b id="naoV"></b></label><input type="range" id="nao" min="50" max="200" step="5" value="145"></div>
+      <div class="ctl"><label>[K⁺] นอกเซลล์ <b id="koV"></b></label><input type="range" id="ko" min="2" max="30" step="1" value="5"></div>
+      <div class="ctl"><label>แอกซอน</label><select id="myel"><option value="my">มีเยื่อไมอีลิน (Myelinated)</option><option value="un">ไม่มีเยื่อไมอีลิน (Unmyelinated)</option></select></div>
+      <div class="btns"><button class="btn" id="fire1">⚡ กระตุ้น 1 ครั้ง</button><button class="btn" id="fire2">⚡⚡ กระตุ้นติดกัน</button></div>
+      <label class="chk"><input type="checkbox" id="auto2" checked> กระตุ้นอัตโนมัติทุก 10 ms</label>
+    </div>
+    <div data-m="2 3">
+      <div class="ctl"><label>Ca²⁺ นอกเซลล์</label><select id="ca"><option value="zero">ไม่มี (Zero)</option><option value="normal" selected>ปกติ (Normal)</option><option value="high">สูง (High)</option></select></div>
+      <div class="ctl"><label>สารพิษ / ยา</label><select id="tox"><option value="none">ไม่มี</option><option value="ttx">Tetrodotoxin (TTX – พิษปลาปักเป้า)</option><option value="botox">Botulinum toxin (Botox)</option><option value="ache">สารยับยั้ง AChE (ยาฆ่าแมลงกลุ่ม Organophosphate)</option><option value="ssri">SSRI (ยาต้านซึมเศร้า)</option></select></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ไซแนปส์ / สารสื่อประสาท</label><select id="nt"><option value="ach">ACh – Neuromuscular junction (กระตุ้น)</option><option value="glu">Glutamate – ไซแนปส์กระตุ้น (EPSP)</option><option value="gaba">GABA – ไซแนปส์ยับยั้ง (IPSP)</option><option value="ser">Serotonin – ไซแนปส์ในสมอง</option></select></div>
+      <div class="btns"><button class="btn" id="fire3" style="grid-column:1/-1">⚡ ส่งกระแสประสาท 1 ครั้ง</button></div>
+      <label class="chk"><input type="checkbox" id="auto3" checked> ส่งกระแสประสาทต่อเนื่อง</label>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>มุมมอง</label><select id="view"><option value="brain">สมองและไขสันหลัง</option><option value="reflex" selected>Reflex arc</option><option value="ans">ระบบประสาทอัตโนมัติ (ANS)</option></select></div>
+      <div class="ctl" id="regBox"><label>บริเวณสมอง</label><select id="region"><option value="cerebrum">Cerebrum (ซีรีบรัม)</option><option value="thalamus">Thalamus (ทาลามัส)</option><option value="hypothalamus">Hypothalamus (ไฮโพทาลามัส)</option><option value="midbrain">Midbrain (สมองส่วนกลาง)</option><option value="pons">Pons (พอนส์)</option><option value="medulla">Medulla oblongata (เมดัลลา)</option><option value="cerebellum">Cerebellum (ซีรีเบลลัม)</option><option value="spinal">Spinal cord (ไขสันหลัง)</option></select></div>
+      <div class="ctl" id="rBox"><label>ชนิดรีเฟล็กซ์</label><select id="rtype"><option value="prick">ถูกเข็มตำมือ (Withdrawal reflex)</option><option value="knee">เคาะใต้สะบ้า (Knee-jerk reflex)</option></select></div>
+      <button class="btn" id="fire4" style="width:100%">⚡ กระตุ้น</button>
+      <div class="ctl"><label>ระบบประสาทอัตโนมัติ</label><select id="ans"><option value="neutral">สมดุล (Neutral)</option><option value="sym">Sympathetic (สู้หรือหนี)</option><option value="para">Parasympathetic (พักผ่อน/ย่อยอาหาร)</option></select></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgDir" class="on">ทิศทางกระแสประสาท (Reflex)</button><button id="tgPsp">EPSP / IPSP · ระดับเซลล์</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#ece9ff',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'dir',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#231d45';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#d8d3f5',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t)];}
+function flow(g,P,n,speed,col,r=3,off=0){for(let j=0;j<n;j++){const s=(S.time*speed+j/n+off)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();}}
+function panel(g,x,y,w,h){g.fillStyle='rgba(16,13,38,.94)';rr(g,x,y,w,h,10);g.fill();}
+function line(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function pulse(g,P,s,col='#fde047'){if(s<0||s>1)return;const [x,y]=along(P,s);glow(g,x,y,16,'rgba(253,224,71,.8)');g.fillStyle=col;g.beginPath();g.arc(x,y,4.5,0,7);g.fill();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+
+/* ================= MODE 1 : EVOLUTION ================= */
+const ORG={amoeba:{n:'อะมีบา',t:'ไม่มีระบบประสาท',c:'ไม่มีศูนย์กลาง',neu:0,f:'เยื่อหุ้มเซลล์รับสิ่งเร้าโดยตรง ตอบสนองด้วยการเคลื่อนที่หนี/เข้าหา',steps:['สิ่งเร้า','เยื่อหุ้มเซลล์รับรู้','เคลื่อนที่หนี/เข้าหา']},
+ hydra:{n:'ไฮดรา',t:'ร่างแหประสาท (Nerve net)',c:'ไม่มีศูนย์กลาง',neu:5600,f:'เซลล์ประสาทเชื่อมกันเป็นร่างแหทั่วลำตัว กระแสประสาทกระจายได้ทุกทิศทาง',steps:['สิ่งเร้าที่หนวด','กระแสประสาทกระจายทุกทิศทาง','ทั้งตัวหดตัว']},
+ planaria:{n:'พลานาเรีย',t:'แบบขั้นบันได (Ladder-type)',c:'ปมประสาทสมอง (Cerebral ganglia) 1 คู่',neu:1e4,f:'มีเส้นประสาทใหญ่ตามยาว 2 เส้นเชื่อมด้วยเส้นประสาทตามขวาง และเริ่มมีส่วนหัว (Cephalization)',steps:['สิ่งเร้าที่ลำตัว','Nerve cord ตามยาว','Cerebral ganglia','สั่งการกล้ามเนื้อ']},
+ earthworm:{n:'ไส้เดือนดิน',t:'Ventral nerve cord (ด้านท้อง ตัน)',c:'Cerebral ganglion + ปมประสาทประจำปล้อง',neu:2e5,f:'ปมประสาทสมองอยู่เหนือคอหอย เชื่อมกับปมประสาทใต้คอหอย แล้วต่อเป็นเส้นประสาทด้านท้อง มีปมประสาท (Segmental ganglion) ทุกปล้อง',steps:['สิ่งเร้าที่ปล้อง','ปมประสาทประจำปล้อง','Ventral nerve cord','Cerebral ganglion','กล้ามเนื้อหลายปล้อง']},
+ insect:{n:'แมลง',t:'Ventral nerve cord + ปมประสาทรวมกลุ่ม',c:'สมอง (Supraesophageal ganglion) + ปมประสาทอก',neu:1e6,f:'ปมประสาทอกควบคุมขาและปีกได้เองบางส่วน สมองเจริญดีขึ้น (ตารวม หนวด)',steps:['สิ่งเร้าที่ขา','ปมประสาทอก','สั่งการขา (ทำได้เอง)','ส่งต่อสมอง']},
+ human:{n:'มนุษย์',t:'Dorsal hollow nerve cord (ด้านหลัง กลวง)',c:'สมอง + ไขสันหลัง (CNS)',neu:8.6e10,f:'ระบบประสาทส่วนกลาง (สมอง + ไขสันหลัง) และระบบประสาทรอบนอก (เส้นประสาทสมอง 12 คู่ ไขสันหลัง 31 คู่)',steps:['Receptor','Sensory neuron','ไขสันหลัง / สมอง','Motor neuron','Effector']}};
+let M1;function initM1(){M1={t:0,st:0.3};}
+function stepM1(dt){M1.t+=dt;if(M1.t-M1.st>5)M1.st=M1.t;}
+function neuronDiagram(g,x,y,w){const sx=x+30,sy=y+30;for(let i=0;i<6;i++){const a=Math.PI*0.6+i*0.35;line(g,[[sx,sy],[sx+Math.cos(a)*24,sy+Math.sin(a)*24],[sx+Math.cos(a+0.3)*34,sy+Math.sin(a+0.3)*34]],'#c4b5fd',2);}
+  g.fillStyle='#8b5cf6';g.beginPath();g.arc(sx,sy,11,0,7);g.fill();g.fillStyle='#ddd6fe';g.beginPath();g.arc(sx,sy,4,0,7);g.fill();line(g,[[sx+11,sy],[x+w-24,sy]],'#c4b5fd',2.5);
+  const n=5;for(let i=0;i<n;i++){const a=sx+20+i*(x+w-60-sx)/n;g.fillStyle='#fde68a';rr(g,a,sy-6,(x+w-60-sx)/n-6,12,6);g.fill();}
+  for(let i=0;i<3;i++)line(g,[[x+w-24,sy],[x+w-8,sy-12+i*12]],'#c4b5fd',2);for(let i=0;i<3;i++){g.fillStyle='#f472b6';g.beginPath();g.arc(x+w-6,sy-12+i*12,3,0,7);g.fill();}
+  T(g,'Dendrite',x,sy-30,'#c4b5fd',9.5);T(g,'Cell body',sx,sy+22,'#a78bfa',9.5,'center');T(g,'Myelin (Schwann cell)',sx+40,sy-16,'#fde68a',9.5);T(g,'Node of Ranvier',sx+60,sy+18,'#ece9ff',9.5);T(g,'Axon terminal',x+w,sy+28,'#f472b6',9.5,'right');}
+function drawM1(g,w,h){g.fillStyle='#07051a';g.fillRect(0,0,w,h);const k=$('#org').value,o=ORG[k],UW=w*0.64,X=f=>f*UW,Y=f=>f*h,tau=M1.t-M1.st,dir=S.toggle==='dir';
+  g.save();g.beginPath();g.rect(0,0,UW,h);g.clip();
+  if(k==='amoeba'){const off=clamp(tau,0,3)*12,cx=X(0.45)-off,cy=Y(0.5),R=h*0.18;g.fillStyle='rgba(167,139,250,.25)';g.beginPath();for(let i=0;i<=60;i++){const a=i/60*6.283,r=R*(1+0.12*Math.sin(3*a+S.time)+(Math.cos(a)<-0.5?0.15*Math.sin(S.time*2):0));i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r*0.8):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r*0.8);}g.closePath();g.fill();g.strokeStyle='#c4b5fd';g.lineWidth=2;g.stroke();
+    g.fillStyle='#6d28d9';g.beginPath();g.arc(cx,cy,R*0.2,0,7);g.fill();if(tau<3){for(let i=0;i<5;i++){const yy=cy-40+i*20;arrow(g,X(0.95),yy,X(0.8),yy,'rgba(253,224,71,.8)',2);}T(g,'สิ่งเร้า (สารเคมี/แสงจ้า)',X(0.97),Y(0.2),'#fde047',11,'right',true);}
+    if(tau>0.3&&tau<3)arrow(g,cx-R-6,cy,cx-R-46,cy,'#86efac',3);T(g,'ไม่มีเซลล์ประสาท — เยื่อหุ้มเซลล์รับรู้และตอบสนองเอง',X(0.03),Y(0.92),'#c4b5fd',11,'left',true);}
+  else if(k==='hydra'){const cx=X(0.45),top=Y(0.22),bot=Y(0.9),bw=X(0.11);g.fillStyle='rgba(134,239,172,.18)';rr(g,cx-bw,top,bw*2,bot-top,bw);g.fill();g.strokeStyle='#86efac';g.lineWidth=2;g.stroke();
+    for(let i=0;i<6;i++){const a=-Math.PI/2+(i-2.5)*0.35;line(g,[[cx+(i-2.5)*bw*0.35,top+8],[cx+Math.cos(a)*h*0.2+(i-2.5)*10,top+Math.sin(a)*h*0.18+Math.sin(S.time*2+i)*6]],'#86efac',3);}
+    const N=46,P=[];for(let i=0;i<N;i++)P.push([cx+(hash(i)*2-1)*bw*0.85,lerp(top+12,bot-12,hash(i+70))]);const src=[cx+bw*0.6,top+20],sp=h*0.28,fr=tau*sp;
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const d=Math.hypot(P[i][0]-P[j][0],P[i][1]-P[j][1]);if(d<h*0.11){const on=Math.hypot(P[i][0]-src[0],P[i][1]-src[1])<fr;line(g,[P[i],P[j]],on?'rgba(253,224,71,.65)':'rgba(196,181,253,.35)',1.3);}}
+    P.forEach(p=>{const d=Math.hypot(p[0]-src[0],p[1]-src[1]),front=Math.abs(d-fr)<18;g.fillStyle=front?'#fde047':d<fr?'#facc15':'#a78bfa';g.beginPath();g.arc(p[0],p[1],front?4.5:3,0,7);g.fill();});
+    if(tau<1){glow(g,src[0],src[1],22,'rgba(253,224,71,.9)');}T(g,'⚡ สิ่งเร้า',src[0]+10,src[1]-14,'#fde047',10.5,'left',true);T(g,'ร่างแหประสาท: กระแสประสาทกระจายทุกทิศทาง ไม่มีศูนย์กลาง',X(0.03),Y(0.05),'#86efac',11,'left',true);
+    if(dir){g.strokeStyle='rgba(253,224,71,.5)';g.lineWidth=1.5;g.setLineDash([4,4]);g.beginPath();g.arc(src[0],src[1],Math.min(fr,h),0,7);g.stroke();g.setLineDash([]);}}
+  else if(k==='planaria'){const cy=Y(0.5),L=X(0.1),R=X(0.9);g.fillStyle='rgba(251,191,36,.15)';g.beginPath();g.moveTo(L,cy);g.quadraticCurveTo(L+20,cy-h*0.22,X(0.3),cy-h*0.18);g.lineTo(X(0.8),cy-h*0.1);g.quadraticCurveTo(R,cy,X(0.8),cy+h*0.1);g.lineTo(X(0.3),cy+h*0.18);g.quadraticCurveTo(L+20,cy+h*0.22,L,cy);g.fill();g.strokeStyle='#fbbf24';g.lineWidth=2;g.stroke();
+    const gl=[X(0.2),cy-14],gr=[X(0.2),cy+14],c1=[[gl[0],gl[1]],[X(0.82),cy-10]],c2=[[gr[0],gr[1]],[X(0.82),cy+10]];line(g,c1,'#c4b5fd',3);line(g,c2,'#c4b5fd',3);for(let i=1;i<9;i++){const x=lerp(X(0.24),X(0.8),i/9);line(g,[[x,cy-12+i*0.2],[x,cy+12-i*0.2]],'#a78bfa',2);}
+    g.fillStyle='#8b5cf6';g.beginPath();g.arc(gl[0],gl[1],9,0,7);g.arc(gr[0],gr[1],9,0,7);g.fill();g.fillStyle='#111';g.beginPath();g.arc(X(0.16),cy-22,4,0,7);g.arc(X(0.16),cy+22,4,0,7);g.fill();
+    const aff=[[X(0.7),cy+h*0.12],[X(0.7),cy+10],[gr[0],gr[1]]],eff=[[gl[0],gl[1]],[X(0.82),cy-10]];pulse(g,aff,tau/1.2);if(tau>1.2&&tau<1.6)glow(g,X(0.2),cy,30,'rgba(253,224,71,.8)');pulse(g,eff,(tau-1.5)/1.2);pulse(g,[[gr[0],gr[1]],[X(0.82),cy+10]],(tau-1.5)/1.2);
+    T(g,'⚡',X(0.7),cy+h*0.14,'#fde047',14,'center');T(g,'Cerebral ganglia',X(0.2),cy-h*0.3,'#c4b5fd',11,'center',true);line(g,[[X(0.2),cy-h*0.27],[X(0.2),cy-22]],'rgba(196,181,253,.5)',1);T(g,'Nerve cord 2 เส้น + เส้นประสาทตามขวาง (ขั้นบันได)',X(0.03),Y(0.9),'#fbbf24',11,'left',true);T(g,'จุดตา',X(0.12),cy-34,'#ece9ff',9.5,'center');
+    if(dir){arrow(g,X(0.6),cy+h*0.22,X(0.35),cy+h*0.22,'#fde047',2);T(g,'Afferent → ปมประสาท',X(0.48),cy+h*0.26,'#fde047',9.5,'center');}}
+  else if(k==='earthworm'){const cy=Y(0.45),n=14,L=X(0.06),R=X(0.96),sw=(R-L)/n,bh=h*0.12;for(let i=0;i<n;i++){g.fillStyle=i===3?'#be185d':'#f9a8d4';rr(g,L+i*sw,cy-bh,sw-2,bh*2,6);g.globalAlpha=0.35;g.fill();g.globalAlpha=1;}
+    const cg=[L+sw*0.6,cy-bh*0.6],sg=[L+sw*0.9,cy+bh*0.55];g.fillStyle='#8b5cf6';g.beginPath();g.arc(cg[0],cg[1],8,0,7);g.arc(sg[0],sg[1],7,0,7);g.fill();line(g,[cg,[L+sw*1.1,cy],sg],'#c4b5fd',2.5);line(g,[sg,[R-6,cy+bh*0.55]],'#c4b5fd',3);
+    for(let i=1;i<n;i++){const x=L+i*sw+sw*0.5;g.fillStyle='#a78bfa';g.beginPath();g.arc(x,cy+bh*0.55,4.5,0,7);g.fill();line(g,[[x,cy+bh*0.55],[x-6,cy+bh*0.95]],'rgba(196,181,253,.6)',1.2);line(g,[[x,cy+bh*0.55],[x+6,cy+bh*0.95]],'rgba(196,181,253,.6)',1.2);}
+    const si=9,sx=L+si*sw+sw*0.5;T(g,'⚡',sx,cy+bh+14,'#fde047',14,'center');pulse(g,[[sx,cy+bh],[sx,cy+bh*0.55]],tau/0.3);if(tau>0.3&&tau<0.7)glow(g,sx,cy+bh*0.55,20,'rgba(253,224,71,.8)');pulse(g,[[sx,cy+bh*0.55],sg,[L+sw*1.1,cy],cg],(tau-0.4)/1.4);pulse(g,[[sx,cy+bh*0.55],[R-6,cy+bh*0.55]],(tau-0.4)/0.8);
+    T(g,'Cerebral ganglion (เหนือคอหอย)',cg[0],cy-bh-14,'#c4b5fd',10.5,'left',true);T(g,'Ventral nerve cord + Segmental ganglion (ทุกปล้อง)',X(0.03),Y(0.86),'#c4b5fd',11,'left',true);T(g,'ด้านหลัง (Dorsal)',R,cy-bh-12,'#94a3b8',9.5,'right');T(g,'ด้านท้อง (Ventral)',R,cy+bh+12,'#94a3b8',9.5,'right');
+    if(dir){arrow(g,sx-20,cy+bh*1.6,sx-90,cy+bh*1.6,'#fde047',2);T(g,'กระแสประสาทไปตามเส้นประสาทด้านท้อง',sx-55,cy+bh*1.6+14,'#fde047',9.5,'center');}}
+  else if(k==='insect'){const cy=Y(0.45);g.fillStyle='rgba(161,98,7,.3)';g.beginPath();g.ellipse(X(0.15),cy,X(0.07),h*0.11,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.36),cy,X(0.13),h*0.13,0,0,7);g.fill();g.beginPath();g.ellipse(X(0.7),cy,X(0.22),h*0.15,0,0,7);g.fill();
+    for(let i=0;i<3;i++){const x=X(0.29)+i*X(0.07);line(g,[[x,cy+h*0.1],[x-10,cy+h*0.25],[x-4,cy+h*0.38]],'#a16207',3);}
+    const br=[X(0.15),cy-h*0.04],se=[X(0.17),cy+h*0.06],th=[[X(0.29),cy+h*0.07],[X(0.36),cy+h*0.07],[X(0.43),cy+h*0.07]];g.fillStyle='#8b5cf6';g.beginPath();g.ellipse(br[0],br[1],16,10,0,0,7);g.fill();g.beginPath();g.arc(se[0],se[1],6,0,7);g.fill();
+    line(g,[br,se,th[0],th[1],th[2],[X(0.88),cy+h*0.07]],'#c4b5fd',3);th.forEach(p=>{g.fillStyle='#7c3aed';g.beginPath();g.arc(p[0],p[1],8,0,7);g.fill();});for(let i=0;i<5;i++){g.fillStyle='#a78bfa';g.beginPath();g.arc(X(0.54)+i*X(0.07),cy+h*0.07,4.5,0,7);g.fill();}
+    const leg=[[X(0.36)-4,cy+h*0.38],[X(0.36)-10,cy+h*0.25],[X(0.36),cy+h*0.1],th[1]];T(g,'⚡',leg[0][0]+12,leg[0][1],'#fde047',14,'center');pulse(g,leg,tau/0.6);if(tau>0.6&&tau<1)glow(g,th[1][0],th[1][1],22,'rgba(253,224,71,.8)');pulse(g,[th[1],[X(0.36),cy+h*0.1],[X(0.36)-10,cy+h*0.25]],(tau-0.8)/0.5);pulse(g,[th[1],th[0],se,br],(tau-0.8)/0.9);
+    T(g,'สมอง',br[0],br[1]-20,'#c4b5fd',10.5,'center',true);T(g,'ปมประสาทอก (ควบคุมขา/ปีก)',X(0.36),cy-h*0.17,'#c4b5fd',10.5,'center',true);T(g,'Ventral nerve cord + ปมประสาทท้อง',X(0.7),cy+h*0.22,'#c4b5fd',10.5,'center');
+    if(dir)T(g,'ปมประสาทอกสั่งการขาได้ทันที แล้วจึงส่งต่อไปสมอง',X(0.03),Y(0.9),'#fde047',11,'left',true);}
+  else{const hx=X(0.5),hy=Y(0.13),body=[[hx,hy+h*0.08],[hx,Y(0.58)]];g.strokeStyle='rgba(203,213,225,.35)';g.lineWidth=2;g.beginPath();g.arc(hx,hy,h*0.08,0,7);g.stroke();line(g,[[hx-X(0.08),Y(0.25)],[hx+X(0.08),Y(0.25)],[hx+X(0.06),Y(0.58)],[hx-X(0.06),Y(0.58)],[hx-X(0.08),Y(0.25)]],'rgba(203,213,225,.35)',2);
+    const armR=[[hx+X(0.08),Y(0.26)],[hx+X(0.2),Y(0.42)],[hx+X(0.28),Y(0.55)]],armL=[[hx-X(0.08),Y(0.26)],[hx-X(0.2),Y(0.42)],[hx-X(0.26),Y(0.56)]];line(g,armR,'rgba(203,213,225,.35)',2);line(g,armL,'rgba(203,213,225,.35)',2);line(g,[[hx-X(0.04),Y(0.58)],[hx-X(0.06),Y(0.95)]],'rgba(203,213,225,.35)',2);line(g,[[hx+X(0.04),Y(0.58)],[hx+X(0.06),Y(0.95)]],'rgba(203,213,225,.35)',2);
+    g.fillStyle='#8b5cf6';g.beginPath();g.ellipse(hx,hy-4,h*0.06,h*0.045,0,0,7);g.fill();line(g,[[hx,hy+h*0.03],[hx,Y(0.6)]],'#a78bfa',5);
+    const nerveR=[[hx,Y(0.33)],[hx+X(0.08),Y(0.29)],[hx+X(0.2),Y(0.43)],[hx+X(0.27),Y(0.54)]];line(g,nerveR,'#c4b5fd',2);line(g,[[hx,Y(0.33)],[hx-X(0.08),Y(0.29)],[hx-X(0.2),Y(0.43)],[hx-X(0.25),Y(0.55)]],'#c4b5fd',2);line(g,[[hx,Y(0.58)],[hx-X(0.05),Y(0.94)]],'#c4b5fd',2);line(g,[[hx,Y(0.58)],[hx+X(0.05),Y(0.94)]],'#c4b5fd',2);
+    const aff=[...nerveR].reverse();T(g,'⚡',hx+X(0.29),Y(0.57),'#fde047',14,'center');pulse(g,aff,tau/0.7);if(tau>0.7&&tau<1)glow(g,hx,Y(0.33),20,'rgba(253,224,71,.8)');pulse(g,nerveR,(tau-0.85)/0.7);pulse(g,[[hx,Y(0.33)],[hx,hy]],(tau-0.85)/0.5);if(tau>1.35&&tau<2)glow(g,hx,hy-4,30,'rgba(253,224,71,.6)');
+    T(g,'สมอง',hx-h*0.07,hy-4,'#c4b5fd',10.5,'right',true);T(g,'ไขสันหลัง (ด้านหลัง กลวง)',hx-12,Y(0.48),'#a78bfa',10.5,'right',true);T(g,'เส้นประสาทไขสันหลัง 31 คู่',hx+X(0.12),Y(0.7),'#c4b5fd',10);
+    if(dir){T(g,'Reflex: ไขสันหลังสั่งการกล้ามเนื้อก่อน แล้วจึงส่งต่อไปสมอง (รู้สึกทีหลัง)',X(0.02),Y(0.97),'#fde047',10.5,'left',true);}}
+  g.restore();
+  const px=UW+8,pw=w-px-8;panel(g,px,8,pw,h-16);let y=28;T(g,o.n,px+10,y,'#a78bfa',14,'left',true);y+=22;
+  [['ชนิดระบบประสาท',o.t],['ศูนย์กลาง',o.c],['ลักษณะ',o.f]].forEach(([a,b])=>{T(g,a,px+10,y,'#a9a3d1',10.5);y=wrap(g,b,px+10,y+16,pw-20,15,'#ece9ff',11.5,a!=='ลักษณะ')+7;});
+  if(S.toggle==='psp'){T(g,'โครงสร้างเซลล์ประสาท',px+10,y+4,'#fbbf24',11.5,'left',true);neuronDiagram(g,px+14,y+22,pw-28);y+=96;wrap(g,'ตามหน้าที่: Sensory · Interneuron · Motor  ·  ตามรูปร่าง: Unipolar · Bipolar · Multipolar  ·  Glia: Schwann cell, Oligodendrocyte, Astrocyte, Microglia',px+10,y,pw-20,14,'#c4b5fd',10);}
+  else{T(g,'ทิศทางกระแสประสาท',px+10,y+4,'#fbbf24',11.5,'left',true);y=wrap(g,'Receptor → Sensory neuron → ศูนย์กลาง (Interneuron) → Motor neuron → Effector',px+10,y+22,pw-20,15,'#fde68a',11)+4;wrap(g,'ยิ่งวิวัฒนาการสูง ยิ่งมีการรวมศูนย์ (Centralization) และมีส่วนหัว (Cephalization) ชัดเจน',px+10,y,pw-20,15,'#c4b5fd',10.5);}}
+
+/* ================= MODE 2 : ACTION POTENTIAL ================= */
+const ION={Ki:140,Nai:15};
+function apP(){const Ko=V('ko'),Nao=V('nao'),ca=$('#ca').value;const EK=61.5*Math.log10(Ko/ION.Ki),ENa=61.5*Math.log10(Nao/ION.Nai),rmp=61.5*Math.log10((Ko+0.04*Nao)/(ION.Ki+0.04*ION.Nai)),thr=-55+(ca==='zero'?-7:ca==='high'?5:0);
+  return{Ko,Nao,EK,ENa,rmp,thr,peak:Math.max(ENa-30,thr+8),trough:Math.min(EK+10,rmp-3),ttx:$('#tox').value==='ttx',stim:V('stimA'),my:$('#myel').value==='my'};}
+let M2;function initM2(){M2={t:0,apT:-99,q:null,gp:[],hist:[],next:1,pend:-1,last:'none'};}
+function tryAP(a){const p=apP(),since=M2.t-M2.apT;let need=p.thr-p.rmp,blk='';if(since<1.5)blk='abs';else if(since<4)need*=2.2;
+  if(!p.ttx&&p.rmp<p.thr-1&&blk!=='abs'&&a>=need){M2.apT=M2.t;M2.q=p;M2.last=since<4?'relok':'ap';}else{M2.gp.push({t0:M2.t,a});M2.last=p.ttx?'ttx':p.rmp>=p.thr-1?'block':blk==='abs'?'abs':since<4?'rel':'sub';}}
+function apTemplate(tau,q){if(tau<0.5)return lerp(q.thr,q.peak,sm(tau/0.5));if(tau<1.3)return lerp(q.peak,q.rmp,sm((tau-0.5)/0.8));if(tau<1.9)return lerp(q.rmp,q.trough,sm((tau-1.3)/0.6));return q.trough+(q.rmp-q.trough)*(1-Math.exp(-(tau-1.9)/0.9));}
+function Vm(t){const p=apP(),tau=t-M2.apT;if(M2.q&&tau>=0&&tau<7)return apTemplate(tau,M2.q)+(p.rmp-M2.q.rmp)*sm(tau/7);let v=p.rmp;M2.gp.forEach(e=>{if(t>=e.t0)v+=Math.min(e.a,p.thr-p.rmp+40)*Math.exp(-(t-e.t0)/1.0);});return v;}
+function phase(){const tau=M2.t-M2.apT;if(!M2.q||tau>7||tau<0)return['resting','ศักย์พัก (Resting)'];if(tau<0.5)return['depol','Depolarization (Na⁺ เข้า)'];if(tau<1.3)return['repol','Repolarization (K⁺ ออก)'];if(tau<3.2)return['hyper','Hyperpolarization (K⁺ ออกเกิน)'];return['resting','กลับสู่ศักย์พัก (Na⁺/K⁺ pump)'];}
+function stepM2(dt){const ms=dt*2;M2.t+=ms;if($('#auto2').checked&&M2.t>=M2.next){tryAP(V('stimA'));M2.next=M2.t+10;}if(M2.pend>0&&M2.t>=M2.pend){tryAP(V('stimA'));M2.pend=-1;}
+  M2.gp=M2.gp.filter(e=>M2.t-e.t0<8);M2.hist.push([M2.t,Vm(M2.t)]);while(M2.hist.length&&M2.t-M2.hist[0][0]>14)M2.hist.shift();}
+function drawM2(g,w,h){g.fillStyle='#07051a';g.fillRect(0,0,w,h);const p=apP(),UW=w*0.64,X=f=>f*UW,Y=f=>f*h,v=Vm(M2.t),tau=M2.t-M2.apT,inAP=M2.q&&tau>=0&&tau<7;
+  const naOpen=inAP&&tau<0.5,naInact=inAP&&tau>=0.5&&tau<2.2,kOpen=inAP&&tau>=0.4&&tau<2.8,mY=Y(0.33),mh=30;
+  g.fillStyle='rgba(239,68,68,.05)';g.fillRect(0,0,UW,mY-mh/2);g.fillStyle='rgba(34,197,94,.05)';g.fillRect(0,mY+mh/2,UW,Y(0.62)-mY-mh/2);
+  T(g,'นอกเซลล์ (Extracellular)',8,12,'#fca5a5',10.5,'left',true);T(g,'ในเซลล์ (Cytoplasm)',8,Y(0.6),'#86efac',10.5,'left',true);
+  const nNa=Math.round(p.Nao/8),nK=Math.round(p.Ko/1.2);for(let i=0;i<nNa;i++){g.fillStyle='#ef4444';g.beginPath();g.arc(X(hash(i))+Math.sin(S.time+i)*3,lerp(24,mY-mh/2-8,hash(i+30)),2.6,0,7);g.fill();}for(let i=0;i<nK;i++){g.fillStyle='#22c55e';g.beginPath();g.arc(X(hash(i+90)),lerp(24,mY-mh/2-8,hash(i+60))+Math.cos(S.time+i)*3,2.6,0,7);g.fill();}
+  for(let i=0;i<26;i++){g.fillStyle='#22c55e';g.beginPath();g.arc(X(hash(i+150))+Math.sin(S.time+i)*3,lerp(mY+mh/2+8,Y(0.56),hash(i+120)),2.6,0,7);g.fill();}for(let i=0;i<3;i++){g.fillStyle='#ef4444';g.beginPath();g.arc(X(hash(i+200)),lerp(mY+mh/2+8,Y(0.56),hash(i+210)),2.6,0,7);g.fill();}
+  for(let x=4;x<UW;x+=9){g.fillStyle='#fcd34d';g.beginPath();g.arc(x,mY-mh/2+3,3,0,7);g.arc(x,mY+mh/2-3,3,0,7);g.fill();}
+  const sign=v>0?-1:1;for(let x=20;x<UW;x+=46){T(g,sign>0?'+':'−',x,mY-mh/2-7,'#fca5a5',12,'center',true);T(g,sign>0?'−':'+',x,mY+mh/2+8,'#86efac',12,'center',true);}
+  const ch=(x,col,state,lab)=>{g.fillStyle=col;rr(g,x-16,mY-mh/2-6,12,mh+12,4);g.fill();rr(g,x+4,mY-mh/2-6,12,mh+12,4);g.fill();if(state==='closed'){g.fillStyle='#1e1b4b';g.fillRect(x-4,mY-mh/2-4,8,8);}if(state==='inact'){g.fillStyle='#f472b6';g.beginPath();g.arc(x,mY+mh/2+4,6,0,7);g.fill();}T(g,lab,x,mY+mh/2+22,'#d8d3f5',9.5,'center',true);};
+  const nx=X(0.16),kx=X(0.4),px0=X(0.63),lx=X(0.86);ch(nx,'#b91c1c',p.ttx?'closed':naOpen?'open':naInact?'inact':'closed','Voltage-gated Na⁺');ch(kx,'#15803d',kOpen?'open':'closed','Voltage-gated K⁺');ch(lx,'#4d7c0f','open','K⁺ leak');
+  g.fillStyle='#7c3aed';rr(g,px0-22,mY-mh/2-8,44,mh+16,10);g.fill();T(g,'ATP',px0,mY,'#fff',10,'center',true);T(g,'Na⁺/K⁺ pump (3:2)',px0,mY+mh/2+22,'#d8d3f5',9.5,'center',true);
+  flow(g,[[px0-8,mY+mh],[px0-8,mY-mh]],3,0.4,'#ef4444',2.6);flow(g,[[px0+8,mY-mh],[px0+8,mY+mh]],2,0.4,'#22c55e',2.6);flow(g,[[lx,mY+mh],[lx,mY-mh]],1,0.3,'#22c55e',2.6);
+  if(naOpen&&!p.ttx)flow(g,[[nx,mY-mh*1.6],[nx,mY+mh*1.6]],6,1.4,'#ef4444',3.2);if(kOpen)flow(g,[[kx,mY+mh*1.6],[kx,mY-mh*1.6]],5,1.1,'#22c55e',3.2);
+  if(p.ttx){g.strokeStyle='#ef4444';g.lineWidth=3;g.beginPath();g.moveTo(nx-16,mY-24);g.lineTo(nx+16,mY+24);g.moveTo(nx+16,mY-24);g.lineTo(nx-16,mY+24);g.stroke();T(g,'TTX อุด',nx,mY-mh-10,'#fca5a5',10,'center',true);}
+  T(g,'● Na⁺   ● K⁺',UW-8,12,'#d8d3f5',10.5,'right');T(g,'■ = ประตู (Gate) ปิด  ● = Inactivation gate',UW-8,Y(0.6),'#a9a3d1',9.5,'right');
+  const ay=Y(0.8),ax0=X(0.04),ax1=X(0.96);T(g,p.my?'แอกซอนมีไมอีลิน: Saltatory conduction (กระโดดข้าม Node of Ranvier)':'แอกซอนไม่มีไมอีลิน: Continuous conduction (ทีละจุดต่อเนื่อง)',ax0,Y(0.68),'#c4b5fd',11,'left',true);
+  g.fillStyle='#4c1d95';rr(g,ax0,ay-7,ax1-ax0,14,7);g.fill();const nodes=9;if(p.my)for(let i=0;i<nodes;i++){const a=lerp(ax0,ax1,i/nodes)+5,b=lerp(ax0,ax1,(i+1)/nodes)-5;g.fillStyle='#fde68a';rr(g,a,ay-12,b-a,24,10);g.fill();}
+  if(inAP){const dur=p.my?1.8:9,s=tau/dur;if(s<=1){let x;if(p.my){const k=Math.floor(s*nodes+1e-6);x=lerp(ax0,ax1,Math.min(k,nodes)/nodes);}else x=lerp(ax0,ax1,s);glow(g,x,ay,26,'rgba(253,224,71,.85)');g.fillStyle='#fde047';g.beginPath();g.arc(x,ay,5,0,7);g.fill();
+      if(S.toggle==='dir'){arrow(g,x+12,ay-26,x+50,ay-26,'#fde047',2);T(g,'ด้านหลังอยู่ในช่วง Refractory → AP ไปทางเดียว',clamp(x,ax0+150,ax1-150),ay+30,'#fde68a',10,'center');}}}
+  T(g,p.my?'≈ 100 m/s':'≈ 1 m/s',ax1,Y(0.68),'#fbbf24',11,'right',true);
+  const sx=UW+8,sw=w-sx-8;panel(g,sx,8,sw,h-16);let y=30;T(g,'ศักย์เยื่อหุ้มเซลล์',sx+10,y,'#a78bfa',12,'left',true);y+=28;T(g,v.toFixed(0)+' mV',sx+10,y,v>0?'#fca5a5':v>p.thr?'#fde047':'#86efac',26,'left',true);y+=28;T(g,phase()[1],sx+10,y,'#fde68a',11.5,'left',true);y+=26;
+  [['E_Na (Nernst)',p.ENa.toFixed(0)+' mV','#fca5a5'],['E_K (Nernst)',p.EK.toFixed(0)+' mV','#86efac'],['ศักย์พัก (RMP)',p.rmp.toFixed(0)+' mV','#c4b5fd'],['Threshold',p.thr+' mV','#fde047']].forEach(([a,b,c])=>{T(g,a,sx+10,y,'#d8d3f5',11);T(g,b,sx+sw-10,y,c,11,'right',true);y+=19;});y+=6;
+  const msg={none:'',ap:'⚡ เกิด AP (All-or-none)',relok:'⚡ เกิด AP ในช่วง Relative refractory (สิ่งเร้าแรงพอ)',sub:'Subthreshold → Graded potential ไม่เกิด AP',abs:'Absolute refractory: Na⁺ channel ถูก Inactivate → ไม่เกิด AP',rel:'Relative refractory: ต้องใช้สิ่งเร้าแรงกว่าปกติ',ttx:'TTX อุด Na⁺ channel → ไม่เกิด AP',block:'RMP สูงกว่า Threshold → Na⁺ channel ถูก Inactivate ค้าง'}[M2.last];
+  y=wrap(g,msg,sx+10,y,sw-20,15,M2.last==='ap'||M2.last==='relok'?'#86efac':'#fca5a5',11,true)+8;
+  const since=M2.t-M2.apT;bar(g,sx+10,y+10,sw-20,9,since<1.5?1:since<4?0.5:0,since<1.5?'#ef4444':'#f59e0b','Refractory',since<1.5?'Absolute':since<4?'Relative':'—');y+=36;
+  if(S.toggle==='psp')wrap(g,'สิ่งเร้าเล็กให้ Graded potential (EPSP) ที่ลดลงตามระยะ ถ้ารวมกัน (Summation) จนถึง Threshold ที่ Axon hillock จึงเกิด AP',sx+10,y,sw-20,14,'#c4b5fd',10);
+  else wrap(g,'ความแรงของสิ่งเร้าเข้ารหัสด้วย "ความถี่" ของ AP ไม่ใช่ขนาด AP',sx+10,y,sw-20,14,'#c4b5fd',10);}
+
+/* ================= MODE 3 : SYNAPSE ================= */
+let M3;function initM3(){M3={t:0,C:0,V:-70,pa:-1,last:-9,hist:[],spikes:0,spT:-9,rel:0,bound:0};}
+function synP(){const nt=$('#nt').value,tox=$('#tox').value,ca=$('#ca').value;const caF=ca==='zero'?0:ca==='high'?1.6:1;const Q={ach:1.6,glu:0.55,gaba:0.9,ser:0.55}[nt];const k=(tox==='ache'&&nt==='ach')?0.22:(tox==='ssri'&&nt==='ser')?0.35:2.6;
+  return{nt,tox,ca,caF,Q:tox==='ttx'?0:(tox==='botox'&&nt==='ach')?0:Q*caF,k,Erev:nt==='gaba'?-80:0,ap:tox!=='ttx'};}
+function fire3(){M3.pa=0;M3.rel=0;}
+function stepM3(dt){const p=synP();M3.t+=dt;if($('#auto3').checked&&M3.t-M3.last>1.5){M3.last=M3.t;fire3();}
+  if(M3.pa>=0){M3.pa+=dt;if(M3.pa>=0.45&&!M3.rel){M3.rel=1;M3.C+=p.Q;}if(M3.pa>1.2)M3.pa=-1;}
+  M3.C=Math.max(0,M3.C-M3.C*p.k*dt);const occ=M3.C/(M3.C+0.5);M3.bound=occ;
+  if(M3.t-M3.spT<0.12){M3.V=M3.t-M3.spT<0.05?30:-75;}else{M3.V+=dt*((-70-M3.V)/0.25+5*occ*(p.Erev-M3.V));if(M3.V>-55&&M3.t-M3.spT>0.25){M3.spT=M3.t;M3.spikes++;}}
+  M3.hist.push([M3.t,M3.V,M3.C]);while(M3.hist.length&&M3.t-M3.hist[0][0]>8)M3.hist.shift();}
+function drawM3(g,w,h){g.fillStyle='#07051a';g.fillRect(0,0,w,h);const p=synP(),UW=w*0.64,X=f=>f*UW,Y=f=>f*h,cx=X(0.5),cy=Y(0.47),tw=X(0.34);
+  line(g,[[cx,0],[cx,Y(0.12)]],'#a78bfa',14);if(p.tox==='ttx'){T(g,'✕ TTX: ไม่มี AP มาถึง',cx+16,Y(0.05),'#fca5a5',10.5,'left',true);}else if(M3.pa>=0&&M3.pa<0.3)pulse(g,[[cx,0],[cx,Y(0.16)]],M3.pa/0.3);
+  g.fillStyle='rgba(139,92,246,.3)';g.beginPath();g.moveTo(cx-10,Y(0.1));g.bezierCurveTo(cx-tw*0.7,Y(0.12),cx-tw,Y(0.3),cx-tw*0.85,cy-Y(0.05));g.lineTo(cx+tw*0.85,cy-Y(0.05));g.bezierCurveTo(cx+tw,Y(0.3),cx+tw*0.7,Y(0.12),cx+10,Y(0.1));g.closePath();g.fill();g.strokeStyle='#a78bfa';g.lineWidth=2.5;g.stroke();
+  const vb=cy-Y(0.05);for(let i=0;i<9;i++){const vx=cx-tw*0.6+(i%5)*tw*0.3+(i>4?tw*0.15:0),vy=Y(0.22)+(i>4?Y(0.08):0),fusing=M3.pa>0.35&&M3.pa<0.7&&i%3===0&&p.Q>0;const yy=fusing?lerp(vy,vb-6,clamp((M3.pa-0.35)/0.2,0,1)):vy;g.strokeStyle='#f0abfc';g.lineWidth=1.5;g.beginPath();g.arc(vx,yy,9,0,7);g.stroke();for(let j=0;j<4;j++){g.fillStyle=ntCol(p.nt);g.beginPath();g.arc(vx+Math.cos(j*1.6)*4,yy+Math.sin(j*1.6)*4,1.8,0,7);g.fill();}}
+  for(const sd of[-1,1]){const x=cx+sd*tw*0.62;g.fillStyle='#0ea5e9';rr(g,x-6,vb-12,12,16,3);g.fill();if(M3.pa>0.28&&M3.pa<0.6&&p.ca!=='zero'&&p.ap)flow(g,[[x,vb+24],[x,vb-20]],2+(p.ca==='high'?2:0),1.5,'#38bdf8',2.6);}
+  T(g,'Ca²⁺ channel',cx+tw*0.62+10,vb-4,'#7dd3fc',9.5);if(p.tox==='botox'){T(g,'✂ Botox ตัด SNARE → ถุงไม่หลอมรวม',cx,vb-24,'#fca5a5',10,'center',true);}
+  const pY=cy+Y(0.06);g.fillStyle='rgba(56,189,248,.2)';g.fillRect(X(0.1),pY,X(0.8),h-pY);g.strokeStyle='#38bdf8';g.lineWidth=2.5;g.beginPath();g.moveTo(X(0.1),pY);g.lineTo(X(0.9),pY);g.stroke();
+  const nR=7,occ=M3.bound;for(let i=0;i<nR;i++){const rx=lerp(cx-tw*0.8,cx+tw*0.8,i/(nR-1)),open=hash(i+Math.floor(S.time*3))<occ;g.fillStyle=open?'#fde047':'#64748b';rr(g,rx-7,pY-6,5,14,2);g.fill();rr(g,rx+2,pY-6,5,14,2);g.fill();if(open){g.fillStyle=ntCol(p.nt);g.beginPath();g.arc(rx,pY-9,3,0,7);g.fill();if(hash(i+7)<0.6)flow(g,[[rx,pY-16],[rx,pY+30]],1,1.2,p.nt==='gaba'?'#a3e635':'#ef4444',2.5,i*0.3);}}
+  const n=Math.round(M3.C*22);for(let i=0;i<n;i++){g.fillStyle=ntCol(p.nt);g.beginPath();g.arc(cx+(hash(i)*2-1)*tw*0.8+Math.sin(S.time*3+i)*4,lerp(vb+3,pY-4,hash(i+40)),2.4,0,7);g.fill();}
+  if(p.nt==='ach'){for(let i=0;i<3;i++){const ex=cx-tw*0.5+i*tw*0.5,ey=(vb+pY)/2;g.fillStyle=p.tox==='ache'?'#475569':'#f59e0b';g.beginPath();g.moveTo(ex,ey);g.arc(ex,ey,6,0.5+0.3*Math.sin(S.time*8),6.28-0.5-0.3*Math.sin(S.time*8));g.closePath();g.fill();if(p.tox==='ache'){g.strokeStyle='#ef4444';g.lineWidth=2;g.beginPath();g.moveTo(ex-7,ey-7);g.lineTo(ex+7,ey+7);g.stroke();}}T(g,p.tox==='ache'?'AChE ถูกยับยั้ง':'AChE สลาย ACh',cx+tw*0.85,(vb+pY)/2,p.tox==='ache'?'#fca5a5':'#fbbf24',9.5);}
+  else if(p.nt!=='gaba'){const tx=cx-tw*0.75;g.fillStyle=p.tox==='ssri'&&p.nt==='ser'?'#475569':'#22c55e';rr(g,tx-6,vb-10,12,14,3);g.fill();T(g,p.tox==='ssri'&&p.nt==='ser'?'SSRI ปิดตัวเก็บกลับ':'Reuptake transporter',tx-10,vb-26,p.tox==='ssri'&&p.nt==='ser'?'#fca5a5':'#86efac',9.5,'left');if(!(p.tox==='ssri'&&p.nt==='ser')&&M3.C>0.05)flow(g,[[tx,pY-6],[tx,vb-4]],2,0.8,ntCol(p.nt),2.2);}
+  T(g,'เซลล์ก่อนไซแนปส์ (Presynaptic)',X(0.02),Y(0.18),'#c4b5fd',10.5,'left',true);T(g,'ช่องไซแนปส์ (Synaptic cleft)',X(0.02),(vb+pY)/2,'#a9a3d1',10);T(g,p.nt==='ach'?'เซลล์กล้ามเนื้อ (Motor end plate)':'เซลล์หลังไซแนปส์ (Postsynaptic)',X(0.02),pY+18,'#7dd3fc',10.5,'left',true);
+  T(g,'Receptor + ช่องไอออน: '+(p.nt==='gaba'?'Cl⁻ เข้า → IPSP':'Na⁺ เข้า → EPSP'),X(0.5),h-14,p.nt==='gaba'?'#a3e635':'#fca5a5',10.5,'center',true);
+  if(p.nt==='ach'){const con=M3.t-M3.spT<0.4,spastic=p.tox==='ache'&&M3.C>0.3;const mw=X(0.22)*(con||spastic?0.8:1);g.fillStyle=spastic?'#a855f7':con?'#ef4444':'#fca5a5';rr(g,X(0.5)-mw/2,pY+Y(0.2),mw,Y(0.08),8);g.fill();T(g,spastic?'หดเกร็งค้าง':con?'หดตัว':'คลายตัว',X(0.5),pY+Y(0.33),'#fecaca',10,'center',true);}
+  const sx=UW+8,sw=w-sx-8;panel(g,sx,8,sw,h-16);let y=30;T(g,'ศักย์เยื่อหุ้มเซลล์หลังไซแนปส์',sx+10,y,'#a78bfa',11.5,'left',true);y+=26;T(g,M3.V.toFixed(0)+' mV',sx+10,y,M3.V>-55?'#fde047':M3.V<-72?'#a3e635':'#ece9ff',22,'left',true);y+=26;
+  bar(g,sx+10,y+10,sw-20,9,clamp(M3.C/2,0,1),ntCol(p.nt),'สารสื่อประสาทในช่องไซแนปส์',(M3.C*100).toFixed(0)+'%');y+=34;bar(g,sx+10,y+10,sw-20,9,occ,'#fde047','Receptor ถูกจับ',Math.round(occ*100)+'%');y+=34;T(g,(p.nt==='ach'?'การหดตัวของกล้ามเนื้อ: ':'AP หลังไซแนปส์: ')+M3.spikes+' ครั้ง',sx+10,y,'#fde68a',11,'left',true);y+=22;
+  if(S.toggle==='psp'){T(g,'EPSP vs IPSP',sx+10,y,'#fbbf24',11.5,'left',true);y+=12;const gx=sx+14,gw=sw-28,gy=y+44;g.strokeStyle='#475569';g.setLineDash([3,3]);g.beginPath();g.moveTo(gx,gy);g.lineTo(gx+gw,gy);g.stroke();g.beginPath();g.moveTo(gx,gy-26);g.lineTo(gx+gw,gy-26);g.stroke();g.setLineDash([]);
+    g.strokeStyle='#ef4444';g.lineWidth=2;g.beginPath();for(let i=0;i<=40;i++){const t=i/40;g.lineTo(gx+t*gw/2,gy-18*Math.exp(-(((t-0.3)/0.15)**2)));}g.stroke();g.strokeStyle='#a3e635';g.beginPath();for(let i=0;i<=40;i++){const t=i/40;g.lineTo(gx+gw/2+t*gw/2,gy+14*Math.exp(-(((t-0.3)/0.15)**2)));}g.stroke();
+    T(g,'EPSP (Na⁺ เข้า)',gx,gy+26,'#fca5a5',9.5);T(g,'IPSP (Cl⁻ เข้า / K⁺ ออก)',gx+gw/2,gy+26,'#bef264',9.5);T(g,'Threshold',gx+gw,gy-32,'#fde047',9,'right');y=gy+44;wrap(g,'ผลรวม EPSP − IPSP (Summation) ที่ Axon hillock ตัดสินว่าจะเกิด AP หรือไม่',sx+10,y,sw-20,14,'#c4b5fd',10);}
+  else{T(g,'ทิศทางการส่งกระแสประสาท',sx+10,y,'#fbbf24',11.5,'left',true);y=wrap(g,'ไซแนปส์เคมี: ส่งได้ทางเดียว (ก่อน → หลังไซแนปส์) เพราะถุงสารสื่อประสาทอยู่ที่ปลายแอกซอน Receptor อยู่ที่เซลล์หลังไซแนปส์',sx+10,y+16,sw-20,14,'#fde68a',10)+6;wrap(g,'ไซแนปส์ไฟฟ้า (Gap junction): ไอออนผ่านโดยตรง เร็วมาก ส่งได้สองทาง เช่น กล้ามเนื้อหัวใจ',sx+10,y,sw-20,14,'#c4b5fd',10);}
+  arrow(g,cx+tw*0.95,Y(0.2),cx+tw*0.95,pY+20,S.toggle==='dir'?'#fde047':'rgba(253,224,71,.25)',2.5);}
+const ntCol=nt=>({ach:'#f472b6',glu:'#fb923c',gaba:'#a3e635',ser:'#38bdf8'})[nt];
+
+/* ================= MODE 4 : BRAIN / REFLEX / ANS ================= */
+let M4;function initM4(){M4={t:0,ft:-9};}
+function stepM4(dt){M4.t+=dt;if(M4.t-M4.ft>4.5)M4.ft=M4.t;}
+const REG={cerebrum:{n:'Cerebrum (ซีรีบรัม)',p:'สมองส่วนหน้า',f:'ความคิด ความจำ การเรียนรู้ เชาวน์ปัญญา สั่งการกล้ามเนื้อลาย และแปลความรู้สึก — แบ่งเป็น Frontal, Parietal, Temporal (ได้ยิน), Occipital (มองเห็น) lobe',d:'อัมพาตครึ่งซีก สูญเสียความจำหรือการพูด'},
+ thalamus:{n:'Thalamus (ทาลามัส)',p:'สมองส่วนหน้า',f:'สถานีถ่ายทอดกระแสประสาทรับความรู้สึกทุกชนิด (ยกเว้นกลิ่น) ไปยัง Cerebrum',d:'การรับความรู้สึกผิดปกติ'},
+ hypothalamus:{n:'Hypothalamus (ไฮโพทาลามัส)',p:'สมองส่วนหน้า',f:'ควบคุมอุณหภูมิ ความหิว ความอิ่ม ความกระหาย สมดุลน้ำ การนอน อารมณ์ และสร้างฮอร์โมนควบคุมต่อมใต้สมอง (Releasing hormone, ADH, Oxytocin)',d:'ควบคุมอุณหภูมิ/สมดุลน้ำผิดปกติ'},
+ midbrain:{n:'Midbrain (สมองส่วนกลาง)',p:'สมองส่วนกลาง (ก้านสมอง)',f:'ศูนย์ Reflex เกี่ยวกับการมองเห็น (ปรับขนาดรูม่านตา การกลอกตา) และการได้ยิน (หันหาเสียง)',d:'รูม่านตาไม่ตอบสนองต่อแสง'},
+ pons:{n:'Pons (พอนส์)',p:'สมองส่วนหลัง (ก้านสมอง)',f:'ร่วมควบคุมการหายใจกับ Medulla ควบคุมการเคี้ยว การหลั่งน้ำลาย การเคลื่อนไหวใบหน้า และเชื่อม Cerebrum กับ Cerebellum',d:'หายใจผิดจังหวะ'},
+ medulla:{n:'Medulla oblongata (เมดัลลา)',p:'สมองส่วนหลัง (ก้านสมอง)',f:'ศูนย์ควบคุมการหายใจ การเต้นของหัวใจ ความดันเลือด และ Reflex การกลืน ไอ จาม สะอึก อาเจียน',d:'อันตรายถึงชีวิต (หยุดหายใจ)'},
+ cerebellum:{n:'Cerebellum (ซีรีเบลลัม)',p:'สมองส่วนหลัง',f:'ควบคุมการทรงตัว และประสานการเคลื่อนไหวให้ราบรื่น แม่นยำ',d:'เดินเซ เคลื่อนไหวไม่ประสานกัน (เช่น เมาสุรา)'},
+ spinal:{n:'Spinal cord (ไขสันหลัง)',p:'ระบบประสาทส่วนกลาง',f:'ทางผ่านกระแสประสาทระหว่างสมองกับร่างกาย และศูนย์กลาง Reflex · Gray matter (ตัวเซลล์ รูปผีเสื้อ) อยู่ด้านใน White matter (แอกซอนมีไมอีลิน) อยู่ด้านนอก',d:'อัมพาตส่วนที่ต่ำกว่าจุดบาดเจ็บ'}};
+const ANSV={neutral:{hr:72,pu:4,gut:1,br:1,sal:1,glu:1},sym:{hr:125,pu:7,gut:0.3,br:1.5,sal:0.4,glu:1.6},para:{hr:58,pu:2.5,gut:1.8,br:0.7,sal:1.8,glu:0.9}};
+function drawBrain(g,w,h,X,Y,UW){const r=$('#region').value,hl=k=>k===r;const cx=X(0.5),cy=Y(0.42);
+  const reg=(k,f)=>{g.save();f();g.fillStyle=hl(k)?'rgba(253,224,71,.55)':g.fillStyle;g.fill();if(hl(k)){g.strokeStyle='#fde047';g.lineWidth=3;g.stroke();}g.restore();};
+  reg('cerebrum',()=>{g.fillStyle='rgba(167,139,250,.35)';g.beginPath();g.ellipse(cx,cy-Y(0.06),X(0.33),Y(0.27),0,Math.PI*0.92,Math.PI*2.12);g.closePath();});
+  g.strokeStyle='rgba(221,214,254,.35)';g.lineWidth=1.5;for(let i=0;i<9;i++){g.beginPath();g.arc(cx-X(0.25)+i*X(0.065),cy-Y(0.16)+Math.sin(i)*Y(0.04),X(0.04),Math.PI*1.1,Math.PI*1.9);g.stroke();}
+  g.strokeStyle='#e9d5ff';g.lineWidth=4;g.beginPath();g.ellipse(cx,cy-Y(0.02),X(0.17),Y(0.06),0,Math.PI,Math.PI*2);g.stroke();T(g,'Corpus callosum',cx,cy-Y(0.11),'#e9d5ff',9,'center');
+  reg('thalamus',()=>{g.fillStyle='rgba(56,189,248,.5)';g.beginPath();g.ellipse(cx+X(0.01),cy+Y(0.02),X(0.05),Y(0.04),0,0,7);});
+  reg('hypothalamus',()=>{g.fillStyle='rgba(244,114,182,.5)';g.beginPath();g.ellipse(cx-X(0.04),cy+Y(0.09),X(0.035),Y(0.03),0,0,7);});g.fillStyle='#f472b6';g.beginPath();g.arc(cx-X(0.06),cy+Y(0.15),5,0,7);g.fill();T(g,'ต่อมใต้สมอง',cx-X(0.08),cy+Y(0.17),'#f9a8d4',9,'right');
+  reg('midbrain',()=>{g.fillStyle='rgba(251,146,60,.5)';rr(g,cx+X(0.02),cy+Y(0.07),X(0.06),Y(0.07),6);});
+  reg('pons',()=>{g.fillStyle='rgba(250,204,21,.45)';g.beginPath();g.ellipse(cx+X(0.05),cy+Y(0.19),X(0.045),Y(0.05),0,0,7);});
+  reg('medulla',()=>{g.fillStyle='rgba(34,197,94,.45)';rr(g,cx+X(0.04),cy+Y(0.24),X(0.05),Y(0.1),8);});
+  reg('spinal',()=>{g.fillStyle='rgba(148,163,184,.45)';rr(g,cx+X(0.05),cy+Y(0.33),X(0.035),Y(0.22),6);});
+  reg('cerebellum',()=>{g.fillStyle='rgba(20,184,166,.45)';g.beginPath();g.ellipse(cx+X(0.2),cy+Y(0.15),X(0.1),Y(0.09),0.2,0,7);});g.strokeStyle='rgba(204,251,241,.4)';g.lineWidth=1;for(let i=0;i<5;i++){g.beginPath();g.ellipse(cx+X(0.2),cy+Y(0.15),X(0.1)-i*6,Y(0.09)-i*5,0.2,0,7);g.stroke();}
+  [['Cerebrum',cx-X(0.22),cy-Y(0.05)],['Thalamus',cx+X(0.07),cy+Y(0.0)],['Hypothalamus',cx-X(0.1),cy+Y(0.09)],['Midbrain',cx+X(0.09),cy+Y(0.1)],['Pons',cx-X(0.0),cy+Y(0.21)],['Medulla',cx+X(0.11),cy+Y(0.3)],['Cerebellum',cx+X(0.2),cy+Y(0.28)],['Spinal cord',cx+X(0.1),cy+Y(0.5)]].forEach(([s,x,y])=>T(g,s,x,y,'#ece9ff',10,'center',true));
+  T(g,'ด้านหน้า ←',X(0.03),Y(0.05),'#a9a3d1',10);T(g,'สมองส่วนหน้า: Cerebrum, Thalamus, Hypothalamus · ส่วนกลาง: Midbrain · ส่วนหลัง: Pons, Medulla, Cerebellum',X(0.02),Y(0.96),'#c4b5fd',9.5);T(g,'ก้านสมอง (Brainstem) = Midbrain + Pons + Medulla',X(0.02),Y(0.91),'#fde68a',9.5);}
+function drawReflex(g,w,h,X,Y,UW){const kn=$('#rtype').value==='knee',tau=M4.t-M4.ft,sc=[X(0.68),Y(0.42)],R=Y(0.2),dir=S.toggle==='dir';
+  g.fillStyle='rgba(226,232,240,.18)';g.beginPath();g.ellipse(sc[0],sc[1],R*1.1,R,0,0,7);g.fill();g.strokeStyle='#cbd5e1';g.lineWidth=2;g.stroke();g.fillStyle='rgba(148,163,184,.55)';g.beginPath();g.moveTo(sc[0],sc[1]-R*0.25);g.bezierCurveTo(sc[0]-R*0.3,sc[1]-R*0.95,sc[0]-R*0.75,sc[1]-R*0.7,sc[0]-R*0.35,sc[1]);g.bezierCurveTo(sc[0]-R*0.8,sc[1]+R*0.7,sc[0]-R*0.3,sc[1]+R*0.9,sc[0],sc[1]+R*0.25);g.bezierCurveTo(sc[0]+R*0.3,sc[1]+R*0.9,sc[0]+R*0.8,sc[1]+R*0.7,sc[0]+R*0.35,sc[1]);g.bezierCurveTo(sc[0]+R*0.75,sc[1]-R*0.7,sc[0]+R*0.3,sc[1]-R*0.95,sc[0],sc[1]-R*0.25);g.fill();
+  g.fillStyle='#07051a';g.beginPath();g.arc(sc[0],sc[1],3,0,7);g.fill();T(g,'Gray matter',sc[0],sc[1]-R*1.15,'#cbd5e1',9.5,'center');T(g,'White matter',sc[0]+R*1.15,sc[1]-R*0.6,'#e2e8f0',9.5,'left');
+  const drg=[sc[0]-R*0.55,sc[1]-R*1.35];g.fillStyle='#a78bfa';g.beginPath();g.ellipse(drg[0],drg[1],12,9,0,0,7);g.fill();T(g,'Dorsal root ganglion',drg[0]-16,drg[1]-14,'#c4b5fd',9.5,'right');
+  const dh=[sc[0]-R*0.4,sc[1]-R*0.55],vh=[sc[0]-R*0.45,sc[1]+R*0.55],inn=[sc[0]-R*0.2,sc[1]+R*0.05];
+  const rec=kn?[X(0.12),Y(0.62)]:[X(0.08),Y(0.24)],eff=kn?[X(0.2),Y(0.5)]:[X(0.22),Y(0.4)];
+  const sens=[rec,[X(0.3),rec[1]-Y(0.1)],[drg[0]-60,drg[1]],drg,dh];const mot=kn?[dh,vh,[sc[0]-R*1.2,sc[1]+R*1.2],[X(0.35),Y(0.75)],eff]:[dh,inn,vh,[sc[0]-R*1.2,sc[1]+R*1.2],[X(0.36),Y(0.7)],eff];
+  line(g,sens,'#38bdf8',3);line(g,mot,'#f87171',3);if(!kn){g.fillStyle='#fbbf24';g.beginPath();g.arc(inn[0],inn[1],6,0,7);g.fill();T(g,'Interneuron',inn[0]+10,inn[1],'#fbbf24',9.5);}
+  g.fillStyle='#f87171';g.beginPath();g.arc(vh[0],vh[1],7,0,7);g.fill();line(g,[dh,[sc[0]-R*0.1,sc[1]-R*1.0],[sc[0]-R*0.1,4]],'rgba(196,181,253,.5)',2);T(g,'ส่งต่อไปสมอง → รู้สึก',sc[0]-R*0.1+6,14,'#c4b5fd',9.5);
+  const s1=0.9,s2=kn?0.5:0.8;pulse(g,sens,tau/s1);pulse(g,mot,(tau-s1)/s2);pulse(g,[dh,[sc[0]-R*0.1,sc[1]-R*1.0],[sc[0]-R*0.1,4]],(tau-s1)/1.4);const resp=tau>s1+s2&&tau<s1+s2+1.4;
+  if(kn){const hip=[X(0.04),Y(0.42)],knee=[X(0.2),Y(0.55)],a=resp?0.9:0.15,ft=[knee[0]+Math.sin(a)*Y(0.28),knee[1]+Math.cos(a)*Y(0.28)];line(g,[hip,knee,ft],'#e7e5e4',8);g.fillStyle='#ef4444';g.globalAlpha=resp?1:0.4;line(g,[[hip[0]+4,hip[1]-8],[knee[0]+2,knee[1]-10]],'#ef4444',7);g.globalAlpha=1;T(g,'ค้อนเคาะ Patellar tendon',rec[0],rec[1]+18,'#fde047',10,'center');T(g,'Quadriceps '+(resp?'หด → เตะขา':''),X(0.02),Y(0.36),'#fca5a5',10.5,'left',true);
+    if(S.toggle==='psp'){T(g,'Hamstrings ถูกยับยั้ง (IPSP ผ่าน Inhibitory interneuron)',X(0.02),Y(0.92),'#bef264',10.5,'left',true);T(g,'Quadriceps motor neuron ได้ EPSP',X(0.02),Y(0.97),'#fca5a5',10.5,'left',true);}}
+  else{const sh=[X(0.2),Y(0.22)],el=[X(0.22),Y(0.42)],a=resp?-0.6:0.6,hd=[el[0]-Math.cos(a)*Y(0.22),el[1]-Math.sin(a)*Y(0.15)];line(g,[sh,el,hd],'#e7e5e4',7);T(g,'📍 เข็ม',rec[0]-4,rec[1]-18,'#fde047',10.5,'center',true);T(g,'Biceps '+(resp?'หด → ชักมือหนี':''),X(0.02),Y(0.5),'#fca5a5',10.5,'left',true);
+    if(S.toggle==='psp'){T(g,'Interneuron: EPSP → Motor neuron ของ Biceps',X(0.02),Y(0.92),'#fca5a5',10.5,'left',true);T(g,'IPSP → Motor neuron ของ Triceps (ให้คลาย)',X(0.02),Y(0.97),'#bef264',10.5,'left',true);}}
+  T(g,'Sensory neuron',X(0.32),rec[1]-Y(0.13),'#38bdf8',10,'center',true);T(g,'Motor neuron',X(0.38),Y(0.78),'#f87171',10,'center',true);
+  if(dir){arrow(g,X(0.3),rec[1]-Y(0.18),X(0.42),rec[1]-Y(0.22),'#38bdf8',2);arrow(g,X(0.42),Y(0.84),X(0.3),Y(0.8),'#f87171',2);T(g,kn?'Monosynaptic: Sensory → Motor (ไม่มี Interneuron)':'Polysynaptic: Sensory → Interneuron → Motor',X(0.98),Y(0.95),'#fde68a',10.5,'right',true);}}
+function drawANS(g,w,h,X,Y,UW){const a=$('#ans').value,v=ANSV[a],sOn=a==='sym',pOn=a==='para',ox=X(0.5),lx=X(0.1),rx=X(0.9);
+  const cns=(x,lab)=>{g.fillStyle='rgba(167,139,250,.35)';g.beginPath();g.ellipse(x,Y(0.1),X(0.05),Y(0.055),0,0,7);g.fill();rr(g,x-6,Y(0.15),12,Y(0.72),6);g.fill();T(g,'สมอง',x,Y(0.1),'#ece9ff',10,'center',true);T(g,lab,x,Y(0.9),'#c4b5fd',9.5,'center');};
+  cns(lx,'ไขสันหลังส่วนอก–เอว');cns(rx,'ก้านสมอง + ส่วนกระเบนเหน็บ');
+  g.fillStyle=sOn?'rgba(248,113,113,.35)':'rgba(248,113,113,.15)';rr(g,lx-6,Y(0.32),12,Y(0.36),6);g.fill();
+  g.fillStyle=pOn?'rgba(74,222,128,.35)':'rgba(74,222,128,.15)';g.beginPath();g.ellipse(rx,Y(0.1),X(0.05),Y(0.055),0,0,7);g.fill();rr(g,rx-6,Y(0.74),12,Y(0.12),6);g.fill();
+  T(g,'Sympathetic',X(0.27),Y(0.05),sOn?'#fca5a5':'#a9a3d1',12,'center',true);T(g,'(Thoracolumbar)',X(0.27),Y(0.1),'#a9a3d1',9.5,'center');T(g,'Parasympathetic',X(0.73),Y(0.05),pOn?'#86efac':'#a9a3d1',12,'center',true);T(g,'(Craniosacral)',X(0.73),Y(0.1),'#a9a3d1',9.5,'center');
+  const orgs=[['รูม่านตา',Y(0.22)],['หัวใจ',Y(0.38)],['หลอดลม',Y(0.54)],['ทางเดินอาหาร',Y(0.7)],['ตับ (ปล่อยกลูโคส)',Y(0.85)]];
+  const sc=sOn?'#f87171':'rgba(248,113,113,.35)',pc=pOn?'#4ade80':'rgba(74,222,128,.35)';
+  orgs.forEach(([n,y],i)=>{const sy=Y(0.35)+i*Y(0.075),sg=[X(0.18),sy],sp=[[lx,sy],sg,[ox-24,y]];line(g,[sp[0],sg],sc,2.5);line(g,[sg,sp[2]],sc,2.5);g.fillStyle='#ef4444';g.beginPath();g.arc(sg[0],sg[1],4.5,0,7);g.fill();
+    if(i<4){const py=i===3?Y(0.8):Y(0.13)+i*5,pg=[X(0.62),y],pp=[[rx,py],[X(0.7),py],[X(0.7),y],pg,[ox+24,y]];line(g,pp.slice(0,4),pc,2.5);line(g,[pg,pp[4]],pc,2.5);g.fillStyle='#22c55e';g.beginPath();g.arc(pg[0],pg[1],4.5,0,7);g.fill();if(pOn)pulse(g,pp,((S.time*0.6)+i*0.2)%1);}
+    if(sOn)pulse(g,sp,((S.time*0.6)+i*0.2)%1);
+    T(g,n,ox,y-19,'#ece9ff',10,'center',true);});
+  g.fillStyle='#e2e8f0';g.beginPath();g.ellipse(ox,orgs[0][1],14,9,0,0,7);g.fill();g.fillStyle='#92400e';g.beginPath();g.arc(ox,orgs[0][1],7,0,7);g.fill();g.fillStyle='#000';g.beginPath();g.arc(ox,orgs[0][1],v.pu*0.85,0,7);g.fill();
+  const hb=1+0.12*Math.max(0,Math.sin(S.time*v.hr/60*6.283));g.fillStyle='#ef4444';g.beginPath();g.arc(ox,orgs[1][1],9*hb,0,7);g.fill();T(g,v.hr+' bpm',ox+16,orgs[1][1]+4,'#fca5a5',9.5,'left',true);
+  g.strokeStyle='#93c5fd';g.lineWidth=2;g.beginPath();g.arc(ox,orgs[2][1],5*v.br,0,7);g.stroke();
+  g.strokeStyle='#fdba74';g.lineWidth=3;g.beginPath();for(let i=0;i<=20;i++){const x=ox-20+i*2,y=orgs[3][1]+Math.sin(i*0.8-S.time*4*v.gut)*5*v.gut;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+  g.fillStyle='#92400e';g.beginPath();g.ellipse(ox,orgs[4][1],16,9,0,0,7);g.fill();
+  T(g,'ปมประสาทข้างไขสันหลัง',X(0.18),Y(0.3),'#fca5a5',9,'center');T(g,'ปมประสาทใกล้/ในอวัยวะ',X(0.62),Y(0.93),'#86efac',9,'center');
+  if(S.toggle==='psp'){T(g,'ก่อนปมประสาท: ACh ทั้งสองระบบ',X(0.02),Y(0.97),'#fde68a',10,'left',true);T(g,'หลังปมประสาท: Sym = NE · Para = ACh',X(0.98),Y(0.97),'#fde68a',10,'right',true);}
+  else{T(g,'Sym: ก่อนปม สั้น → หลังปม ยาว',X(0.02),Y(0.97),'#fca5a5',10,'left',true);T(g,'Para: ก่อนปม ยาว → หลังปม สั้น',X(0.98),Y(0.97),'#86efac',10,'right',true);}}
+function drawM4(g,w,h){g.fillStyle='#07051a';g.fillRect(0,0,w,h);const vw=$('#view').value,UW=w,X=f=>f*UW,Y=f=>f*h;
+  if(vw==='brain'){const BW=w*0.62,XB=f=>f*BW;drawBrain(g,BW,h,XB,Y,BW);const r=REG[$('#region').value],px=BW+8,pw=w-px-8;panel(g,px,8,pw,h-16);let y=30;T(g,r.n,px+10,y,'#fde047',13,'left',true);y+=20;T(g,r.p,px+10,y,'#a9a3d1',10.5);y+=22;T(g,'หน้าที่',px+10,y,'#a78bfa',11,'left',true);y=wrap(g,r.f,px+10,y+16,pw-20,15,'#ece9ff',11)+8;T(g,'ถ้าเสียหาย',px+10,y,'#fca5a5',11,'left',true);wrap(g,r.d,px+10,y+16,pw-20,15,'#fecaca',11);}
+  else if(vw==='reflex')drawReflex(g,w,h,X,Y,UW);else drawANS(g,w,h,X,Y,UW);}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#231d45';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#a9a3d1',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#a9a3d1',10,'center');}
+  g.strokeStyle='#4b4675';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#a9a3d1',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#a9a3d1',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#ece9ff',10);});}
+function hline(g,A,v,col,lab,w){g.strokeStyle=col;g.setLineDash([4,4]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.L,A.Y(v));g.lineTo(w-A.Rm,A.Y(v));g.stroke();g.setLineDash([]);if(lab)T(g,lab,w-A.Rm-2,A.Y(v)-7,col,9.5,'right');}
+const OK=Object.keys(ORG),OS=['อะมีบา','ไฮดรา','พลานาเรีย','ไส้เดือน','แมลง','มนุษย์'];
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const A=axes(g,w,h,0,6,0,11,'','log₁₀ จำนวนเซลล์ประสาท',6,11,()=>'');const cur=$('#org').value;OK.forEach((k,i)=>{const v=ORG[k].neu?Math.log10(ORG[k].neu):0,x=A.X(i)+4,bw=A.X(1)-A.X(0)-8;g.fillStyle=k===cur?'#fbbf24':'#6d28d9';g.fillRect(x,A.Y(v),bw,A.Y(0)-A.Y(v));T(g,OS[i],x+bw/2,h-A.B+10,k===cur?'#fbbf24':'#d8d3f5',10,'center',k===cur);if(v)T(g,'10^'+v.toFixed(1),x+bw/2,A.Y(v)-8,'#d8d3f5',9,'center');});}
+  else if(m===2){const p=apP(),t1=Math.max(14,M2.t),t0=t1-14,A=axes(g,w,h,t0,t1,-100,60,'เวลา (ms)','ศักย์ไฟฟ้า (mV)',7,8,v=>(v-t0).toFixed(0));hline(g,A,p.thr,'#fde047','Threshold '+p.thr,w);hline(g,A,p.rmp,'#a78bfa','RMP '+p.rmp.toFixed(0),w);hline(g,A,0,'#475569','0 mV',w);
+    g.strokeStyle='#22d3ee';g.lineWidth=2.4;g.beginPath();M2.hist.forEach((r,i)=>i?g.lineTo(A.X(r[0]),A.Y(clamp(r[1],-100,60))):g.moveTo(A.X(r[0]),A.Y(clamp(r[1],-100,60))));g.stroke();
+    if(M2.q&&M2.apT>t0){const x=M2.apT;[['Depol.',0.25,'#fca5a5'],['Repol.',0.9,'#86efac'],['Hyperpol.',2.2,'#93c5fd']].forEach(([s,d,c])=>{if(x+d<t1)T(g,s,A.X(x+d)+4,A.Y(apTemplate(d,M2.q))+(d>2?12:-10),c,9.5);});}}
+  else if(m===3){const t1=Math.max(8,M3.t),t0=t1-8,A=axes(g,w,h,t0,t1,-90,40,'เวลา (s)','ศักย์หลังไซแนปส์ (mV)',4,5,v=>(v-t0).toFixed(0));hline(g,A,-55,'#fde047','Threshold −55',w);hline(g,A,-70,'#a78bfa','RMP −70',w);
+    g.strokeStyle='#22d3ee';g.lineWidth=2.2;g.beginPath();M3.hist.forEach((r,i)=>i?g.lineTo(A.X(r[0]),A.Y(r[1])):g.moveTo(A.X(r[0]),A.Y(r[1])));g.stroke();g.strokeStyle=ntCol($('#nt').value);g.lineWidth=1.6;g.beginPath();M3.hist.forEach((r,i)=>{const y=A.Y(-90+r[2]*40);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();
+    legend(g,[['ศักย์เยื่อหุ้มเซลล์หลังไซแนปส์','#22d3ee'],['ปริมาณสารสื่อประสาทในช่องไซแนปส์',ntCol($('#nt').value)]],A.L+8,A.Tm+8);}
+  else{const v=ANSV[$('#ans').value],n=ANSV.neutral,items=[['อัตราการเต้นหัวใจ',v.hr/n.hr],['ขนาดรูม่านตา',v.pu/n.pu],['การบีบตัวทางเดินอาหาร',v.gut/n.gut],['ขนาดหลอดลม',v.br/n.br],['น้ำลาย',v.sal/n.sal],['กลูโคสในเลือด',v.glu/n.glu]];const A=axes(g,w,h,0,items.length,0,2,'','เทียบกับภาวะปกติ (×)',items.length,4,()=>'');
+    hline(g,A,1,'#a9a3d1','ปกติ',w);items.forEach(([s,r],i)=>{const x=A.X(i)+4,bw=A.X(1)-A.X(0)-8;g.fillStyle=r>1.05?'#ef4444':r<0.95?'#22c55e':'#6d28d9';g.fillRect(x,A.Y(r),bw,A.Y(0)-A.Y(r));g.save();g.translate(x+bw/2,h-A.B+6);g.rotate(-0.5);T(g,s,0,0,'#d8d3f5',9,'right');g.restore();});}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const T1='<table><tr><th>สัตว์</th><th>ระบบประสาท</th><th>ศูนย์กลาง</th></tr>'+Object.keys(ORG).map(k=>`<tr><td>${ORG[k].n}</td><td>${ORG[k].t}</td><td>${ORG[k].c}</td></tr>`).join('')+'</table><table style="margin-top:6px"><tr><th>Glia (Neuroglia)</th><th>หน้าที่</th></tr><tr><td>Schwann cell</td><td>สร้างเยื่อไมอีลินในระบบประสาทรอบนอก</td></tr><tr><td>Oligodendrocyte</td><td>สร้างเยื่อไมอีลินในสมองและไขสันหลัง</td></tr><tr><td>Astrocyte</td><td>ค้ำจุน ลำเลียงสารอาหาร ร่วมสร้าง Blood–brain barrier</td></tr><tr><td>Microglia</td><td>กินสิ่งแปลกปลอม (Phagocytosis)</td></tr></table>';
+const T2='<table><tr><th>ระยะ</th><th>ช่องไอออน</th><th>การเคลื่อนที่ของไอออน</th><th>ศักย์</th></tr><tr><td>Resting</td><td>K⁺ leak, Na⁺/K⁺ pump</td><td>3Na⁺ ออก 2K⁺ เข้า</td><td>−70 mV</td></tr><tr><td>Depolarization</td><td>Na⁺ gate เปิด</td><td>Na⁺ แพร่เข้า</td><td>→ +30 mV</td></tr><tr><td>Repolarization</td><td>Na⁺ ปิด (Inactivate) K⁺ เปิด</td><td>K⁺ แพร่ออก</td><td>→ −70 mV</td></tr><tr><td>Hyperpolarization</td><td>K⁺ ปิดช้า</td><td>K⁺ ออกเกิน</td><td>−80 mV</td></tr></table><table style="margin-top:6px"><tr><th></th><th>มีไมอีลิน</th><th>ไม่มีไมอีลิน</th></tr><tr><td>การนำ</td><td>Saltatory (กระโดดข้าม Node)</td><td>Continuous</td></tr><tr><td>ความเร็ว</td><td>สูง ~100 m/s</td><td>ต่ำ ~0.5–2 m/s</td></tr><tr><td>พลังงาน</td><td>ใช้ ATP น้อยกว่า</td><td>ใช้ ATP มากกว่า</td></tr></table>';
+const T3='<table><tr><th>สารสื่อประสาท</th><th>ผล</th><th>ตัวอย่างบทบาท</th></tr><tr><td>Acetylcholine (ACh)</td><td>กระตุ้น (กล้ามเนื้อลาย)</td><td>Neuromuscular junction, Parasympathetic</td></tr><tr><td>Norepinephrine (NE)</td><td>กระตุ้น</td><td>Sympathetic (หลังปมประสาท)</td></tr><tr><td>Dopamine</td><td>ปรับการทำงาน</td><td>การเคลื่อนไหว ความพึงพอใจ (ขาด → Parkinson)</td></tr><tr><td>Serotonin</td><td>ปรับการทำงาน</td><td>อารมณ์ การนอน (ต่ำ → ซึมเศร้า)</td></tr><tr><td>GABA</td><td>ยับยั้ง (IPSP)</td><td>ลดความตื่นตัวของสมอง</td></tr><tr><td>Glutamate</td><td>กระตุ้น (EPSP)</td><td>การเรียนรู้ ความจำ</td></tr><tr><td>Endorphin</td><td>ยับยั้งความเจ็บปวด</td><td>ยาแก้ปวดตามธรรมชาติ</td></tr></table><table style="margin-top:6px"><tr><th>สาร</th><th>กลไก</th><th>ผล</th></tr><tr><td>TTX</td><td>ปิด Na⁺ channel</td><td>ไม่เกิด AP → อัมพาต</td></tr><tr><td>Botox</td><td>ยับยั้งการปล่อย ACh</td><td>กล้ามเนื้ออ่อนแรง (Flaccid)</td></tr><tr><td>ยับยั้ง AChE</td><td>ACh ไม่ถูกสลาย</td><td>กล้ามเนื้อหดเกร็ง กระตุก</td></tr><tr><td>SSRI</td><td>ยับยั้งการดูดกลับ Serotonin</td><td>Serotonin ค้างนาน ↑ อารมณ์</td></tr></table>';
+const T4='<table><tr><th>ส่วน</th><th>หน้าที่หลัก</th></tr>'+Object.keys(REG).map(k=>`<tr><td>${REG[k].n.split(' (')[0]}</td><td style="text-align:left">${REG[k].f.split(' —')[0].split(' ·')[0]}</td></tr>`).join('')+'</table><table style="margin-top:6px"><tr><th></th><th>Sympathetic</th><th>Parasympathetic</th></tr><tr><td>ออกจาก CNS</td><td>ไขสันหลังส่วนอก–เอว</td><td>สมอง + ไขสันหลังส่วนกระเบนเหน็บ</td></tr><tr><td>เส้นใยก่อน/หลังปม</td><td>สั้น / ยาว</td><td>ยาว / สั้น</td></tr><tr><td>สารสื่อประสาทหลังปม</td><td>Norepinephrine</td><td>Acetylcholine</td></tr><tr><td>ผลโดยรวม</td><td>สู้หรือหนี: หัวใจเร็ว รูม่านตาขยาย</td><td>พักผ่อน/ย่อยอาหาร: หัวใจช้า ย่อยอาหารเพิ่ม</td></tr></table>';
+const ST3=['AP ถึงปลายแอกซอน','Ca²⁺ เข้าเซลล์','Exocytosis ปล่อยสารสื่อประสาท','จับ Receptor → EPSP/IPSP','กำจัด (AChE / Reuptake)'];
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#org').value,o=ORG[k];st=[['ระบบประสาท',o.t.split(' (')[0]],['ศูนย์กลาง',o.c.split(' (')[0].split(' +')[0]],['จำนวนเซลล์ประสาท',o.neu?'~'+(o.neu>=1e9?(o.neu/1e9).toFixed(0)+' พันล้าน':o.neu.toLocaleString()):'0'],['การรวมศูนย์',['ไม่มี','ไม่มี','เริ่มมี','มี','มีมาก','สูงสุด'][Object.keys(ORG).indexOf(k)]]];
+    const tau=M1.t-M1.st;flowBar(o.steps,Math.min(o.steps.length-1,Math.floor(tau/(2.2/o.steps.length))));eq='วิวัฒนาการ: ไม่มีระบบประสาท → ร่างแหประสาท (Nerve net) → ขั้นบันได (Ladder) → Ventral nerve cord + ปมประสาท → Dorsal hollow nerve cord + สมอง\nแนวโน้ม: Centralization (รวมศูนย์) + Cephalization (มีส่วนหัวรวมอวัยวะรับความรู้สึก)';
+    an=`<p><b>${o.n}</b>: ${o.f}</p>`+(k==='hydra'?'<p>สิ่งเร้าที่จุดเดียวทำให้กระแสประสาทกระจายไปทั้งตัว — ตอบสนองได้แต่ไม่ละเอียด</p>':k==='human'?'<p>สัตว์มีกระดูกสันหลังมีไขสันหลัง<b>ด้านหลัง</b>และ<b>กลวง</b> ต่างจากไส้เดือน/แมลงที่มีเส้นประสาท<b>ด้านท้อง</b>และ<b>ตัน</b></p>':'');
+    mis='<p><b>❌ "สิ่งมีชีวิตที่ไม่มีระบบประสาทตอบสนองต่อสิ่งเร้าไม่ได้"</b></p><p>✅ อะมีบาและพืชไม่มีเซลล์ประสาท แต่<b>เยื่อหุ้มเซลล์/เซลล์</b>รับรู้และตอบสนองต่อสิ่งเร้าได้</p><p><b>❌ "สมองยิ่งใหญ่ยิ่งฉลาด"</b> ✅ ขึ้นกับอัตราส่วนสมองต่อขนาดตัว และการพัฒนาของ Cerebrum (รอยหยัก)</p>';tb=T1;}
+  else if(m===2){const p=apP(),v=Vm(M2.t);st=[['ศักย์ขณะนี้',v.toFixed(0)+' mV'],['ศักย์พัก (RMP)',p.rmp.toFixed(0)+' mV'],['ยอด AP',p.ttx?'—':p.peak.toFixed(0)+' mV'],['ความเร็วการนำ',p.my?'~100 m/s':'~1 m/s']];
+    const ph=phase()[0];flowBar(['ศักย์พัก −70 mV','ถึง Threshold −55','Na⁺ เข้า (Depolarization)','K⁺ ออก (Repolarization)','Hyperpolarization','Na⁺/K⁺ pump คืนสภาพ'],ph==='depol'?2:ph==='repol'?3:ph==='hyper'?4:M2.q&&M2.t-M2.apT<7?5:0,p.ttx?2:-1);
+    eq=`Nernst: E = 61.5 · log([นอก]/[ใน])  →  E_Na = 61.5·log(${p.Nao}/${ION.Nai}) = ${p.ENa.toFixed(0)} mV · E_K = 61.5·log(${p.Ko}/${ION.Ki}) = ${p.EK.toFixed(0)} mV\nRMP ≈ 61.5·log((K⁺o + 0.04·Na⁺o)/(K⁺i + 0.04·Na⁺i)) = ${p.rmp.toFixed(0)} mV  (เยื่อหุ้มยอมให้ K⁺ ผ่านมากกว่า Na⁺ ~25 เท่า)\nNa⁺/K⁺ pump: 3Na⁺ ออก : 2K⁺ เข้า ต่อ 1 ATP`;
+    const f=[];f.push({ap:'<span class="tag ok">เกิด AP</span> สิ่งเร้าทำให้ศักย์ถึง Threshold → Na⁺ channel เปิด → ยอด AP เท่าเดิมเสมอ (<b>All-or-none</b>)',relok:'<span class="tag ok">เกิด AP</span> ในช่วง Relative refractory ต้องใช้สิ่งเร้าแรงกว่าปกติ',sub:'<span class="tag mid">Subthreshold</span> ศักย์เพิ่มเล็กน้อยแล้วลดลง (Graded potential) ไม่ถึง −55 mV จึงไม่เกิด AP',abs:'<span class="tag no">Absolute refractory</span> Na⁺ channel ยังถูก Inactivate ไม่ว่าสิ่งเร้าแรงแค่ไหนก็ไม่เกิด AP',rel:'<span class="tag mid">Relative refractory</span> ช่วง Hyperpolarization ต้องใช้สิ่งเร้าแรงกว่าปกติ',ttx:'<span class="tag no">TTX</span> Tetrodotoxin อุด Voltage-gated Na⁺ channel → ไม่เกิด AP → กล้ามเนื้ออัมพาต หยุดหายใจ',block:'<span class="tag no">Depolarization block</span> [K⁺] นอกเซลล์สูง → RMP สูงขึ้นเกิน Threshold → Na⁺ channel ถูก Inactivate ค้าง (ภาวะ K⁺ สูงในเลือดอันตรายต่อหัวใจ)',none:'กด ⚡ เพื่อกระตุ้น'}[M2.last]);
+    if(p.Ko>8&&M2.last!=='block')f.push('[K⁺] นอกเซลล์สูง → E_K และ RMP สูงขึ้น (เข้าใกล้ Threshold) เซลล์ถูกกระตุ้นง่ายขึ้น');if(p.Nao<100)f.push('[Na⁺] นอกเซลล์ต่ำ → E_Na ลดลง ยอด AP ต่ำลง');if($('#ca').value==='zero')f.push('Ca²⁺ นอกเซลล์ต่ำ → Threshold ลดลง เซลล์ประสาทไวเกิน (เกิด Tetany ได้)');
+    an=f.map(x=>`<p>${x}</p>`).join('');
+    mis='<p><b>❌ "กระแสประสาทคือการไหลของอิเล็กตรอนเหมือนในสายไฟ"</b></p><p>✅ เกิดจากการเคลื่อนที่ของ<b>ไอออน</b> (Na⁺, K⁺) ผ่านช่องบนเยื่อหุ้มเซลล์</p><p><b>❌ "สิ่งเร้าแรงขึ้น AP สูงขึ้น"</b> ✅ AP สูงเท่าเดิม (All-or-none) สิ่งเร้าแรงขึ้นทำให้<b>ความถี่</b>ของ AP มากขึ้น</p>';tb=T2;}
+  else if(m===3){const p=synP();st=[['ศักย์หลังไซแนปส์',M3.V.toFixed(0)+' mV'],['สารสื่อประสาทในช่องไซแนปส์',(M3.C*100).toFixed(0)+'%'],['Receptor ถูกจับ',Math.round(M3.bound*100)+'%'],[p.nt==='ach'?'การหดตัวของกล้ามเนื้อ':'AP หลังไซแนปส์',M3.spikes+' ครั้ง']];
+    const pa=M3.pa,cur=pa>=0&&pa<0.3?0:pa>=0.3&&pa<0.45?1:pa>=0.45&&pa<0.6?2:M3.C>0.2?3:M3.C>0.02?4:-1;const bad=p.tox==='ttx'?0:p.ca==='zero'?1:p.tox==='botox'&&p.nt==='ach'?2:(p.tox==='ache'&&p.nt==='ach')||(p.tox==='ssri'&&p.nt==='ser')?4:-1;flowBar(ST3,cur,bad);
+    eq=`ปริมาณสารสื่อประสาทที่ปล่อย ∝ Ca²⁺ ที่เข้าเซลล์ (${p.ca==='zero'?'0':p.ca==='high'?'×1.6':'×1'})\nการกำจัด: C(t) = C₀·e^(−k·t), k = ${p.k} /s ${p.k<1?'(ถูกยับยั้ง → ค้างนาน)':''}\nV_post = RMP + ΣEPSP − ΣIPSP → ถึง −55 mV จึงเกิด AP`;
+    const f=[];if(p.tox==='ttx')f.push('<span class="tag no">TTX</span> ปิด Na⁺ channel ของแอกซอน → ไม่มี AP มาถึงปลายประสาท → ไม่มีการปล่อยสารสื่อประสาท');
+    else if(p.ca==='zero')f.push('<span class="tag no">ไม่มี Ca²⁺</span> AP มาถึงแต่ไม่มี Ca²⁺ ไหลเข้า → ถุงสารสื่อประสาทไม่หลอมรวมกับเยื่อหุ้มเซลล์');
+    else if(p.tox==='botox'&&p.nt==='ach')f.push('<span class="tag no">Botox</span> ทำลายโปรตีน SNARE → ไม่ปล่อย ACh → กล้ามเนื้ออ่อนแรง (ใช้ลดริ้วรอย/รักษากล้ามเนื้อเกร็ง)');
+    else if(p.tox==='ache'&&p.nt==='ach')f.push('<span class="tag no">ยับยั้ง AChE</span> ACh ไม่ถูกสลาย ค้างในช่องไซแนปส์ → กล้ามเนื้อถูกกระตุ้นต่อเนื่อง หดเกร็ง กระตุก (พิษยาฆ่าแมลง Organophosphate)');
+    else if(p.tox==='ssri'&&p.nt==='ser')f.push('<span class="tag mid">SSRI</span> ยับยั้งการดูดกลับ Serotonin → อยู่ในช่องไซแนปส์นานขึ้น → ใช้รักษาโรคซึมเศร้า');
+    else if(p.tox!=='none')f.push(`<span class="tag mid">ไม่มีผลที่ไซแนปส์นี้</span> ${$('#tox').selectedOptions[0].text} ออกฤทธิ์กับ${p.tox==='ssri'?' Serotonin':' ACh'} — ลองเปลี่ยนชนิดไซแนปส์`);
+    else f.push(p.nt==='gaba'?'<span class="tag ok">IPSP</span> GABA เปิดช่อง Cl⁻ → Cl⁻ เข้า ศักย์ติดลบมากขึ้น ยากต่อการเกิด AP':p.nt==='ach'?'<span class="tag ok">ปกติ</span> ACh ที่ Neuromuscular junction ทำให้เกิด AP ที่กล้ามเนื้อทุกครั้ง แล้ว AChE สลาย ACh อย่างรวดเร็ว':'<span class="tag ok">EPSP</span> สารสื่อประสาทเปิดช่อง Na⁺ ศักย์สูงขึ้นเล็กน้อย ต้องรวมกันหลายครั้ง (Summation) จึงถึง Threshold');
+    if(p.ca==='high'&&p.ap)f.push('Ca²⁺ สูง → ปล่อยสารสื่อประสาทมากขึ้น');an=f.map(x=>`<p>${x}</p>`).join('');
+    mis='<p><b>❌ "สารสื่อประสาทเข้าไปในเซลล์หลังไซแนปส์"</b></p><p>✅ สารสื่อประสาท<b>จับกับ Receptor บนเยื่อหุ้มเซลล์</b>เท่านั้น แล้วถูกสลาย (AChE) หรือดูดกลับ (Reuptake)</p><p><b>❌ "ไซแนปส์ส่งกระแสประสาทได้ทั้งสองทาง"</b> ✅ ไซแนปส์เคมีส่ง<b>ทางเดียว</b> จากก่อนไปหลังไซแนปส์</p>';tb=T3;}
+  else{const vw=$('#view').value,a=$('#ans').value,v=ANSV[a];st=[['อัตราการเต้นหัวใจ',v.hr+' bpm'],['รูม่านตา',v.pu+' mm'],['การบีบตัวลำไส้',v.gut<1?'ลดลง':v.gut>1?'เพิ่มขึ้น':'ปกติ'],['หลอดลม',v.br>1?'ขยาย':v.br<1?'หดตัว':'ปกติ']];
+    const kn=$('#rtype').value==='knee',tau=M4.t-M4.ft;
+    if(vw==='reflex'){const steps=kn?['Receptor (Muscle spindle)','Sensory neuron','ไขสันหลัง (Monosynaptic)','Motor neuron','Quadriceps หด']:['Receptor (Nociceptor)','Sensory neuron','Interneuron (ไขสันหลัง)','Motor neuron','Biceps หด ชักมือ'];flowBar(steps,Math.min(4,Math.floor(tau/0.45)));
+      eq=`Reflex arc: Receptor → Sensory neuron → ${kn?'':'Interneuron → '}Motor neuron → Effector\nเวลาตอบสนอง ≈ ระยะทาง / ความเร็ว ≈ 2 m ÷ 60 m/s ≈ 30 ms (เร็วกว่าการคิดสั่งการผ่านสมอง)`;
+      an=`<p><span class="tag ok">${kn?'Knee-jerk (Monosynaptic)':'Withdrawal (Polysynaptic)'}</span> ไขสันหลังสั่งการกล้ามเนื้อได้ทันทีโดย<b>ไม่ต้องรอสมอง</b> ส่วนกระแสประสาทที่ส่งต่อขึ้นสมองทำให้<b>รู้สึก</b>ทีหลัง</p><p>${kn?'ใช้ตรวจความสมบูรณ์ของไขสันหลังและเส้นประสาท':'Interneuron ยังส่ง IPSP ยับยั้งกล้ามเนื้อคู่ตรงข้าม (Triceps) ให้คลาย'}</p>`;}
+    else if(vw==='brain'){const r=REG[$('#region').value];flowBar(['สมองส่วนหน้า','สมองส่วนกลาง','สมองส่วนหลัง','ไขสันหลัง'],{cerebrum:0,thalamus:0,hypothalamus:0,midbrain:1,pons:2,medulla:2,cerebellum:2,spinal:3}[$('#region').value]);
+      eq='สมองส่วนหน้า (Forebrain): Cerebrum, Thalamus, Hypothalamus, Olfactory bulb\nสมองส่วนกลาง (Midbrain) · สมองส่วนหลัง (Hindbrain): Pons, Medulla oblongata, Cerebellum\nก้านสมอง (Brainstem) = Midbrain + Pons + Medulla oblongata';an=`<p><b>${r.n}</b> — ${r.f}</p><p>ถ้าเสียหาย: ${r.d}</p>`;}
+    else{flowBar(['CNS','เส้นใยก่อนปมประสาท (ACh)','ปมประสาท','เส้นใยหลังปมประสาท ('+(a==='para'?'ACh':'NE')+')','อวัยวะเป้าหมาย'],a==='neutral'?-1:Math.floor(S.time*1.5)%5);
+      eq='Sympathetic: CNS —(สั้น, ACh)→ ปมประสาทข้างไขสันหลัง —(ยาว, NE)→ อวัยวะ\nParasympathetic: CNS —(ยาว, ACh)→ ปมประสาทใกล้/ในอวัยวะ —(สั้น, ACh)→ อวัยวะ';
+      an={neutral:'<p><span class="tag ok">สมดุล</span> ทั้งสองระบบทำงานควบคู่กันแบบตรงข้าม (Antagonistic) ปรับอวัยวะภายในให้เหมาะสม</p>',sym:'<p><span class="tag no">Sympathetic</span> ภาวะ "สู้หรือหนี": หัวใจเต้นเร็ว รูม่านตาขยาย หลอดลมขยาย ปล่อยกลูโคส ลดการย่อยอาหาร และกระตุ้นต่อมหมวกไตชั้นในให้หลั่ง Epinephrine</p>',para:'<p><span class="tag ok">Parasympathetic</span> ภาวะ "พักผ่อนและย่อยอาหาร": หัวใจเต้นช้า รูม่านตาเล็ก ลำไส้บีบตัว หลั่งน้ำลายและน้ำย่อยมากขึ้น (เส้นประสาท Vagus เป็นหลัก)</p>'}[a];}
+    mis='<p><b>❌ "สมองส่วนกลาง (Midbrain) ใช้คิดและตัดสินใจ"</b></p><p>✅ การคิดเกิดที่ <b>Cerebrum</b> ส่วน Midbrain เป็นศูนย์ Reflex เกี่ยวกับตาและหู</p><p><b>❌ "Reflex ทุกชนิดต้องสั่งการจากสมอง"</b> ✅ Spinal reflex สั่งการที่<b>ไขสันหลัง</b> สมองรับรู้ทีหลัง</p><p><b>❌ "Sympathetic กระตุ้นทุกอวัยวะ"</b> ✅ Sympathetic <b>ยับยั้ง</b>การทำงานของทางเดินอาหาร</p>';tb=T4;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function sync4(){const v=$('#view').value;$('#regBox').style.display=v==='brain'?'':'none';$('#rBox').style.display=v==='reflex'?'':'none';$('#fire4').style.display=v==='reflex'?'':'none';}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sync4();
+  $('#simTitle').textContent=['','วิวัฒนาการของระบบประสาท','เยื่อหุ้มเซลล์ประสาท ช่องไอออน และการนำกระแสประสาท','ไซแนปส์เคมีและผลของสารพิษ/ยา','สมอง รีเฟล็กซ์ และระบบประสาทอัตโนมัติ'][m];
+  $('#chartTitle').textContent=['','จำนวนเซลล์ประสาท (สเกล log)','Action potential (Oscilloscope)','ศักย์หลังไซแนปส์และสารสื่อประสาท','ผลของระบบประสาทอัตโนมัติต่ออวัยวะ'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('stimA',v=>'+'+v+' mV');bind('nao',v=>v+' mM');bind('ko',v=>v+' mM');
+['org','myel','ca','tox','nt','region','rtype','ans'].forEach(id=>$('#'+id).addEventListener('change',updateText));$('#view').addEventListener('change',()=>{sync4();updateText();});
+$('#stim1').onclick=()=>{M1.st=M1.t;};$('#fire1').onclick=()=>{tryAP(V('stimA'));updateText();};$('#fire2').onclick=()=>{tryAP(V('stimA'));M2.pend=M2.t+2.5;updateText();};$('#fire3').onclick=()=>fire3();$('#fire4').onclick=()=>{M4.ft=M4.t;};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgDir:'dir',tgPsp:'psp'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

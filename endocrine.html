@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบต่อมไร้ท่อ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0d0610;--panel:#1a0f1d;--panel2:#24152a;--line:#3d2343;--txt:#fdeef8;--mut:#c9a9bf;--acc:#f472b6;--acc2:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,#9d174d,#7c2d12);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:#fbcfe8;font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:#831843;border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:#33193a;color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:#be185d;border-color:#f9a8d4}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:#c2410c;color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:#0b0612;border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:#be185d;color:#fff;border-color:#f9a8d4}.flow span.done{color:#fbcfe8;border-color:#831843}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:#12060f;padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:var(--acc2)}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.chart{height:250px;background:#12060f;border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🧪 ระบบต่อมไร้ท่อ (Endocrine System)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : กลไกการออกฤทธิ์ของฮอร์โมน (Peptide vs Steroid)</button>
+    <button data-mode="2">โหมด 2 : แกนฮอร์โมนและการควบคุมแบบป้อนกลับ</button>
+    <button data-mode="3">โหมด 3 : ดุลยภาพกลูโคสและแคลเซียม</button>
+    <button data-mode="4">โหมด 4 : จำลองโรคของต่อมไร้ท่อ</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>ฮอร์โมน / ชนิด</label><select id="hclass"><option value="camp">Glucagon – Peptide (cAMP)</option><option value="ip3">Oxytocin – Peptide (IP₃ / DAG)</option><option value="epi">Epinephrine – Amine (Receptor ผิวเซลล์)</option><option value="ster">Cortisol – Steroid (Receptor ในเซลล์)</option><option value="thy">T₃/T₄ – Amine (Receptor ในนิวเคลียส)</option></select></div>
+      <div class="ctl"><label>ความเข้มข้นฮอร์โมน <b id="hdoseV"></b></label><input type="range" id="hdose" min="0" max="100" step="1" value="40"></div>
+      <div class="ctl"><label>รูปแบบการส่งสัญญาณ</label><select id="sig"><option value="endo">Endocrine (ผ่านกระแสเลือด)</option><option value="para">Paracrine (เซลล์ข้างเคียง)</option><option value="auto">Autocrine (ออกฤทธิ์กับตัวเอง)</option><option value="neuro">Neuroendocrine (เซลล์ประสาทหลั่งฮอร์โมน)</option></select></div>
+      <button class="btn" id="replay1" style="width:100%">↻ เริ่มลำดับการส่งสัญญาณใหม่</button>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>แกนฮอร์โมน</label><select id="axis"><option value="hpt">HPT: Hypothalamus–Pituitary–Thyroid</option><option value="hpa">HPA: Hypothalamus–Pituitary–Adrenal</option><option value="hpg">HPG: Hypothalamus–Pituitary–Gonad</option><option value="adh">ADH: Hypothalamus → ต่อมใต้สมองส่วนหลัง</option><option value="oxy">Oxytocin: การคลอด (Positive feedback)</option></select></div>
+      <div class="ctl"><label><span id="stimLab">สิ่งเร้า</span> <b id="stim2V"></b></label><input type="range" id="stim2" min="0" max="100" step="1" value="50"></div>
+      <div class="ctl" id="ioBox"><label>ไอโอดีนในอาหาร</label><select id="iodine"><option value="def">ขาด (Deficient)</option><option value="norm" selected>ปกติ (Normal)</option><option value="exc">เกิน (Excess)</option></select></div>
+      <label class="chk" id="fbBox"><input type="checkbox" id="fbk" checked> Negative feedback ทำงาน</label>
+      <label class="chk" id="exoBox"><input type="checkbox" id="exo"> ได้รับฮอร์โมนจากภายนอก (ยา)</label>
+      <label class="chk" id="posBox"><input type="checkbox" id="pos"> ก่อนตกไข่: Estrogen สูง → Positive feedback</label>
+      <button class="btn" id="labor" style="width:100%">🤰 เริ่มการคลอด</button>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>ระบบที่ศึกษา</label><select id="home"><option value="glu">ระดับกลูโคสในเลือด</option><option value="ca">ระดับแคลเซียมในเลือด</option></select></div>
+      <div class="ctl"><label>อาหาร</label><select id="diet"><option value="norm">ปกติ</option><option value="carb">คาร์โบไฮเดรตสูง (High carb)</option><option value="fast">อดอาหาร (Fasting)</option><option value="highca">แคลเซียมสูง (High Ca)</option></select></div>
+      <div id="gluBox">
+        <div class="ctl"><label>ตั้งระดับกลูโคส <b id="gluV"></b></label><input type="range" id="glu" min="40" max="300" step="1" value="90"></div>
+        <div class="ctl"><label>ความไวต่อ Insulin <b id="sensV"></b></label><input type="range" id="sens" min="0" max="100" step="1" value="100"></div>
+        <div class="btns"><button class="btn" id="meal">🍚 กินอาหาร</button><button class="btn" id="exer">🏃 ออกกำลังกาย</button></div>
+      </div>
+      <div id="caBox">
+        <div class="ctl"><label>ตั้งระดับ Ca²⁺ <b id="caV"></b></label><input type="range" id="ca" min="5" max="15" step="0.1" value="9.5"></div>
+        <div class="btns"><button class="btn" id="caMeal">🥛 ได้รับ Ca²⁺</button><button class="btn" id="caLow">⬇ Ca²⁺ ต่ำเฉียบพลัน</button></div>
+      </div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>โรค / ความผิดปกติ</label><select id="dis"><option value="normal">ปกติ (เปรียบเทียบ)</option><option value="t1dm" selected>เบาหวานชนิดที่ 1 (T1DM)</option><option value="t2dm">เบาหวานชนิดที่ 2 (T2DM)</option><option value="graves">Graves' disease (ไทรอยด์เป็นพิษ)</option><option value="hypo">Hypothyroidism / Myxedema</option><option value="cretin">Cretinism</option><option value="goiter">คอพอกจากขาดไอโอดีน (Simple goiter)</option><option value="cushing">Cushing's syndrome</option><option value="addison">Addison's disease</option><option value="giant">Gigantism</option><option value="acro">Acromegaly</option><option value="dwarf">Pituitary dwarfism</option></select></div>
+      <label class="chk"><input type="checkbox" id="treat"> ให้การรักษา</label>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgPath" class="on">เส้นทางฮอร์โมนในกระแสเลือด</button><button id="tgStruct">โครงสร้างเคมี (Peptide vs Steroid)</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#fdeef8',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'path',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='#33193a';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#f5d0e6',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function along(P,s){const L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));const d=clamp(s,0,1)*L[L.length-1];let i=1;while(i<L.length-1&&L[i]<d)i++;const t=(d-L[i-1])/((L[i]-L[i-1])||1);return[lerp(P[i-1][0],P[i][0],t),lerp(P[i-1][1],P[i][1],t)];}
+function flow(g,P,n,speed,col,r=3,off=0){for(let j=0;j<n;j++){const s=(S.time*speed+j/n+off)%1;const [x,y]=along(P,s);g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();}}
+function panel(g,x,y,w,h){g.fillStyle='rgba(26,14,30,.94)';rr(g,x,y,w,h,10);g.fill();}
+function line(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+function hexP(g,cx,cy,r,rot=Math.PI/6,n=6){g.beginPath();for(let i=0;i<n;i++){const a=rot+i*2*Math.PI/n,x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();}
+function hShape(g,cls,x,y,s=1){if(cls==='pep'){['#f472b6','#fb923c','#facc15','#a78bfa'].forEach((c,i)=>{g.fillStyle=c;g.beginPath();g.arc(x-6*s+i*4*s,y+(i%2?2:-2)*s,2.6*s,0,7);g.fill();});}
+  else if(cls==='ster'){hexP(g,x-3.4*s,y,4*s);g.fillStyle='#fbbf24';g.fill();hexP(g,x+3.4*s,y,4*s);g.fill();}
+  else if(cls==='thy'){hexP(g,x,y,4.5*s);g.fillStyle='#38bdf8';g.fill();T(g,'I',x+7*s,y-4*s,'#e0f2fe',8*s,'center',true);}
+  else{hexP(g,x,y,4.5*s);g.fillStyle='#f87171';g.fill();}}
+function box(g,x,y,w,h,title,col){g.fillStyle='rgba(255,255,255,.03)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle=col+'66';g.lineWidth=1.2;g.stroke();T(g,title,x+8,y+12,col,10.5,'left',true);}
+
+/* ================= MODE 1 : SIGNAL TRANSDUCTION ================= */
+const HC={camp:{n:'Glucagon',cls:'pep',sf:true,steps:['Glucagon จับ Receptor ที่ผิวเซลล์','G protein ทำงาน','Adenylyl cyclase: ATP → cAMP','cAMP กระตุ้น Protein kinase A','สลายไกลโคเจน → กลูโคส'],t:'Peptide (ละลายน้ำ) เข้าเซลล์ไม่ได้ ต้องจับ Receptor บนเยื่อหุ้มเซลล์ แล้วใช้ cAMP เป็น Second messenger'},
+ ip3:{n:'Oxytocin',cls:'pep',sf:true,ip3:true,steps:['Oxytocin จับ Receptor ที่ผิวเซลล์','G protein → Phospholipase C','PIP₂ → IP₃ + DAG','IP₃ ปล่อย Ca²⁺ จาก ER · DAG กระตุ้น PKC','กล้ามเนื้อมดลูกหดตัว'],t:'Peptide ที่ใช้ IP₃ และ DAG เป็น Second messenger — IP₃ ทำให้ ER ปล่อย Ca²⁺ ออกมา'},
+ epi:{n:'Epinephrine',cls:'epi',sf:true,steps:['Epinephrine จับ β-receptor ที่ผิวเซลล์','G protein ทำงาน','Adenylyl cyclase: ATP → cAMP','cAMP กระตุ้น Protein kinase A','สลายไกลโคเจน + หัวใจเต้นแรง'],t:'Amine (Catecholamine จาก Tyrosine) ละลายน้ำ จึงออกฤทธิ์แบบเดียวกับ Peptide ผ่าน Receptor ผิวเซลล์และ cAMP'},
+ ster:{n:'Cortisol',cls:'ster',sf:false,steps:['แพร่ผ่านเยื่อหุ้มเซลล์ (ละลายในลิพิด)','จับ Receptor ในไซโทพลาซึม','Hormone–Receptor complex เข้านิวเคลียส','จับ DNA → ถอดรหัสเป็น mRNA','สังเคราะห์โปรตีน/เอนไซม์ใหม่'],t:'Steroid สร้างจาก Cholesterol ละลายในลิพิด แพร่ผ่านเยื่อหุ้มเซลล์ได้ ควบคุมการแสดงออกของยีนโดยตรง'},
+ thy:{n:'T₃/T₄',cls:'thy',sf:false,steps:['T₄ เข้าเซลล์ (ตัวขนส่ง) → เปลี่ยนเป็น T₃','T₃ เข้าสู่นิวเคลียส','จับ Receptor บน DNA','ถอดรหัสเป็น mRNA','สร้างเอนไซม์/Na⁺–K⁺ ATPase → ↑ BMR'],t:'Amine แต่ละลายในลิพิด (มีไอโอดีน) — Receptor อยู่ในนิวเคลียส ออกฤทธิ์คล้าย Steroid'}};
+const SIG={endo:{n:'Endocrine',d:'ต่อมไร้ท่อหลั่งฮอร์โมนเข้าสู่กระแสเลือด ไปออกฤทธิ์ที่เซลล์เป้าหมายที่อยู่ไกล เช่น Insulin, TSH, Cortisol'},
+ para:{n:'Paracrine',d:'หลั่งสารไปออกฤทธิ์กับเซลล์ข้างเคียงโดยไม่ผ่านกระแสเลือด เช่น Somatostatin ใน Islet ยับยั้ง α/β cell, Histamine'},
+ auto:{n:'Autocrine',d:'เซลล์หลั่งสารแล้วออกฤทธิ์กับ Receptor ของตัวเอง เช่น Interleukin-2 ของ T cell, Growth factor บางชนิด'},
+ neuro:{n:'Neuroendocrine',d:'เซลล์ประสาทหลั่งฮอร์โมนเข้าสู่กระแสเลือด เช่น ADH และ Oxytocin สร้างที่ Hypothalamus แล้วหลั่งที่ต่อมใต้สมองส่วนหลัง'}};
+let M1;function initM1(){M1={t:0};}
+function stepM1(dt){M1.t+=dt;if(M1.t>11)M1.t=0;}
+const occ=()=>{const H=V('hdose')/10;return H/(H+1);};
+const stg=()=>{const t=M1.t,st=Math.min(4,Math.floor(t/1.6));return[st,st<4?(t%1.6)/1.6:Math.min(1,(t-6.4)/1.6)];};
+function inset1(g,x,y,w,h,k,c){panel(g,x,y,w,h);const cx=x+w/2;
+  if(S.toggle==='path'){const sg=$('#sig').value,G=SIG[sg],top=y+34,bh=h*0.5;T(g,'การส่งสัญญาณ: '+G.n,x+10,y+16,'#f9a8d4',11,'left',true);const pc='#f472b6';
+    const cell=(px,py,r,col,lab)=>{g.fillStyle=col;g.beginPath();g.arc(px,py,r,0,7);g.fill();g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.arc(px,py,r*0.35,0,7);g.fill();if(lab)T(g,lab,px,py+r+9,'#f5d0e6',9,'center');};
+    if(sg==='endo'||sg==='neuro'){const vy=top+bh*0.55;g.fillStyle='rgba(185,28,28,.4)';rr(g,x+12,vy-9,w-24,18,9);g.fill();T(g,'กระแสเลือด',cx,vy,'#fecaca',9,'center');
+      const tx=x+w-30,ty=top+bh-12;cell(tx,ty,14,'#0891b2','เซลล์เป้าหมาย');
+      let P;if(sg==='endo'){cell(x+32,top+18,14,'#db2777','ต่อมไร้ท่อ');P=[[x+32,top+32],[x+32,vy],[tx,vy],[tx,ty-14]];}
+      else{cell(x+28,top+12,10,'#7c3aed','');T(g,'เซลล์ประสาท',x+44,top+12,'#ddd6fe',9,'left');line(g,[[x+28,top+22],[x+60,top+bh*0.4],[x+64,vy-9]],'#a78bfa',2.5);P=[[x+64,vy-9],[x+64,vy],[tx,vy],[tx,ty-14]];}
+      flow(g,P,8,0.25,pc,3);}
+    else if(sg==='para'){const py=top+bh/2;cell(cx,py,15,'#db2777','');for(let i=0;i<5;i++){const a=i/5*6.283+0.3,qx=cx+Math.cos(a)*w*0.33,qy=py+Math.sin(a)*bh*0.38;cell(qx,qy,11,'#0891b2','');flow(g,[[cx,py],[qx,qy]],3,0.3,pc,2.6,i*0.13);}T(g,'เซลล์ข้างเคียง',cx,top+bh+4,'#a5f3fc',9,'center');}
+    else{const py=top+bh/2,R=bh*0.3;cell(cx,py,R,'#db2777','');g.fillStyle='#22d3ee';rr(g,cx+R-4,py-6,10,12,3);g.fill();T(g,'Receptor ของตัวเอง',cx+R+8,py+18,'#a5f3fc',9,'left');const P=[];for(let i=0;i<=24;i++){const a=-Math.PI/2+i/24*Math.PI*0.95;P.push([cx+Math.cos(a)*(R+18),py+Math.sin(a)*(R+18)]);}P.unshift([cx,py-R]);P.push([cx+R+2,py]);flow(g,P,7,0.3,pc,3);}
+    wrap(g,G.d,x+10,top+bh+24,w-20,15,'#fdeef8',10.5);}
+  else{const cy=y+h*0.3;T(g,'โครงสร้างเคมี: '+c.n,x+10,y+16,'#f9a8d4',11,'left',true);g.lineWidth=2;
+    if(c.cls==='pep'){for(let i=0;i<10;i++){const px=x+18+i*(w-36)/9,py=cy+(i%2?12:-12);if(i)line(g,[[x+18+(i-1)*(w-36)/9,cy+((i-1)%2?12:-12)],[px,py]],'#f9a8d4',2);g.fillStyle=['#f472b6','#fb923c','#facc15','#a78bfa','#34d399'][i%5];g.beginPath();g.arc(px,py,8,0,7);g.fill();}T(g,'สายกรดอะมิโน (Polypeptide)',cx,cy+32,'#fbcfe8',10,'center');}
+    else if(c.cls==='ster'){const r=w*0.075,q=Math.sqrt(3)*r;g.strokeStyle='#fbbf24';[[cx-q*1.2,cy+r*0.8],[cx-q*0.2,cy+r*0.8],[cx+q*0.3,cy-r*0.7]].forEach(([a,b])=>{hexP(g,a,b,r);g.stroke();});hexP(g,cx+q*1.25,cy-r*0.7,r*0.85,Math.PI,5);g.stroke();T(g,'OH',cx-q*2,cy+r*1.9,'#fde68a',10,'center',true);T(g,'O',cx+q*1.9,cy-r*1.5,'#fde68a',10,'center',true);T(g,'วงแหวน 4 วง (สร้างจาก Cholesterol)',cx,cy+r*3,'#fde68a',10,'center');}
+    else{const r=w*0.08;g.strokeStyle=c.cls==='thy'?'#38bdf8':'#f87171';hexP(g,cx-r*1.6,cy,r,0);g.stroke();if(c.cls==='thy'){hexP(g,cx+r*1.6,cy,r,0);g.stroke();T(g,'O',cx,cy,'#e0f2fe',11,'center',true);[[-1.6,-1.4],[-1.6,1.4],[1.6,-1.4],[1.6,1.4]].forEach(([a,b])=>T(g,'I',cx+a*r,cy+b*r,'#7dd3fc',12,'center',true));T(g,'Tyrosine 2 วง + ไอโอดีน 3–4 อะตอม',cx,cy+r*2.6,'#bae6fd',10,'center');}
+      else{line(g,[[cx-r*0.6,cy],[cx+r*1.5,cy]],'#f87171',2);T(g,'OH',cx-r*1.6,cy-r*1.6,'#fecaca',10,'center',true);T(g,'OH',cx-r*2.9,cy-r*0.7,'#fecaca',10,'center',true);T(g,'CH(OH)–CH₂–NH–CH₃',cx+r*0.4,cy+r*1.4,'#fecaca',10,'left');T(g,'Catecholamine (จาก Tyrosine)',cx,cy+r*2.6,'#fecaca',10,'center');}}
+    const pr=c.cls==='pep'||c.cls==='epi'?['ละลายน้ำ → เดินทางในเลือดได้อิสระ','ผ่านเยื่อหุ้มเซลล์ไม่ได้ → Receptor ผิวเซลล์','ใช้ Second messenger · ออกฤทธิ์เร็ว สั้น']:['ละลายในลิพิด → ต้องมีโปรตีนพาในเลือด','ผ่านเยื่อหุ้มเซลล์ได้ → Receptor ในเซลล์','ควบคุมการแสดงออกของยีน · ช้า แต่นาน'];
+    let yy=y+h*0.58;pr.forEach(s=>{yy=wrap(g,'• '+s,x+10,yy,w-20,15,'#fdeef8',10.5)+4;});}}
+function drawM1(g,w,h){g.fillStyle='#0b0612';g.fillRect(0,0,w,h);const k=$('#hclass').value,c=HC[k],o=occ(),dose=V('hdose');
+  const iw=w*0.29;inset1(g,8,8,iw,h-16,k,c);
+  const x0=iw+18,W=w-x0-8,X=f=>x0+f*W,Y=f=>f*h,mem=Y(0.24),[st,u]=stg();
+  g.fillStyle='rgba(244,114,182,.07)';rr(g,x0,8,W,mem-8,8);g.fill();T(g,'ของเหลวนอกเซลล์ / เลือด',X(0.02),20,'#f9a8d4',10);
+  g.fillStyle='rgba(56,189,248,.05)';rr(g,x0,mem,W,h-mem-8,10);g.fill();
+  for(let x=x0+4;x<x0+W-4;x+=8){g.fillStyle='#fda4af';g.beginPath();g.arc(x,mem-3,2.6,0,7);g.fill();g.beginPath();g.arc(x,mem+5,2.6,0,7);g.fill();}
+  T(g,'เยื่อหุ้มเซลล์เป้าหมาย',X(0.98),mem+16,'#fda4af',9.5,'right');
+  const n=Math.round(dose/9);for(let i=0;i<n;i++){const x=X(0.04+((hash(i)+S.time*0.03*(0.5+hash(i+9)))%1)*0.92),y=lerp(32,mem-18,hash(i+30));hShape(g,c.cls,x,y);}
+  if(o<0.02){T(g,'ไม่มีฮอร์โมน → ไม่มีการตอบสนอง',X(0.5),Y(0.6),'#c9a9bf',13,'center',true);return;}
+  c.sf?drawSurface(g,X,Y,mem,st,u,c,o):drawNuclear(g,X,Y,mem,st,u,c,o,k,W);}
+function drawSurface(g,X,Y,mem,st,u,c,o){const rx=X(0.14),gx=X(0.3),ax=X(0.46),kx=X(0.62),ex=X(0.84),ey=Y(0.66);
+  g.fillStyle='#22d3ee';for(let i=0;i<4;i++){rr(g,rx-13+i*7,mem-14,5,30,2);g.fill();}T(g,'Receptor',rx,mem+30,'#67e8f9',9.5,'center',true);
+  hShape(g,c.cls,rx,st===0?lerp(mem-70,mem-22,sm(u)):mem-22,1.5);
+  const gpx=st===0?rx+18:st===1?lerp(rx+18,gx,sm(u)):gx;g.fillStyle=st>=1?'#a3e635':'#4d7c0f';g.beginPath();g.arc(gpx,mem+18,9,0,7);g.fill();T(g,'G protein',gx,mem+38,'#bef264',9.5,'center');
+  g.fillStyle=st>=2?'#f59e0b':'#78350f';rr(g,ax-14,mem-13,28,30,6);g.fill();T(g,c.ip3?'Phospholipase C':'Adenylyl cyclase',ax,mem+52,'#fcd34d',9.5,'center',true);
+  if(st>=1)arrow(g,rx+14,mem+40,gx-12,mem+40,'rgba(190,242,100,.6)',1.5);
+  const N=Math.round(o*30);if(st>=2){const prog=st===2?u:1;for(let i=0;i<N*prog;i++){const a=hash(i)*6.283,r=8+hash(i+5)*Y(0.1);g.fillStyle=c.ip3?(i%2?'#f472b6':'#c084fc'):'#facc15';g.beginPath();g.arc(ax+Math.cos(a)*r*1.3,Y(0.47)+Math.sin(a)*r*0.6,3,0,7);g.fill();}
+    T(g,c.ip3?'IP₃ + DAG':'ATP → cAMP',ax,Y(0.6),'#fde68a',10.5,'center',true);}
+  if(st>=3){glow(g,kx,Y(0.47),26,'rgba(250,204,21,.35)');g.fillStyle='#eab308';rr(g,kx-20,Y(0.47)-11,40,22,8);g.fill();T(g,c.ip3?'PKC':'PKA',kx,Y(0.47),'#1c1917',11,'center',true);arrow(g,ax+Y(0.12),Y(0.47),kx-24,Y(0.47),'#fde68a',2);}
+  if(c.ip3){g.fillStyle='rgba(167,139,250,.28)';rr(g,X(0.3),Y(0.74),X(0.32)-X(0),34,14);g.fill();T(g,'ER (Ca²⁺ store)',X(0.46),Y(0.74)+17,'#ddd6fe',10,'center',true);
+    if(st>=3){for(let i=0;i<Math.round(16*o);i++){const s=(S.time*0.5+i/16)%1;g.fillStyle='#4ade80';g.beginPath();g.arc(X(0.32+hash(i)*0.28),Y(0.74)-s*40,2.6,0,7);g.fill();}T(g,'Ca²⁺ ↑',X(0.64),Y(0.72),'#86efac',10.5,'left',true);}
+    const con=st>=4?0.25*o*Math.abs(Math.sin(S.time*3)):0;for(let i=0;i<4;i++){const yy=Y(0.6)+i*12,L=X(0.1)*(1-con);line(g,[[ex-L,yy],[ex+L,yy]],'#fb7185',6);}T(g,st>=4?'กล้ามเนื้อเรียบหดตัว':'เส้นใยกล้ามเนื้อเรียบ',ex,Y(0.6)+60,'#fecdd3',10,'center',true);}
+  else{const left=st<4?1:1-0.75*u*o;for(let i=0;i<26;i++){if(hash(i+70)>left)continue;const a=i*2.4,r=4+Math.sqrt(i)*5;g.fillStyle='#d6a37c';g.beginPath();g.arc(ex+Math.cos(a)*r,ey+Math.sin(a)*r,3.4,0,7);g.fill();}T(g,'ไกลโคเจน',ex,ey+42,'#e7c4a5',10,'center',true);
+    if(st>=4){for(let i=0;i<Math.round(10*o);i++){const s=(S.time*0.35+i/10)%1,P=[[ex,ey],[X(0.95),Y(0.45)],[X(0.95),mem-30]];const [px,py]=along(P,s);hexP(g,px,py,3.4);g.fillStyle='#fde047';g.fill();}T(g,'กลูโคส → เลือด',X(0.94),Y(0.36),'#fde047',10,'right',true);if(c.cls==='epi')T(g,'+ หัวใจเต้นแรง หลอดลมขยาย',X(0.98),Y(0.9),'#fca5a5',10,'right',true);}
+    if(st>=3)arrow(g,kx+22,Y(0.5),ex-34,ey-8,'#fde68a',2);}
+  T(g,c.ip3?'1 ฮอร์โมน → IP₃ จำนวนมาก → Ca²⁺ จำนวนมหาศาล':'การขยายสัญญาณ: 1 ฮอร์โมน → ~100 cAMP → ~10⁴ เอนไซม์ → ~10⁶ โมเลกุลกลูโคส',X(0.02),Y(0.96),'#fde68a',10.5,'left',true);}
+function drawNuclear(g,X,Y,mem,st,u,c,o,k,W){const nx=X(0.62),ny=Y(0.66),nr=Math.min(W*0.2,Y(0.22)),ster=k==='ster';
+  g.fillStyle='rgba(129,140,248,.16)';g.beginPath();g.arc(nx,ny,nr,0,7);g.fill();g.strokeStyle='#818cf8';g.lineWidth=2;g.stroke();T(g,'นิวเคลียส',nx,ny-nr+12,'#c7d2fe',10,'center',true);
+  for(let i=0;i<=34;i++){const x=nx-nr*0.75+i*nr*1.5/34,a=Math.sin(i*0.55)*7;g.fillStyle='#93c5fd';g.fillRect(x,ny+12+a,2.2,2.2);g.fillStyle='#f9a8d4';g.fillRect(x,ny+12-a,2.2,2.2);}T(g,'DNA (HRE)',nx-nr*0.75,ny+32,'#93c5fd',9);
+  const rx=X(0.28),ry=Y(0.44),dx=nx-6,dy=ny+2;let hx,hy;
+  if(st===0){hx=X(0.28);hy=lerp(mem-60,ster?ry-6:ry,sm(u));}
+  else if(st===1){hx=ster?rx:lerp(rx,dx,sm(u));hy=ster?ry-6:lerp(ry,dy-6,sm(u));}
+  else if(st===2){hx=ster?lerp(rx,dx,sm(u)):dx;hy=ster?lerp(ry-6,dy-6,sm(u)):dy-6;}
+  else{hx=dx;hy=dy-6;}
+  if(ster){const bx=st>=2?hx:rx,by=st>=2?hy+10:ry+4;g.fillStyle='#22d3ee';rr(g,bx-13,by-4,26,14,6);g.fill();if(st<2)T(g,'Receptor ในไซโทพลาซึม',rx,ry+24,'#67e8f9',9.5,'center',true);}
+  else{g.fillStyle='#22d3ee';rr(g,dx-13,dy+2,26,12,5);g.fill();T(g,'Receptor บน DNA',dx+16,dy-18,'#67e8f9',9.5,'left',true);}
+  hShape(g,c.cls,hx,hy,1.6);
+  if(st===0)T(g,ster?'ผ่าน Phospholipid bilayer ได้เอง':'T₄ → T₃ (เอนไซม์ Deiodinase)',X(0.3),mem+18,'#fde68a',10,'left',true);
+  if(st>=3){const P=[[nx-10,ny],[nx-nr,ny+16],[X(0.32),Y(0.8)],[X(0.16),Y(0.84)]],prog=st===3?u:1;g.strokeStyle='#fb7185';g.lineWidth=2.5;g.beginPath();for(let s=0;s<=prog;s+=0.01){const [px,py]=along(P,s),yy=py+Math.sin(s*60)*3;s?g.lineTo(px,yy):g.moveTo(px,yy);}g.stroke();T(g,'mRNA',X(0.34),Y(0.75),'#fda4af',10,'center',true);}
+  if(st>=4){const rbx=X(0.14),rby=Y(0.84);g.fillStyle='#a16207';g.beginPath();g.ellipse(rbx,rby-8,18,10,0,0,7);g.fill();g.beginPath();g.ellipse(rbx,rby+6,22,12,0,0,7);g.fill();T(g,'Ribosome',rbx,rby+26,'#fde68a',9.5,'center');
+    const nP=Math.round(12*u*o);for(let i=0;i<nP;i++){g.fillStyle=['#34d399','#60a5fa','#f472b6'][i%3];g.beginPath();g.arc(rbx-8-i*7,rby-26-Math.sin(i)*4,3.6,0,7);g.fill();}T(g,'โปรตีนใหม่ → '+(ster?'ปรับเมแทบอลิซึม/ต้านการอักเสบ':'↑ เมแทบอลิซึม BMR'),X(0.02),Y(0.96),'#86efac',10.5,'left',true);}
+  else T(g,'ออกฤทธิ์ผ่านการแสดงออกของยีน → ใช้เวลาหลายชั่วโมง แต่ผลอยู่นาน',X(0.02),Y(0.96),'#fde68a',10.5,'left',true);}
+
+/* ================= MODE 2 : AXIS FEEDBACK ================= */
+const AX={hpt:{n:'แกน HPT (ไทรอยด์)',H:'TRH',P:'TSH',G:'T₃/T₄',gl:'ต่อมไทรอยด์',tg:'เซลล์ทั่วร่างกาย: ↑ เมแทบอลิซึม (BMR) ↑ ความร้อน',st:'อากาศหนาว / ร่างกายต้องการพลังงาน',cls:['Peptide','Glycoprotein','Amine (มีไอโอดีน)'],steps:['สิ่งเร้า: อากาศหนาว','Hypothalamus หลั่ง TRH','ต่อมใต้สมองส่วนหน้าหลั่ง TSH','ไทรอยด์หลั่ง T₃/T₄','↑ BMR','T₃/T₄ ยับยั้ง TRH/TSH']},
+ hpa:{n:'แกน HPA (ต่อมหมวกไต)',H:'CRH',P:'ACTH',G:'Cortisol',gl:'ต่อมหมวกไตชั้นนอก',tg:'ตับ/กล้ามเนื้อ: ↑ กลูโคส ต้านการอักเสบ กดภูมิคุ้มกัน',st:'ความเครียด',cls:['Peptide','Peptide','Steroid'],steps:['สิ่งเร้า: ความเครียด','Hypothalamus หลั่ง CRH','ต่อมใต้สมองส่วนหน้าหลั่ง ACTH','ต่อมหมวกไตชั้นนอกหลั่ง Cortisol','↑ กลูโคสในเลือด','Cortisol ยับยั้ง CRH/ACTH']},
+ hpg:{n:'แกน HPG (ต่อมเพศ)',H:'GnRH',P:'LH / FSH',G:'Estrogen',gl:'รังไข่',tg:'มดลูก เต้านม ลักษณะทางเพศ',st:'การเข้าสู่วัยเจริญพันธุ์',cls:['Peptide','Glycoprotein','Steroid'],steps:['สิ่งเร้า: วัยเจริญพันธุ์','Hypothalamus หลั่ง GnRH','ต่อมใต้สมองส่วนหน้าหลั่ง LH/FSH','รังไข่หลั่ง Estrogen','ไข่เจริญ / มดลูกหนาตัว','Estrogen ป้อนกลับ']},
+ adh:{n:'ADH (Antidiuretic hormone)',H:'ADH ที่สร้างใน Hypothalamus',P:'ADH ในเลือด',G:'การดูดน้ำกลับ',gl:'ไต (ท่อรวม)',tg:'เลือดเจือจางลง ปัสสาวะเข้มข้น ปริมาณน้อย',st:'ความเข้มข้นของเลือด',cls:['Peptide','Peptide','—'],steps:['เลือดเข้มข้น (ขาดน้ำ)','Osmoreceptor ใน Hypothalamus','สร้าง ADH ส่งไปตามแอกซอน','ต่อมใต้สมองส่วนหลังหลั่ง ADH','ท่อรวมดูดน้ำกลับ (Aquaporin)','เลือดเจือจาง → ลด ADH']},
+ oxy:{n:'Oxytocin ในการคลอด',H:'Hypothalamus',P:'Oxytocin',G:'การหดตัวของมดลูก',gl:'มดลูก',tg:'ทารกเคลื่อนต่ำลง ยืดปากมดลูกมากขึ้น',st:'แรงกระตุ้นเริ่มต้น',cls:['—','Peptide','—'],steps:['ทารกกดปากมดลูก','กระแสประสาทไป Hypothalamus','ต่อมใต้สมองส่วนหลังหลั่ง Oxytocin','มดลูกหดตัวแรงขึ้น','ปากมดลูกถูกยืดมากขึ้น (วนซ้ำ)','ทารกคลอด → วงจรหยุด']}};
+let M2;function initM2(){M2={t:0,H:1,P:1,G:1,sz:1,hist:[],acc:0,ov:false,lab:false,prog:0,born:false};if($('#axis').value==='oxy'){M2.H=0.1;M2.P=0.1;M2.G=0.1;}}
+function m2P(){const ax=$('#axis').value,stim=V('stim2')/50,io=$('#iodine').value,cap=ax==='hpt'?{def:0.3,norm:1,exc:1.15}[io]:1,exo=['hpt','hpa','hpg'].includes(ax)&&$('#exo').checked?2:0,fb=ax==='oxy'?false:$('#fbk').checked,pos=ax==='hpg'&&$('#pos').checked;return{ax,stim,cap,exo,fb,pos,io};}
+function stepM2(dt){const p=m2P(),k=dt*1.2;M2.t+=k;let tH,tP,tG;const Gt=M2.G+p.exo,f=p.fb?2/(1+Gt*Gt):1;
+  if(p.ax==='adh'){const osm=285+(p.stim-1)*20-(p.fb?8*(M2.G-1):0);M2.osm=osm;tH=Math.max(0,(osm-280)/5);tP=tH;tG=M2.P;}
+  else if(p.ax==='oxy'){if(M2.lab&&!M2.born){tH=(0.3+2.2*M2.G)*Math.max(0.2,p.stim);M2.prog+=M2.G*k*0.025;if(M2.prog>=1){M2.prog=1;M2.born=true;}}else tH=0.05;tP=tH;tG=M2.P;}
+  else{tH=p.stim*f;let gain=f;const surge=p.pos&&!M2.ov;if(surge){const q=sm((Gt-1.2)/0.8);gain=1+4*q;tH=p.stim*(0.6+1.4*q);}tP=tH*gain;tG=p.cap*M2.P+(surge?0.9:0);if(surge&&M2.P>3.2)M2.ov=true;}
+  M2.H+=(Math.min(6,tH)-M2.H)*Math.min(1,k/0.6);M2.P+=(Math.min(6,tP)-M2.P)*Math.min(1,k/1.0);M2.G+=(Math.min(6,tG)-M2.G)*Math.min(1,k/2.0);
+  M2.sz+=(clamp(0.55+0.45*M2.P,0.5,3)-M2.sz)*Math.min(1,k*0.08);
+  M2.acc+=k;if(M2.acc>0.15){M2.acc=0;M2.hist.push([M2.t,M2.H,M2.P,M2.G+p.exo]);if(M2.hist.length>260)M2.hist.shift();}}
+function drawGland(g,ax,cx,cy,X,Y){const s=Math.min(M2.sz,2);
+  if(ax==='hpt'){line(g,[[cx,cy-Y(0.08)],[cx,cy+Y(0.08)]],'#64748b',8);const lx=X(0.05)*s,ly=Y(0.055)*s;g.fillStyle=s>1.4?'#ef4444':'#f87171';[-1,1].forEach(d=>{g.beginPath();g.ellipse(cx+d*(X(0.02)+lx*0.8),cy,lx,ly,0,0,7);g.fill();});rr(g,cx-X(0.03),cy-5,X(0.06),12,5);g.fill();
+    [-1,1].forEach(d=>[-1,1].forEach(e=>{g.fillStyle='#fde68a';g.beginPath();g.arc(cx+d*(X(0.02)+lx*0.8)+d*lx*0.4,cy+e*ly*0.5,3.4,0,7);g.fill();}));if(s>1.4)T(g,'คอพอก (Goiter)',cx,cy+ly+12,'#fca5a5',10.5,'center',true);}
+  else if(ax==='hpa'){g.fillStyle='#9f1239';g.beginPath();g.ellipse(cx,cy+Y(0.02),X(0.06),Y(0.055),0,0,7);g.fill();g.fillStyle='#fbbf24';const a=X(0.05)*s;g.beginPath();g.moveTo(cx-a,cy-Y(0.025));g.lineTo(cx,cy-Y(0.025)-a*0.9);g.lineTo(cx+a,cy-Y(0.025));g.closePath();g.fill();T(g,'ไต',cx,cy+Y(0.02),'#fecdd3',9.5,'center');if(s<0.75)T(g,'ต่อมฝ่อ',cx,cy+Y(0.1),'#93c5fd',10,'center',true);}
+  else if(ax==='hpg'){[-1,1].forEach(d=>{const ox=cx+d*X(0.09);g.fillStyle='#f9a8d4';g.beginPath();g.ellipse(ox,cy,X(0.05),Y(0.04),0,0,7);g.fill();if(M2.ov){g.fillStyle='#facc15';g.beginPath();g.arc(ox,cy,Y(0.022),0,7);g.fill();}else{g.fillStyle='#fdf2f8';g.beginPath();g.arc(ox,cy,clamp(M2.G,0.3,3)*4,0,7);g.fill();}});line(g,[[cx-X(0.09),cy-Y(0.04)],[cx-X(0.04),cy-Y(0.08)],[cx+X(0.04),cy-Y(0.08)],[cx+X(0.09),cy-Y(0.04)]],'#f9a8d4',2);
+    T(g,M2.ov?'ตกไข่แล้ว → Corpus luteum':'Follicle',cx,cy+Y(0.07),M2.ov?'#fde047':'#fbcfe8',10,'center',true);}
+  else if(ax==='adh'){g.fillStyle='#9f1239';g.beginPath();g.ellipse(cx,cy,X(0.07),Y(0.065),0,0,7);g.fill();g.fillStyle='#0b0612';g.beginPath();g.ellipse(cx+X(0.045),cy,X(0.02),Y(0.025),0,0,7);g.fill();for(let i=0;i<Math.round(clamp(M2.G,0,4)*3);i++){const s2=(S.time*0.5+i/10)%1;g.fillStyle='#38bdf8';g.beginPath();g.arc(cx-X(0.03)+hash(i)*X(0.06),cy-s2*Y(0.08),2.6,0,7);g.fill();}T(g,'น้ำกลับเข้าเลือด',cx-X(0.1),cy-Y(0.07),'#7dd3fc',9.5,'right');}
+  else{const sq=1-0.1*clamp(M2.G,0,5)/5*Math.abs(Math.sin(S.time*3));g.fillStyle='#be185d';g.beginPath();g.ellipse(cx,cy,X(0.08)*sq,Y(0.075),0,0,7);g.fill();g.fillStyle='#fbcfe8';if(!M2.born){g.beginPath();g.arc(cx,cy-Y(0.02)+M2.prog*Y(0.06),Y(0.04),0,7);g.fill();}else T(g,'👶 คลอดแล้ว',cx+X(0.12),cy+Y(0.06),'#fde68a',11,'left',true);}}
+function drawM2(g,w,h){g.fillStyle='#0b0612';g.fillRect(0,0,w,h);const p=m2P(),a=AX[p.ax],DW=w*0.62,X=f=>f*DW,Y=f=>f*h,struct=S.toggle==='struct',neuro=p.ax==='adh'||p.ax==='oxy',Gt=M2.G+p.exo;
+  g.fillStyle='rgba(244,114,182,.2)';g.beginPath();g.ellipse(X(0.5),Y(0.1),X(0.2),Y(0.065),0,0,7);g.fill();g.strokeStyle='#f472b6';g.lineWidth=1.5;g.stroke();T(g,'Hypothalamus',X(0.5),Y(0.1),'#fbcfe8',11,'center',true);
+  line(g,[[X(0.5),Y(0.165)],[X(0.5),Y(0.27)]],'rgba(244,114,182,.45)',6);
+  const ant=[X(0.43),Y(0.33)],post=[X(0.58),Y(0.33)];g.fillStyle=neuro?'rgba(168,85,247,.15)':'rgba(168,85,247,.45)';g.beginPath();g.ellipse(ant[0],ant[1],X(0.075),Y(0.05),0,0,7);g.fill();g.fillStyle=neuro?'rgba(56,189,248,.45)':'rgba(56,189,248,.15)';g.beginPath();g.ellipse(post[0],post[1],X(0.06),Y(0.045),0,0,7);g.fill();
+  T(g,'ส่วนหน้า',ant[0],ant[1],'#e9d5ff',9.5,'center',true);T(g,'ส่วนหลัง',post[0],post[1],'#bae6fd',9.5,'center',true);T(g,'ต่อมใต้สมอง',X(0.66),Y(0.4),'#d8b4fe',10,'left');
+  const nn=v=>clamp(Math.round(v*5),0,30),hc='#f472b6',pc='#c084fc',gc='#fbbf24',gl=[X(0.5),Y(0.6)];
+  if(!neuro){const P1=[[X(0.47),Y(0.16)],[X(0.455),Y(0.23)],[X(0.445),Y(0.29)]];line(g,P1,'rgba(239,68,68,.45)',4);flow(g,P1,nn(M2.H),0.5,hc,3);T(g,a.H+(struct?' · '+a.cls[0]:''),X(0.4),Y(0.21),hc,10.5,'right',true);
+    const P2=[[ant[0],Y(0.38)],[ant[0],Y(0.47)],[gl[0]-X(0.03),Y(0.52)]];line(g,P2,'rgba(239,68,68,.45)',4);flow(g,P2,nn(M2.P),0.45,pc,3.2);T(g,a.P+(struct?' · '+a.cls[1]:''),ant[0]-X(0.04),Y(0.45),pc,10.5,'right',true);}
+  else{[0,1].forEach(j=>{const P1=[[X(0.54+j*0.03),Y(0.12)],[X(0.52+j*0.02),Y(0.2)],[X(0.54+j*0.02),Y(0.28)],[post[0]+j*6,post[1]]];line(g,P1,'#38bdf8',2);flow(g,P1,Math.ceil(nn(M2.H)/2),0.4,'#7dd3fc',2.6,j*0.3);});T(g,'แอกซอนของเซลล์ประสาทหลั่งฮอร์โมน',X(0.62),Y(0.21),'#7dd3fc',9.5,'left');
+    const P2=[[post[0],Y(0.37)],[post[0],Y(0.47)],[gl[0]+X(0.02),Y(0.52)]];line(g,P2,'rgba(239,68,68,.45)',4);flow(g,P2,nn(M2.P),0.45,pc,3.2);T(g,a.P+(struct?' · Peptide':''),post[0]+X(0.05),Y(0.47),pc,10.5,'left',true);}
+  drawGland(g,p.ax,gl[0],gl[1],X,Y);T(g,a.gl,gl[0]+X(0.24),gl[1]-Y(0.07),'#fde68a',10.5,'left',true);
+  const P3=[[gl[0],Y(0.68)],[gl[0],Y(0.8)]];line(g,P3,'rgba(239,68,68,.45)',4);if(p.ax!=='oxy'&&p.ax!=='adh')flow(g,P3,nn(Gt),0.45,gc,3.2);
+  if(p.exo){flow(g,[[X(0.86),Y(0.74)],[gl[0]+4,Y(0.74)]],nn(p.exo),0.4,'#e879f9',3.2);T(g,'💊 ฮอร์โมนจากภายนอก',X(0.86),Y(0.69),'#f0abfc',9.5,'center',true);}
+  if(p.ax!=='oxy'&&p.ax!=='adh')T(g,a.G+(struct?' · '+a.cls[2]:''),gl[0]-X(0.03),Y(0.74),gc,10.5,'right',true);
+  g.fillStyle='rgba(251,191,36,.08)';rr(g,X(0.14),Y(0.82),X(0.72),Y(0.1),8);g.fill();wrap(g,'เป้าหมาย: '+a.tg,X(0.16),Y(0.855),X(0.68),14,'#fde68a',10.5);
+  if(p.ax==='oxy'){const F=[[X(0.62),Y(0.6)],[X(0.94),Y(0.6)],[X(0.94),Y(0.1)],[X(0.71),Y(0.1)]];g.setLineDash([6,5]);line(g,F,'#4ade80',1+clamp(M2.G,0,4));g.setLineDash([]);arrow(g,X(0.76),Y(0.1),X(0.71),Y(0.1),'#4ade80',2);if(M2.lab&&!M2.born)flow(g,F,6,0.4,'#86efac',2.6);T(g,'⊕',X(0.94),Y(0.35),'#4ade80',18,'center',true);T(g,'กระแสประสาท',X(0.92),Y(0.42),'#86efac',9.5,'right');T(g,'จากปากมดลูก',X(0.92),Y(0.46),'#86efac',9.5,'right');}
+  else{const posOn=p.pos&&!M2.ov,col=posOn?'#4ade80':p.fb?'#f87171':'#64748b',lw=1+clamp(Gt,0,4);const F=[[X(0.36),Y(0.6)],[X(0.08),Y(0.6)],[X(0.08),Y(0.1)],[X(0.3),Y(0.1)]];g.setLineDash([6,5]);line(g,F,col,lw);line(g,[[X(0.08),Y(0.33)],[X(0.35),Y(0.33)]],col,lw);g.setLineDash([]);arrow(g,X(0.25),Y(0.1),X(0.3),Y(0.1),col,2);arrow(g,X(0.3),Y(0.33),X(0.35),Y(0.33),col,2);
+    if(p.fb||posOn)flow(g,F,Math.max(2,nn(Gt)>>1),0.3,col,2.4);T(g,posOn?'⊕':p.fb?'⊖':'✕',X(0.08),Y(0.22),col,18,'center',true);T(g,posOn?'Positive':'Negative',X(0.1),Y(0.45),col,9.5,'left',true);T(g,'feedback',X(0.1),Y(0.49),col,9.5,'left',true);
+    if(p.ax==='adh')T(g,'Osmolarity '+Math.round(M2.osm||285)+' mOsm/L',X(0.1),Y(0.54),'#7dd3fc',9.5,'left');}
+  const px=DW+8,pw=w-px-8;panel(g,px,8,pw,h-16);let y=26;T(g,a.n,px+10,y,'#f9a8d4',12,'left',true);y+=26;
+  [[p.ax==='oxy'?'กระแสประสาทกระตุ้น':a.H,M2.H,hc],[a.P,M2.P,pc],[a.G+(p.exo?' (รวมยา)':''),Gt,gc]].forEach(([s,v,c])=>{bar(g,px+10,y+12,pw-20,10,v/5,c,s,v.toFixed(2)+'×');g.fillStyle='#fdeef8';g.fillRect(px+10+(pw-20)/5,y+10,2,14);y+=36;});
+  T(g,'│ = ระดับปกติ (1×)',px+10,y,'#c9a9bf',9.5);y+=22;
+  const notes=[];if(p.ax==='hpt'&&p.io==='def')notes.push(['ขาดไอโอดีน → สร้าง T₄ ได้น้อย → TSH สูง → ต่อมโต','#fca5a5']);if(p.ax==='hpt'&&p.io==='exc')notes.push(['ไอโอดีนเกิน → T₄ สูงเล็กน้อย (ถ้ามากเกินอาจกดการสร้างฮอร์โมน)','#fde68a']);
+  if(p.exo)notes.push(['ยาฮอร์โมน → Feedback กด '+a.H+'/'+a.P+' → ต่อมของร่างกายหลั่งน้อยลงและฝ่อ','#f0abfc']);if(!p.fb&&p.ax!=='oxy')notes.push(['ไม่มี Negative feedback → ระดับฮอร์โมนแกว่งตามสิ่งเร้า ไม่คงที่','#cbd5e1']);
+  if(p.pos)notes.push([M2.ov?'LH surge เกิดแล้ว → ตกไข่ → กลับเป็น Negative feedback':'Estrogen สูง → กระตุ้น GnRH/LH เพิ่ม (Positive feedback) → LH surge','#86efac']);
+  if(p.ax==='oxy')notes.push([!M2.lab?'กด 🤰 เริ่มการคลอด':M2.born?'ทารกคลอดแล้ว → แรงยืดหายไป → วงจรหยุด':'Oxytocin → มดลูกหดตัว → ยืดปากมดลูก → Oxytocin มากขึ้น (ความคืบหน้า '+Math.round(M2.prog*100)+'%)','#86efac']);
+  if(p.ax==='adh')notes.push(['ADH สร้างโดย Hypothalamus · ต่อมใต้สมองส่วนหลังทำหน้าที่เก็บและหลั่งเท่านั้น','#7dd3fc']);
+  notes.forEach(([s,c])=>{y=wrap(g,'• '+s,px+10,y,pw-20,15,c,10.5)+6;});}
+
+/* ================= MODE 3 : GLUCOSE & CALCIUM ================= */
+let M3;function initM3(){M3={t:0,G:90,I:1,Gn:1,gut:0,gly:60,ex:0,U:1.2,Ca:9.5,PTH:1,CT:1,cag:0,bmc:100,hist:[],acc:0};}
+function stepM3(dt){const mins=dt*5,sens=V('sens')/100,diet=$('#diet').value,n=Math.max(1,Math.ceil(mins/0.5)),hh=mins/n;M3.t+=mins;
+  for(let i=0;i<n;i++){const ra=0.03*M3.gut;M3.gut-=ra*hh;const Ie=sens*M3.I;
+    const hgp=1.2*(0.5+0.5*M3.Gn)*2/(1+Ie)*(diet==='fast'?0.85:1)*(M3.gly>2?1:0.5)+(M3.ex>0?0.6:0);
+    const U=(0.3+0.9*Ie)*M3.G/90+(M3.ex>0?1.4*M3.G/90:0),ren=M3.G>180?(M3.G-180)*0.01:0;M3.U=U;
+    M3.G=clamp(M3.G+(ra+hgp-U-ren)*hh,20,450);
+    M3.I+=(Math.max(0,(M3.G-70)/20)-M3.I)*hh/8;M3.Gn+=(clamp(1+(90-M3.G)/20,0.4,4)*(M3.ex>0?1.4:1)-M3.Gn)*hh/8;
+    M3.gly=clamp(M3.gly+(0.3*(Ie-1)*M3.G/90-0.3*(M3.Gn-1)-(diet==='fast'?0.05:0))*hh,0,100);M3.ex=Math.max(0,M3.ex-hh);
+    const cin=diet==='highca'?0.012:diet==='fast'?-0.012:0,cab=0.04*M3.cag;M3.cag-=cab*hh;
+    M3.Ca=clamp(M3.Ca+(0.015*(M3.PTH-M3.CT)+cin+cab*(0.6+0.4*M3.PTH))*hh,4,16);
+    M3.PTH+=(clamp(1+(9.5-M3.Ca)*1.5,0,5)-M3.PTH)*hh/5;M3.CT+=(clamp(1+(M3.Ca-9.5)*1.5,0,5)-M3.CT)*hh/5;
+    M3.bmc=clamp(M3.bmc-0.02*(M3.PTH-M3.CT)*hh,60,130);}
+  M3.acc+=mins;if(M3.acc>2){M3.acc=0;M3.hist.push([M3.t,M3.G,M3.I,M3.Gn,M3.Ca,M3.PTH,M3.CT]);if(M3.hist.length>300)M3.hist.shift();}}
+function vessel(g,X,Y,lab){g.fillStyle='rgba(185,28,28,.3)';rr(g,X(0.02),Y(0.44),X(0.96),Y(0.12),Y(0.06));g.fill();g.strokeStyle='#ef4444';g.lineWidth=1.5;g.stroke();T(g,lab,X(0.98),Y(0.42),'#fca5a5',10,'right',true);}
+function vdots(g,n,X,Y,col,r,sp,off,cls){for(let i=0;i<n;i++){const x=X(0.03+((hash(i+off)+S.time*sp*(0.6+0.4*hash(i+off+50)))%1)*0.94),y=Y(0.455+hash(i+off+20)*0.09);if(cls)hShape(g,cls,x,y,0.8);else{g.fillStyle=col;g.beginPath();g.arc(x,y,r,0,7);g.fill();}}}
+function gauge(g,x,y,v,unit,lo,hi,lab){const col=v<lo?'#60a5fa':v>hi?'#f87171':'#4ade80';g.fillStyle='rgba(255,255,255,.04)';rr(g,x-62,y-28,124,56,10);g.fill();g.strokeStyle=col;g.lineWidth=2;g.stroke();T(g,lab,x,y-16,'#c9a9bf',9.5,'center');T(g,(v>=100?v.toFixed(0):v.toFixed(1))+' '+unit,x,y+4,col,17,'center',true);T(g,v<lo?'ต่ำกว่าปกติ':v>hi?'สูงกว่าปกติ':'ปกติ',x,y+20,col,9.5,'center');}
+function drawGlu(g,w,h,X,Y){const m=M3,sens=V('sens')/100,st=S.toggle==='struct';vessel(g,X,Y,'หลอดเลือด');
+  vdots(g,Math.round(m.G/7),X,Y,'#facc15',3,0.05,0);vdots(g,Math.round(m.I*4),X,Y,'#60a5fa',2.8,0.07,100,st?'pep':null);vdots(g,Math.round(m.Gn*4),X,Y,'#fb923c',2.8,0.06,200,st?'pep':null);
+  box(g,X(0.02),Y(0.04),X(0.26),Y(0.33),'ลำไส้เล็ก','#fdba74');g.strokeStyle='#fdba74';g.lineWidth=7;g.beginPath();for(let i=0;i<=40;i++){const x=X(0.04)+i*X(0.22)/40,y=Y(0.2)+Math.sin(i*0.5+S.time)*Y(0.04);i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+  if(m.gut>1){flow(g,[[X(0.15),Y(0.27)],[X(0.15),Y(0.47)]],clamp(Math.round(m.gut/8),1,12),0.5,'#facc15',3);T(g,'ดูดซึมกลูโคส',X(0.15),Y(0.33),'#fde047',10,'center',true);}
+  gauge(g,X(0.43),Y(0.18),m.G,'mg/dL',70,126,'กลูโคสในเลือด');if(m.ex>0)T(g,'🏃 กำลังออกกำลังกาย',X(0.43),Y(0.33),'#86efac',10.5,'center',true);
+  box(g,X(0.6),Y(0.04),X(0.38),Y(0.33),'ตับ (เก็บไกลโคเจน)','#d6a37c');g.fillStyle='rgba(146,64,14,.55)';g.beginPath();g.ellipse(X(0.79),Y(0.22),X(0.15),Y(0.1),0,0,7);g.fill();
+  for(let i=0;i<Math.round(m.gly/3);i++){const a=i*2.4,r=Math.sqrt(i)*4.2;g.fillStyle='#e7c4a5';g.beginPath();g.arc(X(0.79)+Math.cos(a)*r*1.4,Y(0.22)+Math.sin(a)*r*0.7,2.6,0,7);g.fill();}
+  const sto=sens*m.I>m.Gn*1.15,rel=m.Gn>sens*m.I*1.15;if(sto){flow(g,[[X(0.72),Y(0.47)],[X(0.72),Y(0.26)]],6,0.4,'#facc15',3);T(g,'Insulin: กลูโคส → ไกลโคเจน',X(0.79),Y(0.35),'#93c5fd',10,'center',true);}
+  else if(rel){flow(g,[[X(0.86),Y(0.26)],[X(0.86),Y(0.47)]],6,0.4,'#facc15',3);T(g,'Glucagon: ไกลโคเจน → กลูโคส',X(0.79),Y(0.35),'#fdba74',10,'center',true);}
+  box(g,X(0.02),Y(0.62),X(0.34),Y(0.35),'ตับอ่อน: Islets of Langerhans','#86efac');const ix=X(0.19),iy=Y(0.8);
+  for(let i=0;i<10;i++){const a=i/10*6.283,x=ix+Math.cos(a)*X(0.1),y=iy+Math.sin(a)*Y(0.09);glow(g,x,y,12,`rgba(251,146,60,${clamp(m.Gn/4,0.05,0.8)})`);g.fillStyle='#fb923c';g.beginPath();g.arc(x,y,6,0,7);g.fill();}
+  for(let i=0;i<7;i++){const a=i/7*6.283,x=ix+Math.cos(a)*X(0.045)*(i?1:0),y=iy+Math.sin(a)*Y(0.04)*(i?1:0);glow(g,x,y,13,`rgba(74,222,128,${clamp(m.I/4,0.05,0.8)})`);g.fillStyle='#22c55e';g.beginPath();g.arc(x,y,6.5,0,7);g.fill();}
+  T(g,'β cell → Insulin',X(0.04),Y(0.93),'#86efac',9.5,'left',true);T(g,'α cell → Glucagon',X(0.34),Y(0.93),'#fdba74',9.5,'right',true);
+  flow(g,[[X(0.13),Y(0.68)],[X(0.13),Y(0.53)]],clamp(Math.round(m.I*2),0,10),0.5,'#60a5fa',3);flow(g,[[X(0.26),Y(0.68)],[X(0.26),Y(0.53)]],clamp(Math.round(m.Gn*2),0,10),0.5,'#fb923c',3);
+  box(g,X(0.56),Y(0.62),X(0.42),Y(0.35),'เซลล์กล้ามเนื้อ / เนื้อเยื่อไขมัน','#93c5fd');const cx0=X(0.6),cy0=Y(0.71),cw=X(0.34),ch=Y(0.22);g.fillStyle='rgba(147,197,253,.12)';rr(g,cx0,cy0,cw,ch,12);g.fill();g.strokeStyle='#93c5fd';g.lineWidth=2;g.stroke();
+  const ng=clamp(Math.round(1+6*sens*m.I/1.5),0,9);for(let i=0;i<9;i++){const x=cx0+12+i*(cw-24)/8;if(i<ng){g.fillStyle='#22d3ee';rr(g,x-4,cy0-6,8,12,3);g.fill();}else{g.fillStyle='rgba(34,211,238,.3)';g.beginPath();g.arc(x,cy0+ch*0.55,4,0,7);g.fill();}}
+  T(g,'GLUT4 บนเยื่อหุ้ม: '+ng+' (ที่เหลือค้างในถุงภายในเซลล์)',cx0+cw/2,cy0+ch*0.82,'#a5f3fc',9.5,'center');flow(g,[[X(0.77),Y(0.56)],[X(0.77),Y(0.78)]],clamp(Math.round(m.U*3),0,14),0.4,'#facc15',3);
+  if(sens<0.5)T(g,'ดื้อต่อ Insulin: GLUT4 ขึ้นมาน้อย',cx0+cw/2,cy0+ch*0.35,'#fca5a5',10,'center',true);
+  box(g,X(0.38),Y(0.66),X(0.16),Y(0.3),'ไต','#fda4af');g.fillStyle='#9f1239';g.beginPath();g.ellipse(X(0.46),Y(0.8),X(0.04),Y(0.06),0,0,7);g.fill();
+  if(m.G>180){for(let i=0;i<4;i++){const s=(S.time*0.6+i/4)%1;hexP(g,X(0.46),Y(0.86)+s*Y(0.08),3.4);g.fillStyle='#fde047';g.fill();}T(g,'กลูโคสในปัสสาวะ',X(0.46),Y(0.69)+12,'#fde047',9,'center',true);}
+  legendDots(g,[['กลูโคส','#facc15'],['Insulin'+(st?' (Peptide)':''),'#60a5fa'],['Glucagon'+(st?' (Peptide)':''),'#fb923c']],X(0.3),Y(0.58));}
+function legendDots(g,items,x,y){let xx=x;items.forEach(([s,c])=>{g.fillStyle=c;g.beginPath();g.arc(xx,y,4,0,7);g.fill();T(g,s,xx+8,y,'#fdeef8',9.5);g.font='9.5px '+FONT;xx+=g.measureText(s).width+24;});}
+function drawCa(g,w,h,X,Y){const m=M3,st=S.toggle==='struct';vessel(g,X,Y,'หลอดเลือด');vdots(g,Math.round(m.Ca*2.5),X,Y,'#a3e635',3,0.05,0);vdots(g,Math.round(m.PTH*4),X,Y,'#f472b6',2.8,0.07,100,st?'pep':null);vdots(g,Math.round(m.CT*4),X,Y,'#38bdf8',2.8,0.06,200,st?'pep':null);
+  box(g,X(0.02),Y(0.04),X(0.34),Y(0.33),'ต่อมไทรอยด์ + พาราไทรอยด์ (ด้านหลัง)','#f9a8d4');const tx=X(0.19),ty=Y(0.21);g.fillStyle='#be123c';[-1,1].forEach(d=>{g.beginPath();g.ellipse(tx+d*X(0.055),ty,X(0.045),Y(0.08),0,0,7);g.fill();});rr(g,tx-X(0.03),ty-6,X(0.06),12,5);g.fill();
+  [-1,1].forEach(d=>[-1,1].forEach(e=>{glow(g,tx+d*X(0.07),ty+e*Y(0.045),12,`rgba(244,114,182,${clamp(m.PTH/4,0.05,0.9)})`);g.fillStyle='#fde68a';g.beginPath();g.arc(tx+d*X(0.07),ty+e*Y(0.045),4.5,0,7);g.fill();}));
+  for(let i=0;i<6;i++){glow(g,tx-X(0.05)+hash(i)*X(0.1),ty-Y(0.04)+hash(i+3)*Y(0.08),8,`rgba(56,189,248,${clamp(m.CT/4,0.05,0.9)})`);}
+  T(g,'C cell → Calcitonin',X(0.04),Y(0.34),'#7dd3fc',9.5,'left',true);T(g,'พาราไทรอยด์ → PTH',X(0.35),Y(0.34),'#f9a8d4',9.5,'right',true);
+  flow(g,[[X(0.12),Y(0.37)],[X(0.12),Y(0.47)]],clamp(Math.round(m.CT*2),0,10),0.5,'#38bdf8',3);flow(g,[[X(0.26),Y(0.37)],[X(0.26),Y(0.47)]],clamp(Math.round(m.PTH*2),0,10),0.5,'#f472b6',3);
+  gauge(g,X(0.5),Y(0.18),m.Ca,'mg/dL',8.5,10.5,'Ca²⁺ ในเลือด');
+  box(g,X(0.66),Y(0.04),X(0.32),Y(0.33),'ลำไส้เล็ก','#fdba74');g.strokeStyle='#fdba74';g.lineWidth=7;g.beginPath();for(let i=0;i<=30;i++){const x=X(0.68)+i*X(0.28)/30,y=Y(0.2)+Math.sin(i*0.5+S.time)*Y(0.035);i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+  const ab=m.cag>0.2||$('#diet').value==='highca';if(ab)flow(g,[[X(0.82),Y(0.27)],[X(0.82),Y(0.47)]],6,0.5,'#a3e635',3);T(g,'ดูดซึม Ca²⁺ (Vitamin D ที่ถูกกระตุ้นโดย PTH)',X(0.82),Y(0.33),'#fde68a',9,'center');
+  box(g,X(0.02),Y(0.62),X(0.5),Y(0.35),'กระดูก (คลังแคลเซียม)','#e2e8f0');const bx=X(0.06),by=Y(0.76),bw=X(0.42),bh=Y(0.1),den=clamp((m.bmc-60)/70,0.1,1);g.fillStyle=`rgba(226,232,240,${0.25+0.6*den})`;rr(g,bx,by,bw,bh,bh/2);g.fill();g.beginPath();g.arc(bx+6,by+bh/2,bh*0.7,0,7);g.arc(bx+bw-6,by+bh/2,bh*0.7,0,7);g.fill();
+  const oc=m.PTH>m.CT*1.1,ob=m.CT>m.PTH*1.1;for(let i=0;i<4;i++){const x=bx+bw*(0.2+i*0.2);g.fillStyle=oc?'#c084fc':'rgba(192,132,252,.3)';g.beginPath();g.arc(x,by-6,7,0,7);g.fill();g.fillStyle=ob?'#22d3ee':'rgba(34,211,238,.3)';g.beginPath();g.arc(x+bw*0.08,by+bh+6,6,0,7);g.fill();}
+  if(oc)flow(g,[[bx+bw*0.4,by-8],[bx+bw*0.4,Y(0.55)]],6,0.4,'#a3e635',3);if(ob)flow(g,[[bx+bw*0.7,Y(0.55)],[bx+bw*0.7,by]],6,0.4,'#a3e635',3);
+  T(g,'Osteoclast (สลายกระดูก ← PTH)',X(0.04),Y(0.69)+4,oc?'#d8b4fe':'#6b5a7a',9.5,'left',true);T(g,'Osteoblast (สร้างกระดูก ← Calcitonin)',X(0.04),Y(0.94),ob?'#67e8f9':'#4b6470',9.5,'left',true);T(g,'มวลกระดูก '+m.bmc.toFixed(0)+'%',X(0.5),Y(0.94),'#e2e8f0',10,'right',true);
+  box(g,X(0.56),Y(0.62),X(0.42),Y(0.35),'ไต','#fda4af');g.fillStyle='#9f1239';g.beginPath();g.ellipse(X(0.68),Y(0.8),X(0.05),Y(0.08),0,0,7);g.fill();
+  T(g,m.PTH>1.1?'PTH: ↑ ดูดกลับ Ca²⁺':m.CT>1.1?'Calcitonin: ↑ ขับ Ca²⁺ ทิ้ง':'ดูดกลับ Ca²⁺ ปกติ',X(0.75),Y(0.74),'#fecdd3',10,'left',true);T(g,m.PTH>1.1?'PTH: กระตุ้น Vitamin D':'',X(0.75),Y(0.8),'#fde68a',10,'left');
+  if(m.PTH>1.1)flow(g,[[X(0.68),Y(0.72)],[X(0.68),Y(0.55)]],5,0.4,'#a3e635',3);else if(m.CT>1.1)flow(g,[[X(0.66),Y(0.55)],[X(0.66),Y(0.9)]],5,0.4,'#a3e635',3);
+  legendDots(g,[['Ca²⁺','#a3e635'],['PTH'+(st?' (Peptide)':''),'#f472b6'],['Calcitonin'+(st?' (Peptide)':''),'#38bdf8']],X(0.34),Y(0.58));}
+function drawM3(g,w,h){g.fillStyle='#0b0612';g.fillRect(0,0,w,h);const X=f=>f*w,Y=f=>f*h;$('#home').value==='glu'?drawGlu(g,w,h,X,Y):drawCa(g,w,h,X,Y);}
+
+/* ================= MODE 4 : PATHOLOGY ================= */
+const K4=['Insulin','กลูโคส','T₃/T₄','TSH','Cortisol','ACTH','GH','BMR'];
+const DIS={normal:{n:'ร่างกายปกติ',gl:null,o:0,v:{},upt:100,bmc:100,bmr:100,cause:'ต่อมไร้ท่อทุกต่อมหลั่งฮอร์โมนในระดับเหมาะสม ควบคุมด้วย Negative feedback',sym:'ระดับกลูโคส ~70–100 mg/dL ขณะอดอาหาร · BMR ปกติ',tr:'—',b:{},steps:['สิ่งเร้า','ต่อมไร้ท่อ','ฮอร์โมนในเลือด','เซลล์เป้าหมาย','Negative feedback'],bad:-1,key:'Insulin'},
+ t1dm:{n:'เบาหวานชนิดที่ 1 (Type 1 DM)',gl:'pan',o:-1,v:{Insulin:0.05,'กลูโคส':2.8},upt:25,bmc:95,bmr:100,cause:'ภูมิคุ้มกันทำลาย β cell ของตับอ่อน (Autoimmune) มักเกิดในเด็กและวัยรุ่น',sym:'ปัสสาวะบ่อย กระหายน้ำ หิวบ่อย น้ำหนักลด มีกลูโคสในปัสสาวะ อาจเกิดเลือดเป็นกรด (Ketoacidosis)',tr:'ฉีด Insulin ทุกวัน ตรวจระดับกลูโคสสม่ำเสมอ',b:{thin:0.8},steps:['β cell ถูกทำลาย','ไม่มี Insulin','เซลล์นำกลูโคสเข้าไม่ได้','กลูโคสในเลือดสูง','กลูโคสออกมากับปัสสาวะ'],bad:1,key:'Insulin'},
+ t2dm:{n:'เบาหวานชนิดที่ 2 (Type 2 DM)',gl:'pan',o:1,v:{Insulin:2.2,'กลูโคส':2.0},upt:45,bmc:100,bmr:100,cause:'เซลล์ดื้อต่อ Insulin (Insulin resistance) สัมพันธ์กับโรคอ้วน ขาดการออกกำลังกาย และพันธุกรรม — ตับอ่อนยังหลั่ง Insulin ได้',sym:'กลูโคสสูงทั้งที่ Insulin ปกติหรือสูง ระยะหลัง β cell ล้าและหลั่งน้อยลง',tr:'ควบคุมอาหาร ลดน้ำหนัก ออกกำลังกาย ยาเพิ่มความไวต่อ Insulin (เช่น Metformin)',b:{fat:1.35},steps:['β cell หลั่ง Insulin ได้','Insulin จับ Receptor','สัญญาณในเซลล์บกพร่อง','GLUT4 ขึ้นเยื่อหุ้มน้อย','กลูโคสในเลือดสูง'],bad:2,key:'Insulin'},
+ graves:{n:"Graves' disease (คอพอกเป็นพิษ)",gl:'thy',o:1,v:{'T₃/T₄':3.2,TSH:0.08,BMR:1.5,'กลูโคส':1.1},upt:120,bmc:90,bmr:150,cause:'แอนติบอดี (TSI) เลียนแบบ TSH กระตุ้น TSH receptor ของต่อมไทรอยด์ตลอดเวลา (Autoimmune)',sym:'ต่อมไทรอยด์โต ตาโปน ใจสั่น เหงื่อออก ขี้ร้อน น้ำหนักลด มือสั่น',tr:'ยาต้านไทรอยด์ (Methimazole/PTU) ไอโอดีนกัมมันตรังสี หรือผ่าตัด',b:{goiter:1.4,eyes:1,thin:0.85},steps:['แอนติบอดีจับ TSH receptor','ไทรอยด์หลั่ง T₃/T₄ มาก','Negative feedback กด TSH','แต่แอนติบอดียังกระตุ้นต่อ','↑ BMR ใจสั่น น้ำหนักลด'],bad:0,key:'T₃/T₄'},
+ hypo:{n:'Hypothyroidism / Myxedema',gl:'thy',o:-1,v:{'T₃/T₄':0.3,TSH:4,BMR:0.7},upt:80,bmc:100,bmr:70,cause:'ต่อมไทรอยด์หลั่ง T₃/T₄ น้อยในผู้ใหญ่ (เช่น Hashimoto, หลังผ่าตัดต่อม)',sym:'Myxedema: บวมน้ำใต้ผิวหนัง หน้าบวม เฉื่อยชา ขี้หนาว น้ำหนักเพิ่ม หัวใจเต้นช้า ผิวแห้ง',tr:'รับประทาน Thyroxine (Levothyroxine) ตลอดชีวิต',b:{puff:1},steps:['ต่อมไทรอยด์เสียหาย','T₃/T₄ ต่ำ','TSH สูง (Feedback ลดลง)','BMR ต่ำ','บวมน้ำ เฉื่อยชา'],bad:0,key:'T₃/T₄'},
+ cretin:{n:'Cretinism',gl:'thy',o:-1,v:{'T₃/T₄':0.2,TSH:4,BMR:0.65},upt:80,bmc:85,bmr:65,cause:'ขาด T₃/T₄ ตั้งแต่ในครรภ์หรือวัยทารก (ต่อมไทรอยด์ผิดปกติแต่กำเนิด หรือแม่ขาดไอโอดีน)',sym:'ร่างกายแคระแกร็น สัดส่วนผิดปกติ สติปัญญาต่ำ พัฒนาการช้า',tr:'ให้ Thyroxine ทันทีหลังคลอด (ตรวจคัดกรองทารกแรกเกิด) — ถ้ารักษาช้า ความเสียหายของสมองแก้ไม่ได้',b:{h:0.68,puff:1,child:1},irr:true,steps:['ขาด T₃/T₄ ในวัยทารก','สมองพัฒนาไม่เต็มที่','กระดูกเจริญช้า','แคระแกร็น','สติปัญญาต่ำ'],bad:0,key:'T₃/T₄'},
+ goiter:{n:'คอพอกธรรมดา (Simple goiter)',gl:'thy',o:-1,v:{'T₃/T₄':0.6,TSH:2.8,BMR:0.85},upt:90,bmc:100,bmr:85,cause:'ขาดไอโอดีน → สร้าง T₃/T₄ ไม่ได้ → Negative feedback ลดลง → TSH สูง กระตุ้นให้ต่อมไทรอยด์โต',sym:'ต่อมไทรอยด์โตที่คอ อาจมีอาการไทรอยด์ต่ำเล็กน้อย',tr:'เสริมไอโอดีน (เกลือ/น้ำปลาเสริมไอโอดีน อาหารทะเล)',b:{goiter:1.9},steps:['ขาดไอโอดีน','สร้าง T₃/T₄ ได้น้อย','Feedback ลดลง → TSH สูง','TSH กระตุ้นการแบ่งเซลล์ต่อม','ต่อมไทรอยด์โต (คอพอก)'],bad:0,key:'TSH'},
+ cushing:{n:"Cushing's syndrome",gl:'adr',o:1,v:{Cortisol:3,ACTH:2.5,'กลูโคส':1.5},upt:65,bmc:75,bmr:100,cause:'Cortisol สูงเป็นเวลานาน (เนื้องอกต่อมใต้สมองหลั่ง ACTH มาก เนื้องอกต่อมหมวกไต หรือใช้ยาสเตียรอยด์นาน)',sym:'หน้ากลม (Moon face) มีหนอกที่คอ อ้วนลำตัวแต่แขนขาลีบ ผิวแตกลาย กลูโคสสูง กระดูกพรุน',tr:'ผ่าตัดเนื้องอก หรือค่อย ๆ ลดยาสเตียรอยด์ (ห้ามหยุดทันที)',b:{moon:1,fat:1.4,thin:0.75},steps:['ACTH/Cortisol สูง','สลายโปรตีนกล้ามเนื้อ','สร้างกลูโคสที่ตับ ↑','สะสมไขมันที่ลำตัว/หน้า','กระดูกพรุน'],bad:0,key:'Cortisol'},
+ addison:{n:"Addison's disease",gl:'adr',o:-1,v:{Cortisol:0.15,ACTH:4,'กลูโคส':0.75,BMR:0.9},upt:90,bmc:95,bmr:90,cause:'ต่อมหมวกไตชั้นนอกถูกทำลาย (Autoimmune, วัณโรค) → Cortisol และ Aldosterone ต่ำ',sym:'อ่อนเพลีย ความดันต่ำ กลูโคสต่ำ ผิวคล้ำ (ACTH สูงกระตุ้นเมลานิน) Na⁺ ต่ำ K⁺ สูง',tr:'ให้ Hydrocortisone และ Fludrocortisone ทดแทน',b:{dark:1,thin:0.88},steps:['ต่อมหมวกไตชั้นนอกถูกทำลาย','Cortisol/Aldosterone ต่ำ','ACTH สูง (Feedback ลดลง)','ผิวคล้ำ ความดันต่ำ','กลูโคสต่ำ อ่อนเพลีย'],bad:0,key:'Cortisol'},
+ giant:{n:'Gigantism (ร่างยักษ์)',gl:'pit',o:1,v:{GH:4,'กลูโคส':1.2},upt:90,bmc:110,bmr:110,cause:'GH มากเกินในวัยเด็ก (ก่อนแผ่นกระดูกอ่อนปิด) มักจากเนื้องอกของต่อมใต้สมองส่วนหน้า',sym:'ร่างกายสูงใหญ่ผิดปกติแต่ได้สัดส่วน',tr:'ผ่าตัดเนื้องอก ยายับยั้ง GH (Somatostatin analog) — ความสูงที่เพิ่มแล้วแก้ไม่ได้',b:{h:1.28},irr:true,steps:['เนื้องอกต่อมใต้สมอง','GH สูง','ตับสร้าง IGF-1','แผ่นกระดูกอ่อนยังเปิด','กระดูกยาวขึ้นมาก'],bad:0,key:'GH'},
+ acro:{n:'Acromegaly',gl:'pit',o:1,v:{GH:3.5,'กลูโคส':1.2},upt:85,bmc:110,bmr:105,cause:'GH มากเกินในผู้ใหญ่ (แผ่นกระดูกอ่อนปิดแล้ว)',sym:'กระดูกมือ เท้า ขากรรไกร ใบหน้าหนาและใหญ่ขึ้น แต่ไม่สูงขึ้น',tr:'ผ่าตัดเนื้องอก ยายับยั้ง GH',b:{acro:1},steps:['เนื้องอกต่อมใต้สมอง','GH สูง','IGF-1 สูง','แผ่นกระดูกอ่อนปิดแล้ว','กระดูกปลายมือ/เท้า/คางหนาขึ้น'],bad:0,key:'GH'},
+ dwarf:{n:'Pituitary dwarfism (เตี้ยแคระ)',gl:'pit',o:-1,v:{GH:0.15},upt:100,bmc:95,bmr:95,cause:'GH น้อยในวัยเด็ก',sym:'ตัวเตี้ยแต่ได้สัดส่วน สติปัญญาปกติ (ต่างจาก Cretinism)',tr:'ฉีด GH สังเคราะห์ก่อนแผ่นกระดูกอ่อนปิด',b:{h:0.7},irr:true,steps:['ต่อมใต้สมองหลั่ง GH น้อย','IGF-1 ต่ำ','กระดูกเจริญช้า','ตัวเตี้ยแต่ได้สัดส่วน','สติปัญญาปกติ'],bad:0,key:'GH'}};
+const GLS={pin:['ไพเนียล','Melatonin','Amine'],hyp:['Hypothalamus','RH/IH · ADH · Oxytocin','Peptide'],pit:['ต่อมใต้สมอง','GH TSH ACTH LH FSH PRL','Peptide/Glycoprotein'],thy:['ไทรอยด์','T₃/T₄ · Calcitonin','Amine · Peptide'],para:['พาราไทรอยด์','PTH','Peptide'],thym:['ไทมัส','Thymosin','Peptide'],adr:['ต่อมหมวกไต','Cortisol Aldosterone | Epi','Steroid | Amine'],pan:['ตับอ่อน','Insulin · Glucagon','Peptide'],gon:['รังไข่/อัณฑะ','Estrogen · Testosterone','Steroid']};
+let M4;function initM4(){M4={t:0};}
+function stepM4(dt){M4.t+=dt;}
+function d4(){const k=$('#dis').value,d=DIS[k],tr=$('#treat').checked&&k!=='normal';const f=v=>tr?lerp(v,1,0.85):v;const vals=K4.map(x=>f(d.v[x]??1));const b=tr?(d.irr?{h:d.b.h,child:d.b.child}:{}):d.b;return{k,d,tr,vals,b,upt:tr?lerp(d.upt,100,0.85):d.upt,bmc:tr?lerp(d.bmc,100,0.6):d.bmc,bmr:tr?lerp(d.bmr,100,0.85):d.bmr};}
+function drawBody(g,cx,h,BW,q){const b=q.b,d=q.d,H=h*0.8*(b.h||1),foot=h*0.94,top=foot-H,s=H/7.5,r=s*0.55*(b.child?1.15:1),hy=top+r,fat=b.fat||1,thin=b.thin||1,skin=b.dark?'#7c4a2a':'#d9a87c',shY=top+s*1.6,hipY=top+s*4.3,tw=s*0.95*fat;
+  g.strokeStyle='#3d2343';g.setLineDash([4,4]);g.lineWidth=1;g.beginPath();g.moveTo(cx-BW*0.3,foot-h*0.8);g.lineTo(cx+BW*0.3,foot-h*0.8);g.stroke();g.setLineDash([]);T(g,'ความสูงปกติ',cx+BW*0.3,foot-h*0.8-8,'#7a5a74',9,'right');
+  if(b.puff){g.fillStyle='rgba(165,180,252,.16)';g.beginPath();g.ellipse(cx,hy,r*1.35,r*1.3,0,0,7);g.fill();rr(g,cx-tw*1.25,shY-6,tw*2.5,hipY-shY+16,s*0.6);g.fill();}
+  g.strokeStyle=skin;g.lineCap='round';g.lineWidth=s*0.5*thin;[-1,1].forEach(e=>{line(g,[[cx+e*tw*0.45,hipY],[cx+e*tw*0.55,foot-s*0.2]],skin,s*0.5*thin);g.fillStyle=skin;g.beginPath();g.ellipse(cx+e*tw*0.62,foot-s*0.12,s*0.32*(b.acro?1.5:1),s*0.14*(b.acro?1.4:1),0,0,7);g.fill();
+    line(g,[[cx+e*tw*0.95,shY+s*0.15],[cx+e*(tw+s*0.55),hipY+s*0.1]],skin,s*0.42*thin);g.beginPath();g.arc(cx+e*(tw+s*0.58),hipY+s*0.3,s*0.2*(b.acro?1.6:1),0,7);g.fill();});
+  g.fillStyle=skin;rr(g,cx-tw,shY,tw*2,hipY-shY+s*0.25,s*0.45);g.fill();if(fat>1.2){g.beginPath();g.ellipse(cx,shY+s*1.9,tw*1.08,s*1.2,0,0,7);g.fill();}
+  rr(g,cx-s*0.2,top+2*r-3,s*0.4,shY-(top+2*r)+6,3);g.fill();
+  const ny=top+2*r+(shY-top-2*r)*0.55;if(b.goiter){g.fillStyle='#e8a08a';g.beginPath();g.ellipse(cx,ny,s*0.32*b.goiter,s*0.2*b.goiter,0,0,7);g.fill();g.strokeStyle='#f87171';g.lineWidth=1.5;g.stroke();}
+  g.fillStyle=skin;g.beginPath();g.ellipse(cx,hy,r*(b.moon?1.32:1)*(b.acro?1.08:1),r*(b.acro?1.12:1),0,0,7);g.fill();if(b.acro){g.beginPath();g.ellipse(cx,hy+r*0.75,r*0.78,r*0.38,0,0,7);g.fill();}
+  [-1,1].forEach(e=>{const ex=cx+e*r*0.36,ey=hy-r*0.08,er=b.eyes?r*0.2:r*0.12;g.fillStyle='#fff';g.beginPath();g.arc(ex,ey,er,0,7);g.fill();g.fillStyle='#1f2937';g.beginPath();g.arc(ex,ey,er*0.5,0,7);g.fill();});
+  const GP={pin:[cx+r*0.3,hy-r*0.45],hyp:[cx-r*0.1,hy+r*0.15],pit:[cx-r*0.1,hy+r*0.42],thy:[cx-s*0.12,ny],para:[cx+s*0.14,ny],thym:[cx,shY+s*0.5],adr:[cx-tw*0.45,shY+s*1.45],pan:[cx+tw*0.25,shY+s*1.85],gon:[cx,hipY-s*0.05]};
+  const L=['pin','hyp','pit','thy','thym'],R=['para','adr','pan','gon'];
+  Object.keys(GP).forEach(k=>{const [x,y]=GP[k],aff=d.gl===k,left=L.includes(k),idx=(left?L:R).indexOf(k),ly=(left?h*0.1:h*0.25)+idx*h*(left?0.105:0.13),lx=left?8:BW-8;
+    if(aff){glow(g,x,y,26,q.tr?'rgba(74,222,128,.6)':d.o>0?'rgba(248,113,113,.85)':'rgba(96,165,250,.85)');}
+    g.fillStyle=aff?(q.tr?'#4ade80':d.o>0?'#f87171':'#60a5fa'):'#f9a8d4';g.beginPath();g.arc(x,y,aff?6:4.2,0,7);g.fill();
+    g.strokeStyle=aff?'#fde68a':'rgba(249,168,212,.35)';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(left?lx+92:lx-92,ly);g.stroke();
+    const G=GLS[k];T(g,G[0],lx,ly-7,aff?'#fde68a':'#fbcfe8',10,left?'left':'right',true);T(g,S.toggle==='struct'?G[2]:G[1],lx,ly+7,aff?'#fde68a':'#c9a9bf',9,left?'left':'right');
+    if(aff&&S.toggle==='path'){for(let i=0;i<6;i++){const a=i/6*6.283+S.time*0.3,s2=(S.time*0.4+i/6)%1;g.fillStyle=d.o>0?'#fca5a5':'#93c5fd';g.beginPath();g.arc(x+Math.cos(a)*s2*50,y+Math.sin(a)*s2*50,2.6*(1-s2)+0.6,0,7);g.fill();}}});
+  T(g,'ส่วนสูง ≈ '+Math.round(170*(b.h||1))+' ซม.',cx,foot+10,'#c9a9bf',9.5,'center');}
+function drawM4(g,w,h){g.fillStyle='#0b0612';g.fillRect(0,0,w,h);const q=d4(),d=q.d,BW=w*0.5;drawBody(g,BW/2,h,BW,q);
+  const px=BW+6,pw=w-px-8;panel(g,px,8,pw,h-16);let y=28;y=wrap(g,d.n,px+12,y,pw-24,17,'#f9a8d4',13,true)+4;
+  if(d.gl){const G=GLS[d.gl];T(g,'ต่อมที่เกี่ยวข้อง: '+G[0]+(d.o>0?' (ทำงานมากเกิน)':' (ทำงานน้อย)'),px+12,y,d.o>0?'#fca5a5':'#93c5fd',10.5,'left',true);y+=20;}
+  [['สาเหตุ',d.cause,'#fde68a'],['อาการ',d.sym,'#fdeef8'],['การรักษา',d.tr,'#86efac']].forEach(([t,s,c])=>{T(g,t,px+12,y,'#f472b6',11,'left',true);y=wrap(g,s,px+12,y+16,pw-24,15,c,10.5)+8;});
+  if(q.tr)y=wrap(g,d.irr?'✔ กำลังรักษา: ระดับฮอร์โมนกลับใกล้ปกติ แต่การเปลี่ยนแปลงของโครงร่างที่เกิดแล้วแก้คืนไม่ได้':'✔ กำลังรักษา: ระดับฮอร์โมนและอาการกลับใกล้ปกติ',px+12,y,pw-24,15,'#4ade80',10.5,true)+6;
+  if(q.k==='t1dm'||q.k==='t2dm'){const gv=Math.round(90*q.vals[1]);gauge(g,px+pw/2,Math.min(h-44,y+34),gv,'mg/dL',70,126,'กลูโคสขณะอดอาหาร');}}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='#2a1830';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#c9a9bf',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#c9a9bf',10,'center');}
+  g.strokeStyle='#5b3a5e';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#c9a9bf',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#c9a9bf',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(1)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#fdeef8',10);});}
+function hline(g,A,v,col,lab,w){g.strokeStyle=col;g.setLineDash([4,4]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.L,A.Y(v));g.lineTo(w-A.Rm,A.Y(v));g.stroke();g.setLineDash([]);if(lab)T(g,lab,w-A.Rm-2,A.Y(v)-7,col,9.5,'right');}
+function plot(g,A,H,ix,col,lw,f){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();H.forEach((r,i)=>{const y=A.Y(f?f(r[ix]):r[ix]);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){const o=occ(),k=$('#hclass').value,sf=HC[k].sf,A=axes(g,w,h,0,10,0,1,'เวลาหลังฮอร์โมนถึงเซลล์ (สเกลสัมพัทธ์)','การตอบสนอง (สัดส่วนสูงสุด)',5,4,v=>v===0?'0':v===10?'นาน':'');
+    const R1=t=>o*(1-Math.exp(-t/0.5))*Math.exp(-Math.max(0,t-4)/2.5),R2=t=>t<3?0:o*(1-Math.exp(-(t-3)/2.2));
+    [[R1,'#22d3ee','Peptide/Amine ผิวเซลล์: เร็ว (วินาที–นาที) หายเร็ว',sf],[R2,'#fbbf24','Steroid / T₃T₄: ช้า (ชั่วโมง–วัน) อยู่นาน',!sf]].forEach(([f,c,s,on])=>{g.strokeStyle=c;g.globalAlpha=on?1:0.35;g.lineWidth=on?2.6:1.6;g.beginPath();for(let t=0;t<=10;t+=0.1){const y=A.Y(f(t));t?g.lineTo(A.X(t),y):g.moveTo(A.X(t),y);}g.stroke();g.globalAlpha=1;});
+    legend(g,[['Peptide/Amine ผิวเซลล์: เร็ว หายเร็ว','#22d3ee'],['Steroid / T₃T₄: ช้า อยู่นาน','#fbbf24']],A.L+60,A.Tm+8);
+    const tt=M1.t/11*10;g.strokeStyle='#f472b6';g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(tt),A.Tm);g.lineTo(A.X(tt),h-A.B);g.stroke();g.setLineDash([]);hline(g,A,o,'#c9a9bf','Receptor ถูกจับ '+Math.round(o*100)+'%',w);}
+  else if(m===2){const H=M2.hist,t1=Math.max(30,M2.t),t0=t1-30,p=m2P(),a=AX[p.ax],A=axes(g,w,h,t0,t1,0,6,'เวลา (หน่วยจำลอง)','ระดับฮอร์โมน (เท่าของปกติ)',6,6,v=>(v-t0).toFixed(0));hline(g,A,1,'#c9a9bf','ปกติ',w);
+    const Hs=H.filter(r=>r[0]>=t0);plot(g,A,Hs,1,'#f472b6',2);plot(g,A,Hs,2,'#c084fc',2.2);plot(g,A,Hs,3,'#fbbf24',2.6);legend(g,[[p.ax==='oxy'?'Hypothalamus':a.H,'#f472b6'],[a.P,'#c084fc'],[a.G,'#fbbf24']],A.L+8,A.Tm+8);}
+  else if(m===3){const glu=$('#home').value==='glu',H=M3.hist,t1=Math.max(480,M3.t),t0=t1-480,Hs=H.filter(r=>r[0]>=t0);
+    if(glu){const A=axes(g,w,h,t0,t1,0,300,'เวลา (นาที)','กลูโคส (mg/dL)',4,6,v=>(v-t0).toFixed(0));hline(g,A,90,'#4ade80','ปกติ ~90',w);hline(g,A,180,'#f87171','Renal threshold 180',w);
+      plot(g,A,Hs,2,'#60a5fa',1.8,v=>Math.min(300,v*50));plot(g,A,Hs,3,'#fb923c',1.8,v=>Math.min(300,v*50));plot(g,A,Hs,1,'#facc15',2.8);legend(g,[['กลูโคส','#facc15'],['Insulin (สัมพัทธ์ ×50)','#60a5fa'],['Glucagon (สัมพัทธ์ ×50)','#fb923c']],A.L+8,A.Tm+8);}
+    else{const A=axes(g,w,h,t0,t1,4,16,'เวลา (นาที)','Ca²⁺ (mg/dL)',4,6,v=>(v-t0).toFixed(0));hline(g,A,8.5,'#60a5fa','8.5',w);hline(g,A,10.5,'#f87171','10.5',w);
+      plot(g,A,Hs,5,'#f472b6',1.8,v=>Math.min(16,4+v*2));plot(g,A,Hs,6,'#38bdf8',1.8,v=>Math.min(16,4+v*2));plot(g,A,Hs,4,'#a3e635',2.8);legend(g,[['Ca²⁺ ในเลือด','#a3e635'],['PTH (สัมพัทธ์)','#f472b6'],['Calcitonin (สัมพัทธ์)','#38bdf8']],A.L+8,A.Tm+8);}}
+  else{const q=d4(),A=axes(g,w,h,0,K4.length,0,4,'','เทียบกับค่าปกติ (×)',K4.length,4,()=>'');hline(g,A,1,'#c9a9bf','ปกติ',w);
+    K4.forEach((s,i)=>{const r=q.vals[i],x=A.X(i)+4,bw=A.X(1)-A.X(0)-8;g.fillStyle=r>1.2?'#ef4444':r<0.8?'#3b82f6':'#9d174d';g.fillRect(x,A.Y(Math.min(4,r)),bw,A.Y(0)-A.Y(Math.min(4,r)));T(g,r.toFixed(1),x+bw/2,A.Y(Math.min(4,r))-8,'#fdeef8',9,'center');T(g,s,x+bw/2,h-A.B+10,'#f5d0e6',9,'center');});}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TSP='<table><tr><th></th><th>Peptide / Protein</th><th>Steroid</th><th>Amine</th></tr><tr><td>สร้างจาก</td><td>กรดอะมิโน</td><td>Cholesterol</td><td>Tyrosine</td></tr><tr><td>การละลาย</td><td>ละลายน้ำ</td><td>ละลายในลิพิด</td><td>Epi: น้ำ · T₃T₄: ลิพิด</td></tr><tr><td>Receptor</td><td>ผิวเซลล์</td><td>ในไซโทพลาซึม/นิวเคลียส</td><td>Epi: ผิวเซลล์ · T₃T₄: นิวเคลียส</td></tr><tr><td>กลไก</td><td>Second messenger (cAMP, IP₃/DAG)</td><td>ควบคุมการถอดรหัสยีน</td><td>ตามความละลาย</td></tr><tr><td>ความเร็ว</td><td>เร็ว ผลสั้น</td><td>ช้า ผลนาน</td><td>—</td></tr><tr><td>ตัวอย่าง</td><td>Insulin, Glucagon, GH, ADH, PTH</td><td>Cortisol, Aldosterone, Estrogen, Testosterone</td><td>Epinephrine, T₃/T₄, Melatonin</td></tr></table>';
+const TSIG='<table style="margin-top:6px"><tr><th>รูปแบบ</th><th>เป้าหมาย</th><th>ตัวอย่าง</th></tr><tr><td>Endocrine</td><td>ไกล ผ่านเลือด</td><td>Insulin, TSH</td></tr><tr><td>Paracrine</td><td>เซลล์ข้างเคียง</td><td>Somatostatin, Histamine</td></tr><tr><td>Autocrine</td><td>ตัวเอง</td><td>IL-2</td></tr><tr><td>Neuroendocrine</td><td>เซลล์ประสาท → เลือด</td><td>ADH, Oxytocin</td></tr></table>';
+const TGL='<table><tr><th>ต่อม</th><th>ฮอร์โมน</th><th>หน้าที่หลัก</th></tr><tr><td>Hypothalamus</td><td>Releasing/Inhibiting hormone · สร้าง ADH, Oxytocin</td><td>ควบคุมต่อมใต้สมอง</td></tr><tr><td>ใต้สมองส่วนหน้า</td><td>GH, TSH, ACTH, FSH, LH, PRL</td><td>เจริญเติบโต ควบคุมต่อมอื่น สร้างน้ำนม</td></tr><tr><td>ใต้สมองส่วนหลัง</td><td>ADH, Oxytocin (เก็บและหลั่ง)</td><td>ดูดน้ำกลับ · มดลูกหดตัว หลั่งน้ำนม</td></tr><tr><td>ไทรอยด์</td><td>T₃/T₄ · Calcitonin</td><td>BMR · ลด Ca²⁺ ในเลือด</td></tr><tr><td>พาราไทรอยด์</td><td>PTH</td><td>เพิ่ม Ca²⁺ ในเลือด</td></tr><tr><td>ตับอ่อน</td><td>Insulin (β) · Glucagon (α)</td><td>ลด/เพิ่มกลูโคส</td></tr><tr><td>หมวกไตชั้นนอก</td><td>Cortisol · Aldosterone</td><td>กลูโคส ต้านการอักเสบ · ดูดกลับ Na⁺</td></tr><tr><td>หมวกไตชั้นใน</td><td>Epinephrine/Norepinephrine</td><td>สู้หรือหนี</td></tr><tr><td>รังไข่ / อัณฑะ</td><td>Estrogen, Progesterone / Testosterone</td><td>ลักษณะเพศ รอบประจำเดือน</td></tr><tr><td>ไพเนียล</td><td>Melatonin</td><td>วงจรการนอน</td></tr><tr><td>ไทมัส</td><td>Thymosin</td><td>การเจริญของ T cell</td></tr></table>';
+const THOM='<table><tr><th>ฮอร์โมน</th><th>ต่อม</th><th>ผลต่อเลือด</th><th>กลไก</th></tr><tr><td>Insulin</td><td>ตับอ่อน (β)</td><td>↓ กลูโคส</td><td>GLUT4 ขึ้นเยื่อหุ้ม · ตับสร้างไกลโคเจน</td></tr><tr><td>Glucagon</td><td>ตับอ่อน (α)</td><td>↑ กลูโคส</td><td>ตับสลายไกลโคเจน · สร้างกลูโคสใหม่</td></tr><tr><td>Epinephrine, Cortisol</td><td>หมวกไต</td><td>↑ กลูโคส</td><td>สลายไกลโคเจน · สร้างกลูโคสจากโปรตีน</td></tr><tr><td>PTH</td><td>พาราไทรอยด์</td><td>↑ Ca²⁺</td><td>Osteoclast สลายกระดูก · ไตดูดกลับ · ↑ Vitamin D</td></tr><tr><td>Calcitonin</td><td>ไทรอยด์ (C cell)</td><td>↓ Ca²⁺</td><td>Osteoblast สะสม Ca²⁺ · ไตขับทิ้ง</td></tr></table>';
+const TDIS='<table><tr><th>โรค</th><th>ต่อม/ฮอร์โมน</th><th>ลักษณะเด่น</th></tr><tr><td>เบาหวาน T1</td><td>Insulin ↓</td><td>β cell ถูกทำลาย</td></tr><tr><td>เบาหวาน T2</td><td>Insulin ปกติ/↑</td><td>ดื้อต่อ Insulin</td></tr><tr><td>Graves</td><td>T₃/T₄ ↑ TSH ↓</td><td>ตาโปน คอพอกเป็นพิษ</td></tr><tr><td>Myxedema</td><td>T₃/T₄ ↓ (ผู้ใหญ่)</td><td>บวมน้ำ เฉื่อยชา</td></tr><tr><td>Cretinism</td><td>T₃/T₄ ↓ (เด็ก)</td><td>แคระแกร็น ปัญญาอ่อน</td></tr><tr><td>คอพอกธรรมดา</td><td>ขาดไอโอดีน TSH ↑</td><td>ต่อมโต</td></tr><tr><td>Gigantism / Acromegaly</td><td>GH ↑ (เด็ก / ผู้ใหญ่)</td><td>สูงใหญ่ / ปลายมือเท้าคางโต</td></tr><tr><td>Dwarfism</td><td>GH ↓ (เด็ก)</td><td>เตี้ย สมส่วน ปัญญาปกติ</td></tr><tr><td>Cushing</td><td>Cortisol ↑</td><td>หน้ากลม อ้วนลำตัว</td></tr><tr><td>Addison</td><td>Cortisol, Aldosterone ↓</td><td>ผิวคล้ำ ความดันต่ำ</td></tr></table>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='';
+  if(m===1){const k=$('#hclass').value,c=HC[k],o=occ(),H=V('hdose')/10,[s]=stg(),sg=SIG[$('#sig').value];
+    st=[['ความเข้มข้นฮอร์โมน',H.toFixed(1)+' nM'],['Receptor ถูกจับ',Math.round(o*100)+'%'],['การขยายสัญญาณ',c.sf?'~10⁶ เท่า':'~10²–10³ เท่า'],['ระยะเวลาตอบสนอง',c.sf?'วินาที–นาที':'ชั่วโมง–วัน']];flowBar(c.steps,o<0.02?-1:s);
+    eq=`Receptor occupancy = [H] / ([H] + K_d) = ${H.toFixed(1)} / (${H.toFixed(1)} + 1.0) = ${Math.round(o*100)}%\n`+(c.sf?(c.ip3?'Hormone → Receptor → G protein → PLC: PIP₂ → IP₃ + DAG → Ca²⁺ ↑ + PKC → ตอบสนอง':'Hormone (First messenger) → Receptor → G protein → Adenylyl cyclase: ATP → cAMP (Second messenger) → PKA\nขยายสัญญาณ: 1 → ~100 → ~10⁴ → ~10⁶ โมเลกุล'):'Hormone + Receptor → Complex → จับ HRE บน DNA → mRNA → โปรตีนใหม่ (ไม่ใช้ Second messenger)');
+    an=`<p><span class="tag ${c.sf?'ok':'mid'}">${c.sf?'Receptor ผิวเซลล์':'Receptor ในเซลล์'}</span> ${c.t}</p><p><b>${sg.n}</b>: ${sg.d}</p>`+(o<0.02?'<p><span class="tag no">ไม่มีฮอร์โมน</span> ไม่มีการจับ Receptor จึงไม่เกิดการตอบสนอง</p>':o>0.85?'<p>ความเข้มข้นสูงมาก Receptor เกือบอิ่มตัว เพิ่มฮอร์โมนอีกก็ตอบสนองเพิ่มขึ้นไม่มาก</p>':'<p>ฮอร์โมนปริมาณน้อยก็ได้ผลมาก เพราะมีการขยายสัญญาณ (Amplification)</p>');
+    mis='<p><b>❌ "ฮอร์โมนทุกชนิดต้องเข้าไปในเซลล์"</b></p><p>✅ Peptide และ Epinephrine <b>เข้าเซลล์ไม่ได้</b> ออกฤทธิ์ผ่าน Receptor ผิวเซลล์และ Second messenger มีเพียง Steroid และ T₃/T₄ ที่เข้าเซลล์</p><p><b>❌ "ฮอร์โมนออกฤทธิ์กับทุกเซลล์ที่เลือดไปถึง"</b> ✅ ออกฤทธิ์เฉพาะเซลล์ที่มี <b>Receptor จำเพาะ</b> (เซลล์เป้าหมาย)</p>';tb=TSP+TSIG;}
+  else if(m===2){const p=m2P(),a=AX[p.ax],Gt=M2.G+p.exo;
+    const sz=M2.sz>1.4?'โต (คอพอก)':M2.sz<0.75?'ฝ่อ':'ปกติ';
+    st=p.ax==='hpt'?[['ความเข้มข้นฮอร์โมน (T₄)',(8*Gt).toFixed(1)+' µg/dL'],['TSH',(2*M2.P).toFixed(1)+' mIU/L'],['ขนาดต่อมไทรอยด์',sz],['BMR',Math.round(100*(0.7+0.3*Math.min(Gt,4)))+'%']]
+      :p.ax==='hpa'?[['ความเข้มข้นฮอร์โมน (Cortisol)',(12*Gt).toFixed(1)+' µg/dL'],['ACTH',(25*M2.P).toFixed(0)+' pg/mL'],['ขนาดต่อมหมวกไต',sz],['กลูโคสในเลือด',Math.round(90*(0.8+0.2*Math.min(Gt,4)))+' mg/dL']]
+      :p.ax==='hpg'?[['ความเข้มข้นฮอร์โมน (Estrogen)',Math.round(100*Gt)+' pg/mL'],['LH',(8*M2.P).toFixed(0)+' IU/L'],['สถานะ',p.pos?(M2.ov?'ตกไข่แล้ว':'ก่อนตกไข่'):'ระยะ Follicular'],['ขนาดต่อมเพศ',sz]]
+      :p.ax==='adh'?[['ความเข้มข้นฮอร์โมน (ADH)',(2*M2.P).toFixed(1)+' pg/mL'],['Osmolarity เลือด',Math.round(M2.osm||285)+' mOsm/L'],['การดูดน้ำกลับ',Math.round(100*clamp(M2.G/2,0,1))+'%'],['ปัสสาวะ',M2.P>1.3?'น้อย เข้มข้น':M2.P<0.6?'มาก เจือจาง':'ปกติ']]
+      :[['ความเข้มข้นฮอร์โมน (Oxytocin)',M2.P.toFixed(2)+'×'],['แรงหดตัวของมดลูก',M2.G.toFixed(2)+'×'],['ความคืบหน้าการคลอด',Math.round(M2.prog*100)+'%'],['สถานะ',M2.born?'คลอดแล้ว':M2.lab?'กำลังคลอด':'ยังไม่เริ่ม']];
+    const bad=p.ax==='hpt'&&p.io==='def'?3:!p.fb&&p.ax!=='oxy'?5:-1;flowBar(a.steps,p.ax==='oxy'?(M2.born?5:M2.lab?Math.floor(S.time*1.5)%5:-1):Math.floor(S.time*1.2)%6,bad);
+    eq=p.ax==='adh'?'ADH = k·(Osmolarity − 280) · Osmolarity ลดลงเมื่อไตดูดน้ำกลับ (Negative feedback)\nADH สร้างที่ Hypothalamus (Supraoptic/Paraventricular nucleus) → แอกซอน → หลั่งที่ต่อมใต้สมองส่วนหลัง'
+      :p.ax==='oxy'?'Oxytocin → มดลูกหดตัว → แรงยืดปากมดลูก ↑ → Oxytocin ↑↑ (Positive feedback)\nวงจรหยุดเมื่อทารกคลอด (สิ่งเร้าหายไป)'
+      :`H' = (s·f(G) − H)/τ_H   P' = (H·f(G) − P)/τ_P   G' = (c·P − G)/τ_G\nf(G) = ${p.fb?'2 / (1 + G²)  (Negative feedback)':'1  (ไม่มี feedback)'}${p.pos&&!M2.ov?' → ช่วงก่อนตกไข่ f(G) = 1 + 4·S(G) (Positive)':''} · s = ${p.stim.toFixed(2)} · c (ไอโอดีน) = ${p.cap}`;
+    const f=[];if(p.ax==='hpt'&&p.io==='def')f.push('<span class="tag no">คอพอก</span> ขาดไอโอดีน → สร้าง T₃/T₄ ได้น้อย → Negative feedback ต่อ Hypothalamus/ต่อมใต้สมองลดลง → TRH, TSH สูง → TSH กระตุ้นเซลล์ต่อมไทรอยด์ให้แบ่งตัว ต่อมจึงโต');
+    if(p.exo)f.push(`<span class="tag mid">ยาฮอร์โมน</span> ${a.G}จากภายนอกทำให้ระดับรวมสูง → กด ${a.H} และ ${a.P} → ต่อมของร่างกายหลั่งน้อยลงและฝ่อ`+(p.ax==='hpa'?' จึงห้ามหยุดยาสเตียรอยด์ทันที (อาจเกิดภาวะต่อมหมวกไตล้มเหลว)':''));
+    if(!p.fb&&p.ax!=='oxy')f.push('<span class="tag no">ไม่มี Feedback</span> ลองเลื่อนสิ่งเร้า → ระดับฮอร์โมนเปลี่ยนตามมาก ไม่กลับสู่ค่าคงที่ — Negative feedback คือกลไกหลักของ Homeostasis');
+    if(p.pos)f.push(M2.ov?'<span class="tag ok">ตกไข่</span> LH surge กระตุ้นให้ Follicle แตก → Corpus luteum หลั่ง Progesterone + Estrogen → กลับเป็น Negative feedback':'<span class="tag mid">Positive feedback</span> Estrogen สูงต่อเนื่อง → กระตุ้น GnRH และ LH เพิ่มขึ้นแบบทวีคูณ → LH surge');
+    if(p.ax==='oxy')f.push('<span class="tag ok">Positive feedback</span> ผลลัพธ์ (การหดตัว) ไปเพิ่มสิ่งเร้า (แรงยืด) วงจรจะเร่งตัวจนกว่าเหตุการณ์สิ้นสุด (ทารกคลอด) — ต่างจาก Negative feedback ที่รักษาค่าคงที่');
+    if(p.ax==='adh')f.push(p.stim>1.2?'<span class="tag mid">ขาดน้ำ</span> เลือดเข้มข้น → Osmoreceptor กระตุ้น → ADH ↑ → Aquaporin ที่ท่อรวม → ดูดน้ำกลับมาก ปัสสาวะน้อย':p.stim<0.8?'<span class="tag ok">ดื่มน้ำมาก</span> เลือดเจือจาง → ADH ↓ → ปัสสาวะมากและเจือจาง':'<span class="tag ok">ปกติ</span> ADH รักษาสมดุลน้ำในเลือดด้วย Negative feedback');
+    if(!f.length)f.push(`<span class="tag ok">Homeostasis</span> ${a.G} เพิ่ม → ยับยั้ง ${a.H}/${a.P} → ${a.G} ลดลงกลับสู่ระดับปกติ ลองเลื่อน "${a.st}" แล้วสังเกตว่าระดับฮอร์โมนปรับตัวและคงที่`);
+    an=f.map(x=>`<p>${x}</p>`).join('');
+    mis='<p><b>❌ "ต่อมใต้สมองส่วนหลังสร้าง ADH และ Oxytocin"</b></p><p>✅ <b>Hypothalamus</b> เป็นผู้สร้าง แล้วส่งไปตามแอกซอนมาเก็บและหลั่งที่ต่อมใต้สมองส่วนหลัง</p><p><b>❌ "Negative feedback ทำให้หยุดหลั่งฮอร์โมนทันที"</b> ✅ เป็นการ<b>ลด</b>การหลั่งเพื่อรักษาระดับให้คงที่ ไม่ได้หยุดสนิท</p>';tb=TGL;}
+  else if(m===3){const glu=$('#home').value==='glu',q=M3,sens=V('sens')/100;
+    st=glu?[['ความเข้มข้นฮอร์โมน',`Insulin ${(q.I*10).toFixed(0)} · Glucagon ${(q.Gn*60).toFixed(0)}`],['กลูโคสในเลือด',q.G.toFixed(0)+' mg/dL'],['อัตรานำกลูโคสเข้าเซลล์',Math.round(q.U/1.2*100)+'%'],['ไกลโคเจนในตับ',q.gly.toFixed(0)+'%']]
+      :[['ความเข้มข้นฮอร์โมน',`PTH ${(q.PTH*30).toFixed(0)} · CT ${(q.CT*10).toFixed(0)} pg/mL`],['Ca²⁺ ในเลือด',q.Ca.toFixed(1)+' mg/dL'],['มวลแร่ธาตุกระดูก',q.bmc.toFixed(1)+'%'],['อัตรานำกลูโคสเข้าเซลล์',Math.round(q.U/1.2*100)+'%']];
+    if(glu){const dev=q.G-90,cur=Math.abs(dev)<8?4:Math.abs(q.I-1)+Math.abs(q.Gn-1)<0.3?1:Math.abs(dev)>30?2:3;flowBar(['กลูโคสในเลือดเปลี่ยน','Islets รับรู้','หลั่ง '+(dev>0?'Insulin':'Glucagon'),dev>0?'ตับเก็บไกลโคเจน / กล้ามเนื้อรับกลูโคส':'ตับสลายไกลโคเจน','กลูโคสกลับสู่ ~90'],cur,sens<0.4&&q.G>126?3:-1);
+      eq=`dG/dt = Ra(ดูดซึม) + HGP(ตับ) − U(เซลล์) − ไตขับ(G>180)\nU = (0.3 + 0.9·S·I)·G/90 · S (ความไว) = ${sens.toFixed(2)} · I = ${q.I.toFixed(2)}×\nHGP = 1.2·(0.5+0.5·Glucagon)·2/(1+S·I) = ${(1.2*(0.5+0.5*q.Gn)*2/(1+sens*q.I)).toFixed(2)} mg/dL/นาที`;
+      const f=[];if(sens<0.5&&q.G>110)f.push(`<span class="tag no">ลักษณะเบาหวานชนิดที่ 2</span> Insulin สูง (${(q.I*10).toFixed(0)} µU/mL) แต่เซลล์ดื้อต่อ Insulin → GLUT4 ขึ้นเยื่อหุ้มน้อย ตับยังปล่อยกลูโคส → กลูโคสค้าง ${q.G.toFixed(0)} mg/dL`);
+      if(q.G>180)f.push('<span class="tag no">เกิน Renal threshold</span> ไตดูดกลับกลูโคสไม่หมด → กลูโคสในปัสสาวะ ดึงน้ำออก → ปัสสาวะบ่อย');
+      if(q.G<70)f.push('<span class="tag mid">น้ำตาลต่ำ</span> α cell หลั่ง Glucagon → ตับสลายไกลโคเจนเป็นกลูโคส');
+      if(q.ex>0)f.push('<span class="tag ok">ออกกำลังกาย</span> กล้ามเนื้อหดตัวนำ GLUT4 ขึ้นเยื่อหุ้มได้เองโดยไม่ต้องพึ่ง Insulin + Epinephrine/Glucagon ทำให้ตับปล่อยกลูโคส');
+      if(!f.length)f.push('<span class="tag ok">Homeostasis</span> หลังกินอาหาร กลูโคสสูง → β cell หลั่ง Insulin → เซลล์รับกลูโคส ตับเก็บเป็นไกลโคเจน → กลับสู่ ~90 mg/dL · เมื่ออดอาหาร Glucagon ทำงานตรงข้าม (Antagonistic hormones)');an=f.map(x=>`<p>${x}</p>`).join('');}
+    else{const cur=Math.abs(q.Ca-9.5)<0.25?4:Math.abs(q.PTH-q.CT)<0.2?1:2+(Math.abs(q.Ca-9.5)<0.8?1:0);flowBar(['Ca²⁺ ในเลือดเปลี่ยน',q.Ca<9.5?'พาราไทรอยด์รับรู้':'C cell ไทรอยด์รับรู้','หลั่ง '+(q.Ca<9.5?'PTH':'Calcitonin'),q.Ca<9.5?'กระดูกสลาย · ไตดูดกลับ · ลำไส้ดูดซึม':'สะสม Ca²⁺ ในกระดูก · ไตขับทิ้ง','Ca²⁺ กลับสู่ 8.5–10.5'],cur);
+      eq=`dCa/dt = k·(PTH − Calcitonin) + การดูดซึม − การสูญเสีย\nPTH ∝ (9.5 − Ca) · Calcitonin ∝ (Ca − 9.5)  →  PTH = ${q.PTH.toFixed(2)}× · CT = ${q.CT.toFixed(2)}×\nมวลกระดูก: dBMC/dt = −k'·(PTH − CT) → ${q.bmc.toFixed(1)}%`;
+      const f=[];if(q.Ca>10.5)f.push('<span class="tag no">Hypercalcemia</span> Ca²⁺ สูง → C cell ของต่อมไทรอยด์หลั่ง Calcitonin → Osteoblast สะสม Ca²⁺ ในกระดูก ไตขับ Ca²⁺ ทิ้ง · PTH ลดลง (สาเหตุจริงเช่น ต่อมพาราไทรอยด์ทำงานเกิน)');
+      if(q.Ca<8.5)f.push('<span class="tag no">Hypocalcemia</span> PTH ↑ → Osteoclast สลายกระดูก ไตดูดกลับ Ca²⁺ กระตุ้น Vitamin D ให้ลำไส้ดูดซึม Ca²⁺ — ถ้าต่ำมากกล้ามเนื้อจะเกร็งกระตุก (Tetany)');
+      if($('#diet').value==='fast')f.push('<span class="tag mid">ขาดแคลเซียมเรื้อรัง</span> PTH สูงนาน → ดึง Ca²⁺ จากกระดูก มวลกระดูกลดลง (กระดูกพรุน)');if($('#diet').value==='highca')f.push('<span class="tag ok">แคลเซียมสูง</span> Calcitonin ทำงาน สะสม Ca²⁺ ในกระดูก มวลกระดูกเพิ่ม');
+      if(!f.length)f.push('<span class="tag ok">Homeostasis</span> PTH และ Calcitonin ทำงานตรงข้ามกัน (Antagonistic) รักษา Ca²⁺ ในเลือดที่ 8.5–10.5 mg/dL');an=f.map(x=>`<p>${x}</p>`).join('');}
+    mis='<p><b>❌ "Calcitonin และ PTH สร้างจากต่อมเดียวกัน"</b></p><p>✅ Calcitonin สร้างจาก <b>C cell ของต่อมไทรอยด์</b> ส่วน PTH สร้างจาก <b>ต่อมพาราไทรอยด์</b> (4 ต่อมเล็กด้านหลังไทรอยด์)</p><p><b>❌ "Glucagon กับ Glycogen คือสิ่งเดียวกัน"</b> ✅ Glucagon เป็น<b>ฮอร์โมน</b> ส่วน Glycogen เป็น<b>พอลิแซ็กคาไรด์</b>สะสมในตับ/กล้ามเนื้อ</p>';tb=THOM;}
+  else{const q=d4(),d=q.d,ki=K4.indexOf(d.key);st=[['ความเข้มข้นฮอร์โมน ('+d.key+')',q.vals[ki].toFixed(2)+'× ปกติ'],['อัตรานำกลูโคสเข้าเซลล์',Math.round(q.upt)+'%'],['มวลแร่ธาตุกระดูก',Math.round(q.bmc)+'%'],['BMR',Math.round(q.bmr)+'%']];
+    flowBar(q.tr?[...d.steps.slice(0,2),'รักษา','อาการดีขึ้น']:d.steps,q.tr?3:Math.floor(S.time*0.8)%d.steps.length,q.tr?-1:d.bad);
+    const gv=90*q.vals[1],iv=10*q.vals[0];
+    eq=['t1dm','t2dm','normal'].includes(q.k)?`เกณฑ์เบาหวาน: กลูโคสขณะอดอาหาร ≥ 126 mg/dL (ตอนนี้ ≈ ${gv.toFixed(0)})\nHOMA-IR = กลูโคส × Insulin / 405 = ${gv.toFixed(0)} × ${iv.toFixed(1)} / 405 = ${(gv*iv/405).toFixed(1)}  (> 2.5 = ดื้อต่อ Insulin)`
+      :d.gl==='thy'?'ไทรอยด์ (Negative feedback): ต่อมไทรอยด์ผิดปกติ → T₄ ต่ำ + TSH สูง  |  Graves → T₄ สูง + TSH ต่ำ\nBMR ∝ T₃/T₄ · ไอโอดีนเป็นองค์ประกอบของ T₃ (3 อะตอม) และ T₄ (4 อะตอม)'
+      :d.gl==='adr'?'แกน HPA: CRH → ACTH → Cortisol ⊣ (CRH, ACTH)\nปัญหาที่ต่อมหมวกไต: Cortisol กับ ACTH เปลี่ยนสวนทางกัน (Addison: Cortisol ↓ ACTH ↑)'
+      :'GH → ตับสร้าง IGF-1 → กระดูกและกล้ามเนื้อเจริญ\nก่อนแผ่นกระดูกอ่อน (Epiphyseal plate) ปิด → ยาวขึ้น (Gigantism) · หลังปิด → หนาขึ้น (Acromegaly)';
+    const cmp={t1dm:'ต่างจากชนิดที่ 2 ตรงที่<b>ไม่มี Insulin</b> จึงต้องฉีด Insulin',t2dm:'Insulin ไม่ได้ขาด แต่<b>เซลล์ไม่ตอบสนอง</b> — เป็นตัวอย่างว่าเบาหวานไม่ได้เกิดจากขาด Insulin เท่านั้น',graves:'ต่อมโตเหมือนคอพอกธรรมดา แต่<b>ฮอร์โมนสูง</b>และ TSH ต่ำ',hypo:'ผู้ใหญ่ขาดไทรอยด์ → Myxedema · ถ้าเป็นตั้งแต่เด็ก → Cretinism',cretin:'เตี้ย<b>และสติปัญญาต่ำ</b> ต่างจาก Dwarfism ที่สติปัญญาปกติ',goiter:'ต่อมโตเพราะ <b>TSH สูง</b> จากการขาด Negative feedback ไม่ใช่เพราะต่อมทำงานมาก',cushing:'Cortisol สูงนาน → สลายโปรตีนกล้ามเนื้อและกระดูก จึงแขนขาลีบและกระดูกพรุน',addison:'ACTH สูงเพราะไม่มี Cortisol มายับยั้ง และ ACTH กระตุ้นเมลานิน → ผิวคล้ำ',giant:'อายุขณะเกิดโรคเป็นตัวกำหนด: เด็ก → Gigantism · ผู้ใหญ่ → Acromegaly',acro:'กระดูกยาวขึ้นไม่ได้แล้ว จึงหนาขึ้นแทนที่ปลายมือ เท้า และขากรรไกร',dwarf:'สมส่วนและฉลาดปกติ ต่างจาก Cretinism',normal:'เลือกโรคเพื่อเปรียบเทียบกับค่าปกติ'}[q.k];
+    an=`<p><span class="tag ${q.k==='normal'?'ok':q.tr?'ok':'no'}">${q.tr?'กำลังรักษา':d.n.split(' (')[0]}</span> ${d.cause}</p><p>${cmp}</p>`;
+    mis='<p><b>❌ "เบาหวานเกิดจากขาด Insulin เท่านั้น"</b></p><p>✅ ชนิดที่ 2 (พบมากที่สุด) Insulin ปกติหรือสูง แต่<b>เซลล์ดื้อต่อ Insulin</b></p><p><b>❌ "คอพอกทุกชนิดเกิดจากขาดไอโอดีน"</b> ✅ Graves\' disease ก็ทำให้ต่อมโตได้ แต่เกิดจากแอนติบอดีกระตุ้นต่อม และฮอร์โมนสูง</p>';tb=TDIS;}
+  stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+const STL={hpt:'อากาศหนาว / ความต้องการพลังงาน',hpa:'ความเครียด',hpg:'การกระตุ้นวัยเจริญพันธุ์',adh:'ความเข้มข้นของเลือด (ขาดน้ำ)',oxy:'แรงกดของทารกต่อปากมดลูก'};
+function sync(){const ax=$('#axis').value;$('#ioBox').style.display=ax==='hpt'?'':'none';$('#exoBox').style.display=['hpt','hpa','hpg'].includes(ax)?'':'none';$('#fbBox').style.display=ax==='oxy'?'none':'';$('#posBox').style.display=ax==='hpg'?'':'none';$('#labor').style.display=ax==='oxy'?'':'none';$('#stimLab').textContent=STL[ax];
+  const glu=$('#home').value==='glu';$('#gluBox').style.display=glu?'':'none';$('#caBox').style.display=glu?'none':'';}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sync();
+  $('#simTitle').textContent=['','การส่งสัญญาณของฮอร์โมนที่เซลล์เป้าหมาย','แกน Hypothalamus – ต่อมใต้สมอง – ต่อมเป้าหมาย','การรักษาดุลยภาพกลูโคสและแคลเซียมในเลือด','จำลองโรคของต่อมไร้ท่อ'][m];
+  $('#chartTitle').textContent=['','ความเร็วการตอบสนอง: Peptide vs Steroid','ระดับฮอร์โมนตามเวลา','กลูโคส/แคลเซียม และฮอร์โมนตามเวลา','ระดับฮอร์โมนเทียบกับค่าปกติ'][m];updateText();}
+const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();return f;};
+bind('hdose',v=>(v/10).toFixed(1)+' nM');bind('stim2',v=>v+'%');bind('glu',v=>v+' mg/dL');bind('sens',v=>v+'%');bind('ca',v=>v.toFixed(1)+' mg/dL');
+$('#glu').addEventListener('input',()=>{M3.G=V('glu');});$('#ca').addEventListener('input',()=>{M3.Ca=V('ca');});
+['hclass','sig','iodine','fbk','exo','pos','diet','dis','treat'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#hclass').addEventListener('change',()=>{M1.t=0;});$('#axis').addEventListener('change',()=>{initM2();sync();updateText();});$('#home').addEventListener('change',()=>{sync();updateText();});
+$('#replay1').onclick=()=>{M1.t=0;};$('#labor').onclick=()=>{M2.lab=true;M2.born=false;M2.prog=0;M2.H=Math.max(M2.H,0.4);};
+$('#meal').onclick=()=>{M3.gut+=$('#diet').value==='carb'?110:$('#diet').value==='fast'?0:75;};$('#exer').onclick=()=>{M3.ex=45;};$('#caMeal').onclick=()=>{M3.cag+=4;};$('#caLow').onclick=()=>{M3.Ca=Math.max(5,M3.Ca-2.5);};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgPath:'path',tgStruct:'struct'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>พฤติกรรมของสัตว์ – Interactive Biology Lab</title>
+<style>
+:root{--bg:#0c0a05;--panel:#19150b;--panel2:#252012;--line:#41371d;--txt:#fbf6e9;--mut:#c8bb98;--acc:#f59e0b;--acc2:#a3e635;--on:#78350f;--pri:#b45309;--sw:#4d7c0f;--deep:#100c05;--h1:#92400e;--h2:#365314;--btn:#2e2612}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{padding:12px 18px;background:linear-gradient(90deg,var(--h1),var(--h2));border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+header h1{font-size:19px;margin:0}header .sub{color:#f3ead2;opacity:.85;font-size:13px}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 370px;gap:12px;padding:12px}
+@media(max-width:1280px){.grid{grid-template-columns:290px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.right .card{margin:0}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.right{display:block}.right .card{margin-bottom:12px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.modes button{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.modes button.on{background:var(--on);border-color:var(--acc)}
+.ctl{margin:8px 0}.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:3px}.ctl label b{color:var(--acc2)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font:inherit}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--txt);margin:6px 0}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.btn{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--btn);color:var(--txt);cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--acc)}.btn.pri{background:var(--pri);border-color:var(--acc)}
+.switch{display:flex;background:var(--panel2);border-radius:9px;padding:3px;border:1px solid var(--line)}
+.switch button{flex:1;border:0;background:transparent;color:var(--mut);padding:7px 4px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}
+.switch button.on{background:var(--sw);color:#fff}
+canvas{display:block;width:100%}
+#main{height:470px;background:var(--deep);border-radius:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border-radius:10px;padding:8px;border:1px solid var(--line)}
+.stat .k{font-size:11.5px;color:var(--mut)}.stat .v{font-size:16px;font-weight:700;color:var(--acc2);margin-top:2px}
+.flow{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+.flow span{padding:4px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);font-size:11.5px;color:var(--mut)}
+.flow span.on{background:var(--pri);color:#fff;border-color:var(--acc)}.flow span.done{color:var(--txt);border-color:var(--on)}.flow span.bad{background:#7f1d1d;color:#fecaca;border-color:#ef4444}
+.flow i{color:var(--mut);font-style:normal;font-size:11px}
+.eq{font-family:Consolas,monospace;background:var(--deep);padding:10px;border-radius:8px;border-left:4px solid var(--acc);white-space:pre-wrap;font-size:13px;margin-top:10px;line-height:1.55}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:4px 5px;text-align:center}th{background:var(--panel2);color:var(--acc)}
+.mis{background:#2a1a10;border-color:#7b4a1e}.mis h3{color:#fbbf24}.mis p,.ana p{margin:6px 0;line-height:1.55}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:12px;margin-right:4px}
+.ok{background:#14532d;color:#bbf7d0}.no{background:#7f1d1d;color:#fecaca}.mid{background:#713f12;color:#fde68a}
+.chart{height:250px;background:var(--deep);border-radius:8px}
+</style>
+<link rel="stylesheet" href="float-lab.css">
+</head>
+<body>
+<header><a href="index.html" style="color:#8dffc0;text-decoration:none;font-weight:700;margin-right:6px">← หน้าแรก</a><h1>🐝 พฤติกรรมของสัตว์และการตอบสนองต่อสิ่งเร้า (Animal Behavior)</h1><span class="sub">ห้องปฏิบัติการเสมือนจริง ชีววิทยา ม.4–ม.6</span></header>
+<div class="grid">
+<div class="left">
+  <div class="card modes"><h3>เลือกโหมดการจำลอง</h3>
+    <button data-mode="1" class="on">โหมด 1 : พฤติกรรมแต่กำเนิดและการตอบสนองต่อสิ่งเร้า</button>
+    <button data-mode="2">โหมด 2 : รูปแบบการเรียนรู้ของสัตว์</button>
+    <button data-mode="3">โหมด 3 : การสื่อสารและการเต้นระบำของผึ้ง</button>
+    <button data-mode="4">โหมด 4 : พฤติกรรมทางสังคมและทฤษฎีเกม</button>
+  </div>
+  <div class="card"><h3>แผงควบคุมตัวแปร</h3>
+    <div data-m="1">
+      <div class="ctl"><label>รูปแบบการทดลอง</label><select id="exp1"><option value="kin">Kinesis – ตัวกะปิในจานความชื้น</option><option value="tax">Taxis – T-Maze (แสง / สารเคมี)</option><option value="fap">Fixed Action Pattern – ปลากัดตัวผู้กับโมเดล</option></select></div>
+      <div class="ctl" id="torgBox"><label>สิ่งมีชีวิต / สิ่งเร้า</label><select id="torg"><option value="plan">พลานาเรีย + แสง (หนีแสง: −Phototaxis)</option><option value="moth">แมลงเม่า + แสง (เข้าหาแสง: +Phototaxis)</option><option value="planc">พลานาเรีย + ตับบด (เข้าหาสาร: +Chemotaxis)</option></select></div>
+      <div class="ctl" id="intBox"><label><span id="intLab">ความชื้น</span> <b id="intV"></b></label><input type="range" id="int" min="0" max="100" value="85"></div>
+      <div id="fapBox"><div class="ctl"><label>โมเดลสิ่งเร้า (Sign stimulus)</label><select id="model"><option value="real">รูปปลาเหมือนจริง สีเทา (Fish shape · Gray)</option><option value="redfish">รูปปลา + ท้องแดง (Fish shape · Red belly)</option><option value="redround" selected>ก้อนกลม + ท้องแดง (Round · Red belly)</option><option value="grayround">ก้อนกลมสีเทา (Round · Gray)</option></select></div>
+        <div class="btns"><button class="btn" id="remove">✋ นำโมเดลออก</button><button class="btn" id="present">↪ ใส่โมเดลคืน</button></div></div>
+    </div>
+    <div data-m="2">
+      <div class="ctl"><label>การทดลอง</label><select id="exp2"><option value="pav">Classical Conditioning – สุนัขของ Pavlov</option><option value="skin">Operant Conditioning – Skinner Box</option><option value="imp">Imprinting – ลูกห่าน (Konrad Lorenz)</option><option value="hab">Habituation – หนอนถูกแตะซ้ำ ๆ</option></select></div>
+      <div id="pavBox"><div class="ctl"><label>จำนวนครั้งที่ฝึก (กระดิ่ง + อาหาร) <b id="trialsV"></b></label><input type="range" id="trials" min="0" max="50" value="0"></div>
+        <label class="chk"><input type="checkbox" id="ext"> ดับสูญ: สั่นกระดิ่งโดยไม่ให้อาหาร (Extinction)</label>
+        <button class="btn" id="ring" style="width:100%">🔔 ทดสอบ: สั่นกระดิ่งอย่างเดียว</button></div>
+      <div id="skBox"><div class="ctl"><label>ผลที่ตามมาหลังกดคันโยก</label><select id="cons"><option value="food">รางวัล: เม็ดอาหาร (Reinforcement)</option><option value="shock">ลงโทษ: ไฟฟ้าช็อต (Punishment)</option><option value="none">ไม่มีผลใด ๆ (Extinction)</option></select></div>
+        <div class="ctl"><label>ความถี่การให้ผล (ต่อการกด 1 ครั้ง) <b id="probV"></b></label><input type="range" id="prob" min="0" max="100" value="100"></div></div>
+      <div id="impBox"><div class="ctl"><label>อายุลูกห่านเมื่อพบวัตถุ <b id="ageV"></b></label><input type="range" id="age" min="0" max="72" value="15"></div>
+        <div class="ctl"><label>วัตถุเคลื่อนที่ที่พบเป็นอย่างแรก</label><select id="obj"><option value="man">Konrad Lorenz (มนุษย์)</option><option value="goose">แม่ห่าน</option><option value="box">กล่องที่ถูกลาก</option><option value="ball">ลูกบอลสีแดง</option></select></div></div>
+      <div id="habBox"><button class="btn" id="dish" style="width:100%">⚡ ให้สิ่งเร้าใหม่ (Dishabituation)</button></div>
+    </div>
+    <div data-m="3">
+      <div class="ctl"><label>การสื่อสาร</label><select id="exp3"><option value="bee">การเต้นระบำของผึ้ง (Round / Waggle)</option><option value="ant">ฟีโรโมนตามทางของมด (Trail pheromone)</option></select></div>
+      <div id="beeBox"><div class="ctl"><label>ระยะทางถึงแหล่งอาหาร <b id="distV"></b></label><input type="range" id="dist" min="10" max="1000" value="400"></div>
+        <div class="ctl"><label>มุมแหล่งอาหารเทียบกับดวงอาทิตย์ <b id="angV"></b></label><input type="range" id="ang" min="0" max="359" value="40"></div>
+        <div class="ctl"><label>ช่วงเวลา (ตำแหน่งดวงอาทิตย์)</label><select id="sun"><option value="90">เช้า – ดวงอาทิตย์ทิศตะวันออก</option><option value="180">เที่ยง – ทิศใต้</option><option value="270">บ่าย – ทิศตะวันตก</option></select></div></div>
+      <div id="antBox"><div class="ctl"><label>อัตราการระเหยของฟีโรโมน <b id="evapV"></b></label><input type="range" id="evap" min="0" max="100" value="25"></div>
+        <label class="chk"><input type="checkbox" id="obst"> วางสิ่งกีดขวางกลางทาง</label>
+        <button class="btn" id="moveFood" style="width:100%">🍯 ย้ายแหล่งอาหาร</button></div>
+    </div>
+    <div data-m="4">
+      <div class="ctl"><label>แบบจำลอง</label><select id="exp4"><option value="hd">Hawk–Dove Game (แย่งทรัพยากร/อาณาเขต)</option><option value="kin">Kin Selection – Hamilton's Rule</option></select></div>
+      <div id="hdBox"><div class="ctl"><label>คุณค่าทรัพยากร V <b id="valV"></b></label><input type="range" id="val" min="0" max="100" value="50"></div>
+        <div class="ctl"><label>ต้นทุนการบาดเจ็บ C <b id="costV"></b></label><input type="range" id="cost" min="0" max="200" value="100"></div>
+        <div class="ctl"><label>สัดส่วน Hawk เริ่มต้น <b id="p0V"></b></label><input type="range" id="p0" min="1" max="99" value="10"></div></div>
+      <div id="kinBox"><div class="ctl"><label>ความสัมพันธ์ทางสายเลือด r</label><select id="rr"><option value="0.125">0.125 – ลูกพี่ลูกน้อง</option><option value="0.25">0.25 – หลาน / หลานน้า</option><option value="0.5" selected>0.5 – พี่น้อง / ลูก</option><option value="0.75">0.75 – ผึ้งงานพี่น้อง (Haplodiploidy)</option></select></div>
+        <div class="ctl"><label>สถานการณ์</label><select id="scen"><option value="alarm">นกส่งเสียงเตือนภัย (เสี่ยงถูกล่า)</option><option value="sting">ผึ้งงานต่อยศัตรูแล้วตาย</option><option value="feed">ช่วยเลี้ยงลูกของญาติ</option></select></div>
+        <div class="ctl"><label>ประโยชน์ต่อญาติ B <b id="BV"></b></label><input type="range" id="B" min="0" max="10" step="0.5" value="4"></div>
+        <div class="ctl"><label>ต้นทุนของผู้เสียสละ C <b id="CcV"></b></label><input type="range" id="Cc" min="0" max="5" step="0.1" value="1.5"></div></div>
+    </div>
+  </div>
+  <div class="card"><h3>การควบคุมการจำลอง</h3>
+    <div class="btns"><button class="btn pri" id="play">▶ เล่น</button><button class="btn" id="pause">⏸ หยุด</button><button class="btn" id="reset" style="grid-column:1/-1">↺ รีเซ็ต</button></div>
+    <div class="ctl" style="margin-top:12px"><label>โหมดการแสดงผล (Toggle)</label>
+      <div class="switch"><button id="tgTrace" class="on">วิถีการเคลื่อนที่ (Trajectory Trace)</button><button id="tgNeural">ระบบประสาท/ต่อมไร้ท่อ (Overlay)</button></div></div>
+  </div>
+</div>
+<div class="center"><div class="card">
+  <h3 id="simTitle">หน้าจอจำลอง</h3>
+  <canvas id="main"></canvas>
+  <div class="stats" id="stats"></div>
+  <div class="flow" id="flow"></div>
+  <div class="eq" id="eq"></div>
+</div></div>
+<div class="right">
+  <div class="card"><h3 id="chartTitle">กราฟ</h3><canvas id="chart" class="chart"></canvas><div id="tableBox" style="margin-top:8px"></div></div>
+  <div class="card ana"><h3>📋 บทวิเคราะห์</h3><div id="analysis"></div></div>
+  <div class="card mis"><h3>⚠️ ข้อเข้าใจคลาดเคลื่อนที่พบบ่อย</h3><div id="mis"></div></div>
+</div>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function fit(c){const r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));if(c.width!==W||c.height!==H){c.width=W;c.height=H;}const g=c.getContext('2d');g.setTransform(d,0,0,d,0,0);return{g,w:r.width,h:r.height};}
+function rr(g,x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const FONT='"Sarabun","Leelawadee UI",Tahoma,sans-serif';
+function T(g,s,x,y,col='#eef2f6',size=12,align='left',bold=false){g.fillStyle=col;g.font=(bold?'700 ':'')+size+'px '+FONT;g.textAlign=align;g.textBaseline='middle';g.fillText(s,x,y);}
+function wrap(g,s,x,y,mw,lh,col,size,bold){g.font=(bold?'700 ':'')+size+'px '+FONT;const lines=[];let cur='';for(const ch of s){const t=cur+ch;if(g.measureText(t).width>mw&&cur&&!/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(ch)){const sp=cur.lastIndexOf(' ');if(sp>cur.length*0.5){lines.push(cur.slice(0,sp));cur=cur.slice(sp+1)+ch;}else{lines.push(cur);cur=ch;}}else cur=t;}if(cur)lines.push(cur);lines.forEach((l,i)=>T(g,l,x,y+i*lh,col,size,'left',bold));return y+lines.length*lh;}
+function arrow(g,x1,y1,x2,y2,col,lw=2,dash){g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();g.setLineDash([]);const a=Math.atan2(y2-y1,x2-x1);g.beginPath();g.moveTo(x2,y2);g.lineTo(x2-8*Math.cos(a-0.45),y2-8*Math.sin(a-0.45));g.lineTo(x2-8*Math.cos(a+0.45),y2-8*Math.sin(a+0.45));g.closePath();g.fill();}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
+function hash(i){let x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+const V=id=>+$('#'+id).value;
+const S={mode:1,running:true,toggle:'trace',time:0};
+function bar(g,x,y,w,h,v,col,label,txt){g.fillStyle='rgba(255,255,255,.09)';rr(g,x,y,w,h,4);g.fill();g.fillStyle=col;rr(g,x,y,w*clamp(v,0,1),h,4);g.fill();if(label)T(g,label,x,y-8,'#e7dcc0',10.5);if(txt)T(g,txt,x+w,y-8,'#fde68a',10.5,'right',true);}
+function line(g,P,col,lw){g.strokeStyle=col;g.lineWidth=lw;g.lineJoin='round';g.lineCap='round';g.beginPath();P.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.stroke();}
+function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
+function panel(g,x,y,w,h){g.fillStyle='rgba(20,16,8,.9)';rr(g,x,y,w,h,10);g.fill();g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=1;g.stroke();}
+function flowBar(steps,cur,bad=-1){$('#flow').innerHTML=steps.map((s,i)=>`<span class="${i===bad?'bad':i===cur?'on':cur>=0&&i<cur?'done':''}">${s}</span>`).join('<i>→</i>');}
+function drawNeural(g,w,h,labs,lv,title){const y=h-86,bw=(w-40-4*22)/5;panel(g,10,y-16,w-20,98);T(g,title||'วงจรการเกิดพฤติกรรม: สิ่งเร้า → หน่วยรับความรู้สึก → ระบบประสาท/ต่อมไร้ท่อ → หน่วยปฏิบัติงาน → พฤติกรรม',20,y-3,'#fde68a',10.5,'left',true);
+  labs.forEach((l,i)=>{const x=20+i*(bw+22),a=clamp(lv[i],0,1);g.fillStyle=`rgba(245,158,11,${0.1+0.45*a})`;rr(g,x,y+10,bw,56,8);g.fill();g.strokeStyle=a>0.5?'#fbbf24':'#57472a';g.lineWidth=1.4;g.stroke();if(a>0.5)glow(g,x+bw/2,y+38,bw*0.6,'rgba(251,191,36,.16)');
+    const p=l.split('|');T(g,p[0],x+bw/2,y+28,'#fff7e0',11,'center',true);if(p[1])T(g,p[1],x+bw/2,y+48,'#e7dcc0',9.5,'center');if(i<4)arrow(g,x+bw+3,y+38,x+bw+19,y+38,a>0.4?'#fbbf24':'#6b5a35',2);});}
+
+/* ================= MODE 1 : INNATE ================= */
+let M1;
+const SGN={plan:-1,moth:1,planc:1};
+const MODELS={real:{n:'ปลาเหมือนจริง สีเทา',s:'ปลาเทา',fish:true,red:false},redfish:{n:'รูปปลา + ท้องแดง',s:'ปลา+ท้องแดง',fish:true,red:true},redround:{n:'ก้อนกลม + ท้องแดง',s:'กลม+ท้องแดง',fish:false,red:true},grayround:{n:'ก้อนกลมสีเทา',s:'กลมเทา',fish:false,red:false}};
+const FAPS=[['ตรวจพบ Sign stimulus',0.8],['พองเหงือก กางครีบ',1.6],['พุ่งเข้าหา',1.2],['โจมตี กัด',1.4],['ว่ายกลับที่เดิม',1.4]];
+const signS=()=>{const m=MODELS[$('#model').value];return (m.red?0.82:0.12)+(m.fish?0.1:0);};
+let FST={};Object.keys(MODELS).forEach(k=>FST[k]={tr:0,at:0});
+function initM1(){const k=$('#exp1').value;M1={k,t:0,an:[],sp:0,left:0,right:0,ph:-1,pt:0,see:0,model:true,fx:0.22,cool:0.5,hist:[],ht:0};
+  if(k==='kin')for(let i=0;i<46;i++)M1.an.push({x:0.04+0.92*hash(i),y:0.06+0.88*hash(i+70),a:hash(i+140)*6.283,v:1,tr:1,P:[],acc:0});
+  if(k==='fap')Object.keys(MODELS).forEach(m=>FST[m]={tr:0,at:0});}
+function kinQ(){const a=M1.an,n=a.length||1;return{hum:a.filter(o=>o.x>0.5).length/n*100,v:a.reduce((s,o)=>s+o.v,0)/n,tr:a.reduce((s,o)=>s+o.tr,0)/n};}
+function tPos(a){const s=a.s;if(s<0.45)return[0.5+Math.sin(a.w)*0.012,lerp(0.95,0.3,s/0.45),-Math.PI/2];return[0.5+a.side*0.44*(s-0.45)/0.55,0.3+Math.sin(a.w)*0.025,a.side>0?0:Math.PI];}
+function stepM1(dt){const I=V('int');M1.t+=dt;
+  if(M1.k==='kin'){M1.an.forEach(a=>{const hx=lerp(10,I,a.x),dry=1-hx/100;a.v=0.3+1.5*dry;a.tr=0.6+3.4*dry;a.a+=(Math.random()*2-1)*a.tr*dt*2.2;
+      a.x+=Math.cos(a.a)*a.v/10*dt;a.y+=Math.sin(a.a)*a.v/6.25*dt;
+      if(a.x<0.02){a.x=0.02;a.a=Math.PI-a.a;}if(a.x>0.98){a.x=0.98;a.a=Math.PI-a.a;}if(a.y<0.03){a.y=0.03;a.a=-a.a;}if(a.y>0.97){a.y=0.97;a.a=-a.a;}
+      a.acc+=dt;if(a.acc>0.2){a.acc=0;a.P.push([a.x,a.y]);if(a.P.length>40)a.P.shift();}});
+    M1.ht+=dt;if(M1.ht>0.5){M1.ht=0;const q=kinQ();M1.hist.push([M1.t,q.hum,q.v]);if(M1.hist.length>240)M1.hist.shift();}}
+  else if(M1.k==='tax'){const o=$('#torg').value,sg=SGN[o],pr=0.5+0.48*sg*I/100,sp=o==='moth'?0.42:0.26;M1.sp-=dt;
+    if(M1.sp<=0&&M1.an.length<24){M1.sp=o==='moth'?0.6:0.95;M1.an.push({s:0,side:Math.random()<pr?1:-1,w:Math.random()*6,f:0});}
+    M1.an.forEach(a=>{if(a.s<1){a.s=Math.min(1,a.s+dt*sp);a.w+=dt*6;if(a.s>=1){if(a.side>0)M1.right++;else M1.left++;}}else a.f+=dt;});M1.an=M1.an.filter(a=>a.f<1.2);}
+  else{const s=signS(),mk=$('#model').value;M1.cool=Math.max(0,M1.cool-dt);
+    if(M1.ph<0){if(M1.model&&M1.cool<=0){M1.see+=dt;if(s>0.5&&M1.see>0.8){M1.ph=0;M1.pt=0;M1.see=0;FST[mk].tr++;FST[mk].at++;}else if(s<=0.5&&M1.see>2.5){FST[mk].tr++;M1.see=0;M1.cool=1;}}}
+    else{M1.pt+=dt;if(M1.pt>=FAPS[M1.ph][1]){M1.pt=0;M1.ph++;if(M1.ph>=FAPS.length){M1.ph=-1;M1.cool=1.5;}}}
+    const tx=M1.ph===2||M1.ph===3?0.62:0.22;M1.fx=lerp(M1.fx,tx,clamp(dt*(M1.ph===2?3:1.5),0,1));}}
+function louse(g,x,y,a){g.save();g.translate(x,y);g.rotate(a);g.fillStyle='#a8a29e';g.beginPath();g.ellipse(0,0,7,4.4,0,0,7);g.fill();g.strokeStyle='#57534e';g.lineWidth=0.8;for(let i=-4;i<=4;i+=2.6){g.beginPath();g.moveTo(i,-4);g.lineTo(i,4);g.stroke();}g.strokeStyle='#d6d3d1';g.beginPath();g.moveTo(6,-1.5);g.lineTo(10,-4);g.moveTo(6,1.5);g.lineTo(10,4);g.stroke();g.restore();}
+function worm(g,x,y,a,col){g.save();g.translate(x,y);g.rotate(a);g.fillStyle=col;g.beginPath();g.moveTo(9,0);g.quadraticCurveTo(6,-4.5,0,-3.5);g.quadraticCurveTo(-9,-2,-10,0);g.quadraticCurveTo(-9,2,0,3.5);g.quadraticCurveTo(6,4.5,9,0);g.fill();g.fillStyle='#fff';g.beginPath();g.arc(5.5,-1.6,1,0,7);g.fill();g.beginPath();g.arc(5.5,1.6,1,0,7);g.fill();g.restore();}
+function moth(g,x,y,a,t){g.save();g.translate(x,y);g.rotate(a);const f=Math.abs(Math.sin(t*20));g.fillStyle='#d6b98c';g.beginPath();g.ellipse(-2,-5*f-2,6,4*f+1.5,-0.4,0,7);g.fill();g.beginPath();g.ellipse(-2,5*f+2,6,4*f+1.5,0.4,0,7);g.fill();g.fillStyle='#78552b';g.beginPath();g.ellipse(0,0,6,2,0,0,7);g.fill();g.restore();}
+function betta(g,x,y,s,fl){g.save();g.translate(x,y);g.scale(s,s);const fin=1+0.5*fl;g.fillStyle='rgba(220,38,38,.85)';
+  g.beginPath();g.moveTo(-14,0);g.quadraticCurveTo(-40,-26*fin,-46,-4);g.quadraticCurveTo(-48,10,-40,24*fin);g.quadraticCurveTo(-26,12,-14,0);g.fill();
+  g.beginPath();g.moveTo(-8,-8);g.quadraticCurveTo(-10,-30*fin,-28,-20*fin);g.lineTo(-14,-4);g.fill();
+  g.beginPath();g.moveTo(-6,8);g.quadraticCurveTo(-10,30*fin,-30,22*fin);g.lineTo(-14,4);g.fill();
+  const gr=g.createLinearGradient(0,-10,0,10);gr.addColorStop(0,'#1d4ed8');gr.addColorStop(1,'#7c3aed');g.fillStyle=gr;g.beginPath();g.ellipse(2,0,18,9,0,0,7);g.fill();
+  if(fl>0.05){g.fillStyle='rgba(127,29,29,.95)';g.beginPath();g.moveTo(10,-4);g.quadraticCurveTo(16,-14*fl-4,4,-12*fl-6);g.closePath();g.fill();g.beginPath();g.moveTo(10,4);g.quadraticCurveTo(16,14*fl+4,4,12*fl+6);g.closePath();g.fill();}
+  g.fillStyle='#fff';g.beginPath();g.arc(13,-2.5,2.2,0,7);g.fill();g.fillStyle='#000';g.beginPath();g.arc(13.6,-2.5,1.1,0,7);g.fill();g.restore();}
+function fmodel(g,x,y,m){const gray='#9ca3af';g.fillStyle=gray;
+  if(m.fish){g.beginPath();g.ellipse(x,y,22,10,0,0,7);g.fill();g.beginPath();g.moveTo(x+18,y);g.lineTo(x+32,y-10);g.lineTo(x+32,y+10);g.closePath();g.fill();if(m.red){g.save();g.beginPath();g.ellipse(x,y,22,10,0,0,7);g.clip();g.fillStyle='#ef4444';g.fillRect(x-22,y+1,44,10);g.restore();}g.fillStyle='#111';g.beginPath();g.arc(x-14,y-3,1.8,0,7);g.fill();}
+  else{g.beginPath();g.arc(x,y,13,0,7);g.fill();if(m.red){g.save();g.beginPath();g.arc(x,y,13,0,7);g.clip();g.fillStyle='#ef4444';g.fillRect(x-13,y+1,26,13);g.restore();}}}
+function drawM1(g,w,h){const I=V('int'),nv=S.toggle==='neural',H=nv?h-104:h,k=M1.k,R={x:14,y:30,w:w-222,h:H-42},X=v=>R.x+v*R.w,Y=v=>R.y+v*R.h,ix=w-200;
+  if(k==='kin'){T(g,'จาน Kinesis (มองจากด้านบน): ซ้ายแห้ง 10% → ขวาชื้น '+I+'%',R.x,15,'#fde68a',12,'left',true);
+    const gr=g.createLinearGradient(R.x,0,R.x+R.w,0);gr.addColorStop(0,'#5b4318');gr.addColorStop(1,`rgb(${Math.round(lerp(91,22,I/100))},${Math.round(lerp(67,70,I/100))},${Math.round(lerp(24,130,I/100))})`);
+    g.fillStyle=gr;rr(g,R.x,R.y,R.w,R.h,16);g.fill();g.strokeStyle='#a8a29e';g.lineWidth=2;g.stroke();
+    g.strokeStyle='rgba(255,255,255,.25)';g.setLineDash([5,5]);g.beginPath();g.moveTo(X(0.5),R.y);g.lineTo(X(0.5),R.y+R.h);g.stroke();g.setLineDash([]);
+    for(let i=0;i<24;i++)if(hash(i+500)<I/100){g.fillStyle='rgba(147,197,253,.45)';g.beginPath();g.arc(X(0.52+0.45*hash(i+300)),Y(0.05+0.9*hash(i+400)),2.4,0,7);g.fill();}
+    M1.an.forEach(a=>{if(!nv&&a.P.length>1){g.globalAlpha=0.5;line(g,a.P.map(p=>[X(p[0]),Y(p[1])]).concat([[X(a.x),Y(a.y)]]),a.x>0.5?'#60a5fa':'#fbbf24',1.2);g.globalAlpha=1;}louse(g,X(a.x),Y(a.y),a.a);});
+    const q=kinQ();panel(g,ix,R.y,190,R.h);T(g,'การกระจายตัว (แบ่ง 5 ช่วง)',ix+10,R.y+14,'#fde68a',11,'left',true);
+    for(let b=0;b<5;b++){const c=M1.an.filter(o=>o.x>=b/5&&o.x<(b+1)/5).length;bar(g,ix+10,R.y+46+b*30,170,9,c/M1.an.length*2.5,b<2?'#d97706':b>2?'#3b82f6':'#a3a3a3',`ช่วง ${b+1} · ชื้น ${Math.round(lerp(10,I,(b+0.5)/5))}%`,c+' ตัว');}
+    const y2=R.y+46+5*30+4;T(g,'อยู่ด้านชื้น '+q.hum.toFixed(0)+'% ของประชากร',ix+10,y2,'#bfdbfe',11,'left',true);
+    wrap(g,'เส้นซิกแซ็กถี่ = เลี้ยวบ่อย · จุดห่างกัน = เคลื่อนที่เร็ว',ix+10,y2+20,170,15,'#d6c7a1',10);
+    if(nv){const d=1-q.hum/100;drawNeural(g,w,h,['สิ่งเร้า|ความชื้นต่ำ (แห้ง)','Receptor|รับความชื้น','ระบบประสาท|ปรับความเร็ว/การเลี้ยว','Effector|กล้ามเนื้อขา','พฤติกรรม|Kinesis'],[d,d,d,d,d]);}}
+  else if(k==='tax'){const o=$('#torg').value,chem=o==='planc',sg=SGN[o];T(g,'T-Maze: '+(chem?'สารเคมี (ตับบด)':'แสง')+' ที่แขนขวา · ความเข้ม '+I+'%',R.x,15,'#fde68a',12,'left',true);
+    line(g,[[X(0.5),Y(1)],[X(0.5),Y(0.3)]],'#78716c',46);line(g,[[X(0.02),Y(0.3)],[X(0.98),Y(0.3)]],'#78716c',46);line(g,[[X(0.5),Y(0.99)],[X(0.5),Y(0.3)]],'#1c1917',38);line(g,[[X(0.025),Y(0.3)],[X(0.975),Y(0.3)]],'#1c1917',38);
+    if(I>0){if(chem){for(let i=0;i<3;i++)glow(g,X(0.95),Y(0.3),20+70*I/100*(1-i*0.25),`rgba(74,222,128,${0.25*I/100})`);}else glow(g,X(0.97),Y(0.3),30+110*I/100,`rgba(253,224,71,${0.15+0.5*I/100})`);}
+    T(g,chem?'มีสารเคมี':'☀ แสง',X(0.93),Y(0.3)-36,chem?'#86efac':'#fde047',11,'center',true);T(g,chem?'ไม่มีสาร':'มืด',X(0.07),Y(0.3)-36,'#a8a29e',11,'center',true);T(g,'จุดปล่อยสัตว์',X(0.5)+30,Y(0.95),'#a8a29e',10);
+    M1.an.forEach(a=>{const [px,py,hd]=tPos(a);if(!nv){const P=[[X(0.5),Y(0.95)]];if(a.s>0.45)P.push([X(0.5),Y(0.3)]);P.push([X(px),Y(py)]);g.globalAlpha=0.5*(1-a.f/1.2);line(g,P,a.side*sg>0?'#4ade80':'#f87171',1.5);g.globalAlpha=1;}
+      g.globalAlpha=1-a.f*0.7;if(o==='moth')moth(g,X(px),Y(py),hd,S.time+a.w);else worm(g,X(px),Y(py),hd,'#a16207');g.globalAlpha=1;});
+    const tot=M1.left+M1.right,tw=sg>0?M1.right:M1.left;panel(g,ix,R.y,190,R.h);T(g,'ผลการเลือกทาง',ix+10,R.y+14,'#fde68a',11,'left',true);
+    bar(g,ix+10,R.y+50,170,10,tot?M1.left/tot:0,'#a8a29e','แขนซ้าย ('+(chem?'ไม่มีสาร':'มืด')+')',M1.left+' ตัว');bar(g,ix+10,R.y+86,170,10,tot?M1.right/tot:0,chem?'#4ade80':'#fde047','แขนขวา ('+(chem?'มีสาร':'สว่าง')+')',M1.right+' ตัว');
+    T(g,'ไปตามทิศของ Taxis: '+(tot?Math.round(tw/tot*100):0)+'%',ix+10,R.y+118,'#bbf7d0',11,'left',true);
+    wrap(g,sg>0?'เคลื่อนที่ "เข้าหา" สิ่งเร้า = Positive taxis':'เคลื่อนที่ "หนี" สิ่งเร้า = Negative taxis',ix+10,R.y+142,170,15,'#d6c7a1',10.5);
+    wrap(g,'เส้นทางมุ่งไปทิศที่แน่นอน ไม่ใช่การสุ่ม (ต่างจาก Kinesis)',ix+10,R.y+182,170,15,'#d6c7a1',10.5);
+    if(nv){const a=I/100;drawNeural(g,w,h,['สิ่งเร้า|'+(chem?'สารเคมี':'แสง'),'Receptor|'+(chem?'Chemoreceptor':'Eyespot (จุดรับแสง)'),'ระบบประสาท|เทียบซ้าย–ขวา','Effector|กล้ามเนื้อ/ซิเลีย','พฤติกรรม|'+(sg>0?'+Taxis เข้าหา':'−Taxis หนี')],[a,a,a,a,a]);}}
+  else{const m=MODELS[$('#model').value],s=signS(),fl=M1.ph>=1&&M1.ph<=3?(M1.ph===1?sm(M1.pt/0.5):1):M1.ph===4?1-M1.pt/1.4:0;T(g,'ตู้ปลา: ปลากัดตัวผู้กับโมเดล "'+m.n+'"',R.x,15,'#fde68a',12,'left',true);
+    const gr=g.createLinearGradient(0,R.y,0,R.y+R.h);gr.addColorStop(0,'#0c4a6e');gr.addColorStop(1,'#082f49');g.fillStyle=gr;rr(g,R.x,R.y,R.w,R.h,8);g.fill();g.strokeStyle='#7dd3fc55';g.lineWidth=2;g.stroke();
+    for(let i=0;i<6;i++)line(g,[[R.x+20+i*R.w/6,R.y+R.h-8],[R.x+24+i*R.w/6+Math.sin(S.time+i)*6,R.y+R.h-50-hash(i)*30]],'#15803d',3);
+    g.fillStyle='#57534e';for(let i=0;i<40;i++){g.beginPath();g.arc(R.x+8+hash(i)*(R.w-16),R.y+R.h-6-hash(i+9)*8,3+hash(i+3)*3,0,7);g.fill();}
+    const mx=X(0.8),my=Y(0.48);if(M1.model){line(g,[[mx,R.y],[mx,my-12]],'#d6d3d1',1);fmodel(g,mx,my,m);}else{g.strokeStyle='#a8a29e';g.setLineDash([4,4]);g.beginPath();g.arc(mx,my,18,0,7);g.stroke();g.setLineDash([]);T(g,'(โมเดลถูกนำออก)',mx,my+30,'#d6d3d1',10.5,'center');}
+    const bx=X(M1.fx)+(M1.ph===3?Math.sin(S.time*30)*6:0);betta(g,bx,my,1.25,fl);
+    if(M1.ph===3)for(let i=0;i<5;i++){g.fillStyle='rgba(255,255,255,.6)';g.beginPath();g.arc(bx+40+hash(i+Math.floor(S.time*8))*20,my-10+hash(i+3)*20,2,0,7);g.fill();}
+    if(M1.ph>=0&&!M1.model){panel(g,R.x+10,R.y+10,R.w-20,26);T(g,'โมเดลถูกนำออกแล้ว แต่ FAP ยังดำเนินต่อจนจบลำดับ',R.x+R.w/2,R.y+23,'#fca5a5',11.5,'center',true);}
+    if(!nv&&M1.ph>=0){g.globalAlpha=0.5;arrow(g,X(0.22)+30,my+40,X(0.6),my+40,'#fbbf24',1.5,[4,4]);g.globalAlpha=1;}
+    panel(g,ix,R.y,190,R.h);T(g,'ความแรงของ Sign stimulus',ix+10,R.y+14,'#fde68a',11,'left',true);bar(g,ix+10,R.y+42,170,11,s,s>0.5?'#ef4444':'#9ca3af','',Math.round(s*100)+'%');
+    const tx=ix+10+85;g.strokeStyle='#fde047';g.setLineDash([3,3]);g.beginPath();g.moveTo(tx,R.y+32);g.lineTo(tx,R.y+60);g.stroke();g.setLineDash([]);T(g,'เกณฑ์กระตุ้น (IRM)',tx,R.y+68,'#fde047',9.5,'center');
+    T(g,'ลำดับ FAP',ix+10,R.y+90,'#fde68a',11,'left',true);FAPS.forEach((f,i)=>{const on=M1.ph===i,dn=M1.ph>i;g.fillStyle=on?'#b45309':dn?'#3f3a24':'#262012';rr(g,ix+10,R.y+102+i*26,170,21,6);g.fill();T(g,(i+1)+'. '+f[0],ix+18,R.y+112+i*26,on?'#fff':dn?'#fde68a':'#a8a29e',10.5,'left',on);});
+    T(g,M1.ph<0?(M1.model?(s>0.5?'กำลังรับรู้สิ่งเร้า…':'ไม่ตอบสนอง (สิ่งเร้าไม่ตรง)'):'รอใส่โมเดล'):'กำลังแสดง FAP',ix+10,R.y+246,M1.ph<0&&s<=0.5?'#a8a29e':'#fca5a5',10.5,'left',true);
+    if(nv){const a=M1.ph>=0?1:0;drawNeural(g,w,h,['Sign stimulus|'+(m.red?'ท้องสีแดง':'ไม่มีสีแดง'),'Receptor|ตา','IRM|วงจรประสาทแต่กำเนิด','Effector|กล้ามเนื้อเหงือก/ครีบ','FAP|โจมตีจนจบ'],[M1.model?s:0,M1.model?s:0,a,a,a],'Releaser → IRM (Innate releasing mechanism) · Testosterone ช่วงผสมพันธุ์เพิ่มความไวของวงจร');}}}
+
+/* ================= MODE 2 : LEARNING ================= */
+let M2;
+const AL=0.12,Vp=n=>1-Math.pow(1-AL,n);
+const impS=()=>Math.exp(-((V('age')-14.5)**2)/50)*({man:1,goose:1,box:0.9,ball:0.85}[$('#obj').value]);
+const CRv=()=>Vp(V('trials'))*Math.pow(0.8,M2.ext);
+function objPos(t){return[0.52+0.3*Math.cos(t*0.4),0.55+0.27*Math.sin(t*0.4)];}
+function initM2(){const k=$('#exp2').value;M2={k,t:0,c:0,food:!$('#ext').checked,test:false,ext:0,drops:[],nd:0,lastNd:0,w:0.05,press:0,np:0,nr:0,ns:0,cum:[[0,0]],rat:{x:0.4,tx:0.4,tt:0},pel:0,zap:0,g:[],n:0,tot:0,R:1,hist:[],curl:0,touch:0,flash:0,nov:0};
+  if(k==='imp')for(let i=0;i<6;i++)M2.g.push({x:0.1+0.03*i,y:0.8+0.03*(i%2)});}
+function stepM2(dt){const k=M2.k;M2.t+=dt;
+  if(k==='pav'){M2.c+=dt;if(M2.c>=3.6){M2.c=0;if(M2.food){if(V('trials')<50){$('#trials').value=V('trials')+1;UPD.trials();}}else if(!M2.test&&$('#ext').checked)M2.ext++;M2.test=false;M2.food=!$('#ext').checked;M2.lastNd=M2.nd;M2.nd=0;}
+    const c=M2.c,cr=CRv();let rate=0;if(c>0.4&&c<1.3)rate=cr*8;if(c>=1.3)rate=M2.food?9*Math.exp(-(c-1.3)*0.6):cr*8*Math.exp(-(c-1.3)*1.5);
+    if(Math.random()<rate*dt){M2.drops.push({y:0,v:0});M2.nd++;}M2.drops.forEach(d=>{d.v+=dt*3;d.y+=d.v*dt;});M2.drops=M2.drops.filter(d=>d.y<1);}
+  else if(k==='skin'){const rate=0.12+1.3*M2.w,c=$('#cons').value;if(M2.press>0)M2.press-=dt;
+    if(M2.press<=0&&Math.random()<rate*dt){M2.np++;M2.press=0.6;M2.rat.x=0.76;
+      if(c!=='none'&&Math.random()<V('prob')/100){if(c==='food'){M2.nr++;M2.w+=0.1*(1-M2.w);M2.pel=1;}else{M2.ns++;M2.w-=0.3*M2.w;M2.zap=0.7;}}else M2.w-=(c==='none'?0.06:0.015)*M2.w;
+      M2.w=clamp(M2.w,0.01,0.99);M2.cum.push([M2.t,M2.np]);if(M2.cum.length>500)M2.cum.shift();}
+    if(M2.press<=0){M2.rat.tt-=dt;if(M2.rat.tt<=0){M2.rat.tt=1+Math.random();M2.rat.tx=Math.random()<M2.w?0.7:0.12+Math.random()*0.45;}M2.rat.x=lerp(M2.rat.x,M2.rat.tx,clamp(dt*2,0,1));}
+    M2.pel=Math.max(0,M2.pel-dt*0.8);M2.zap=Math.max(0,M2.zap-dt);}
+  else if(k==='imp'){const s=impS(),[ox,oy]=objPos(M2.t);M2.g.forEach((q,i)=>{let tx,ty;if(hash(i+5)<s){const p=objPos(M2.t-0.55*(i+1));tx=p[0];ty=p[1];}
+      else{tx=0.1+0.07*Math.sin(M2.t*0.7+i*2);ty=0.8+0.06*Math.cos(M2.t*0.9+i);if(V('age')>30&&Math.hypot(q.x-ox,q.y-oy)<0.2){tx=q.x+(q.x-ox)*2;ty=q.y+(q.y-oy)*2;}}
+      q.x=clamp(lerp(q.x,tx,clamp(dt*2,0,1)),0.03,0.97);q.y=clamp(lerp(q.y,ty,clamp(dt*2,0,1)),0.1,0.95);});}
+  else{M2.c+=dt;if(M2.c>=2.2){M2.c=0;M2.n++;M2.tot++;M2.R=Math.exp(-(M2.n-1)/4);M2.hist.push([M2.tot,M2.R,M2.nov]);M2.nov=0;M2.curl=M2.R;M2.touch=0.6;if(M2.hist.length>30)M2.hist.shift();}
+    M2.curl=Math.max(0,M2.curl-dt*0.45);M2.touch=Math.max(0,M2.touch-dt);M2.flash=Math.max(0,M2.flash-dt);}}
+function dog(g,x,y,s,open){g.save();g.translate(x,y);g.scale(s,s);g.fillStyle='#c08a4b';g.beginPath();g.ellipse(0,0,46,22,0,0,7);g.fill();
+  [-30,-16,22,34].forEach(lx=>g.fillRect(lx-4,12,8,34));g.strokeStyle='#c08a4b';g.lineWidth=5;g.beginPath();g.moveTo(-44,-6);g.quadraticCurveTo(-64,-30,-58,-38);g.stroke();
+  g.beginPath();g.ellipse(52,-24,20,17,0,0,7);g.fill();g.beginPath();g.ellipse(70,-16,14,9,0.2,0,7);g.fill();
+  g.fillStyle='#8b5a2b';g.beginPath();g.ellipse(44,-36,7,15,-0.5,0,7);g.fill();g.fillStyle='#111';g.beginPath();g.arc(82,-19,3.5,0,7);g.fill();g.beginPath();g.arc(58,-30,2.6,0,7);g.fill();
+  g.strokeStyle='#5b3714';g.lineWidth=2;g.beginPath();g.moveTo(64,-8);g.lineTo(80,-8+open*5);g.stroke();g.restore();}
+function rat(g,x,y,rear){g.save();g.translate(x,y);g.rotate(rear?-0.6:0);g.strokeStyle='#d6a3a3';g.lineWidth=2;g.beginPath();g.moveTo(-16,2);g.quadraticCurveTo(-34,8,-40,-4);g.stroke();g.fillStyle='#d4d4d8';g.beginPath();g.ellipse(0,0,17,9,0,0,7);g.fill();g.beginPath();g.ellipse(16,-3,9,6,0.2,0,7);g.fill();g.fillStyle='#fca5a5';g.beginPath();g.arc(12,-9,4,0,7);g.fill();g.fillStyle='#111';g.beginPath();g.arc(20,-5,1.4,0,7);g.fill();g.restore();}
+function gosling(g,x,y,a){g.save();g.translate(x,y);g.scale(Math.cos(a)<0?-1:1,1);g.fillStyle='#fde047';g.beginPath();g.ellipse(0,0,8,6,0,0,7);g.fill();g.beginPath();g.arc(7,-5,4.2,0,7);g.fill();g.fillStyle='#f97316';g.beginPath();g.moveTo(10,-5);g.lineTo(15,-4);g.lineTo(10,-3);g.fill();g.fillStyle='#111';g.beginPath();g.arc(8,-6,1,0,7);g.fill();g.restore();}
+function impObj(g,x,y,k,t){if(k==='man'){g.strokeStyle='#e5e7eb';g.lineWidth=3;const sw=Math.sin(t*4)*8;line(g,[[x,y-30],[x,y]],'#e5e7eb',3);line(g,[[x,y],[x-6+sw*0.5,y+22]],'#e5e7eb',3);line(g,[[x,y],[x+6-sw*0.5,y+22]],'#e5e7eb',3);line(g,[[x,y-24],[x+12,y-12]],'#e5e7eb',3);g.fillStyle='#fcd34d';g.beginPath();g.arc(x,y-38,8,0,7);g.fill();g.fillStyle='#e5e7eb';g.beginPath();g.ellipse(x,y-33,6,4,0,0,Math.PI);g.fill();g.fillStyle='#4b5563';g.fillRect(x-10,y-47,20,4);g.fillRect(x-6,y-54,12,8);}
+  else if(k==='goose'){g.fillStyle='#f5f5f4';g.beginPath();g.ellipse(x,y,20,12,0,0,7);g.fill();g.strokeStyle='#f5f5f4';g.lineWidth=6;g.beginPath();g.moveTo(x+12,y-6);g.quadraticCurveTo(x+22,y-20,x+18,y-30);g.stroke();g.fillStyle='#f97316';g.beginPath();g.moveTo(x+20,y-32);g.lineTo(x+30,y-29);g.lineTo(x+20,y-26);g.fill();g.fillStyle='#111';g.beginPath();g.arc(x+19,y-31,1.5,0,7);g.fill();}
+  else if(k==='box'){g.fillStyle='#a16207';g.fillRect(x-14,y-14,28,24);g.strokeStyle='#713f12';g.strokeRect(x-14,y-14,28,24);line(g,[[x+14,y-6],[x+40,y-30]],'#d6d3d1',1.2);}
+  else{g.fillStyle='#ef4444';g.beginPath();g.arc(x,y,12,0,7);g.fill();g.fillStyle='rgba(255,255,255,.5)';g.beginPath();g.arc(x-4,y-4,3,0,7);g.fill();}}
+function drawM2(g,w,h){const nv=S.toggle==='neural',H=nv?h-104:h,k=M2.k,R={x:14,y:30,w:w-222,h:H-42},X=v=>R.x+v*R.w,Y=v=>R.y+v*R.h,ix=w-200;
+  if(k==='pav'){const c=M2.c,ring=c>0.4&&c<1.3,cr=CRv(),food=M2.food&&c>=1.3;T(g,'การทดลองของ Pavlov: '+(M2.test?'ทดสอบด้วยกระดิ่งอย่างเดียว':M2.food?'ฝึก = กระดิ่ง (CS) + อาหาร (US)':'ดับสูญ = กระดิ่งโดยไม่มีอาหาร'),R.x,15,'#fde68a',12,'left',true);
+    g.fillStyle='#1f1a10';rr(g,R.x,R.y,R.w,R.h,10);g.fill();g.fillStyle='#2b2415';g.fillRect(R.x,Y(0.86),R.w,R.h*0.14);
+    const bx=X(0.13),by=Y(0.2),sw=ring?Math.sin(S.time*30)*0.35:0;g.save();g.translate(bx,by);g.rotate(sw);g.fillStyle='#fbbf24';g.beginPath();g.moveTo(-16,14);g.quadraticCurveTo(-16,-14,0,-16);g.quadraticCurveTo(16,-14,16,14);g.closePath();g.fill();g.fillStyle='#b45309';g.beginPath();g.arc(0,17,4,0,7);g.fill();g.restore();
+    if(ring)for(let i=1;i<=3;i++){g.strokeStyle=`rgba(253,224,71,${0.7-i*0.18})`;g.lineWidth=2;g.beginPath();g.arc(bx,by,18+i*10+(S.time*40)%10,-0.6,0.6);g.stroke();}T(g,'กระดิ่ง (CS)',bx,by+34,'#fde68a',10.5,'center');
+    const dx=X(0.36),dy=Y(0.6),s=Math.min(1.6,R.w/400);dog(g,dx,dy,s,food?1:ring?cr:0);const mx=dx+76*s,my=dy-8*s;
+    if(food){g.fillStyle='#78716c';g.beginPath();g.ellipse(mx+10,Y(0.86),34,9,0,0,7);g.fill();g.fillStyle='#b45309';for(let i=0;i<6;i++){g.beginPath();g.arc(mx-8+i*7,Y(0.86)-5,4,0,7);g.fill();}T(g,'อาหาร (US)',mx+10,Y(0.86)+18,'#fdba74',10.5,'center');}
+    const tx=X(0.8),ty=Y(0.35),th=Y(0.84)-ty;M2.drops.forEach(d=>{g.fillStyle='#93c5fd';g.beginPath();g.arc(lerp(mx,tx,d.y),lerp(my,ty,d.y)+Math.sin(d.y*3)*6,3,0,7);g.fill();});
+    g.strokeStyle='#cbd5e1';g.lineWidth=2;g.strokeRect(tx-12,ty,24,th);const lv=clamp(M2.nd/30,0,1);g.fillStyle='rgba(147,197,253,.7)';g.fillRect(tx-11,ty+th*(1-lv),22,th*lv);T(g,'น้ำลาย '+M2.nd+' หยด',tx,ty-12,'#bfdbfe',10.5,'center',true);
+    panel(g,ix,R.y,190,R.h);T(g,'ความแรงของการเชื่อมโยง',ix+10,R.y+14,'#fde68a',11,'left',true);bar(g,ix+10,R.y+44,170,11,cr,'#f59e0b','CS ↔ US (V)',Math.round(cr*100)+'%');
+    T(g,'ลำดับในการทดลอง 1 ครั้ง',ix+10,R.y+76,'#fde68a',11,'left',true);[['0.0–0.4 s','เตรียม'],['0.4–1.3 s','กระดิ่งดัง (CS)'],['1.3 s +',M2.food?'ให้อาหาร (US)':'ไม่มีอาหาร']].forEach(([a,b],i)=>{const on=i===(c<0.4?0:c<1.3?1:2);g.fillStyle=on?'#b45309':'#262012';rr(g,ix+10,R.y+88+i*26,170,21,6);g.fill();T(g,a+' · '+b,ix+18,R.y+98+i*26,on?'#fff':'#a8a29e',10.5);});
+    wrap(g,cr<0.1?'ยังไม่เกิดการเรียนรู้: กระดิ่งเป็นเพียง Neutral stimulus':cr>0.8?'เกิด CR ชัดเจน: น้ำลายไหลตั้งแต่ได้ยินกระดิ่ง ก่อนเห็นอาหาร':'กำลังเรียนรู้: น้ำลายเริ่มไหลเมื่อได้ยินกระดิ่ง',ix+10,R.y+178,170,15,'#d6c7a1',10.5);
+    if(nv){const a=ring?1:0.15;drawNeural(g,w,h,['CS|เสียงกระดิ่ง','Receptor|หู','สมอง|ไซแนปส์ CS→ศูนย์น้ำลาย','Effector|ต่อมน้ำลาย','CR|น้ำลายไหล'],[a,a,a*cr,a*cr,a*cr],'ไซแนปส์ระหว่างวงจรเสียงกับศูนย์ควบคุมน้ำลายแข็งแรงขึ้น '+Math.round(cr*100)+'% หลังฝึกซ้ำ');}}
+  else if(k==='skin'){const c=$('#cons').value;T(g,'Skinner Box: กดคันโยก → '+(c==='food'?'ได้เม็ดอาหาร':c==='shock'?'ถูกไฟฟ้าช็อต':'ไม่มีอะไรเกิดขึ้น')+' (ความถี่ '+V('prob')+'%)',R.x,15,'#fde68a',12,'left',true);
+    g.fillStyle='#1e293b';rr(g,R.x,R.y,R.w,R.h,8);g.fill();g.strokeStyle='#64748b';g.lineWidth=3;g.stroke();const fy=Y(0.82);
+    g.strokeStyle=M2.zap>0?'#fde047':'#475569';g.lineWidth=M2.zap>0?2:1;for(let x=R.x+8;x<R.x+R.w;x+=12){g.beginPath();g.moveTo(x,fy);g.lineTo(x,R.y+R.h-4);g.stroke();}
+    if(M2.zap>0){for(let i=0;i<5;i++){const x=X(0.1+hash(i+Math.floor(S.time*20))*0.8);line(g,[[x,fy],[x+6,fy+8],[x-4,fy+14],[x+4,fy+24]],'#fde047',2);}T(g,'⚡ ไฟฟ้าช็อต (Punishment)',X(0.45),Y(0.15),'#fde047',13,'center',true);}
+    const lx=X(0.9);g.fillStyle='#334155';g.fillRect(lx,Y(0.25),R.x+R.w-lx-2,Y(0.82)-Y(0.25));
+    g.fillStyle=M2.press>0?'#fde047':'#475569';g.beginPath();g.arc(lx+14,Y(0.35),9,0,7);g.fill();if(M2.press>0)glow(g,lx+14,Y(0.35),30,'rgba(253,224,71,.5)');T(g,'ไฟสัญญาณ',lx-6,Y(0.35)-16,'#cbd5e1',9.5,'right');
+    g.strokeStyle='#94a3b8';g.lineWidth=5;g.beginPath();g.moveTo(lx,Y(0.58));g.lineTo(lx-26,Y(0.58)+(M2.press>0?8:-4));g.stroke();T(g,'คันโยก',lx-30,Y(0.58)-14,'#cbd5e1',9.5,'right');
+    g.fillStyle='#475569';g.fillRect(lx-24,Y(0.74),24,10);T(g,'ถาดอาหาร',lx-26,Y(0.74)+22,'#cbd5e1',9.5,'right');
+    if(M2.pel>0){const py=lerp(Y(0.3),Y(0.73),clamp((1-M2.pel)*3,0,1));g.fillStyle='#a16207';g.beginPath();g.arc(lx-12,py,4.5,0,7);g.fill();}
+    rat(g,X(M2.rat.x),fy-10,M2.press>0);
+    panel(g,ix,R.y,190,R.h);T(g,'สถิติการเรียนรู้',ix+10,R.y+14,'#fde68a',11,'left',true);bar(g,ix+10,R.y+44,170,11,M2.w,'#f59e0b','ความน่าจะเป็นที่จะกด (w)',Math.round(M2.w*100)+'%');
+    [['กดคันโยกทั้งหมด',M2.np+' ครั้ง'],['ได้รางวัล',M2.nr+' ครั้ง'],['ถูกลงโทษ',M2.ns+' ครั้ง'],['อัตรากด',Math.round((0.12+1.3*M2.w)*60)+' ครั้ง/นาที']].forEach(([a,b],i)=>{T(g,a,ix+10,R.y+76+i*20,'#d6c7a1',10.5);T(g,b,ix+180,R.y+76+i*20,'#fde68a',10.5,'right',true);});
+    wrap(g,c==='food'?'Reinforcement ทำให้พฤติกรรมกดคันโยกเกิดถี่ขึ้น (Law of effect)':c==='shock'?'Punishment ทำให้พฤติกรรมลดลง (เช่น วัวเลิกแตะรั้วไฟฟ้า)':'ไม่มีผลตามมา → พฤติกรรมค่อย ๆ ลดลง (Extinction)',ix+10,R.y+166,170,15,'#d6c7a1',10.5);
+    if(nv){const a=M2.press>0?1:0.2;drawNeural(g,w,h,['การกระทำ|กดคันโยก','ผลที่ตามมา|'+(c==='food'?'อาหาร':c==='shock'?'ความเจ็บปวด':'ไม่มี'),'สมอง|'+(c==='food'?'Dopamine (รางวัล)':'ศูนย์หลีกเลี่ยง'),'ความจำ|ปรับน้ำหนักพฤติกรรม','พฤติกรรม|'+(c==='food'?'กดถี่ขึ้น':'กดน้อยลง')],[a,a,a,M2.w,M2.w]);}}
+  else if(k==='imp'){const s=impS(),age=V('age'),ok=age>=13&&age<=16,[ox,oy]=objPos(M2.t);T(g,'การฝังใจ: ลูกห่านอายุ '+age+' ชม. พบวัตถุเคลื่อนที่เป็นครั้งแรก',R.x,15,'#fde68a',12,'left',true);
+    g.fillStyle='#1a2e12';rr(g,R.x,R.y,R.w,R.h,10);g.fill();for(let i=0;i<60;i++){g.strokeStyle='#2f5a1c';g.lineWidth=1.5;const x=X(hash(i)),y=Y(0.1+0.88*hash(i+60));g.beginPath();g.moveTo(x,y);g.lineTo(x+2,y-7);g.stroke();}
+    g.fillStyle='#78350f';g.beginPath();g.ellipse(X(0.1),Y(0.82),40,14,0,0,7);g.fill();T(g,'รัง',X(0.1),Y(0.82)+24,'#d6c7a1',10,'center');
+    if(!nv){g.strokeStyle='rgba(255,255,255,.15)';g.setLineDash([4,6]);g.beginPath();g.ellipse(X(0.52),Y(0.55),0.3*R.w,0.27*R.h,0,0,7);g.stroke();g.setLineDash([]);}
+    impObj(g,X(ox),Y(oy),$('#obj').value,M2.t);
+    M2.g.forEach((q,i)=>{const fol=hash(i+5)<s;if(!nv&&fol){g.strokeStyle='rgba(253,224,71,.35)';g.setLineDash([3,4]);g.beginPath();g.moveTo(X(q.x),Y(q.y));g.lineTo(X(ox),Y(oy));g.stroke();g.setLineDash([]);}gosling(g,X(q.x),Y(q.y),fol?Math.atan2(oy-q.y,ox-q.x):Math.sin(M2.t+i));});
+    panel(g,ix,R.y,190,R.h);T(g,'ช่วงวิกฤต (Critical period)',ix+10,R.y+14,'#fde68a',11,'left',true);const gx=ix+10,gw=170,gy=R.y+44;g.fillStyle='rgba(255,255,255,.09)';rr(g,gx,gy,gw,12,4);g.fill();g.fillStyle='#16a34a';g.fillRect(gx+gw*13/72,gy,gw*3/72,12);
+    g.fillStyle='#fde047';g.beginPath();g.moveTo(gx+gw*age/72,gy-2);g.lineTo(gx+gw*age/72-5,gy-10);g.lineTo(gx+gw*age/72+5,gy-10);g.fill();T(g,'0',gx,gy+22,'#a8a29e',9.5);T(g,'13–16 ชม.',gx+gw*14.5/72,gy+22,'#86efac',9.5,'center');T(g,'72 ชม.',gx+gw,gy+22,'#a8a29e',9.5,'right');
+    bar(g,ix+10,R.y+92,170,11,s,ok?'#22c55e':'#f59e0b','ความแรงการฝังใจ',Math.round(s*100)+'%');const nf=M2.g.filter((q,i)=>hash(i+5)<s).length;T(g,'ลูกห่านที่ติดตาม: '+nf+' / 6 ตัว',ix+10,R.y+120,'#fde68a',11,'left',true);
+    wrap(g,ok?'อยู่ในช่วงวิกฤต: จดจำวัตถุเคลื่อนที่แรกที่เห็นเป็น "แม่" และติดตามไปตลอด':age<13?'ก่อนช่วงวิกฤต: ยังเดินตามได้ไม่ดี การฝังใจยังไม่สมบูรณ์':age>30?'พ้นช่วงวิกฤตไปมาก: ไม่เกิดการฝังใจ และอาจกลัวหนีวัตถุแปลกหน้า':'ใกล้หมดช่วงวิกฤต: การฝังใจอ่อนลง ลูกห่านบางตัวไม่ติดตาม',ix+10,R.y+144,170,15,'#d6c7a1',10.5);
+    if(nv){drawNeural(g,w,h,['สิ่งเร้า|วัตถุเคลื่อนที่','Receptor|ตา + หู','สมอง|ช่วงวิกฤตของการพัฒนา','Effector|กล้ามเนื้อขา','พฤติกรรม|เดินตาม'],[1,1,s,s,s],'Imprinting = Innate (ความพร้อมทางพันธุกรรมในช่วงวิกฤต) + Learned (จดจำวัตถุที่พบ)');}}
+  else{T(g,'Habituation: แตะตัวหนอนซ้ำ ๆ ทุก 2.2 วินาที (ไม่มีอันตราย)',R.x,15,'#fde68a',12,'left',true);g.fillStyle='#14210e';rr(g,R.x,R.y,R.w,R.h,10);g.fill();
+    g.fillStyle='#166534';g.beginPath();g.ellipse(X(0.45),Y(0.62),R.w*0.38,R.h*0.2,-0.15,0,7);g.fill();g.strokeStyle='#22c55e';g.lineWidth=2;g.beginPath();g.moveTo(X(0.1),Y(0.68));g.lineTo(X(0.82),Y(0.56));g.stroke();
+    const cu=M2.curl,cx=X(0.45),cy=Y(0.55),n=12;for(let i=n-1;i>=0;i--){const u=i/(n-1),straightX=cx-70+u*140,straightY=cy+Math.sin(u*9+S.time*3)*2,ang=u*Math.PI*1.7-Math.PI*0.85,cX=cx+Math.cos(ang)*26,cY=cy-6+Math.sin(ang)*26;
+      g.fillStyle=i===n-1?'#a3e635':i%2?'#65a30d':'#84cc16';g.beginPath();g.arc(lerp(straightX,cX,cu),lerp(straightY,cY,cu),i===n-1?8:7,0,7);g.fill();}
+    if(M2.touch>0){line(g,[[cx-10,Y(0.05)],[cx-10,cy-12-(1-M2.touch/0.6)*0]],'#d6d3d1',3);T(g,'แตะ!',cx+4,Y(0.08),'#fde68a',11,'left',true);}
+    if(M2.flash>0){g.fillStyle=`rgba(255,255,255,${M2.flash*0.35})`;g.fillRect(R.x,R.y,R.w,R.h);T(g,'⚡ สิ่งเร้าใหม่',X(0.5),Y(0.15),'#fde047',13,'center',true);}
+    panel(g,ix,R.y,190,R.h);T(g,'การตอบสนองต่อการแตะ',ix+10,R.y+14,'#fde68a',11,'left',true);bar(g,ix+10,R.y+44,170,11,M2.R,'#84cc16','ความแรงการม้วนตัว',Math.round(M2.R*100)+'%');
+    T(g,'แตะซ้ำแล้ว '+M2.n+' ครั้ง',ix+10,R.y+74,'#fde68a',11,'left',true);
+    wrap(g,M2.R<0.2?'เกิด Habituation: เรียนรู้ว่าการแตะไม่มีอันตราย จึงเลิกตอบสนอง ประหยัดพลังงาน':'ยังตอบสนองอยู่ แต่จะลดลงเรื่อย ๆ เมื่อสิ่งเร้าซ้ำและไม่มีผลเสีย',ix+10,R.y+98,170,15,'#d6c7a1',10.5);
+    wrap(g,'กดปุ่ม "สิ่งเร้าใหม่" → การตอบสนองกลับมา แสดงว่าไม่ใช่ความล้าของกล้ามเนื้อ',ix+10,R.y+160,170,15,'#d6c7a1',10.5);
+    if(nv){const a=M2.touch>0?1:0.15;drawNeural(g,w,h,['สิ่งเร้า|การแตะซ้ำ','Receptor|รับสัมผัส','ไซแนปส์|หลั่งสารสื่อประสาทลดลง','Effector|กล้ามเนื้อลำตัว','พฤติกรรม|ม้วนตัว'],[a,a,a*M2.R,a*M2.R,a*M2.R],'Habituation: ไซแนปส์ระหว่างเซลล์รับสัมผัสกับเซลล์ประสาทสั่งการส่งสัญญาณอ่อนลง');}}}
+
+/* ================= MODE 3 : COMMUNICATION ================= */
+let M3;const GW=72,GH=40,NEST=[0.1,0.5],FOODS=[[0.86,0.25],[0.86,0.76],[0.6,0.12]];
+const wagDur=()=>0.075+V('dist')*0.00095;
+function initM3(){const k=$('#exp3').value;M3={k,t:0,P:[],del:0,dl:[],rh:[],rt:0,ants:[],ph:null,fi:0,food:FOODS[0].slice()};
+  if(k==='ant'){M3.ph=new Float32Array(GW*GH);for(let i=0;i<70;i++)M3.ants.push({x:NEST[0]*GW,y:NEST[1]*GH,a:Math.random()*6.283,c:false});}}
+const blocked=(x,y)=>x<0.5||y<0.5||x>GW-0.5||y>GH-0.5||($('#obst').checked&&x>=34&&x<37&&y>=6&&y<34);
+function dancePos(t){const d=V('dist'),th=V('ang')*Math.PI/180,dr=[Math.sin(th),-Math.cos(th)],pp=[Math.cos(th),Math.sin(th)];
+  if(d<50){const per=1.8,k=Math.floor(t/per),u=(t%per)/per,sg=k%2?1:-1,a=sg*u*2*Math.PI;return{x:0.4*Math.cos(a),y:0.4*Math.sin(a),wag:false,hd:a+sg*Math.PI/2};}
+  const dur=wagDur(),Dr=0.5+2*dur,Rt=1.3,half=Dr+Rt,k=Math.floor(t/half),u=t%half,sd=k%2?1:-1,L=0.9;
+  if(u<Dr){const f=u/Dr,o=Math.sin(u*2*Math.PI*7)*0.06;return{x:dr[0]*L*(f-0.5)+pp[0]*o,y:dr[1]*L*(f-0.5)+pp[1]*o,wag:true,hd:Math.atan2(dr[1],dr[0])};}
+  const ph=(u-Dr)/Rt*Math.PI,c=Math.cos(ph),s=Math.sin(ph);return{x:dr[0]*L/2*c+pp[0]*sd*L/2*s,y:dr[1]*L/2*c+pp[1]*sd*L/2*s,wag:false,hd:Math.atan2(-dr[1]*s+pp[1]*sd*c,-dr[0]*s+pp[0]*sd*c)};}
+function stepM3(dt){M3.t+=dt;
+  if(M3.k==='bee'){const p=dancePos(M3.t);M3.P.push([p.x,p.y]);if(M3.P.length>160)M3.P.shift();}
+  else{const ph=M3.ph,f=Math.exp(-V('evap')/100*0.9*dt);for(let i=0;i<ph.length;i++)ph[i]*=f;const fx=M3.food[0]*GW,fy=M3.food[1]*GH,nx=NEST[0]*GW,ny=NEST[1]*GH;
+    M3.ants.forEach(a=>{if(!a.c){let best=0,bv=-1;[-0.55,0,0.55].forEach(d=>{const sx=Math.floor(a.x+Math.cos(a.a+d)*3),sy=Math.floor(a.y+Math.sin(a.a+d)*3);const v=(sx>=0&&sy>=0&&sx<GW&&sy<GH)?ph[sy*GW+sx]:0;if(v>bv){bv=v;best=d;}});
+        if(bv>0.05)a.a+=best*dt*6;a.a+=(Math.random()-0.5)*dt*(bv>0.05?2:7);
+        const df=Math.hypot(a.x-fx,a.y-fy);if(df<14){let e=Math.atan2(fy-a.y,fx-a.x)-a.a;e=Math.atan2(Math.sin(e),Math.cos(e));a.a+=clamp(e,-1,1)*dt*5;}
+        if(a.x<3||a.y<3||a.x>GW-3||a.y>GH-3){let e=Math.atan2(GH/2-a.y,GW/2-a.x)-a.a;e=Math.atan2(Math.sin(e),Math.cos(e));a.a+=clamp(e,-1,1)*dt*4;}
+        if(df<3.2){a.c=true;a.a+=Math.PI;}}
+      else{let d=Math.atan2(ny-a.y,nx-a.x)-a.a;d=Math.atan2(Math.sin(d),Math.cos(d));a.a+=clamp(d,-1,1)*dt*4+(Math.random()-0.5)*dt*2;
+        const ci=Math.floor(a.y)*GW+Math.floor(a.x);if(ci>=0&&ci<ph.length)ph[ci]=Math.min(8,ph[ci]+dt*6);
+        if(Math.hypot(a.x-nx,a.y-ny)<2.2){a.c=false;a.a+=Math.PI;M3.del++;M3.dl.push(M3.t);}}
+      const sp=9*dt;for(const d of [0,0.5,-0.5,1,-1,1.6,-1.6,2.4,-2.4,Math.PI]){const qx=a.x+Math.cos(a.a+d)*sp,qy=a.y+Math.sin(a.a+d)*sp;if(!blocked(qx,qy)){a.x=qx;a.y=qy;a.a+=d+(d?(Math.random()-0.5)*0.8:0);break;}}});
+    M3.dl=M3.dl.filter(t=>t>M3.t-20);M3.rt+=dt;if(M3.rt>1){M3.rt=0;M3.rh.push([M3.t,M3.dl.length*3]);if(M3.rh.length>240)M3.rh.shift();}}}
+function bee(g,x,y,a,s,wag){g.save();g.translate(x,y);g.rotate(a+(wag?Math.sin(S.time*80)*0.3:0));g.scale(s,s);g.fillStyle='rgba(219,234,254,.7)';g.beginPath();g.ellipse(-1,-5,5,3,-0.5,0,7);g.fill();g.beginPath();g.ellipse(-1,5,5,3,0.5,0,7);g.fill();
+  g.fillStyle='#facc15';g.beginPath();g.ellipse(0,0,8,4.5,0,0,7);g.fill();g.fillStyle='#1c1917';[-5,-2,1].forEach(i=>g.fillRect(i,-4,1.6,8));g.beginPath();g.arc(8,0,3,0,7);g.fill();g.restore();}
+const DIRS=['เหนือ','ตะวันออกเฉียงเหนือ','ตะวันออก','ตะวันออกเฉียงใต้','ใต้','ตะวันตกเฉียงใต้','ตะวันตก','ตะวันตกเฉียงเหนือ'];
+const compass=b=>DIRS[Math.round(((b%360)+360)%360/45)%8];
+function drawM3(g,w,h){const nv=S.toggle==='neural',H=nv?h-104:h;
+  if(M3.k==='bee'){const d=V('dist'),ang=V('ang'),sun=+$('#sun').value,fb=(sun+ang)%360,round=d<50,L={x:12,y:30,w:w*0.47,h:H-42},cx=L.x+L.w/2,cy=L.y+L.h/2+6,Rr=Math.min(L.w,L.h)*0.36;
+    T(g,'รังผึ้งแนวตั้ง: '+(round?'Round dance (อาหารใกล้ < 50 m)':'Waggle dance (อาหารไกล > 50 m)'),L.x,15,'#fde68a',12,'left',true);
+    g.save();rr(g,L.x,L.y,L.w,L.h,10);g.clip();g.fillStyle='#78350f';g.fillRect(L.x,L.y,L.w,L.h);g.strokeStyle='rgba(251,191,36,.35)';g.lineWidth=1;const hr=11;for(let yy=L.y;yy<L.y+L.h+hr;yy+=hr*1.5)for(let xx=L.x;xx<L.x+L.w+hr;xx+=hr*Math.sqrt(3)){const ox=(Math.round((yy-L.y)/(hr*1.5))%2)*hr*Math.sqrt(3)/2;g.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;const px=xx+ox+hr*Math.cos(a),py=yy+hr*Math.sin(a);i?g.lineTo(px,py):g.moveTo(px,py);}g.closePath();g.stroke();}g.restore();
+    arrow(g,L.x+22,L.y+L.h-20,L.x+22,L.y+28,'#fde047',2);T(g,'แนวตั้งขึ้น = ทิศดวงอาทิตย์',L.x+30,L.y+30,'#fde047',10,'left',true);
+    if(!round){const th=ang*Math.PI/180;line(g,[[cx,cy],[cx,cy-Rr*0.9]],'rgba(253,224,71,.5)',1.5);arrow(g,cx-Math.sin(th)*Rr*0.6,cy+Math.cos(th)*Rr*0.6,cx+Math.sin(th)*Rr*0.75,cy-Math.cos(th)*Rr*0.75,'rgba(255,255,255,.4)',1.5,[5,4]);
+      g.strokeStyle='#fde047';g.lineWidth=2;g.beginPath();if(ang<=180)g.arc(cx,cy,Rr*0.35,-Math.PI/2,-Math.PI/2+th);else g.arc(cx,cy,Rr*0.35,-Math.PI/2+th,-Math.PI/2);g.stroke();const ma=-Math.PI/2+(ang<=180?th/2:(th-2*Math.PI)/2);T(g,'θ = '+ang+'°',cx+Math.cos(ma)*Rr*0.48,cy+Math.sin(ma)*Rr*0.48,'#fde047',11,'center',true);}
+    if(!nv&&M3.P.length>1){g.globalAlpha=0.7;line(g,M3.P.map(p=>[cx+p[0]*Rr,cy+p[1]*Rr]),'#f472b6',1.6);g.globalAlpha=1;}
+    const p=dancePos(M3.t),bx=cx+p.x*Rr,by=cy+p.y*Rr;for(let i=0;i<6;i++){const a=i*Math.PI/3+0.3,fx=bx+Math.cos(a)*26,fy=by+Math.sin(a)*26;bee(g,fx,fy,a+Math.PI,0.9,false);}
+    if(p.wag){glow(g,bx,by,26,'rgba(244,114,182,.35)');T(g,'สั่นท้อง ~13 Hz',bx+16,by-18,'#f9a8d4',10,'left',true);}bee(g,bx,by,p.hd,1.4,p.wag);
+    const M={x:L.x+L.w+12,y:30,w:w-L.w-36,h:H-42},mx=M.x+M.w/2,my=M.y+M.h/2+8,Rm=Math.min(M.w,M.h)/2-30,rd=dd=>Rm*clamp((Math.log10(dd)-1)/2,0.04,1);
+    T(g,'แผนที่จากมุมสูง (ทิศเหนืออยู่ด้านบน)',M.x,15,'#fde68a',12,'left',true);g.fillStyle='#1a2e12';rr(g,M.x,M.y,M.w,M.h,10);g.fill();
+    [10,100,1000].forEach(r=>{if(r>10){g.strokeStyle='rgba(255,255,255,.12)';g.beginPath();g.arc(mx,my,rd(r),0,7);g.stroke();T(g,r+' m',mx+rd(r)*0.71+2,my-rd(r)*0.71,'#a8a29e',9);}});T(g,'N',mx,M.y+10,'#e5e7eb',11,'center',true);
+    const sb=sun*Math.PI/180,sx=mx+(Rm+16)*Math.sin(sb),sy=my-(Rm+16)*Math.cos(sb);glow(g,sx,sy,22,'rgba(253,224,71,.6)');g.fillStyle='#fde047';g.beginPath();g.arc(sx,sy,8,0,7);g.fill();
+    const fbr=fb*Math.PI/180,fx=mx+rd(d)*Math.sin(fbr),fy=my-rd(d)*Math.cos(fbr);line(g,[[mx,my],[mx+Rm*Math.sin(sb),my-Rm*Math.cos(sb)]],'rgba(253,224,71,.45)',1.5);
+    if(!round){g.strokeStyle='#fde047';g.lineWidth=1.5;g.beginPath();const a0=sb-Math.PI/2;if(ang<=180)g.arc(mx,my,42,a0,a0+ang*Math.PI/180);else g.arc(mx,my,42,a0+ang*Math.PI/180,a0+2*Math.PI);g.stroke();const am=a0+(ang<=180?ang:ang-360)*Math.PI/360;T(g,'θ',mx+54*Math.cos(am),my+54*Math.sin(am),'#fde047',12,'center',true);}
+    for(let i=0;i<6;i++){g.fillStyle=['#f472b6','#facc15','#c084fc'][i%3];g.beginPath();g.arc(fx+Math.cos(i)*6,fy+Math.sin(i)*6,4,0,7);g.fill();}g.fillStyle='#fde047';g.beginPath();g.arc(fx,fy,3,0,7);g.fill();
+    g.fillStyle='#b45309';rr(g,mx-9,my-9,18,18,4);g.fill();T(g,'รัง',mx,my+18,'#fde68a',10,'center');
+    for(let i=0;i<8;i++){const q=(M3.t*0.22+i/8)%1,cyc=Math.floor(M3.t*0.22+i/8),f=q<0.45?q/0.45:q<0.55?1:1-(q-0.55)/0.45;let tx,ty;
+      if(round){const a=hash(i*7+cyc)*6.283,r=rd(d)*(0.6+0.8*hash(i+cyc*3));tx=mx+r*Math.sin(a);ty=my-r*Math.cos(a);}else{tx=fx;ty=fy;}
+      const bxm=lerp(mx,tx,f),bym=lerp(my,ty,f),ha=Math.atan2(ty-my,tx-mx)+(q>0.55?Math.PI:0);if(!nv){g.strokeStyle='rgba(250,204,21,.15)';g.beginPath();g.moveTo(mx,my);g.lineTo(tx,ty);g.stroke();}bee(g,bxm,bym,ha,0.75,false);}
+    T(g,'อาหาร: '+d+' m · ทิศ'+compass(fb)+' ('+Math.round(fb)+'°)',M.x+10,M.y+M.h-14,'#fde68a',10.5,'left',true);
+    if(nv)drawNeural(g,w,h,['สิ่งเร้า|การสั่น/เสียงปีก','Receptor|หนวด + ขนรับสัมผัส','สมอง|แปลงมุม→ทิศดวงอาทิตย์','Effector|กล้ามเนื้อปีก','พฤติกรรม|บินตามทิศ'],[1,1,round?0.4:1,1,1],'การสื่อสารแบบสัมผัส (Tactile) ในรังที่มืด: ผึ้งงานแตะตัวผึ้งที่เต้นเพื่อรับรู้มุมและจังหวะ');}
+  else{const A={x:12,y:30,w:w-24,h:H-42},cw=A.w/GW,ch=A.h/GH,ph=M3.ph;T(g,'ทุ่งทดลองของมด: เส้นสีเขียว = ฟีโรโมนตามทาง (Releaser pheromone)',A.x,15,'#fde68a',12,'left',true);
+    g.fillStyle='#2e2110';rr(g,A.x,A.y,A.w,A.h,10);g.fill();
+    if(!nv)for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const v=ph[y*GW+x];if(v>0.05){g.fillStyle=`rgba(74,222,128,${Math.min(0.85,v/3)})`;g.fillRect(A.x+x*cw,A.y+y*ch,cw+0.5,ch+0.5);}}
+    if($('#obst').checked){g.fillStyle='#57534e';g.fillRect(A.x+34*cw,A.y+6*ch,3*cw,28*ch);T(g,'สิ่งกีดขวาง',A.x+35.5*cw,A.y+4*ch,'#d6d3d1',10,'center');}
+    g.fillStyle='#78350f';g.beginPath();g.arc(A.x+NEST[0]*A.w,A.y+NEST[1]*A.h,18,0,7);g.fill();T(g,'รัง',A.x+NEST[0]*A.w,A.y+NEST[1]*A.h+28,'#fde68a',10.5,'center',true);
+    const fx=A.x+M3.food[0]*A.w,fy=A.y+M3.food[1]*A.h;glow(g,fx,fy,26,'rgba(250,204,21,.4)');g.fillStyle='#facc15';g.beginPath();g.arc(fx,fy,12,0,7);g.fill();T(g,'อาหาร',fx,fy+22,'#fde68a',10.5,'center',true);
+    M3.ants.forEach(a=>{const x=A.x+a.x*cw,y=A.y+a.y*ch;g.fillStyle='#0a0a0a';g.beginPath();g.ellipse(x,y,3.6,2,a.a,0,7);g.fill();g.strokeStyle='#a8a29e';g.lineWidth=0.6;g.beginPath();g.ellipse(x,y,3.6,2,a.a,0,7);g.stroke();if(a.c){g.fillStyle='#facc15';g.beginPath();g.arc(x+Math.cos(a.a)*4,y+Math.sin(a.a)*4,1.8,0,7);g.fill();}});
+    if(nv){const tr=M3.ants.filter(a=>a.c).length/M3.ants.length;drawNeural(g,w,h,['สิ่งเร้า|ฟีโรโมนบนพื้น','Receptor|หนวด (Chemoreceptor)','สมอง|เทียบความเข้มซ้าย–ขวา','Effector|ขา','พฤติกรรม|เดินตามรอย'],[1,1,0.8,0.8,clamp(tr*3,0,1)],'Releaser pheromone: กระตุ้นพฤติกรรมทันที (ต่างจาก Primer pheromone ที่เปลี่ยนสรีรวิทยาระยะยาว)');}}}
+
+/* ================= MODE 4 : SOCIAL ================= */
+let M4;
+function initM4(){M4={p:V('p0')/100,t:0,ht:0,hist:[],q:0.05,gen:0,qh:[[0,0.05]]};}
+const hdW=p=>{const v=V('val'),c=V('cost');return{H:p*(v-c)/2+(1-p)*v,D:(1-p)*v/2};};
+const essP=()=>{const v=V('val'),c=V('cost');return v>=c?1:v/c;};
+const ORD=Array.from({length:48},(_,i)=>i).sort((a,b)=>hash(a*3.1)-hash(b*3.1));
+function stepM4(dt){M4.t+=dt;
+  if($('#exp4').value==='hd'){const w=hdW(M4.p);M4.p=clamp(M4.p+M4.p*(1-M4.p)*(w.H-w.D)/Math.max(20,V('val')+V('cost')/2)*dt*1.5,0.001,0.999);M4.ht+=dt;if(M4.ht>0.25){M4.ht=0;M4.hist.push([M4.t,M4.p]);if(M4.hist.length>400)M4.hist.shift();}}
+  else{const s=(+$('#rr').value)*V('B')-V('Cc');M4.gen+=dt*2;M4.q=clamp(M4.q+M4.q*(1-M4.q)*s*0.12*dt,0.001,0.999);M4.ht+=dt;if(M4.ht>0.25){M4.ht=0;M4.qh.push([M4.gen,M4.q]);if(M4.qh.length>400)M4.qh.shift();}}}
+function bird(g,x,y,dir,hawk,s=1){g.save();g.translate(x,y);g.scale(dir*s,s);g.fillStyle=hawk?'#ef4444':'#e5e7eb';g.beginPath();g.ellipse(0,0,10,7,0,0,7);g.fill();g.beginPath();g.arc(8,-5,5,0,7);g.fill();g.fillStyle=hawk?'#fde047':'#f97316';g.beginPath();g.moveTo(12,-6);g.lineTo(18,-4);g.lineTo(12,-2);g.fill();g.fillStyle='#111';g.beginPath();g.arc(9,-6,1.2,0,7);g.fill();g.restore();}
+function drawM4(g,w,h){const nv=S.toggle==='neural',H=nv?h-104:h;
+  if($('#exp4').value==='hd'){const p=M4.p,nh=Math.round(p*48),hk=new Set(ORD.slice(0,nh)),L={x:12,y:30,w:w*0.62,h:H-42},cols=6,rows=4,cw=L.w/cols,chh=L.h/rows,v=V('val'),c=V('cost');
+    T(g,'ประชากร 48 ตัว จับคู่แย่งทรัพยากร: แดง = Hawk (สู้) · ขาว = Dove (ข่มขู่แล้วถอย)',L.x,15,'#fde68a',12,'left',true);g.fillStyle='#1a2410';rr(g,L.x,L.y,L.w,L.h,10);g.fill();
+    for(let i=0;i<24;i++){const cx=L.x+(i%cols+0.5)*cw,cy=L.y+(Math.floor(i/cols)+0.5)*chh,a=hk.has(2*i),b=hk.has(2*i+1),ph=(M4.t*0.5+hash(i))%1,cl=sm(ph<0.4?ph/0.4:1);
+      g.fillStyle='#a16207';g.beginPath();g.arc(cx,cy+12,4,0,7);g.fill();
+      if(a&&b){const dx=lerp(26,10,cl);bird(g,cx-dx,cy,1,true);bird(g,cx+dx,cy,-1,true);if(ph>0.4&&ph<0.8){glow(g,cx,cy-2,18,'rgba(239,68,68,.6)');T(g,'−C',cx,cy-20,'#fca5a5',10,'center',true);}}
+      else if(a!==b){const run=ph>0.45?(ph-0.45)*40:0,hx=a?-1:1;bird(g,cx+hx*lerp(24,8,cl),cy,-hx,true);bird(g,cx-hx*(24+run),cy,ph>0.45?hx:-hx,false);if(ph>0.5)T(g,'+V',cx+hx*8,cy-18,'#fde68a',10,'center',true);}
+      else{const bob=Math.sin(M4.t*6+i)*3*(ph<0.6?1:0);bird(g,cx-22,cy+bob,1,false);bird(g,cx+22,cy-bob,-1,false);if(ph>0.6)T(g,'+V/2',cx,cy-18,'#bbf7d0',10,'center',true);}}
+    const P={x:L.x+L.w+10,y:30,w:w-L.w-34,h:H-42};panel(g,P.x,P.y,P.w,P.h);T(g,'ตารางผลตอบแทน (ของผู้เล่นแถว)',P.x+10,P.y+14,'#fde68a',11,'left',true);
+    const tx=P.x+10,ty=P.y+30,cw2=(P.w-20)/3;[['','พบ Hawk','พบ Dove'],['Hawk',((v-c)/2).toFixed(0),v.toFixed(0)],['Dove','0',(v/2).toFixed(0)]].forEach((r,i)=>r.forEach((s,j)=>{g.fillStyle=i===0||j===0?'#2e2612':'#1f1a10';g.fillRect(tx+j*cw2,ty+i*24,cw2-2,22);T(g,s,tx+j*cw2+cw2/2,ty+i*24+11,i===1&&j===1&&v<c?'#fca5a5':'#f3ead2',10.5,'center',i===0||j===0);}));
+    const W=hdW(p),mx=Math.max(Math.abs(W.H),Math.abs(W.D),1);T(g,'ผลตอบแทนเฉลี่ยตอนนี้',P.x+10,ty+92,'#fde68a',11,'left',true);bar(g,P.x+10,ty+118,P.w-20,10,Math.max(0,W.H)/mx,'#ef4444','Hawk',W.H.toFixed(1));bar(g,P.x+10,ty+152,P.w-20,10,Math.max(0,W.D)/mx,'#e5e7eb','Dove',W.D.toFixed(1));
+    T(g,'Hawk '+Math.round(p*100)+'% · ESS '+Math.round(essP()*100)+'%',P.x+10,ty+182,'#bbf7d0',11.5,'left',true);
+    wrap(g,v>=c?'V ≥ C: สู้คุ้มเสมอ → Hawk ครองประชากร':'V < C: ถ้า Hawk มากเกิน จะบาดเจ็บกันเอง → Dove ได้เปรียบ จนสมดุลที่ p = V/C',P.x+10,ty+204,P.w-20,15,'#d6c7a1',10.5);
+    if(nv)drawNeural(g,w,h,['สิ่งเร้า|คู่แข่ง/ผู้บุกรุก','Receptor|ตา หู','สมอง + ต่อมหมวกไต|Epinephrine, Testosterone','Effector|กล้ามเนื้อ','พฤติกรรม|สู้ หรือ ถอย'],[1,1,p,p,1],'Agonistic behavior: ฮอร์โมน Testosterone เพิ่มความก้าวร้าว · Epinephrine เตรียมพร้อม "สู้หรือหนี"');}
+  else{const r=+$('#rr').value,B=V('B'),C=V('Cc'),rB=r*B,net=rB-C,L={x:12,y:30,w:w*0.54,h:H-42},X=v=>L.x+v*L.w,Y=v=>L.y+v*L.h;
+    T(g,r===0.75?'ผึ้ง (Haplodiploidy): ผึ้งงานพี่น้องมียีนเหมือนกัน 75%':'แผนผังเครือญาติ: ค่า r = สัดส่วนยีนที่เหมือนกันโดยสืบเชื้อสาย',L.x,15,'#fde68a',12,'left',true);g.fillStyle='#1c1a12';rr(g,L.x,L.y,L.w,L.h,10);g.fill();
+    if(r===0.75){const q=[X(0.3),Y(0.18)],dr=[X(0.7),Y(0.18)];line(g,[q,dr],'#a8a29e',1.5);line(g,[[X(0.5),Y(0.18)],[X(0.5),Y(0.42)]],'#a8a29e',1.5);
+      bee(g,q[0],q[1],0,2.4,false);T(g,'ราชินี (2n)',q[0],q[1]+26,'#fde68a',10.5,'center',true);bee(g,dr[0],dr[1],Math.PI,2,false);T(g,'ผึ้งตัวผู้ (n)',dr[0],dr[1]+26,'#fde68a',10.5,'center',true);
+      for(let i=0;i<5;i++){const x=X(0.14+i*0.18),y=Y(0.55);line(g,[[X(0.5),Y(0.42)],[x,Y(0.42)],[x,y-14]],'#a8a29e',1.2);glow(g,x,y,22,'rgba(250,204,21,.3)');bee(g,x,y,-Math.PI/2,1.6,false);}T(g,'ผึ้งงาน (2n) เป็นพี่น้องกัน',X(0.5),Y(0.67),'#fde68a',11,'center',true);
+      const by=Y(0.78);T(g,'ยีนจากพ่อ (n): ได้ชุดเดียวกันทุกตัว → เหมือนกัน 100%',X(0.04),by,'#86efac',10.5);T(g,'ยีนจากแม่ (2n): เหมือนกัน 50%',X(0.04),by+18,'#93c5fd',10.5);T(g,'r = ½(1) + ½(½) = 0.75 > ลูกของตัวเอง (0.5)',X(0.04),by+40,'#fde047',11,'left',true);}
+    else{const N={g1:[0.32,0.12,'ปู่/ย่า',0.25],g2:[0.5,0.12,'ปู่/ย่า',0.25],m:[0.32,0.36,'พ่อ/แม่',0.5],f:[0.14,0.36,'พ่อ/แม่',0.5],au:[0.72,0.36,'ลุง/ป้า/น้า/อา',0.25],me:[0.2,0.62,'ตัวเรา',1],sb:[0.44,0.62,'พี่น้อง',0.5],co:[0.78,0.62,'ลูกพี่ลูกน้อง',0.125],ch:[0.2,0.86,'ลูก',0.5],ni:[0.44,0.86,'หลาน (ลูกพี่น้อง)',0.25]};
+      const E=[['g1','m'],['g2','m'],['g1','au'],['g2','au'],['m','me'],['f','me'],['m','sb'],['f','sb'],['au','co'],['me','ch'],['sb','ni']];E.forEach(([a,b])=>line(g,[[X(N[a][0]),Y(N[a][1])+12],[X(N[b][0]),Y(N[b][1])-12]],'rgba(214,199,161,.35)',1.2));
+      Object.entries(N).forEach(([k,[x,y,l,rv]])=>{const on=Math.abs(rv-r)<1e-6,me=k==='me';if(on)glow(g,X(x),Y(y),28,'rgba(250,204,21,.35)');g.fillStyle=me?'#f59e0b':on?'#facc15':'#57534e';g.beginPath();g.arc(X(x),Y(y),11,0,7);g.fill();T(g,l,X(x),Y(y)+20,on||me?'#fde68a':'#a8a29e',10,'center',on);if(!me)T(g,'r = '+rv,X(x)+14,Y(y)-12,on?'#fde047':'#78716c',9.5);});}
+    const P={x:L.x+L.w+10,y:30,w:w-L.w-34,h:H-42},cx=P.x+P.w/2,fy=P.y+P.h*0.45;panel(g,P.x,P.y,P.w,P.h);T(g,"Hamilton's rule: rB > C ?",P.x+10,P.y+14,'#fde68a',11.5,'left',true);
+    const tilt=clamp(net/Math.max(rB,C,0.5),-1,1)*0.32,bl=P.w*0.38;g.fillStyle='#78716c';g.beginPath();g.moveTo(cx,fy);g.lineTo(cx-14,fy+40);g.lineTo(cx+14,fy+40);g.fill();
+    const lx=cx-bl*Math.cos(tilt),ly=fy+bl*Math.sin(tilt),rx=cx+bl*Math.cos(tilt),ry=fy-bl*Math.sin(tilt);line(g,[[lx,ly],[rx,ry]],'#d6d3d1',4);
+    [[lx,ly,'rB = '+rB.toFixed(2),'#4ade80'],[rx,ry,'C = '+C.toFixed(1),'#f87171']].forEach(([x,y,s,c])=>{line(g,[[x,y],[x-18,y+30]],'#a8a29e',1);line(g,[[x,y],[x+18,y+30]],'#a8a29e',1);g.fillStyle=c;rr(g,x-26,y+30,52,8,3);g.fill();T(g,s,x,y+52,c,11,'center',true);});
+    T(g,net>0?'rB > C → ยีนเสียสละถูกคัดเลือก':net<0?'rB < C → ยีนเสียสละลดลง':'rB = C → เป็นกลาง',cx,P.y+P.h-58,net>0?'#86efac':'#fca5a5',11.5,'center',true);
+    wrap(g,{alarm:'ผู้ส่งเสียงเตือนเสี่ยงถูกนักล่าจับ (C) แต่ญาติหนีรอด (B)',sting:'ผึ้งงานต่อยแล้วตาย (C สูง) แต่ปกป้องรังของพี่น้อง (B มาก)',feed:'เสียเวลา/พลังงานของตน (C) เพื่อให้ลูกของญาติรอดมากขึ้น (B)'}[$('#scen').value],P.x+10,P.y+P.h-36,P.w-20,14,'#d6c7a1',10);
+    if(nv)drawNeural(g,w,h,['สิ่งเร้า|นักล่า/ศัตรู','Receptor|ตา','สมอง|ประเมินความเป็นญาติ','Effector|กล้ามเนื้อเสียง/เหล็กใน','พฤติกรรม|เสียสละ'],[1,1,r,net>0?1:0.2,net>0?1:0.2],'พฤติกรรมเสียสละถูกกำหนดโดยยีนและการคัดเลือกโดยธรรมชาติ ไม่ใช่การตัดสินใจทางศีลธรรม');}}
+
+/* ================= CHARTS ================= */
+function axes(g,w,h,x0,x1,y0,y1,xl,yl,nx=5,ny=4,fx,fy){const L=44,Rm=10,Tm=12,B=34;const X=v=>L+(v-x0)/(x1-x0)*(w-L-Rm),Y=v=>h-B-(v-y0)/(y1-y0)*(h-B-Tm);
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=1;for(let i=0;i<=ny;i++){const v=y0+(y1-y0)*i/ny;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-Rm,Y(v));g.stroke();T(g,fy?fy(v):fmtN(v),L-4,Y(v),'#b9ad8c',10,'right');}
+  for(let i=0;i<=nx;i++){const v=x0+(x1-x0)*i/nx;T(g,fx?fx(v):fmtN(v),X(v),h-B+10,'#b9ad8c',10,'center');}
+  g.strokeStyle='rgba(255,255,255,.3)';g.beginPath();g.moveTo(L,Tm);g.lineTo(L,h-B);g.lineTo(w-Rm,h-B);g.stroke();T(g,xl,(L+w)/2,h-8,'#b9ad8c',11,'center');
+  g.save();g.translate(11,(Tm+h-B)/2);g.rotate(-Math.PI/2);T(g,yl,0,0,'#b9ad8c',11,'center');g.restore();return{X,Y,L,B,Tm,Rm};}
+const fmtN=v=>Math.abs(v)>=100?Math.round(v).toString():(+v.toFixed(2)).toString();
+function legend(g,items,x,y){items.forEach((it,i)=>{g.fillStyle=it[1];g.fillRect(x,y+i*14-2,12,3);T(g,it[0],x+16,y+i*14,'#f3ead2',10);});}
+function hline(g,A,v,col,lab,w){g.strokeStyle=col;g.setLineDash([4,4]);g.lineWidth=1.2;g.beginPath();g.moveTo(A.L,A.Y(v));g.lineTo(w-A.Rm,A.Y(v));g.stroke();g.setLineDash([]);if(lab)T(g,lab,w-A.Rm-2,A.Y(v)-7,col,9.5,'right');}
+function plot(g,A,H,ix,col,lw,f){g.strokeStyle=col;g.lineWidth=lw;g.beginPath();H.forEach((r,i)=>{const y=A.Y(f?f(r[ix]):r[ix]);i?g.lineTo(A.X(r[0]),y):g.moveTo(A.X(r[0]),y);});g.stroke();}
+function fn(g,A,x0,x1,f,col,lw,dash){g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=100;i++){const x=x0+(x1-x0)*i/100;i?g.lineTo(A.X(x),A.Y(f(x))):g.moveTo(A.X(x),A.Y(f(x)));}g.stroke();g.setLineDash([]);}
+function vmark(g,A,x,h,col){g.strokeStyle=col;g.setLineDash([3,3]);g.beginPath();g.moveTo(A.X(x),A.Tm);g.lineTo(A.X(x),h-A.B);g.stroke();g.setLineDash([]);}
+function drawChart(){const {g,w,h}=fit($('#chart'));g.clearRect(0,0,w,h);const m=S.mode;
+  if(m===1){if(M1.k==='kin'){const t1=Math.max(60,M1.t),t0=t1-60,Hs=M1.hist.filter(r=>r[0]>=t0),A=axes(g,w,h,t0,t1,0,100,'เวลา (วินาที)','% ในด้านชื้น',6,4,v=>(v-t0).toFixed(0));hline(g,A,50,'#a8a29e','สุ่ม 50%',w);plot(g,A,Hs,1,'#60a5fa',2.4);plot(g,A,Hs,2,'#fbbf24',1.8,v=>v*50);legend(g,[['% ประชากรในด้านชื้น','#60a5fa'],['ความเร็วเฉลี่ย (×50 cm/s)','#fbbf24']],A.L+8,A.Tm+8);}
+    else if(M1.k==='tax'){const tot=M1.left+M1.right||1,A=axes(g,w,h,0,2,0,100,'','% ของสัตว์ที่เลือก',2,4,()=>'');[[M1.left,'แขนซ้าย','#a8a29e'],[M1.right,'แขนขวา (มีสิ่งเร้า)','#fde047']].forEach(([c,l,col],i)=>{const x=A.X(i)+20,bw=A.X(1)-A.X(0)-40,v=c/tot*100;g.fillStyle=col;g.fillRect(x,A.Y(v),bw,A.Y(0)-A.Y(v));T(g,Math.round(v)+'% ('+c+')',x+bw/2,A.Y(v)-9,'#f3ead2',11,'center',true);T(g,l,x+bw/2,h-A.B+10,'#d6c7a1',10,'center');});hline(g,A,50,'#a8a29e','สุ่ม',w);}
+    else{const ks=Object.keys(MODELS),A=axes(g,w,h,0,4,0,100,'','อัตราการโจมตี (%)',4,4,()=>'');ks.forEach((k,i)=>{const f=FST[k],v=f.tr?f.at/f.tr*100:0,x=A.X(i)+6,bw=A.X(1)-A.X(0)-12;g.fillStyle=MODELS[k].red?'#ef4444':'#9ca3af';g.globalAlpha=k===$('#model').value?1:0.55;g.fillRect(x,A.Y(v),bw,A.Y(0)-A.Y(v));g.globalAlpha=1;T(g,f.tr?Math.round(v)+'% (n='+f.tr+')':'ยังไม่ทดสอบ',x+bw/2,A.Y(v)-9,'#f3ead2',9.5,'center');T(g,MODELS[k].s,x+bw/2,h-A.B+10,'#d6c7a1',9.5,'center');});}}
+  else if(m===2){const k=M2.k;
+    if(k==='pav'){const n=V('trials'),A=axes(g,w,h,0,60,0,1,'จำนวนครั้งที่ฝึก (n)','ความแรงของ CR (V)',6,4);fn(g,A,0,50,Vp,'#f59e0b',2.6);if($('#ext').checked){const v0=Vp(n);fn(g,A,n,Math.min(60,n+15),x=>v0*Math.pow(0.8,x-n),'#60a5fa',2,[5,4]);}
+      g.fillStyle='#fde047';g.beginPath();g.arc(A.X(n+($('#ext').checked?M2.ext:0)),A.Y(CRv()),6,0,7);g.fill();legend(g,[['การเรียนรู้ (Acquisition)','#f59e0b'],['การดับสูญ (Extinction)','#60a5fa']],A.L+110,A.Y(0.25));}
+    else if(k==='skin'){const t1=Math.max(60,M2.t),t0=t1-60,Hs=M2.cum.filter(r=>r[0]>=t0),c0=Hs.length?Hs[0][1]:0,c1=Math.max(c0+10,M2.np),A=axes(g,w,h,t0,t1,c0,c1,'เวลา (วินาที)','จำนวนกดสะสม',6,4,v=>(v-t0).toFixed(0),v=>Math.round(v)+'');
+      g.strokeStyle='#f59e0b';g.lineWidth=2.4;g.beginPath();let py=null;Hs.forEach((r,i)=>{const x=A.X(r[0]),y=A.Y(r[1]);if(!i)g.moveTo(x,y);else{g.lineTo(x,py);g.lineTo(x,y);}py=y;});if(py!==null)g.lineTo(A.X(M2.t),py);g.stroke();T(g,'ความชันสูง = กดถี่ (Cumulative record ของ Skinner)',A.L+8,A.Tm+8,'#f3ead2',10);}
+    else if(k==='imp'){const A=axes(g,w,h,0,72,0,1,'อายุเมื่อพบวัตถุ (ชั่วโมง)','ความแรงการฝังใจ',6,4);g.fillStyle='rgba(34,197,94,.18)';g.fillRect(A.X(13),A.Tm,A.X(16)-A.X(13),h-A.B-A.Tm);T(g,'ช่วงวิกฤต',A.X(14.5),A.Tm+8,'#86efac',10,'center',true);
+      const k2={man:1,goose:1,box:0.9,ball:0.85}[$('#obj').value];fn(g,A,0,72,x=>Math.exp(-((x-14.5)**2)/50)*k2,'#f59e0b',2.6);g.fillStyle='#fde047';g.beginPath();g.arc(A.X(V('age')),A.Y(impS()),6,0,7);g.fill();}
+    else{const Hs=M2.hist,n=Math.max(12,Hs.length),A=axes(g,w,h,0,n,0,1,'ลำดับการแตะ','ความแรงการตอบสนอง',6,4,v=>Math.round(v)+'');Hs.forEach((r,i)=>{const x=A.X(i)+2,bw=A.X(1)-A.X(0)-4;g.fillStyle=r[2]?'#fde047':'#84cc16';g.fillRect(x,A.Y(r[1]),bw,A.Y(0)-A.Y(r[1]));});fn(g,A,0,Math.min(n,12),x=>Math.exp(-x/4),'rgba(255,255,255,.5)',1.4,[4,4]);legend(g,[['การตอบสนองแต่ละครั้ง','#84cc16'],['หลังสิ่งเร้าใหม่','#fde047']],A.X(n*0.55),A.Tm+8);}}
+  else if(m===3){if(M3.k==='bee'){const A=axes(g,w,h,0,1000,0,1.2,'ระยะทางถึงอาหาร (m)','ระยะเวลา Waggle run (s)',5,4);g.fillStyle='rgba(244,114,182,.15)';g.fillRect(A.X(0),A.Tm,A.X(50)-A.X(0),h-A.B-A.Tm);T(g,'Round',A.X(25),A.Tm+8,'#f9a8d4',9.5,'center',true);
+      fn(g,A,50,1000,x=>0.075+x*0.00095,'#f59e0b',2.6);const d=V('dist');if(d>=50){g.fillStyle='#fde047';g.beginPath();g.arc(A.X(d),A.Y(wagDur()),6,0,7);g.fill();}T(g,'ไกลขึ้น → สั่นท้องนานขึ้น (≈ 1 วินาที ต่อ 1 กม.)',A.L+60,A.Tm+26,'#f3ead2',10);}
+    else{const t1=Math.max(60,M3.t),t0=t1-60,Hs=M3.rh.filter(r=>r[0]>=t0),mx=Math.max(20,...Hs.map(r=>r[1])),A=axes(g,w,h,t0,t1,0,mx,'เวลา (วินาที)','อาหารที่ขนกลับ (ครั้ง/นาที)',6,4,v=>(v-t0).toFixed(0));plot(g,A,Hs,1,'#4ade80',2.6);}}
+  else{if($('#exp4').value==='hd'){const t1=Math.max(60,M4.t),t0=t1-60,Hs=M4.hist.filter(r=>r[0]>=t0),A=axes(g,w,h,t0,t1,0,1,'เวลา (รุ่น)','สัดส่วน Hawk (p)',6,4,v=>(v-t0).toFixed(0));hline(g,A,essP(),'#4ade80','ESS = V/C',w);plot(g,A,Hs,1,'#ef4444',2.6);}
+    else{const t1=Math.max(100,M4.gen),t0=t1-100,Hs=M4.qh.filter(r=>r[0]>=t0),A=axes(g,w,h,t0,t1,0,1,'รุ่น (Generations)','ความถี่ยีนเสียสละ (q)',5,4,v=>(v-t0).toFixed(0));plot(g,A,Hs,1,'#facc15',2.6);}}}
+
+/* ================= TEXT ================= */
+function stats(arr){$('#stats').innerHTML=arr.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+const TB1='<table><tr><th>พฤติกรรม</th><th>ทิศทาง</th><th>ลักษณะ</th><th>ตัวอย่าง</th></tr><tr><td>Kinesis</td><td>ไม่แน่นอน</td><td>เปลี่ยนความเร็ว/อัตราการเลี้ยวตามความเข้มสิ่งเร้า</td><td>ตัวกะปิหาที่ชื้น, พารามีเซียม</td></tr><tr><td>Taxis</td><td>แน่นอน (+/−)</td><td>มุ่งเข้าหาหรือหนีสิ่งเร้าโดยตรง</td><td>แมลงเม่าเข้าหาแสง, พลานาเรียหนีแสง, ปลาว่ายทวนน้ำ (+Rheotaxis)</td></tr><tr><td>Reflex / Chain of reflexes</td><td>—</td><td>ทันที นอกอำนาจจิตใจ / ต่อเนื่องเป็นลำดับ</td><td>รีเฟล็กซ์หัวเข่า, กิ้งกือขดตัว, การเกี้ยวพาราสีของแมลงหวี่</td></tr><tr><td>FAP</td><td>—</td><td>Sign stimulus กระตุ้น ทำจนจบในแบบเดิมเสมอ</td><td>ปลากัด/ปลาสติกเกิลแบ็กโจมตีท้องแดง, ห่านกลิ้งไข่กลับรัง, แมงมุมชักใย</td></tr></table>';
+const TTIN='<table style="margin-top:6px"><tr><th colspan="2">คำถาม 4 ข้อของ Tinbergen</th></tr><tr><td>Proximate: กลไก</td><td>สิ่งเร้า ระบบประสาท ฮอร์โมน ทำงานอย่างไร</td></tr><tr><td>Proximate: พัฒนาการ</td><td>พันธุกรรม + ประสบการณ์ในช่วงชีวิต</td></tr><tr><td>Ultimate: คุณค่าการอยู่รอด</td><td>ช่วยให้รอดและสืบพันธุ์ได้มากขึ้นอย่างไร</td></tr><tr><td>Ultimate: ประวัติวิวัฒนาการ</td><td>พฤติกรรมเกิดและเปลี่ยนแปลงในบรรพบุรุษอย่างไร</td></tr></table>';
+const TB2='<table><tr><th>การเรียนรู้</th><th>หลักการ</th><th>ตัวอย่าง</th></tr><tr><td>Habituation</td><td>สิ่งเร้าซ้ำ ไม่มีผลดี/ผลเสีย → เลิกตอบสนอง</td><td>นกเลิกกลัวหุ่นไล่กา</td></tr><tr><td>Imprinting</td><td>เรียนรู้ในช่วงวิกฤต จดจำสิ่งแรกที่เห็น</td><td>ลูกห่านเดินตาม Lorenz, แซลมอนจำกลิ่นลำธาร</td></tr><tr><td>Classical conditioning</td><td>เชื่อม CS กับ US → CS อย่างเดียวก็เกิด CR</td><td>Pavlov: กระดิ่ง → น้ำลายไหล</td></tr><tr><td>Operant / Trial and error</td><td>ลองทำ → รางวัล/ลงโทษ → ทำบ่อยขึ้น/น้อยลง</td><td>Skinner: หนูกดคันโยก, วัวเลี่ยงรั้วไฟฟ้า</td></tr><tr><td>Insight / Reasoning</td><td>แก้ปัญหาใหม่ได้ทันทีจากประสบการณ์เดิม</td><td>ชิมแปนซีต่อไม้เก็บกล้วย</td></tr></table>';
+const TB3='<table><tr><th>ช่องทาง</th><th>ข้อดี</th><th>ข้อจำกัด</th><th>ตัวอย่าง</th></tr><tr><td>ภาพ (Visual)</td><td>รวดเร็ว บอกตำแหน่งชัด</td><td>ต้องมีแสงและมองเห็น</td><td>นกยูงรำแพน, หมึกเปลี่ยนสี</td></tr><tr><td>เสียง (Auditory)</td><td>ไกล รอบทิศ ไม่ต้องมองเห็น</td><td>ผู้ล่าได้ยินด้วย</td><td>กบเรียกคู่, เสียงเตือนภัย, Echolocation</td></tr><tr><td>สารเคมี (Pheromone)</td><td>จำเพาะ อยู่ได้นาน ใช้ในที่มืด</td><td>ช้า ขึ้นกับลม/น้ำ</td><td>Releaser: ฟีโรโมนเพศผีเสื้อกลางคืน, ทางเดินมด · Primer: ราชินีผึ้งยับยั้งรังไข่ผึ้งงาน</td></tr><tr><td>สัมผัส (Tactile)</td><td>ระยะใกล้ ใช้ในที่มืด</td><td>ต้องอยู่ใกล้กัน</td><td>ลิงหาเหา, ระบำผึ้ง</td></tr></table><table style="margin-top:6px"><tr><th></th><th>Round dance</th><th>Waggle dance</th></tr><tr><td>ระยะอาหาร</td><td>&lt; 50 m</td><td>&gt; 50 m</td></tr><tr><td>บอกระยะ</td><td>บอกแค่ "ใกล้"</td><td>ระยะเวลาการสั่นท้อง</td></tr><tr><td>บอกทิศ</td><td>ไม่บอก</td><td>มุมแกนเต้นกับแนวดิ่ง = มุมกับดวงอาทิตย์</td></tr></table>';
+const TB4='<table><tr><th>พฤติกรรมสังคม</th><th>ความหมาย / ตัวอย่าง</th></tr><tr><td>Agonistic</td><td>ข่มขู่ ต่อสู้ ยอมแพ้ (ส่วนใหญ่เป็นพิธีกรรม ไม่บาดเจ็บ)</td></tr><tr><td>Dominance hierarchy</td><td>ลำดับชั้น (Pecking order ในไก่) ลดการต่อสู้ซ้ำ</td></tr><tr><td>Territoriality</td><td>ครอบครองและปกป้องพื้นที่ อาหาร คู่ผสมพันธุ์</td></tr><tr><td>Monogamy</td><td>ผัวเดียวเมียเดียว (นกหลายชนิด ชะนี)</td></tr><tr><td>Polygyny / Polyandry</td><td>ตัวผู้ 1 : ตัวเมียหลายตัว (สิงโต แมวน้ำช้าง) / ตัวเมีย 1 : ตัวผู้หลายตัว (นกอีแจว)</td></tr><tr><td>Altruism</td><td>ลด Fitness ตัวเองเพื่อเพิ่ม Fitness ญาติ (Kin selection)</td></tr></table><table style="margin-top:6px"><tr><th>ความสัมพันธ์</th><th>r</th></tr><tr><td>พ่อแม่–ลูก, พี่น้องท้องเดียวกัน</td><td>0.5</td></tr><tr><td>ปู่ย่า–หลาน, ลุงป้า–หลาน, พี่น้องต่างพ่อ</td><td>0.25</td></tr><tr><td>ลูกพี่ลูกน้อง</td><td>0.125</td></tr><tr><td>ผึ้งงานพี่น้อง (Haplodiploidy)</td><td>0.75</td></tr></table>';
+const MIS1='<p><b>❌ "Kinesis และ Taxis คือสิ่งเดียวกัน"</b></p><p>✅ <b>Kinesis</b> เปลี่ยนเพียงความเร็วหรืออัตราการเลี้ยวตามความเข้มของสิ่งเร้า <b>ไม่มีทิศทางแน่นอน</b> · <b>Taxis</b> เคลื่อนที่<b>มุ่งเข้าหาหรือหนีสิ่งเร้าโดยตรง</b></p>';
+const MIS2='<p><b>❌ "FAP ปรับเปลี่ยนได้ง่ายตามการฝึก"</b></p><p>✅ FAP เป็นพฤติกรรมแต่กำเนิดที่ถูกโปรแกรมทางพันธุกรรม เมื่อ Sign stimulus กระตุ้นแล้วจะ<b>ทำจนจบในรูปแบบเดิมเสมอ</b> แม้นำสิ่งเร้าออกไปแล้ว</p>';
+function updateText(){const m=S.mode;let st=[],eq='',an='',mis='',tb='',tt='',ct='';
+  if(m===1){const I=V('int');
+    if(M1.k==='kin'){const q=kinQ();tt='Kinesis: ตัวกะปิในจานที่มีความชื้นต่างกัน';ct='การรวมกลุ่มในด้านชื้นตามเวลา';
+      st=[['ความเร็วเฉลี่ย (Speed)',q.v.toFixed(2)+' cm/s'],['ดรรชนีการเลี้ยว (Turning rate)',Math.round(q.tr*63)+' °/s'],['อยู่ด้านชื้น (Response)',q.hum.toFixed(0)+'%'],['ประเภทพฤติกรรม','Kinesis']];flowBar(['สิ่งเร้า: ความแห้ง','Receptor รับความชื้น','ระบบประสาท','Effector: ขา','Kinesis'],Math.floor(S.time*1.2)%5);
+      eq=`v(h) = 0.3 + 1.5·(1 − h/100) cm/s    อัตราการเลี้ยว ∝ 0.6 + 3.4·(1 − h/100)\nความชื้นที่ตำแหน่ง x: h = 10 + (${I} − 10)·x\nที่ชื้น → ช้าลง เลี้ยวน้อยลง → อยู่นานขึ้น → รวมกลุ่ม (ไม่ได้มุ่งหน้าไปที่ชื้น)`;
+      an=I<20?'<p><span class="tag mid">ไม่มีความต่าง</span> ความชื้นทั้งจานใกล้เคียงกัน ตัวกะปิกระจายแบบสุ่ม ไม่รวมกลุ่ม</p>':`<p><span class="tag ok">Kinesis</span> ในที่แห้ง ตัวกะปิเคลื่อนที่<b>เร็วและเลี้ยวบ่อย</b> (Orthokinesis + Klinokinesis) เมื่อเข้าที่ชื้นจะช้าลงและอยู่นาน จึงรวมกลุ่มด้านชื้น ${q.hum.toFixed(0)}%</p><p>ไม่ได้ "เลือกเดิน" ไปหาความชื้นโดยตรง การรวมกลุ่มเกิดจากผลทางสถิติของความเร็วที่ต่างกัน · คุณค่าการอยู่รอด: ป้องกันร่างกายสูญเสียน้ำ</p>`;mis=MIS1;}
+    else if(M1.k==='tax'){const o=$('#torg').value,sg=SGN[o],tot=M1.left+M1.right,tw=sg>0?M1.right:M1.left;tt='Taxis: การเลือกทางใน T-Maze';ct='ผลการเลือกแขนของ T-Maze';
+      st=[['ความเร็ว (Speed)',o==='moth'?'≈ 60 cm/s':'≈ 0.25 cm/s'],['ดรรชนีการเลี้ยว (Turning rate)','≈ 0 °/s (มุ่งตรง)'],['ไปตามทิศของ Taxis (Response)',(tot?Math.round(tw/tot*100):0)+'%'],['ประเภทพฤติกรรม',(sg>0?'+':'−')+(o==='planc'?'Chemotaxis':'Phototaxis')]];
+      flowBar(['สิ่งเร้า: '+(o==='planc'?'สารเคมี':'แสง'),'Receptor: '+(o==='planc'?'Chemoreceptor':'Eyespot'),'เปรียบเทียบซ้าย–ขวา','หันตัวตามทิศ','Taxis '+(sg>0?'(+)':'(−)')],Math.floor(S.time*1.2)%5);
+      eq=`P(เลือกแขนที่มีสิ่งเร้า) = 0.5 + 0.48·s·(I/100)\ns = ${sg>0?'+1 (เข้าหา)':'−1 (หนี)'} · I = ${I}% → P = ${(0.5+0.48*sg*I/100).toFixed(2)}`;
+      an=`<p><span class="tag ok">${sg>0?'Positive':'Negative'} taxis</span> ${o==='plan'?'พลานาเรียมี Eyespot รับแสง หนีไปที่มืด ลดการถูกผู้ล่าพบและการสูญเสียน้ำ':o==='moth'?'แมลงเม่าบินเข้าหาแสงโดยตรง (Positive phototaxis)':'พลานาเรียรับกลิ่นอาหารด้วย Chemoreceptor และเคลื่อนเข้าหา (Positive chemotaxis)'}</p>`+(I<10?'<p><span class="tag mid">ไม่มีสิ่งเร้า</span> สัตว์เลือกซ้าย/ขวาแบบสุ่ม ~50%</p>':'')+'<p>ตัวอย่างอื่น: ปลาว่ายทวนน้ำ = Positive rheotaxis</p>';mis=MIS1;}
+    else{const s=signS(),mk=$('#model').value,f=FST[mk];tt='Fixed Action Pattern: ปลากัดตัวผู้กับโมเดล';ct='อัตราการโจมตีของแต่ละโมเดล';
+      st=[['ความแรง Sign stimulus',Math.round(s*100)+'%'],['สถานะ',M1.ph>=0?'FAP: '+FAPS[M1.ph][0]:'รอ/สังเกต'],['ความถี่การตอบสนอง (Response)',f.tr?Math.round(f.at/f.tr*100)+'%':'—'],['จำนวนครั้งทดสอบ',f.tr+' ครั้ง']];flowBar(FAPS.map(x=>x[0]),M1.ph);
+      eq=`Sign stimulus = 0.82·[ท้องแดง] + 0.12 + 0.10·[รูปทรงปลา] = ${s.toFixed(2)}\nถ้า > 0.50 (เกณฑ์ IRM) → เริ่ม FAP และทำจนครบ 5 ขั้น แม้นำโมเดลออก`;
+      an=(s>0.5?`<p><span class="tag no">เกิด FAP</span> สีแดงที่ท้องเป็น <b>Sign stimulus (Releaser)</b> แม้โมเดลจะเป็นก้อนกลมไม่เหมือนปลาก็กระตุ้นได้</p>`:`<p><span class="tag ok">ไม่เกิด FAP</span> แม้โมเดลจะเหมือนปลาจริง แต่ไม่มีสีแดง จึงไม่ใช่ Sign stimulus</p>`)+'<p>การทดลองคลาสสิกของ Tinbergen ใช้ปลาสติกเกิลแบ็กตัวผู้ ซึ่งโจมตีวัตถุอะไรก็ได้ที่มีท้องสีแดง · ตัวอย่างอื่น: ห่านกลิ้งไข่ที่หล่นกลับรังจนจบท่าแม้ไข่หลุดไปแล้ว</p>'+(!M1.model&&M1.ph>=0?'<p><span class="tag mid">นำโมเดลออกแล้ว</span> ปลายังโจมตีต่อจนจบ เพราะ FAP หยุดกลางคันไม่ได้</p>':'');mis=MIS2;}
+    tb=TB1+TTIN;}
+  else if(m===2){const k=M2.k;
+    if(k==='pav'){const n=V('trials'),cr=CRv(),ex=$('#ext').checked;tt='Classical conditioning: สุนัขของ Pavlov';ct='เส้นโค้งการเรียนรู้และการดับสูญ';
+      st=[['จำนวนครั้งที่ฝึก',n+' ครั้ง'],['ความแรง CR (V)',Math.round(cr*100)+'%'],['น้ำลายรอบก่อน',M2.lastNd+' หยด'],['ระยะ',ex?'ดับสูญ (Extinction)':n===0?'ก่อนฝึก':'ฝึก (Acquisition)']];
+      flowBar(['ก่อนฝึก: กระดิ่ง = Neutral stimulus','ฝึก: CS + US ซ้ำ ๆ','CS อย่างเดียว → CR','ดับสูญ (Extinction)'],ex?3:n===0?0:cr<0.7?1:2);
+      eq=`ΔV = α(λ − V)   α = ${AL} · λ = ${ex?'0 (ไม่มีอาหาร)':'1 (มีอาหาร)'}\nV(n) = 1 − (1 − α)ⁿ = 1 − ${(1-AL).toFixed(2)}^${n} = ${Vp(n).toFixed(2)}${ex?`\nดับสูญ: V = ${Vp(n).toFixed(2)} × 0.8^${M2.ext} = ${cr.toFixed(2)}`:''}`;
+      an=`<p><span class="tag ${cr>0.7?'ok':'mid'}">US → UR</span> อาหาร (US) ทำให้น้ำลายไหลโดยกำเนิด (UR) · กระดิ่ง (CS) เมื่อจับคู่กับอาหารซ้ำ ๆ จะทำให้น้ำลายไหลได้เอง = <b>CR</b> (ตอนนี้ ${Math.round(cr*100)}%)</p>`+(ex?'<p><span class="tag mid">Extinction</span> สั่นกระดิ่งโดยไม่ให้อาหารซ้ำ ๆ → CR ค่อย ๆ หายไป (แต่ไม่ได้ลืมสนิท ฝึกใหม่จะเรียนรู้เร็วขึ้น)</p>':'')+'<p>กดปุ่ม "ทดสอบ" เพื่อดูว่ากระดิ่งอย่างเดียวทำให้น้ำลายไหลแค่ไหน</p>';}
+    else if(k==='skin'){const c=$('#cons').value;tt='Operant conditioning: Skinner Box';ct='บันทึกการกดสะสม (Cumulative record)';
+      st=[['อัตรากดคันโยก (Response rate)',Math.round((0.12+1.3*M2.w)*60)+' ครั้ง/นาที'],['กดทั้งหมด',M2.np+' ครั้ง'],['รางวัล / ลงโทษ',M2.nr+' / '+M2.ns],['ความน่าจะเป็นของพฤติกรรม',Math.round(M2.w*100)+'%']];
+      flowBar(['ลองทำพฤติกรรม (สุ่ม)','ผลที่ตามมา','เชื่อมโยงพฤติกรรม–ผล','ปรับความถี่พฤติกรรม'],M2.press>0?1:M2.w>0.6||M2.w<0.03?3:2);
+      eq=`Law of effect: รางวัล → w ← w + 0.10·(1 − w) · ลงโทษ → w ← w − 0.30·w\nไม่มีผล → w ← w − 0.06·w (Extinction)\nอัตรากด = 0.12 + 1.3·w = ${(0.12+1.3*M2.w).toFixed(2)} ครั้ง/วินาที`;
+      an=c==='food'?`<p><span class="tag ok">Reinforcement</span> หนูลองผิดลองถูก เมื่อกดแล้วได้อาหาร จะกดถี่ขึ้น${V('prob')<100?' · ให้รางวัลเป็นบางครั้ง (Partial reinforcement) ก็ยังเรียนรู้ได้แต่ช้ากว่า':''}</p>`:c==='shock'?'<p><span class="tag no">Punishment</span> กดแล้วถูกช็อต พฤติกรรมลดลงอย่างรวดเร็ว เช่น วัวเลิกแตะรั้วไฟฟ้า</p>':'<p><span class="tag mid">Extinction</span> ไม่มีผลตามมา พฤติกรรมที่เคยได้รางวัลจะค่อย ๆ ลดลง</p>';
+      an+='<p>ต่างจาก Classical conditioning: Operant เชื่อม <b>พฤติกรรมที่สัตว์ทำเอง</b> กับ<b>ผลที่ตามมา</b> ส่วน Classical เชื่อม<b>สิ่งเร้า 2 อย่าง</b>เข้าด้วยกัน</p>';}
+    else if(k==='imp'){const s=impS(),age=V('age'),ok=age>=13&&age<=16;tt='Imprinting: ลูกห่านกับวัตถุเคลื่อนที่';ct='ความแรงการฝังใจตามอายุ (Critical period)';
+      st=[['อายุเมื่อพบวัตถุ',age+' ชม.'],['ความแรงการฝังใจ',Math.round(s*100)+'%'],['ลูกห่านที่ติดตาม',M2.g.filter((q,i)=>hash(i+5)<s).length+' / 6'],['ช่วงวิกฤต (13–16 ชม.)',ok?'อยู่ในช่วง':'นอกช่วง']];
+      flowBar(['ฟักออกจากไข่','ช่วงวิกฤต 13–16 ชม.','พบวัตถุเคลื่อนที่','จดจำเป็น "แม่"','ติดตามตลอดไป'],ok?4:age<13?1:-1);
+      eq=`S(age) = exp(−(age − 14.5)² / (2·5²)) × ความดึงดูดของวัตถุ\nS(${age}) = ${s.toFixed(2)}`;
+      an=`<p><span class="tag ${ok?'ok':'mid'}">${ok?'ฝังใจสำเร็จ':'ฝังใจอ่อน'}</span> Konrad Lorenz พบว่าลูกห่านติดตามวัตถุเคลื่อนที่ชิ้นแรกที่เห็นในช่วงวิกฤต แม้จะเป็นมนุษย์หรือกล่อง</p><p>Imprinting เป็นการเรียนรู้ที่มีพื้นฐานทางพันธุกรรม และเปลี่ยนแปลงได้ยากเมื่อเกิดแล้ว · ตัวอย่างอื่น: ปลาแซลมอนจำกลิ่นลำธารที่เกิดแล้วว่ายกลับมาวางไข่</p>`;}
+    else{tt='Habituation: การตอบสนองที่ลดลงเมื่อสิ่งเร้าซ้ำ';ct='ความแรงการตอบสนองต่อการแตะแต่ละครั้ง';
+      st=[['จำนวนการแตะซ้ำ',M2.n+' ครั้ง'],['ความแรงการตอบสนอง',Math.round(M2.R*100)+'%'],['ความถี่การตอบสนอง (Response)',M2.R>0.3?'ม้วนตัว':'แทบไม่ตอบสนอง'],['ประเภท','Habituation']];
+      flowBar(['สิ่งเร้าใหม่ → ตอบสนองเต็มที่','สิ่งเร้าซ้ำ ไม่มีอันตราย','ตอบสนองลดลง','เลิกตอบสนอง'],M2.R>0.9?0:M2.R>0.5?1:M2.R>0.15?2:3);
+      eq=`R(n) = R₀·e^(−(n−1)/τ)   τ = 4 ครั้ง\nR(${M2.n}) = ${M2.R.toFixed(2)}`;
+      an='<p><span class="tag ok">Habituation</span> การเรียนรู้ที่ง่ายที่สุด: เลิกตอบสนองต่อสิ่งเร้าที่ซ้ำและไม่มีผลดีหรือผลเสีย ช่วยประหยัดพลังงานไปตอบสนองสิ่งที่สำคัญกว่า</p><p>ตัวอย่าง: นกเลิกกลัวหุ่นไล่กา, หอยทากเลิกหดตัวเมื่อถูกแตะซ้ำ ๆ</p>';}
+    mis='<p><b>❌ "การเรียนรู้ทุกแบบต้องมีรางวัลหรือการลงโทษ"</b></p><p>✅ Habituation และ Imprinting <b>ไม่ต้องมีรางวัล</b> · Classical conditioning อาศัยการจับคู่สิ่งเร้า</p><p><b>❌ "Imprinting เกิดได้ทุกช่วงอายุ"</b> ✅ เกิดได้เฉพาะ<b>ช่วงวิกฤต</b> (ลูกห่าน ~13–16 ชม. หลังฟัก)</p>'+MIS2;tb=TB2;}
+  else if(m===3){if(M3.k==='bee'){const d=V('dist'),ang=V('ang'),sun=+$('#sun').value,fb=(sun+ang)%360,round=d<50,dur=wagDur();tt='การเต้นระบำของผึ้ง: รังแนวตั้ง + แผนที่';ct='ระยะเวลา Waggle run กับระยะทาง';
+      st=[['รูปแบบการเต้น',round?'Round dance':'Waggle dance'],['ระยะเวลา Waggle run',round?'—':dur.toFixed(2)+' s ('+Math.round(13*dur)+' ครั้ง)'],['มุมแกนเต้นจากแนวดิ่ง',round?'ไม่บอกทิศ':ang+'°'],['ทิศของแหล่งอาหาร',compass(fb)+' ('+Math.round(fb)+'°)']];
+      flowBar(['ผึ้งสำรวจพบอาหาร','กลับรัง เต้นระบำ','ผึ้งงานรับรู้ด้วยการสัมผัส','บินออกตามทิศ','พบอาหาร'],Math.floor(M3.t*0.6)%5);
+      eq=round?'ระยะ < 50 m → Round dance: บอกว่า "อาหารอยู่ใกล้" ไม่บอกทิศ\nผึ้งงานบินค้นหารอบรังด้วยกลิ่นดอกไม้ที่ติดตัวผึ้งสำรวจ':`ทิศอาหาร (บนพื้น) = ทิศดวงอาทิตย์ + θ = ${sun}° + ${ang}° = ${Math.round(fb)}° (${compass(fb)})\nθ = มุมแกน Waggle run เทียบกับแนวดิ่งขึ้นบนรังแนวตั้ง\nระยะเวลาสั่นท้อง ≈ 0.075 + 0.00095·d = ${dur.toFixed(2)} s  (≈ 1 วินาที ต่อ 1 กม.)`;
+      an=round?'<p><span class="tag mid">Round dance</span> อาหารอยู่ใกล้รัง เต้นวนเป็นวงกลมสลับทิศ ไม่มีข้อมูลทิศทาง</p>':`<p><span class="tag ok">Waggle dance</span> ผึ้งวิ่งเป็นเส้นตรงพร้อมสั่นท้อง (Waggle run) แล้ววนกลับซ้ายสลับขวาเป็นรูปเลข 8</p><p><b>ทิศทาง:</b> มุมของแกนเต้นกับแนวดิ่ง (θ = ${ang}°) = มุมของอาหารกับดวงอาทิตย์ · <b>ระยะทาง:</b> ยิ่งไกล ยิ่งสั่นท้องนาน</p><p>ลองเปลี่ยนช่วงเวลา: ดวงอาทิตย์เคลื่อนที่ ผึ้งจึงต้องปรับมุมเต้นตามเวลาเพื่อชี้ไปยังจุดเดิม</p>`;
+      mis='<p><b>❌ "Waggle dance บอกแค่ระยะทางของแหล่งอาหาร"</b></p><p>✅ บอกทั้ง<b>ระยะทาง</b> (ระยะเวลาการสั่นท้อง) และ<b>ทิศทาง</b> (มุมของแกนเต้นกับแนวดิ่ง ซึ่งแทนตำแหน่งดวงอาทิตย์)</p><p><b>❌ "ผึ้งดูการเต้นด้วยตา"</b> ✅ ในรังมืด ผึ้งงานรับรู้ผ่าน<b>การสัมผัส</b>และการสั่นสะเทือน</p>';}
+    else{const ev=V('evap')/100*0.9,hl=ev>0?Math.LN2/ev:Infinity,car=M3.ants.filter(a=>a.c).length;tt='ฟีโรโมนตามทางของมด';ct='อัตราการขนอาหารกลับรัง';
+      st=[['อาหารที่ขนกลับ',M3.del+' ครั้ง'],['อัตราการขน (Response)',M3.dl.length*3+' ครั้ง/นาที'],['Half-life ฟีโรโมน',isFinite(hl)?hl.toFixed(1)+' s':'ไม่ระเหย'],['มดที่แบกอาหาร',car+' / '+M3.ants.length]];
+      flowBar(['มดสำรวจพบอาหาร','กลับรังพร้อมปล่อยฟีโรโมน','มดอื่นเดินตามรอย','รอยเข้มขึ้น (Positive feedback)','อาหารหมด → รอยระเหยหาย'],M3.del<3?0:M3.dl.length<10?2:3);
+      eq=`P(t+Δt) = P(t)·e^(−kΔt) + การปล่อยของมดที่แบกอาหาร\nk = ${ev.toFixed(2)} /s → Half-life = ln2/k = ${isFinite(hl)?hl.toFixed(1)+' s':'∞'}`;
+      an=`<p><span class="tag ok">Releaser pheromone</span> มดที่พบอาหารปล่อยฟีโรโมนตามทางกลับรัง มดตัวอื่นใช้หนวดรับกลิ่นแล้วเดินตามทันที ยิ่งมดเดินมาก รอยยิ่งเข้ม (Positive feedback)</p>`+(V('evap')>70?'<p><span class="tag no">ระเหยเร็วมาก</span> รอยหายก่อนมดตัวอื่นจะตามได้ การขนอาหารช้าลง</p>':V('evap')<8?'<p><span class="tag mid">แทบไม่ระเหย</span> เมื่อย้ายอาหาร รอยเก่ายังอยู่ทำให้มดเดินไปที่เดิม — การระเหยช่วยให้ "ลืม" เส้นทางที่ใช้ไม่ได้แล้ว</p>':'')+($('#obst').checked?'<p>มีสิ่งกีดขวาง: มดอ้อมไปตามขอบ และรอยฟีโรโมนจะค่อย ๆ รวมเป็นเส้นทางที่สั้นที่สุด</p>':'');
+      mis='<p><b>❌ "ฟีโรโมนทุกชนิดกระตุ้นพฤติกรรมทันที"</b></p><p>✅ <b>Releaser pheromone</b> กระตุ้นพฤติกรรมทันที (ฟีโรโมนเพศของผีเสื้อกลางคืน ทางเดินมด) ส่วน <b>Primer pheromone</b> เปลี่ยนสรีรวิทยา/ต่อมไร้ท่อระยะยาว (ราชินีผึ้งยับยั้งการเจริญของรังไข่ผึ้งงาน)</p>';}
+    tb=TB3;}
+  else{if($('#exp4').value==='hd'){const v=V('val'),c=V('cost'),W=hdW(M4.p),e=essP();tt='Hawk–Dove Game: การแย่งทรัพยากรและอาณาเขต';ct='สัดส่วน Hawk ในประชากรตามเวลา';
+      st=[['สัดส่วน Hawk',Math.round(M4.p*100)+'%'],['ESS (V/C)',Math.round(e*100)+'%'],['ผลตอบแทน Hawk',W.H.toFixed(1)],['ผลตอบแทน Dove',W.D.toFixed(1)]];
+      flowBar(['พบคู่แข่ง','ข่มขู่ (Display)','สู้ หรือ ถอย','ได้/เสียผลตอบแทน','สัดส่วนเข้าสู่ ESS'],Math.abs(M4.p-e)<0.03?4:Math.floor(M4.t*1.2)%4);
+      eq=`W(Hawk) = p·(V − C)/2 + (1 − p)·V = ${W.H.toFixed(1)}\nW(Dove) = (1 − p)·V/2 = ${W.D.toFixed(1)}\ndp/dt ∝ p(1 − p)·[W(Hawk) − W(Dove)] → ESS: p* = ${v>=c?'1 (V ≥ C)':'V/C = '+(v/c).toFixed(2)}`;
+      an=(v>=c?'<p><span class="tag no">V ≥ C</span> ทรัพยากรมีค่ามากกว่าความเสี่ยงบาดเจ็บ การสู้คุ้มเสมอ Hawk จึงครองประชากร</p>':`<p><span class="tag ok">สมดุลแบบผสม</span> เมื่อ Hawk น้อย Hawk ได้เปรียบ เมื่อ Hawk มาก Hawk บาดเจ็บกันเอง Dove ได้เปรียบ → สัดส่วนเข้าสู่ <b>ESS = ${Math.round(e*100)}%</b></p>`)+'<p>อธิบายว่าทำไม Agonistic behavior ส่วนใหญ่เป็นแค่การข่มขู่ (Ritual) และทำไมจึงเกิด Dominance hierarchy / Territoriality เพื่อลดการต่อสู้ที่มีต้นทุนสูง</p>';
+      mis='<p><b>❌ "สัตว์ที่ก้าวร้าวที่สุดชนะเสมอ วิวัฒนาการจึงทำให้ทุกตัวก้าวร้าว"</b></p><p>✅ เมื่อต้นทุนการบาดเจ็บสูงกว่าคุณค่าทรัพยากร (C > V) การมี Hawk มากเกินไปไม่คุ้ม ประชากรจึงคงสัดส่วนผสมที่ ESS</p>';}
+    else{const r=+$('#rr').value,B=V('B'),C=V('Cc'),net=r*B-C;tt="Kin Selection: กฎของ Hamilton (rB > C)";ct='ความถี่ยีนพฤติกรรมเสียสละตามรุ่น';
+      st=[['ความสัมพันธ์ r',r],['rB',(r*B).toFixed(2)],['ต้นทุน C',C.toFixed(1)],['ค่าความคุ้มค่า rB − C',(net>=0?'+':'')+net.toFixed(2)]];
+      flowBar(['ผู้ให้เสียสละ (−C)','ญาติได้ประโยชน์ (+B)','ยีนเหมือนกันสัดส่วน r','rB > C ?',net>0?'ยีน Altruism เพิ่มขึ้น':'ยีน Altruism ลดลง'],4,net>0?-1:4);
+      eq=`Hamilton's rule: rB > C\nr·B − C = ${r} × ${B} − ${C} = ${net.toFixed(2)} ${net>0?'> 0 → ถูกคัดเลือก':'≤ 0 → ไม่ถูกคัดเลือก'}\nInclusive fitness = Direct fitness + Σ(r·B) · B ขั้นต่ำที่คุ้ม = C/r = ${(C/r).toFixed(1)}`;
+      an=`<p><span class="tag ${net>0?'ok':'no'}">${net>0?'คุ้มทางวิวัฒนาการ':'ไม่คุ้ม'}</span> ยีนที่ทำให้เสียสละถูกส่งต่อผ่านญาติที่มียีนเหมือนกันสัดส่วน r = ${r} (Inclusive fitness)</p>`+(r===0.75?'<p>ผึ้งงานเป็นหมัน แต่ช่วยราชินีสร้างน้องสาว (r = 0.75) ได้ยีนส่งต่อมากกว่ามีลูกเอง (r = 0.5) จึงยอมต่อยศัตรูแล้วตาย</p>':'<p>ญาติยิ่งห่าง (r น้อย) ต้องได้ประโยชน์ B มากขึ้นจึงจะคุ้ม: "ยอมตายเพื่อพี่น้อง 2 คน หรือลูกพี่ลูกน้อง 8 คน" (J.B.S. Haldane)</p>');
+      mis='<p><b>❌ "สัตว์เสียสละเพราะเจตนาดีเหมือนมนุษย์"</b></p><p>✅ Altruism ในทางชีววิทยาเกิดจาก <b>Kin selection</b>: ช่วยให้ยีนที่เหมือนกันในญาติ (Inclusive fitness) ถูกถ่ายทอดต่อ ไม่ใช่เรื่องศีลธรรม</p>';}
+    tb=TB4;}
+  $('#simTitle').textContent=tt;$('#chartTitle').textContent=ct;stats(st);$('#eq').textContent=eq;$('#analysis').innerHTML=an;$('#mis').innerHTML=mis;$('#tableBox').innerHTML=tb;}
+
+/* ================= UI ================= */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+function sync(){const e1=$('#exp1').value;$('#torgBox').style.display=e1==='tax'?'':'none';$('#intBox').style.display=e1==='fap'?'none':'';$('#fapBox').style.display=e1==='fap'?'':'none';$('#intLab').textContent=e1==='kin'?'ความชื้นด้านขวาของจาน':'ความเข้มของสิ่งเร้า (แสง/สาร)';
+  const e2=$('#exp2').value;[['pav','pavBox'],['skin','skBox'],['imp','impBox'],['hab','habBox']].forEach(([k,id])=>$('#'+id).style.display=e2===k?'':'none');
+  const e3=$('#exp3').value;$('#beeBox').style.display=e3==='bee'?'':'none';$('#antBox').style.display=e3==='ant'?'':'none';
+  const e4=$('#exp4').value;$('#hdBox').style.display=e4==='hd'?'':'none';$('#kinBox').style.display=e4==='kin'?'':'none';}
+function setMode(m){S.mode=m;$$('.modes button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m));$$('[data-m]').forEach(e=>e.style.display=e.dataset.m.split(' ').includes(String(m))?'':'none');sync();updateText();}
+const UPD={};const bind=(id,fmt)=>{const el=$('#'+id);const f=()=>{$('#'+id+'V').textContent=fmt(+el.value);};el.addEventListener('input',()=>{f();updateText();});f();UPD[id]=f;};
+bind('int',v=>v+'%');bind('trials',v=>v+' ครั้ง');bind('prob',v=>v+'%');bind('age',v=>v+' ชม.');bind('dist',v=>v+' m');bind('ang',v=>v+'°');bind('evap',v=>v+'%');bind('val',v=>v);bind('cost',v=>v);bind('p0',v=>v+'%');bind('B',v=>v.toFixed(1));bind('Cc',v=>v.toFixed(1));
+['torg','model','cons','obj','sun','obst','rr','scen'].forEach(id=>$('#'+id).addEventListener('change',updateText));
+$('#exp1').addEventListener('change',()=>{initM1();sync();updateText();});$('#torg').addEventListener('change',()=>initM1());$('#int').addEventListener('input',()=>{if(M1.k==='tax'){M1.left=0;M1.right=0;}});
+$('#exp2').addEventListener('change',()=>{initM2();sync();updateText();});$('#ext').addEventListener('change',()=>{M2.ext=0;M2.food=!$('#ext').checked;updateText();});
+$('#exp3').addEventListener('change',()=>{initM3();sync();updateText();});$('#exp4').addEventListener('change',()=>{initM4();sync();updateText();});
+$('#p0').addEventListener('input',()=>{M4.p=V('p0')/100;M4.hist=[];M4.t=0;});['rr','B','Cc'].forEach(id=>$('#'+id).addEventListener(id==='rr'?'change':'input',()=>{M4.q=0.05;M4.gen=0;M4.qh=[[0,0.05]];}));
+$('#remove').onclick=()=>{M1.model=false;};$('#present').onclick=()=>{M1.model=true;M1.see=0;};
+$('#ring').onclick=()=>{M2.test=true;M2.food=false;M2.c=0;M2.nd=0;};$('#dish').onclick=()=>{M2.n=0;M2.flash=1;M2.nov=1;M2.c=2.1;};
+$('#moveFood').onclick=()=>{M3.fi=(M3.fi+1)%FOODS.length;M3.food=FOODS[M3.fi].slice();};
+$('#play').onclick=()=>S.running=true;$('#pause').onclick=()=>S.running=false;
+$('#reset').onclick=()=>{if(S.mode===2&&M2.k==='pav'){$('#trials').value=0;UPD.trials();}({1:initM1,2:initM2,3:initM3,4:initM4})[S.mode]();updateText();};
+const TG={tgTrace:'trace',tgNeural:'neural'};Object.keys(TG).forEach(id=>$('#'+id).onclick=()=>{S.toggle=TG[id];Object.keys(TG).forEach(j=>$('#'+j).classList.toggle('on',j===id));updateText();});
+initM1();initM2();initM3();initM4();
+let last=performance.now(),accT=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;const sdt=S.running?dt:0;S.time+=sdt;if(sdt>0)[null,stepM1,stepM2,stepM3,stepM4][S.mode](sdt);
+  const {g,w,h}=fit($('#main'));g.clearRect(0,0,w,h);[null,drawM1,drawM2,drawM3,drawM4][S.mode](g,w,h);drawChart();accT+=dt;if(accT>0.4){accT=0;updateText();}requestAnimationFrame(loop);}
+setMode(1);requestAnimationFrame(loop);
+</script>
+<script src="float-lab.js"></script>
+</body>
+</html>
